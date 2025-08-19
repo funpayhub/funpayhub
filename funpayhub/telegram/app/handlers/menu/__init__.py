@@ -41,7 +41,7 @@ async def clear(query: CallbackQuery, bot: Bot, dispatcher: Dispatcher) -> None:
 async def open_properties(query: CallbackQuery, hub_properties: FunPayHubProperties):
     unpacked = cbs.OpenProperties.unpack(query.data)
     try:
-        props = hub_properties.get_by_path(unpacked.path)
+        props = hub_properties.get_entry(unpacked.path)
     except LookupError:
         await query.answer(f'Не удалось найти меню по пути {unpacked.path}.', show_alert=True)
         return
@@ -57,7 +57,7 @@ async def open_properties(query: CallbackQuery, hub_properties: FunPayHubPropert
 async def toggle_parameter(query: CallbackQuery, hub_properties: FunPayHubProperties):
     unpacked = cbs.ToggleParameter.unpack(query.data)
     try:
-        param: ToggleParameter = hub_properties.get_by_path(unpacked.path)
+        param: ToggleParameter = hub_properties.get_entry(unpacked.path)
     except LookupError:
         await query.answer(f'Не удалось найти переключатель по пути {unpacked.path}.', show_alert=True)
         return
@@ -73,7 +73,7 @@ async def change_parameter_value(query: CallbackQuery, hub_properties: FunPayHub
     unpacked = cbs.ChangeParameter.unpack(query.data)
 
     try:
-        param: MutableParameter = hub_properties.get_by_path(unpacked.path)
+        param: MutableParameter = hub_properties.get_entry(unpacked.path)
     except LookupError:
         await query.answer(f'Не удалось найти параметр по пути {unpacked.path}.', show_alert=True)
 
@@ -105,7 +105,7 @@ async def edit_parameter(message: Message, hub_properties: FunPayHubProperties, 
     data = await state.get_data()
 
     try:
-        param: MutableParameter = hub_properties.get_by_path(data['path'])
+        param: MutableParameter = hub_properties.get_entry(data['path'])
     except LookupError:
         await message.answer(f'Не удалось найти параметр по пути {data["path"]}.')
         await state.clear()

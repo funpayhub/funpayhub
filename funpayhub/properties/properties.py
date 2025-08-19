@@ -30,7 +30,7 @@ class Properties(Entry):
             raise TypeError('Parent should be an instance of Properties.')
 
         self._file = file
-        self._entries: dict[str, Entry] = {}
+        self._entries: dict[str, Parameter[Any] | MutableParameter[Any] | Properties] = {}
 
         Entry.__init__(
             self,
@@ -78,7 +78,7 @@ class Properties(Entry):
         return self.file or (self.parent.file_to_save if self.parent else None)
 
     @property
-    def entries(self) -> MappingProxyType[str, Entry]:
+    def entries(self) -> MappingProxyType[str, Parameter | MutableParameter | Properties]:
         return MappingProxyType(self._entries)
 
     def attach_parameter(self, param: T) -> T:
@@ -165,7 +165,7 @@ class Properties(Entry):
             elif isinstance(v, Properties):
                 v._set_values(values[v.id])
 
-    def get_by_path(self, path: str) -> Entry:
+    def get_entry(self, path: str) -> Entry:
         if not path:
             return self
 
@@ -174,5 +174,5 @@ class Properties(Entry):
         if isinstance(next_entry, Parameter):
             return next_entry
         elif isinstance(next_entry, Properties):
-            return next_entry.get_by_path('.'.join(split[1:]))
+            return next_entry.get_entry('.'.join(split[1:]))
         raise LookupError(f'No entry with path {path}')
