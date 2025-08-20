@@ -32,8 +32,7 @@ class Properties(Entry):
         self._file = file
         self._entries: dict[str, Parameter[Any] | MutableParameter[Any] | Properties] = {}
 
-        Entry.__init__(
-            self,
+        super().__init__(
             parent=parent,
             id=id,
             name=name,
@@ -78,7 +77,7 @@ class Properties(Entry):
         return self.file or (self.parent.file_to_save if self.parent else None)
 
     @property
-    def entries(self) -> MappingProxyType[str, Parameter | MutableParameter | Properties]:
+    def entries(self) -> MappingProxyType[str, Parameter[Any] | MutableParameter[Any] | Properties]:
         return MappingProxyType(self._entries)
 
     def attach_parameter(self, param: T) -> T:
@@ -161,7 +160,7 @@ class Properties(Entry):
             elif v.id not in values:
                 continue
             elif isinstance(v, MutableParameter):
-                v.set_value(values[v.id])
+                v.set_value(values[v.id], save=False)
             elif isinstance(v, Properties):
                 v._set_values(values[v.id])
 
@@ -170,9 +169,25 @@ class Properties(Entry):
             return self
 
         split = path.split('.')
-        next_entry = self._entries.get(split[0])
+        next_entry = self.entries.get(split[0])
         if isinstance(next_entry, Parameter):
             return next_entry
         elif isinstance(next_entry, Properties):
-            return next_entry.get_entry('.'.join(split[1:]))
-        raise LookupError(f'No entry with path {path}')
+            try:
+                return next_entry.get_entry('.'.join(split[1:]))
+            except LookupError as e:
+                raise LookupError(f'No entry with path {path}') from e
+        else:
+            raise LookupError(f'No entry with path {path}') from None
+
+    def get_parameter(self, path: str) -> Parameter[Any] | MutableParameter[Any]:
+        result = self.get_entry(path)
+        if not isinstance(result, Parameter):
+            raise LookupError(f'No parameter with path {path}')
+        return result
+
+    def get_properties(self, path: str) -> Properties:
+        result = self.get_entry(path)
+        if not isinstance(result, Properties):
+            raise LookupError(f'No properties with path {path}')
+        return result

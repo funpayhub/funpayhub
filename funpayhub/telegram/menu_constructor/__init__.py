@@ -11,10 +11,9 @@ from ..app import callbacks as cbs
 
 
 class PropertiesMenu:
-    def __init__(self, properties: Properties) -> None:
+    def __init__(self, properties: Properties, max_entries_on_page: int = 2) -> None:
         self.properties = properties
-
-        self.max_entries_on_page = 6
+        self.max_entries_on_page = max_entries_on_page
 
     def build_menu(self, page_index: int) -> InlineKeyboardMarkup:
         start_point = page_index * self.max_entries_on_page
@@ -45,7 +44,7 @@ class PropertiesMenu:
         self.build_footer(builder, page_index)
         return builder.as_markup()
 
-    def build_footer(self, builder: InlineKeyboardBuilder, page_index: int):
+    def build_footer(self, builder: InlineKeyboardBuilder, page_index: int) -> None:
         total = len(self.properties.entries)
         pages_amount = math.ceil(total / self.max_entries_on_page)
 
@@ -87,5 +86,3 @@ class PropertiesMenu:
                     callback_data = cbs.OpenProperties(path=self.properties.parent.path, page=0).pack()
                 )
             )
-
-        return builder

@@ -57,7 +57,7 @@ async def open_properties(query: CallbackQuery, hub_properties: FunPayHubPropert
 async def toggle_parameter(query: CallbackQuery, hub_properties: FunPayHubProperties):
     unpacked = cbs.ToggleParameter.unpack(query.data)
     try:
-        param: ToggleParameter = hub_properties.get_entry(unpacked.path)
+        param: ToggleParameter = hub_properties.get_parameter(unpacked.path)
     except LookupError:
         await query.answer(f'Не удалось найти переключатель по пути {unpacked.path}.', show_alert=True)
         return
@@ -71,11 +71,11 @@ async def toggle_parameter(query: CallbackQuery, hub_properties: FunPayHubProper
 @r.callback_query(cbs.ChangeParameter.filter())
 async def change_parameter_value(query: CallbackQuery, hub_properties: FunPayHubProperties, bot: Bot, dispatcher: Dispatcher) -> None:
     unpacked = cbs.ChangeParameter.unpack(query.data)
-
     try:
-        param: MutableParameter = hub_properties.get_entry(unpacked.path)
+        param: MutableParameter = hub_properties.get_parameter(unpacked.path)
     except LookupError:
         await query.answer(f'Не удалось найти параметр по пути {unpacked.path}.', show_alert=True)
+        return
 
     state = dispatcher.fsm.get_context(bot, chat_id=query.message.chat.id, user_id=query.from_user.id, thread_id=query.message.message_thread_id)
     await state.clear()
