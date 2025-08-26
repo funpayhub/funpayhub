@@ -4,7 +4,7 @@ from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.utils.keyboard import InlineKeyboardButton
 from funpayhub.properties import Parameter, MutableParameter, Properties, ToggleParameter, StringParameter, \
-    IntParameter, FloatParameter
+    IntParameter, FloatParameter, ChoiceParameter
 import math
 
 from ..app import callbacks as cbs
@@ -33,6 +33,12 @@ class PropertiesMenu:
                 builder.row(InlineKeyboardButton(
                     text=f'{"🟢" if obj.value else "🔴"} {obj.name}',
                     callback_data=cbs.ToggleParameter(path=obj.path, opened_props_page=page_index).pack()
+                ))
+
+            elif isinstance(obj, ChoiceParameter):
+                builder.row(InlineKeyboardButton(
+                    text=f'{obj.name}',
+                    callback_data=cbs.OpenProperties(path=obj.path).pack()
                 ))
 
             elif isinstance(obj, StringParameter | IntParameter | FloatParameter):

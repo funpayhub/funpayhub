@@ -1,13 +1,24 @@
 from __future__ import annotations
 
+
+__all__ = ['ChoiceParameter', 'Item',]
+
+
 from typing import Any, TYPE_CHECKING, Generic, TypeVar
 from collections.abc import Callable
 
 from .base import _UNSET, _UNSET_TYPE, CallableValue, MutableParameter
+from dataclasses import dataclass
 
 
 if TYPE_CHECKING:
     from ..properties import Properties
+
+
+@dataclass(frozen=True)
+class Item:
+    name: str
+    value: Any
 
 
 class ChoiceParameter(MutableParameter[int]):
@@ -37,7 +48,10 @@ class ChoiceParameter(MutableParameter[int]):
         self._choices = choices
 
     def real_value(self) -> Any:
-        return self._choices[self.value]
+        result = self._choices[self.value]
+        if isinstance(result, Item):
+            return result.value
+        return result
 
     def _validator_factory(
         self,

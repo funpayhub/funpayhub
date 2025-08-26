@@ -19,3 +19,13 @@ class ToggleParameter(CallbackData, prefix='t'):
 class ChangeParameter(CallbackData, prefix='c'):
     path: str
     opened_props_page: int
+
+
+class OpenParameterChoice(CallbackData, prefix='s'):
+    path: str
+    page: int
+
+
+class SelectParameterValue(CallbackData, prefix='s'):
+    path: str
+    page: int

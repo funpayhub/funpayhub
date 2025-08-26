@@ -6,7 +6,7 @@ from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKe
 
 from typing import TYPE_CHECKING
 
-from funpayhub.properties import ToggleParameter, MutableParameter
+from funpayhub.properties import ToggleParameter, MutableParameter, ChoiceParameter
 from funpayhub.telegram.menu_constructor import PropertiesMenu
 from funpayhub.telegram.app import callbacks as cbs
 
@@ -98,6 +98,19 @@ async def change_parameter_value(query: CallbackQuery, hub_properties: FunPayHub
         reply_markup=kb
     )
     await query.answer()
+
+
+@r.callback_query(cbs.OpenParameterChoice.filter())
+async def open_parameter_choice(query: CallbackQuery, hub_properties: FunPayHubProperties):
+    unpacked = cbs.OpenParameterChoice.unpack(query.data)
+
+    try:
+        param: ChoiceParameter = hub_properties.get_parameter(unpacked.path)
+        ...
+    except LookupError:
+        await query.answer(f'Не удалось найти параметр по пути {unpacked.path}.', show_alert=True)
+
+    ...
 
 
 @r.message(StateFilter('edit_parameter'))
