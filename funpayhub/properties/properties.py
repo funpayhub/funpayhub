@@ -5,7 +5,7 @@ __all__ = ['Properties',]
 
 import os
 import tomllib
-from typing import Any, TypeVar
+from typing import Any, TypeVar, overload
 from collections.abc import Generator
 
 import tomli_w
@@ -20,6 +20,8 @@ P = TypeVar('P', bound='Properties')
 
 
 class Properties(Entry):
+    parent: Properties | None
+
     def __init__(
         self,
         *,
@@ -42,11 +44,7 @@ class Properties(Entry):
             description=description
         )
 
-    @property
-    def parent(self) -> Properties | None:
-        return super().parent  # type: ignore  # check in __init__
-
-    @parent.setter
+    @Entry.parent.setter
     def parent(self, value: Properties) -> None:
         if self._parent is not None:
             raise RuntimeError('Already has a parent')

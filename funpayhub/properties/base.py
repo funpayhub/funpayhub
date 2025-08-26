@@ -30,6 +30,7 @@ class Entry:
         id: str,
         name: CallableValue[str],
         description: CallableValue[str],
+        flags: set[Any] | None = None
     ) -> None:
         if '.' in id or id.isnumeric():
             raise ValueError('Entry id must not contain \'.\' and must not be a number.')
@@ -37,6 +38,7 @@ class Entry:
         self._id = id
         self._name = name
         self._description = description
+        self._flags = flags or set()
 
     @property
     def id(self) -> str:
