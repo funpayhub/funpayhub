@@ -15,13 +15,16 @@ if TYPE_CHECKING:
     from ..properties import Properties
 
 
+T = TypeVar('T', bound=Any)
+
+
 @dataclass(frozen=True)
-class Item:
+class Item(Generic[T]):
     name: str
-    value: Any
+    value: T
 
 
-class ChoiceParameter(MutableParameter[int]):
+class ChoiceParameter(MutableParameter[int], Generic[T]):
     def __init__(
         self,
         *,
@@ -29,7 +32,7 @@ class ChoiceParameter(MutableParameter[int]):
         id: str,
         name: CallableValue[str],
         description: CallableValue[str],
-        choices: list[Any],
+        choices: tuple[T | Item[T], ...],
         default_value: CallableValue[int],
         value: CallableValue[int] | _UNSET_TYPE = _UNSET,
         validator: Callable[[int], Any] | _UNSET_TYPE = _UNSET,
@@ -47,7 +50,11 @@ class ChoiceParameter(MutableParameter[int]):
 
         self._choices = choices
 
-    def real_value(self) -> Any:
+    @property
+    def choices(self) -> tuple[T | Item[T], ...]:
+        return self._choices
+
+    def real_value(self) -> T:
         result = self._choices[self.value]
         if isinstance(result, Item):
             return result.value
