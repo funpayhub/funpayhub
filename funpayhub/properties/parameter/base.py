@@ -57,8 +57,8 @@ class MutableParameter(Parameter[ParamValueType], Generic[ParamValueType]):
         description: CallableValue[str],
         default_value: CallableValue[ParamValueType],
         value: CallableValue[ParamValueType] | _UNSET_TYPE = _UNSET,
-        validator: Callable[[Any], ParamValueType] | _UNSET_TYPE = _UNSET,
-        converter: Callable[[Any], ParamValueType],
+        validator: Callable[[ParamValueType], Any] | _UNSET_TYPE = _UNSET,
+        converter: Callable[[str], ParamValueType],
     ) -> None:
         self._convertor = converter
         self._validator = validator
@@ -84,7 +84,7 @@ class MutableParameter(Parameter[ParamValueType], Generic[ParamValueType]):
 
     def set_value(
         self,
-        value: Any,
+        value: ParamValueType | str,
         *,
         skip_converter: bool = False,
         skip_validator: bool = False,

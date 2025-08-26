@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import NoReturn, Any
 
-from funpayhub.properties import Properties, ToggleParameter, StringParameter, Parameter, \
-    MutableParameter
+from funpayhub.properties import Properties, ToggleParameter, StringParameter
 from funpayhub.properties.base import Entry
 import os
 from types import MappingProxyType

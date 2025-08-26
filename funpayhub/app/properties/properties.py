@@ -3,27 +3,10 @@ from __future__ import annotations
 from funpayhub.properties import Properties, StringParameter, ToggleParameter
 from typing import Any, TypeVar
 from .auto_delivery_properties import AutoDeliveryProperties
+from .telegram_properties import TelegramProperties
 
 
 T = TypeVar('T', bound=Properties)
-
-
-class TelegramProperties(Properties):
-    def __init__(self) -> None:
-        super().__init__(
-            id='telegram',
-            name='Telegram bot properties',
-            description='Telegram bot properties',
-            file='config/telegram.toml',
-        )
-
-        self.token = self.attach_parameter(StringParameter(
-            properties=self,
-            id='token',
-            name='Telegram bot token',
-            description='Telegram bot token',
-            default_value='',
-        ))
 
 
 class TogglesProperties(Properties):
@@ -103,10 +86,3 @@ class FunPayHubProperties(Properties):
         self.toggles = self.attach_properties(TogglesProperties())
         self.telegram = self.attach_properties(TelegramProperties())
         self.auto_delivery = self.attach_properties(AutoDeliveryProperties())
-
-
-a = FunPayHubProperties()
-a.load()
-
-print(a.toggles.auto_delivery.value)
-print(a.auto_delivery._entries)

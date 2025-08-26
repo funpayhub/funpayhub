@@ -11,7 +11,7 @@ from ..app import callbacks as cbs
 
 
 class PropertiesMenu:
-    def __init__(self, properties: Properties, max_entries_on_page: int = 2) -> None:
+    def __init__(self, properties: Properties, max_entries_on_page: int = 6) -> None:
         self.properties = properties
         self.max_entries_on_page = max_entries_on_page
 

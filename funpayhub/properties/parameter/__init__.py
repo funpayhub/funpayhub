@@ -5,3 +5,4 @@ from .int_parameter import IntParameter
 from .float_parameter import FloatParameter
 from .string_parameter import StringParameter
 from .toggle_parameter import ToggleParameter
+from .choice_parameter import ChoiceParameter

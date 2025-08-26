@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+__all__ = ['Properties',]
+
+
 import os
 import tomllib
 from typing import Any, TypeVar

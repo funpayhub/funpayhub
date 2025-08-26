@@ -46,7 +46,10 @@ async def open_properties(query: CallbackQuery, hub_properties: FunPayHubPropert
         await query.answer(f'Не удалось найти меню по пути {unpacked.path}.', show_alert=True)
         return
 
-    menu = PropertiesMenu(props).build_menu(page_index=unpacked.page)
+    menu = PropertiesMenu(
+        props,
+        max_entries_on_page=hub_properties.telegram.appearance.menu_entries_amount.value
+    ).build_menu(page_index=unpacked.page)
     await query.message.edit_text(
         text=props.description,
         reply_markup=menu
