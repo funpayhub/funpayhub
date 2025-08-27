@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = ['ChoiceParameter', 'Item',]
 
 
-from typing import Any, TYPE_CHECKING, Generic, TypeVar
+from typing import Any, TYPE_CHECKING, Generic, TypeVar, Union
 from collections.abc import Callable
 
 from .base import _UNSET, _UNSET_TYPE, CallableValue, MutableParameter
@@ -24,6 +24,7 @@ class Item(Generic[T]):
     value: T
 
 
+
 class ChoiceParameter(MutableParameter[int], Generic[T]):
     def __init__(
         self,
@@ -32,7 +33,7 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
         id: str,
         name: CallableValue[str],
         description: CallableValue[str],
-        choices: tuple[T | Item[T], ...],
+        choices: tuple[Union[T, Item[T]], ...],
         default_value: CallableValue[int],
         value: CallableValue[int] | _UNSET_TYPE = _UNSET,
         validator: Callable[[int], Any] | _UNSET_TYPE = _UNSET,
@@ -48,14 +49,14 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
             converter=int
         )
 
-        self._choices = choices
+        self._choices: tuple[Union[T, Item[T]], ...] = choices
 
     @property
-    def choices(self) -> tuple[T | Item[T], ...]:
+    def choices(self) -> tuple[Union[T, Item[T]], ...]:
         return self._choices
 
     def real_value(self) -> T:
-        result = self._choices[self.value]
+        result = self.choices[self.value]
         if isinstance(result, Item):
             return result.value
         return result
@@ -66,7 +67,7 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
     ) -> Callable[[int], None]:
         def real_validator(value: int) -> None:
             if (len(self._choices) - 1) > value:
-                raise ValueError('Index out of range!')
+                raise ValueError('Index out of range!')  # todo: validation text
             if not isinstance(validator, _UNSET_TYPE):
                 validator(value)
         return real_validator

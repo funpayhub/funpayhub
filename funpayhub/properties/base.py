@@ -69,6 +69,10 @@ class Entry:
         return self.parent.root
 
     @property
+    def is_root(self) -> bool:
+        return self.parent is not None
+
+    @property
     def chain_to_root(self) -> Generator[Entry, None, None]:
         yield self
         if self.parent:

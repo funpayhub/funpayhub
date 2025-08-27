@@ -5,7 +5,7 @@ __all__ = ['Properties',]
 
 import os
 import tomllib
-from typing import Any, TypeVar, overload
+from typing import Any, TypeVar, overload, TypeAlias
 from collections.abc import Generator
 
 import tomli_w
@@ -17,10 +17,11 @@ from types import MappingProxyType
 
 T = TypeVar('T', bound='Parameter[Any]')
 P = TypeVar('P', bound='Properties')
+InnerEntries: TypeAlias = Parameter[Any] | MutableParameter[Any] | 'Properties'
 
 
 class Properties(Entry):
-    parent: Properties | None
+    _parent: Properties | None
 
     def __init__(
         self,
@@ -35,7 +36,7 @@ class Properties(Entry):
             raise TypeError('Parent should be an instance of Properties.')
 
         self._file = file
-        self._entries: dict[str, Parameter[Any] | MutableParameter[Any] | Properties] = {}
+        self._entries: dict[str, InnerEntries] = {}
 
         super().__init__(
             parent=parent,
@@ -44,15 +45,15 @@ class Properties(Entry):
             description=description
         )
 
-    @Entry.parent.setter
-    def parent(self, value: Properties) -> None:
-        if self._parent is not None:
-            raise RuntimeError('Already has a parent')
-        self._parent = value
-
     @property
-    def is_root(self) -> bool:
-        return self.parent is None
+    def parent(self) -> Properties | None:
+        return self._parent
+
+    @parent.setter
+    def parent(self, value: Properties) -> None:
+        if self.parent is not None:
+            raise RuntimeError('Already has a parent')  # todo: error text
+        self._parent = value
 
     @property
     def root(self) -> Properties:
@@ -83,7 +84,7 @@ class Properties(Entry):
 
     def attach_parameter(self, param: T) -> T:
         if param.id in self._entries:
-            raise RuntimeError('ID already exists')
+            raise RuntimeError('ID already exists')  # todo: error text
         self._entries[param.id] = param
         return param
 
@@ -96,7 +97,7 @@ class Properties(Entry):
 
     def attach_properties(self, properties: P) -> P:
         if properties.id in self._entries:
-            raise RuntimeError('ID already exists')
+            raise RuntimeError('ID already exists')  # todo: error text
         properties.parent = self
         self._entries[properties.id] = properties
         return properties
@@ -118,7 +119,7 @@ class Properties(Entry):
             if isinstance(v, Parameter):
                 if not isinstance(v, MutableParameter) and exclude_immutable_parameters:
                     continue
-                total[v.id] = v.value
+                total[v.id] = v.serialized_value
             elif isinstance(v, Properties):
                 if same_file_only and self.file_to_save != v.file_to_save:
                     continue
@@ -165,7 +166,7 @@ class Properties(Entry):
             elif isinstance(v, Properties):
                 v._set_values(values[v.id])
 
-    def get_entry(self, path: str) -> Entry:
+    def get_entry(self, path: str) -> InnerEntries:
         if not path:
             return self
 

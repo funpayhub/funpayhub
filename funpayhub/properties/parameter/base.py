@@ -46,6 +46,10 @@ class Parameter(Entry, ABC, Generic[ParamValueType]):
     def properties(self) -> Properties:
         return self.parent
 
+    @property
+    def serialized_value(self) -> Any:
+        return self.value
+
 
 class MutableParameter(Parameter[ParamValueType], Generic[ParamValueType]):
     def __init__(
