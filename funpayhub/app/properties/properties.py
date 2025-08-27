@@ -13,39 +13,39 @@ class TogglesProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='toggles',
-            name='$props_toggles:name',
-            description='$props_toggles:description',
+            name='$props.toggles:name',
+            description='$props.toggles:description',
         )
 
         self.auto_delivery = self.attach_parameter(ToggleParameter(
             properties=self,
             id='auto_delivery',
-            name='$props_toggles.auto_delivery:name',
-            description='$props_toggles.auto_delivery:description',
+            name='$props.toggles.auto_delivery:name',
+            description='$props.toggles.auto_delivery:description',
             default_value=True,
         ))
 
         self.multi_delivery = self.attach_parameter(ToggleParameter(
             properties=self,
             id='multi_delivery',
-            name='$props_toggles.multi_delivery:name',
-            description='$props_toggles.multi_delivery:description',
+            name='$props.toggles.multi_delivery:name',
+            description='$props.toggles.multi_delivery:description',
             default_value=True,
         ))
 
         self.auto_response = self.attach_parameter(ToggleParameter(
             properties=self,
             id='auto_response',
-            name='$props_toggles.auto_response:name',
-            description='$props_toggles.auto_response:description',
+            name='$props.toggles.auto_response:name',
+            description='$props.toggles.auto_response:description',
             default_value=True,
         ))
 
         self.auto_raise = self.attach_parameter(ToggleParameter(
             properties=self,
             id='auto_raise',
-            name='$props_toggles.auto_raise:name',
-            description='$props_toggles.auto_raise:description',
+            name='$props.toggles.auto_raise:name',
+            description='$props.toggles.auto_raise:description',
             default_value=True,
         ))
 

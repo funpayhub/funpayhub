@@ -10,8 +10,8 @@ class TelegramProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='telegram',
-            name='$props_telegram:name',
-            description='$props_telegram:description'
+            name='$props.telegram:name',
+            description='$props.telegram:description'
         )
 
         self.general = self.attach_properties(TelegramGeneral())
@@ -22,16 +22,16 @@ class TelegramGeneral(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='general',
-            name='$props_telegram.general:name',
-            description='$props_telegram.general:description'
+            name='$props.telegram.general:name',
+            description='$props.telegram.general:description'
         )
 
         self.token = self.attach_parameter(
             StringParameter(
                 properties=self,
                 id='token',
-                name='$props_telegram.general.token:name',
-                description='$props_telegram.general.token:description',
+                name='$props.telegram.general.token:name',
+                description='$props.telegram.general.token:description',
                 default_value='',
             )
         )
@@ -40,8 +40,8 @@ class TelegramGeneral(Properties):
             StringParameter(
                 properties=self,
                 id='password',
-                name='$props_telegram.general.password:name',
-                description='$props_telegram.general.password:description',
+                name='$props.telegram.general.password:name',
+                description='$props.telegram.general.password:description',
                 default_value='',
             )
         )
@@ -51,16 +51,16 @@ class TelegramAppearance(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='appearance',
-            name='$props_telegram.appearance:name',
-            description='$props_telegram.appearance:description'
+            name='$props.telegram.appearance:name',
+            description='$props.telegram.appearance:description'
         )
 
         self.show_emoji = self.attach_parameter(
             ToggleParameter(
                 properties=self,
                 id='show_emoji',
-                name='$props_telegram.appearance.show_emoji:name',
-                description='$props_telegram.appearance.show_emoji:description',
+                name='$props.telegram.appearance.show_emoji:name',
+                description='$props.telegram.appearance.show_emoji:description',
                 default_value=True
             )
         )
@@ -69,8 +69,8 @@ class TelegramAppearance(Properties):
             IntParameter(
                 properties=self,
                 id='menu_entries_amount',
-                name='$props_telegram.appearance.menu_entries_amount:name',
-                description='$props_telegram.appearance.menu_entries_amount:description',
+                name='$props.telegram.appearance.menu_entries_amount:name',
+                description='$props.telegram.appearance.menu_entries_amount:description',
                 default_value=6
             )
         )
