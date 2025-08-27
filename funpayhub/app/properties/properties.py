@@ -4,6 +4,7 @@ from funpayhub.properties import Properties, StringParameter, ToggleParameter
 from typing import Any, TypeVar
 from .auto_delivery_properties import AutoDeliveryProperties
 from .telegram_properties import TelegramProperties
+from .general_properties import GeneralProperties
 
 
 T = TypeVar('T', bound=Properties)
@@ -77,12 +78,13 @@ class TogglesProperties(Properties):
 class FunPayHubProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
-            id='funpayhub',
-            name='FunPay Hub properties',
-            description='FunPay Hub properties.',
+            id='props',
+            name='$props:name',
+            description='$props.description',
             file='config/funpayhub.toml',
         )
 
         self.toggles = self.attach_properties(TogglesProperties())
+        self.general = self.attach_properties(GeneralProperties())
         self.telegram = self.attach_properties(TelegramProperties())
         self.auto_delivery = self.attach_properties(AutoDeliveryProperties())

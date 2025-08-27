@@ -12,8 +12,94 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 
-msgid "autodelivery_pname"
-msgstr "Auto-delivery settings"
+# Properties
+msgid "$props:name"
+msgstr "Settings"
 
-msgid "telegram_settings_pname"
+msgid "$props:description"
+msgstr "Settings root section"
+
+msgid "$props.general:name"
+msgstr "General"
+
+msgid "$props.general:description"
+msgstr ""
+
+msgid "$props.general.language:name"
+msgstr "Language"
+
+msgid "$props.general.language:description"
+msgstr ""
+
+msgid "$props.telegram:name"
 msgstr "Telegram bot settings"
+
+msgid "$props.telegram:description"
+msgstr ""
+
+msgid "$props.telegram.general:name"
+msgstr "General"
+
+msgid "$props.telegram.general:description"
+msgstr ""
+
+msgid "$props.telegram.general.token:name"
+msgstr "Bot token"
+
+msgid "$props.telegram.general.token:description"
+msgstr ""
+
+msgid "$props.telegram.general.password:name"
+msgstr "Bot password"
+
+msgid "$props.telegram.general.password:description"
+msgstr ""
+
+msgid "$props.telegram.appearance:name"
+msgstr "Appearance"
+
+msgid "$props.telegram.appearance:description"
+msgstr "Telegram bot appearance settings."
+
+msgid "$props.telegram.appearance.show_emoji:name"
+msgstr "Show emoji"
+
+msgid "$props.telegram.appearance.show_emoji:description"
+msgstr ""
+
+msgid "$props.telegram.appearance.menu_entries_amount:name"
+msgstr "Elements per page amount"
+
+msgid "$props.telegram.appearance.menu_entries_amount:description"
+msgstr ""
+
+msgid "$props.auto_delivery:name"
+msgstr "Autodelivery settings"
+
+msgid "$props.auto_delivery:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.auto_delivery:name"
+msgstr "Autodelivery"
+
+msgid "$props.auto_delivery.*.auto_delivery:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.multi_delivery:name"
+msgstr "Multidelivery"
+
+msgid "$props.auto_delivery.*.multi_delivery:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.products_file:name"
+msgstr "Goods file"
+
+msgid "$props.auto_delivery.*.products_file:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.delivery_text:name"
+msgstr "Delivery text"
+
+msgid "$props.auto_delivery.*.delivery_text:description"
+msgstr ""
+

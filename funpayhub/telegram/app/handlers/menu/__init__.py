@@ -14,14 +14,15 @@ from funpayhub.telegram.app import callbacks as cbs
 
 if TYPE_CHECKING:
     from funpayhub.app.properties.properties import FunPayHubProperties
+    from funpayhub.translater import Translater
 
 
 r = Router()
 
 
 @r.message(Command('start'))
-async def send_menu(message: Message, hub_properties: FunPayHubProperties) -> None:
-    menu = PropertiesMenu(hub_properties).build_menu(page_index=0)
+async def send_menu(message: Message, hub_properties: FunPayHubProperties, tr: Translater) -> None:
+    menu = PropertiesMenu(hub_properties).build_menu(page_index=0, tr=tr, lang=hub_properties.general.language.real_value())
     await message.answer(text=hub_properties.description, reply_markup=menu)
 
 
@@ -32,13 +33,13 @@ async def dummy(query: CallbackQuery) -> None:
 
 @r.callback_query(cbs.Clear.filter())
 async def clear(query: CallbackQuery, bot: Bot, dispatcher: Dispatcher) -> None:
-    state = dispatcher.fsm.get_context(bot=bot, chat_id=query.message.chat.id, thread_id=query.message.message_thread_id, user_id=query.message.from_user.id)
+    state = dispatcher.fsm.get_context(bot=bot, chat_id=query.message.chat.id, thread_id=query.message.message_thread_id, user_id=query.from_user.id)
     await state.clear()
     await query.message.delete()
 
 
 @r.callback_query(cbs.OpenProperties.filter())
-async def open_properties(query: CallbackQuery, hub_properties: FunPayHubProperties):
+async def open_properties(query: CallbackQuery, hub_properties: FunPayHubProperties, tr: Translater) -> None:
     unpacked = cbs.OpenProperties.unpack(query.data)
     try:
         props = hub_properties.get_entry(unpacked.path)
@@ -46,10 +47,11 @@ async def open_properties(query: CallbackQuery, hub_properties: FunPayHubPropert
         await query.answer(f'Не удалось найти меню по пути {unpacked.path}.', show_alert=True)
         return
 
+    print(hub_properties.general.language.real_value())
     menu = PropertiesMenu(
         props,
         max_entries_on_page=hub_properties.telegram.appearance.menu_entries_amount.value
-    ).build_menu(page_index=unpacked.page)
+    ).build_menu(page_index=unpacked.page, tr=tr, lang=hub_properties.general.language.real_value())
     await query.message.edit_text(
         text=props.description,
         reply_markup=menu
@@ -57,7 +59,7 @@ async def open_properties(query: CallbackQuery, hub_properties: FunPayHubPropert
 
 
 @r.callback_query(cbs.ToggleParameter.filter())
-async def toggle_parameter(query: CallbackQuery, hub_properties: FunPayHubProperties):
+async def toggle_parameter(query: CallbackQuery, hub_properties: FunPayHubProperties, tr: Translater) -> None:
     unpacked = cbs.ToggleParameter.unpack(query.data)
     try:
         param: ToggleParameter = hub_properties.get_parameter(unpacked.path)
@@ -67,7 +69,7 @@ async def toggle_parameter(query: CallbackQuery, hub_properties: FunPayHubProper
 
     param.toggle(save=True)
 
-    menu = PropertiesMenu(param.properties).build_menu(page_index=unpacked.opened_props_page)
+    menu = PropertiesMenu(param.properties).build_menu(page_index=unpacked.opened_props_page, tr=tr, lang=hub_properties.general.language.real_value())
     await query.message.edit_text(param.properties.description, reply_markup=menu)
 
 
@@ -114,7 +116,7 @@ async def open_parameter_choice(query: CallbackQuery, hub_properties: FunPayHubP
 
 
 @r.message(StateFilter('edit_parameter'))
-async def edit_parameter(message: Message, hub_properties: FunPayHubProperties, bot: Bot, dispatcher: Dispatcher) -> None:
+async def edit_parameter(message: Message, hub_properties: FunPayHubProperties, bot: Bot, dispatcher: Dispatcher, tr: Translater) -> None:
     state = dispatcher.fsm.get_context(bot, chat_id=message.chat.id,
                                        user_id=message.from_user.id,
                                        thread_id=message.message_thread_id)
@@ -145,5 +147,5 @@ async def edit_parameter(message: Message, hub_properties: FunPayHubProperties, 
         chat_id=message.chat.id,
         message_thread_id=message.message_thread_id,
         text=param.parent.description,
-        reply_markup=PropertiesMenu(param.parent).build_menu(page_index=data['page'])
+        reply_markup=PropertiesMenu(param.parent).build_menu(page_index=data['page'], tr=tr, lang=hub_properties.general.language.real_value())
     )

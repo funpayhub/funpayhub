@@ -20,32 +20,32 @@ class AutoDeliveryEntryProperties(Properties):
         self.auto_delivery = self.attach_parameter(ToggleParameter(
             properties=self,
             id='auto_delivery',
-            name='Auto delivery',
-            description='Auto delivery enabled',
+            name='$props.auto_delivery.*.auto_delivery:name',
+            description='$props.auto_delivery.*.auto_delivery:description',
             default_value=True
         ))
 
         self.multi_delivery = self.attach_parameter(ToggleParameter(
             properties=self,
             id='multi_delivery',
-            name='Multi delivery',
-            description='Multi delivery enabled',
+            name='$props.auto_delivery.*.multi_delivery:name',
+            description='$props.auto_delivery.*.multi_delivery:description',
             default_value=True
         ))
 
         self.products_file = self.attach_parameter(StringParameter(
             properties=self,
             id='products_file',
-            name='Products file',
-            description='Products file path',
+            name='$props.auto_delivery.*.products_file:name',
+            description='$props.auto_delivery.*.products_file:description',
             default_value='',
         ))
 
         self.delivery_text = self.attach_parameter(StringParameter(
             properties=self,
             id='delivery_text',
-            name='Delivery text',
-            description='Delivery text',
+            name='$props.auto_delivery.*.delivery_text:name',
+            description='$props.auto_delivery.*.delivery_text:description',
             default_value='Thank you for buying this staff!'
         ))
 
@@ -73,8 +73,8 @@ class AutoDeliveryProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='auto_delivery',
-            name='Auto delivery',
-            description='Auto delivery options',
+            name='$props.auto_delivery:name',
+            description='$props.auto_delivery:description',
             file='config/auto_delivery.toml'
         )
 

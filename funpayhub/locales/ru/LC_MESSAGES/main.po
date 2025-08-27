@@ -12,8 +12,93 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 
-msgid "autodelivery_pname"
+# Properties 
+msgid "$props:name"
+msgstr "Настройки"
+
+msgid "$props:description"
+msgstr "Корневой раздел настроек FunPay Hub"
+
+msgid "$props.general:name"
+msgstr "Общие настройки"
+
+msgid "$props.general:description"
+msgstr ""
+
+msgid "$props.general.language:name"
+msgstr "Язык"
+
+msgid "$props.general.language:description"
+msgstr ""
+
+msgid "$props.telegram:name"
+msgstr "Настройки Telegram бота"
+
+msgid "$props.telegram:description"
+msgstr ""
+
+msgid "$props.telegram.general:name"
+msgstr "Общие"
+
+msgid "$props.telegram.general:description"
+msgstr ""
+
+msgid "$props.telegram.general.token:name"
+msgstr "Токен бота"
+
+msgid "$props.telegram.general.token:description"
+msgstr ""
+
+msgid "$props.telegram.general.password:name"
+msgstr "Пароль бота"
+
+msgid "$props.telegram.general.password:description"
+msgstr ""
+
+msgid "$props.telegram.appearance:name"
+msgstr "Внешний вид"
+
+msgid "$props.telegram.appearance:description"
+msgstr "Настройки внешнего вида Telegram бота."
+
+msgid "$props.telegram.appearance.show_emoji:name"
+msgstr "Показывать эмодзи"
+
+msgid "$props.telegram.appearance.show_emoji:description"
+msgstr ""
+
+msgid "$props.telegram.appearance.menu_entries_amount:name"
+msgstr "Кол-во элементов на странице"
+
+msgid "$props.telegram.appearance.menu_entries_amount:description"
+msgstr ""
+
+msgid "$props.auto_delivery:name"
 msgstr "Настройки автовыдачи"
 
-msgid "telegram_settings_pname"
-msgstr "Настройки Telegram бота"
+msgid "$props.auto_delivery:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.auto_delivery:name"
+msgstr "Автовыдача"
+
+msgid "$props.auto_delivery.*.auto_delivery:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.multi_delivery:name"
+msgstr "Мультивыдача"
+
+msgid "$props.auto_delivery.*.multi_delivery:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.products_file:name"
+msgstr "Товарный файл"
+
+msgid "$props.auto_delivery.*.products_file:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.delivery_text:name"
+msgstr "Текст выдачи"
+
+msgid "$props.auto_delivery.*.delivery_text:description"
+msgstr ""

@@ -38,6 +38,8 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
         value: CallableValue[int] | _UNSET_TYPE = _UNSET,
         validator: Callable[[int], Any] | _UNSET_TYPE = _UNSET,
     ) -> None:
+        self._choices: tuple[Union[T, Item[T]], ...] = choices
+
         super().__init__(
             properties=properties,
             id=id,
@@ -48,8 +50,6 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
             validator=self._validator_factory(validator),
             converter=int
         )
-
-        self._choices: tuple[Union[T, Item[T]], ...] = choices
 
     @property
     def choices(self) -> tuple[Union[T, Item[T]], ...]:
@@ -66,7 +66,7 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
         validator: Callable[[int], Any] | _UNSET_TYPE
     ) -> Callable[[int], None]:
         def real_validator(value: int) -> None:
-            if (len(self._choices) - 1) > value:
+            if value > len(self.choices) - 1:
                 raise ValueError('Index out of range!')  # todo: validation text
             if not isinstance(validator, _UNSET_TYPE):
                 validator(value)

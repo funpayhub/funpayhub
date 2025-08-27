@@ -8,6 +8,7 @@ from funpayhub.properties import Parameter, MutableParameter, Properties, Toggle
 import math
 
 from ..app import callbacks as cbs
+from funpayhub.translater import Translater
 
 
 class PropertiesMenu:
@@ -15,7 +16,7 @@ class PropertiesMenu:
         self.properties = properties
         self.max_entries_on_page = max_entries_on_page
 
-    def build_menu(self, page_index: int) -> InlineKeyboardMarkup:
+    def build_menu(self, page_index: int, tr: Translater, lang: str) -> InlineKeyboardMarkup:
         start_point = page_index * self.max_entries_on_page
         end_point = start_point + self.max_entries_on_page
 
@@ -25,32 +26,32 @@ class PropertiesMenu:
         for id, obj in entries:
             if isinstance(obj, Properties):
                 builder.row(InlineKeyboardButton(
-                    text=obj.name,
+                    text=tr.translate(obj.name, lang),
                     callback_data=cbs.OpenProperties(path=obj.path).pack()
                 ))
 
             elif isinstance(obj, ToggleParameter):
                 builder.row(InlineKeyboardButton(
-                    text=f'{"🟢" if obj.value else "🔴"} {obj.name}',
+                    text=f'{"🟢" if obj.value else "🔴"} {tr.translate(obj.name, lang)}',
                     callback_data=cbs.ToggleParameter(path=obj.path, opened_props_page=page_index).pack()
                 ))
 
             elif isinstance(obj, ChoiceParameter):
                 builder.row(InlineKeyboardButton(
-                    text=f'{obj.name}',
+                    text=f'{tr.translate(obj.name, lang)}',
                     callback_data=cbs.OpenProperties(path=obj.path).pack()
                 ))
 
             elif isinstance(obj, StringParameter | IntParameter | FloatParameter):
                 builder.row(InlineKeyboardButton(
-                    text=f'{obj.name}',
+                    text=f'{tr.translate(obj.name, lang)}',
                     callback_data=cbs.ChangeParameter(path=obj.path, opened_props_page=page_index).pack()
                 ))
 
-        self.build_footer(builder, page_index)
+        self.build_footer(builder, page_index, tr, lang)
         return builder.as_markup()
 
-    def build_footer(self, builder: InlineKeyboardBuilder, page_index: int) -> None:
+    def build_footer(self, builder: InlineKeyboardBuilder, page_index: int, tr: Translater, lang) -> None:
         total = len(self.properties.entries)
         pages_amount = math.ceil(total / self.max_entries_on_page)
 
@@ -88,7 +89,7 @@ class PropertiesMenu:
         if self.properties.parent:
             builder.row(
                 InlineKeyboardButton(
-                    text='◀️ ' + self.properties.parent.name,
+                    text='◀️ ' + tr.translate(self.properties.parent.name, lang),
                     callback_data = cbs.OpenProperties(path=self.properties.parent.path, page=0).pack()
                 )
             )
