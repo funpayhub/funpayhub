@@ -6,7 +6,7 @@ from ..app.callbacks import Dummy
 from copy import copy
 
 if TYPE_CHECKING:
-    from funpayhub.properties import Properties
+    from funpayhub.lib.properties import Properties
     from aiogram.filters.callback_data import CallbackData
 
 

@@ -5,7 +5,7 @@ __all__ = ['Properties',]
 
 import os
 import tomllib
-from typing import Any, TypeVar, overload, TypeAlias
+from typing import Any, TypeVar, TypeAlias
 from collections.abc import Generator
 
 import tomli_w
