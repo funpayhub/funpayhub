@@ -69,7 +69,7 @@ async def toggle_parameter(query: CallbackQuery, hub_properties: FunPayHubProper
 
     param.toggle(save=True)
 
-    menu = PropertiesMenu(param.properties).build_menu(page_index=unpacked.opened_props_page, tr=tr, lang=hub_properties.general.language.real_value())
+    menu = PropertiesMenu(param.properties).build_menu(page_index=unpacked.page, tr=tr, lang=hub_properties.general.language.real_value())
     await query.message.edit_text(param.properties.description, reply_markup=menu)
 
 
@@ -85,7 +85,7 @@ async def change_parameter_value(query: CallbackQuery, hub_properties: FunPayHub
     state = dispatcher.fsm.get_context(bot, chat_id=query.message.chat.id, user_id=query.from_user.id, thread_id=query.message.message_thread_id)
     await state.clear()
     await state.set_state('edit_parameter')
-    await state.set_data({'path': unpacked.path, 'page': unpacked.opened_props_page})
+    await state.set_data({'path': unpacked.path, 'page': unpacked.page})
 
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text='Отмена', callback_data=cbs.Clear().pack())]
@@ -102,9 +102,9 @@ async def change_parameter_value(query: CallbackQuery, hub_properties: FunPayHub
     await query.answer()
 
 
-@r.callback_query(cbs.OpenParameterChoice.filter())
+@r.callback_query(cbs.OpenChoiceParameter.filter())
 async def open_parameter_choice(query: CallbackQuery, hub_properties: FunPayHubProperties):
-    unpacked = cbs.OpenParameterChoice.unpack(query.data)
+    unpacked = cbs.OpenChoiceParameter.unpack(query.data)
 
     try:
         param: ChoiceParameter = hub_properties.get_parameter(unpacked.path)

@@ -13,17 +13,17 @@ class OpenProperties(CallbackData, prefix='o'):
 
 class ToggleParameter(CallbackData, prefix='t'):
     path: str
-    opened_props_page: int
+    page: int
 
 
 class ChangeParameter(CallbackData, prefix='c'):
     path: str
-    opened_props_page: int
-
-
-class OpenParameterChoice(CallbackData, prefix='s'):
-    path: str
     page: int
+
+
+class OpenChoiceParameter(CallbackData, prefix='s'):
+    path: str
+    page: int = 0
 
 
 class SelectParameterValue(CallbackData, prefix='s'):

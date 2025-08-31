@@ -1,6 +1,10 @@
 import gettext
 from collections import defaultdict
 from pathlib import Path
+import re
+
+
+TRANSLATION_RE = re.compile(r'(?<!\$)\$\S+')
 
 
 class Translater:
@@ -31,3 +35,11 @@ class Translater:
                 return result
 
         return key
+
+    def translate_text(self, text: str, language: str) -> str:
+        text = text.replace('$$', '__ESCAPED_DOLLAR__')
+        text = TRANSLATION_RE.sub(
+            lambda m: self.translate(m.group(0), language),
+            text
+        )
+        return text.replace('__ESCAPED_DOLLAR__', '$')
