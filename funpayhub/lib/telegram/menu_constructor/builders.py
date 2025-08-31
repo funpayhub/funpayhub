@@ -1,15 +1,12 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-import funpayhub.telegram.app.callbacks as cbs
+import funpayhub.lib.telegram.callbacks as cbs
 from copy import copy
 import math
 from typing import TypeVar, Any, Protocol
-
-if TYPE_CHECKING:
-    from funpayhub.lib.properties import Properties, ToggleParameter, ChoiceParameter, MutableParameter
+from funpayhub.lib.properties import Properties, ToggleParameter, ChoiceParameter, MutableParameter
 
 
 T = TypeVar("T", bound=Any)
@@ -22,7 +19,7 @@ class HasPageField(Protocol):
 
 
 def props_message_builder(props: Properties, page_index: int, elements_on_page: int) -> str:
-    return f'<b><u>{props.name}</b></u>\n\n<i>{props.description}</i>'
+    return f'<b><u>{props.name}</u></b>\n\n<i>{props.description}</i>'
 
 
 def props_menu_builder(props: Properties, page_index: int, elements_on_page: int) -> InlineKeyboardMarkup:

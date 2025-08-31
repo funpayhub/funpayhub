@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.properties import Properties, StringParameter, ToggleParameter
+from funpayhub.lib.properties import Properties, StringParameter, ToggleParameter
 from typing import Any, TypeVar
 from .auto_delivery_properties import AutoDeliveryProperties
 from .telegram_properties import TelegramProperties
@@ -80,7 +80,7 @@ class FunPayHubProperties(Properties):
         super().__init__(
             id='props',
             name='$props:name',
-            description='$props.description',
+            description='$props:description',
             file='config/funpayhub.toml',
         )
 

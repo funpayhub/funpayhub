@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 
 
-TRANSLATION_RE = re.compile(r'(?<!\$)\$\S+')
+TRANSLATION_RE = re.compile(r'(?<!\$)\$[a-zA-Z0-9._\-:]+')
 
 
 class Translater:

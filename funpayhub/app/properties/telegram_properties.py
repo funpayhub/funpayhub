@@ -3,7 +3,7 @@ from __future__ import annotations
 __all__ = ['TelegramProperties',]
 
 
-from funpayhub.properties import Properties, ToggleParameter, StringParameter, IntParameter
+from funpayhub.lib.properties import Properties, ToggleParameter, StringParameter, IntParameter
 
 
 class TelegramProperties(Properties):

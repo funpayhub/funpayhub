@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import NoReturn, Any
 
-from funpayhub.properties import Properties, ToggleParameter, StringParameter
-from funpayhub.properties.base import Entry
+from funpayhub.lib.properties import Properties, ToggleParameter, StringParameter
+from funpayhub.lib.properties.base import Entry
 import os
 from types import MappingProxyType
 import tomllib

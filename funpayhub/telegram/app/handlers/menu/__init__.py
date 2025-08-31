@@ -6,24 +6,31 @@ from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKe
 
 from typing import TYPE_CHECKING
 
-from funpayhub.properties import ToggleParameter, MutableParameter, ChoiceParameter
-from funpayhub.telegram.menu_constructor import PropertiesMenu
-from funpayhub.telegram.app import callbacks as cbs
-
-
+from funpayhub.lib.properties import ToggleParameter, MutableParameter, ChoiceParameter
+from funpayhub.lib.telegram.menu_constructor.renderer import TelegramPropertiesMenuRenderer
+import funpayhub.lib.telegram.callbacks as cbs
 
 if TYPE_CHECKING:
     from funpayhub.app.properties.properties import FunPayHubProperties
-    from funpayhub.translater import Translater
 
 
 r = Router()
 
 
 @r.message(Command('start'))
-async def send_menu(message: Message, hub_properties: FunPayHubProperties, tr: Translater) -> None:
-    menu = PropertiesMenu(hub_properties).build_menu(page_index=0, tr=tr, lang=hub_properties.general.language.real_value())
-    await message.answer(text=hub_properties.description, reply_markup=menu)
+async def send_menu(message: Message, hub_properties: FunPayHubProperties, menu_renderer: TelegramPropertiesMenuRenderer) -> None:
+    text, keyboard = menu_renderer.build_properties_menu(
+        props=hub_properties,
+        page_index=0,
+        max_elements_on_page=hub_properties.telegram.appearance.menu_entries_amount.value,
+        language=hub_properties.general.language.value,
+    )
+
+    print(keyboard.inline_keyboard)
+    await message.answer(
+        text=text,
+        reply_markup=keyboard,
+    )
 
 
 @r.callback_query(cbs.Dummy.filter())

@@ -3,8 +3,8 @@ from __future__ import annotations
 __all__ = ['GeneralProperties',]
 
 
-from funpayhub.properties import Properties, ChoiceParameter
-from funpayhub.properties.parameter.choice_parameter import Item
+from funpayhub.lib.properties import Properties, ChoiceParameter
+from funpayhub.lib.properties.parameter.choice_parameter import Item
 
 
 class GeneralProperties(Properties):

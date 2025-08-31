@@ -1,6 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypedDict, Union, TypeAlias
-import re
+from typing import TYPE_CHECKING, Union, TypeAlias
 
 from .override import PropertiesMenuOverride
 from aiogram.types import InlineKeyboardMarkup
