@@ -23,6 +23,9 @@ class Item(Generic[T]):
     name: str
     value: T
 
+    def __str__(self) -> str:
+        return self.name
+
 
 
 class ChoiceParameter(MutableParameter[int], Generic[T]):

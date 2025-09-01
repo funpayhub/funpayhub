@@ -15,14 +15,16 @@ class GeneralProperties(Properties):
             description='$props.general:description'
         )
 
-        self.language = ChoiceParameter(
-            properties=self,
-            id='language',
-            name='$props.general.language:name',
-            description='$props.general.language:description',
-            choices=(
-                Item('$lang_russian', 'ru'),
-                Item('$lang_english', 'en')
-            ),
-            default_value=0,
+        self.language = self.attach_parameter(
+            ChoiceParameter(
+                properties=self,
+                id='language',
+                name='$props.general.language:name',
+                description='$props.general.language:description',
+                choices=(
+                    Item('Русский', 'ru'),
+                    Item('English', 'en')
+                ),
+                default_value=0,
+            )
         )
