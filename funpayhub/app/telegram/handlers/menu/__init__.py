@@ -27,10 +27,9 @@ async def send_menu(message: Message, hub_properties: FunPayHubProperties, menu_
         props=hub_properties,
         page_index=0,
         max_elements_on_page=hub_properties.telegram.appearance.menu_entries_amount.value,
-        language=hub_properties.general.language.value,
+        language=hub_properties.general.language.real_value(),
     )
 
-    print(keyboard.inline_keyboard)
     await message.answer(
         text=text,
         reply_markup=keyboard,
@@ -62,7 +61,7 @@ async def open_properties(query: CallbackQuery, hub_properties: FunPayHubPropert
         props=props,
         page_index=unpacked.page,
         max_elements_on_page=hub_properties.telegram.appearance.menu_entries_amount.value,
-        language=hub_properties.general.language.value,
+        language=hub_properties.general.language.real_value(),
     )
     await query.message.edit_text(
         text=text,
@@ -85,7 +84,7 @@ async def toggle_parameter(query: CallbackQuery, hub_properties: FunPayHubProper
         props=param.parent,
         page_index=unpacked.page,
         max_elements_on_page=hub_properties.telegram.appearance.menu_entries_amount.value,
-        language=hub_properties.general.language.value,
+        language=hub_properties.general.language.real_value(),
     )
 
     await query.message.edit_text(text, reply_markup=keyboard)
@@ -140,33 +139,56 @@ async def open_parameter_choice(query: CallbackQuery, hub_properties: FunPayHubP
     end_point = start_point + hub_properties.telegram.appearance.menu_entries_amount.value
     entries = param.choices[start_point:end_point]
 
-    for i in entries:
+    for index, i in enumerate(entries):
+        text = f'🔘 {str(i)}' if start_point + index == param.value else str(i)
         markup.inline_keyboard.append([
             InlineKeyboardButton(
-                text=tr.translate_text(str(i), hub_properties.general.language.value),
-                callback_data=cbs.SelectParameterValue(path=unpacked.path, page=unpacked.page).pack()
+                text=tr.translate_text(text, hub_properties.general.language.real_value()),
+                callback_data=cbs.SelectParameterValue(path=unpacked.path, page=unpacked.page, index=start_point+index).pack()
             )
         ])
 
-    markup.inline_keyboard.append(
-        *footer_builder(
+    footer = footer_builder(
             page_index=unpacked.page,
             pages_amount=math.ceil(len(param.choices) / hub_properties.telegram.appearance.menu_entries_amount.value),
             page_callback=cbs.OpenChoiceParameter(path=unpacked.path)
-        ).inline_keyboard,
-    )
+        ).inline_keyboard
+
+    if footer:
+        markup.inline_keyboard.append(
+            *footer,
+        )
 
     markup.inline_keyboard.append([
         InlineKeyboardButton(text=f'◀️  {param.parent.name}', callback_data=cbs.OpenProperties(path=param.parent.path).pack())
     ])
 
-    menu_renderer.process_keyboard(markup, hub_properties.general.language.value)
+    menu_renderer.process_keyboard(markup, hub_properties.general.language.real_value())
 
     await query.message.edit_text(
-        text=tr.translate_text(f'<b><u>{param.name}</u></b>\n\n<i>{param.description}</i>',  hub_properties.general.language.value),
+        text=tr.translate_text(f'<b><u>{param.name}</u></b>\n\n<i>{param.description}</i>',  hub_properties.general.language.real_value()),
         reply_markup=markup
     )
 
+
+@r.callback_query(cbs.SelectParameterValue.filter())
+async def select_parameter_value(query: CallbackQuery, hub_properties: FunPayHubProperties, menu_renderer: TelegramPropertiesMenuRenderer, tr: Translater):
+    unpacked = cbs.SelectParameterValue.unpack(query.data)
+    try:
+        param: ChoiceParameter = hub_properties.get_parameter(unpacked.path)
+        ...
+    except LookupError:
+        await query.answer(f'Не удалось найти параметр по пути {unpacked.path}.', show_alert=True)
+        return
+
+    param.set_value(value=unpacked.index)
+
+    await open_parameter_choice(
+        query=query.model_copy(update={'data': cbs.OpenChoiceParameter(path=param.path, page=unpacked.page).pack()}),
+        hub_properties=hub_properties,
+        menu_renderer=menu_renderer,
+        tr=tr
+    )
 
 @r.message(StateFilter('edit_parameter'))
 async def edit_parameter(message: Message, hub_properties: FunPayHubProperties, bot: Bot, dispatcher: Dispatcher, menu_renderer: TelegramPropertiesMenuRenderer) -> None:
@@ -200,7 +222,7 @@ async def edit_parameter(message: Message, hub_properties: FunPayHubProperties, 
         props=param.parent,
         page_index=data['page'],
         max_elements_on_page=hub_properties.telegram.appearance.menu_entries_amount.value,
-        language=hub_properties.general.language.value,
+        language=hub_properties.general.language.real_value(),
     )
 
     await bot.send_message(

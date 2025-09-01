@@ -1,0 +1,104 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: FunPayHub 1.0\n"
+"Report-Msgid-Bugs-To: qvvonk@gmail.com\n"
+"POT-Creation-Date: 2025-08-20 12:00+0000\n"
+"PO-Revision-Date: 2025-08-20 12:00+0000\n"
+"Last-Translator: Your Name <you@example.com>\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+# Properties
+msgid "$props:name"
+msgstr "Paramètres"
+
+msgid "$props:description"
+msgstr "Section racine des paramètres de FunPay Hub"
+
+msgid "$props.general:name"
+msgstr "Général"
+
+msgid "$props.general:description"
+msgstr ""
+
+msgid "$props.general.language:name"
+msgstr "Langue"
+
+msgid "$props.general.language:description"
+msgstr ""
+
+msgid "$props.telegram:name"
+msgstr "Paramètres du bot Telegram"
+
+msgid "$props.telegram:description"
+msgstr ""
+
+msgid "$props.telegram.general:name"
+msgstr "Général"
+
+msgid "$props.telegram.general:description"
+msgstr ""
+
+msgid "$props.telegram.general.token:name"
+msgstr "Token du bot"
+
+msgid "$props.telegram.general.token:description"
+msgstr ""
+
+msgid "$props.telegram.general.password:name"
+msgstr "Mot de passe du bot"
+
+msgid "$props.telegram.general.password:description"
+msgstr ""
+
+msgid "$props.telegram.appearance:name"
+msgstr "Apparence"
+
+msgid "$props.telegram.appearance:description"
+msgstr "Paramètres de l'apparence du bot Telegram."
+
+msgid "$props.telegram.appearance.show_emoji:name"
+msgstr "Afficher les emojis"
+
+msgid "$props.telegram.appearance.show_emoji:description"
+msgstr ""
+
+msgid "$props.telegram.appearance.menu_entries_amount:name"
+msgstr "Nombre d'éléments par page"
+
+msgid "$props.telegram.appearance.menu_entries_amount:description"
+msgstr ""
+
+msgid "$props.auto_delivery:name"
+msgstr "Paramètres de livraison automatique"
+
+msgid "$props.auto_delivery:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.auto_delivery:name"
+msgstr "Livraison automatique"
+
+msgid "$props.auto_delivery.*.auto_delivery:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.multi_delivery:name"
+msgstr "Livraison multiple"
+
+msgid "$props.auto_delivery.*.multi_delivery:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.products_file:name"
+msgstr "Fichier des produits"
+
+msgid "$props.auto_delivery.*.products_file:description"
+msgstr ""
+
+msgid "$props.auto_delivery.*.delivery_text:name"
+msgstr "Texte de livraison"
+
+msgid "$props.auto_delivery.*.delivery_text:description"
+msgstr ""

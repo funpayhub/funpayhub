@@ -26,11 +26,12 @@ class ChangeParameter(CallbackData, prefix='c'):
     page: int
 
 
-class OpenChoiceParameter(CallbackData, prefix='s'):
+class OpenChoiceParameter(CallbackData, prefix='open_choice_param'):
     path: str
     page: int = 0
 
 
-class SelectParameterValue(CallbackData, prefix='s'):
+class SelectParameterValue(CallbackData, prefix='select_param_val'):
     path: str
+    index: int
     page: int
