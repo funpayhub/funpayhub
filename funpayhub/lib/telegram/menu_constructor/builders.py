@@ -70,6 +70,9 @@ def footer_builder(
     pages_amount: int,
     page_callback: HasPageField
 ) -> InlineKeyboardMarkup:
+    if pages_amount < 2:
+        return InlineKeyboardMarkup(inline_keyboard=[])
+
     builder = InlineKeyboardBuilder()
     page_amount_btn = InlineKeyboardButton(
         text=f'{page_index + (1 if pages_amount else 0)}/{pages_amount}',

@@ -3,7 +3,12 @@ from aiogram.filters.callback_data import CallbackData
 
 class Dummy(CallbackData, prefix='dummy'): ...
 
+
 class Clear(CallbackData, prefix='clear'): ...
+
+
+class Hash(CallbackData, prefix='hash'):
+    hash: str
 
 
 class OpenProperties(CallbackData, prefix='o'):

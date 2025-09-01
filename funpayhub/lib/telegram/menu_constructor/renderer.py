@@ -3,19 +3,22 @@ from typing import TYPE_CHECKING, Union, TypeAlias
 
 from .override import PropertiesMenuOverride
 from aiogram.types import InlineKeyboardMarkup
+import funpayhub.lib.telegram.callbacks as cbs
 
 if TYPE_CHECKING:
     from funpayhub.lib.properties import Properties
     from funpayhub.lib.translater import Translater
+    from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 
 
 _ModifiersDict: TypeAlias = dict[str, Union[PropertiesMenuOverride, '_ModifiersDict']]
 
 
 class TelegramPropertiesMenuRenderer:
-    def __init__(self, translater: Translater) -> None:
+    def __init__(self, translater: Translater, hashinater: HashinatorT1000) -> None:
         self._overrides: PropsMenuOverridesDict = PropsMenuOverridesDict()
         self._tr = translater
+        self._hashinater = hashinater
 
     def build_properties_menu(self, props: Properties, page_index: int, max_elements_on_page: int, language: str) -> tuple[str, InlineKeyboardMarkup]:
         override = self._overrides[props.path]
@@ -31,14 +34,15 @@ class TelegramPropertiesMenuRenderer:
             *footer.inline_keyboard,
         ])
 
-        self.translate_keyboard(total, language)
+        self.process_keyboard(total, language)
 
         return self._tr.translate_text(text, language), total
 
-    def translate_keyboard(self, kb: InlineKeyboardMarkup, language: str) -> None:
+    def process_keyboard(self, kb: InlineKeyboardMarkup, language: str) -> None:
         for _ in kb.inline_keyboard:
             for btn in _:
-                btn.text = self._tr.translate(btn.text, language)
+                btn.text = self._tr.translate_text(btn.text, language)
+                btn.callback_data = cbs.Hash(hash=self._hashinater.hash(btn.callback_data)).pack()
 
 
 class PropsMenuOverridesDict:

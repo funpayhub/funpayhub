@@ -160,7 +160,7 @@ async def open_parameter_choice(query: CallbackQuery, hub_properties: FunPayHubP
         InlineKeyboardButton(text=f'◀️  {param.parent.name}', callback_data=cbs.OpenProperties(path=param.parent.path).pack())
     ])
 
-    menu_renderer.translate_keyboard(markup, hub_properties.general.language.value)
+    menu_renderer.process_keyboard(markup, hub_properties.general.language.value)
 
     await query.message.edit_text(
         text=tr.translate_text(f'<b><u>{param.name}</u></b>\n\n<i>{param.description}</i>',  hub_properties.general.language.value),
