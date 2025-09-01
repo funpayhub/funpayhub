@@ -140,7 +140,7 @@ async def open_parameter_choice(query: CallbackQuery, hub_properties: FunPayHubP
     entries = param.choices[start_point:end_point]
 
     for index, i in enumerate(entries):
-        text = f'🔘 {str(i)}' if start_point + index == param.value else str(i)
+        text = f'⮞⮞ {str(i)} ⮜⮜' if start_point + index == param.value else str(i)
         markup.inline_keyboard.append([
             InlineKeyboardButton(
                 text=tr.translate_text(text, hub_properties.general.language.real_value()),
@@ -155,8 +155,8 @@ async def open_parameter_choice(query: CallbackQuery, hub_properties: FunPayHubP
         ).inline_keyboard
 
     if footer:
-        markup.inline_keyboard.append(
-            *footer,
+        markup.inline_keyboard.extend(
+            footer,
         )
 
     markup.inline_keyboard.append([
@@ -189,6 +189,7 @@ async def select_parameter_value(query: CallbackQuery, hub_properties: FunPayHub
         menu_renderer=menu_renderer,
         tr=tr
     )
+
 
 @r.message(StateFilter('edit_parameter'))
 async def edit_parameter(message: Message, hub_properties: FunPayHubProperties, bot: Bot, dispatcher: Dispatcher, menu_renderer: TelegramPropertiesMenuRenderer) -> None:

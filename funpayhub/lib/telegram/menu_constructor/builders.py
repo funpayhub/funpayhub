@@ -93,7 +93,7 @@ def footer_builder(
         callback_data=cbs.Dummy().pack() if not page_index else _set(
             copy(page_callback),
             'page',
-            page_index-1
+            page_index - 1
         ).pack()
     )
 
@@ -102,7 +102,7 @@ def footer_builder(
         callback_data=cbs.Dummy().pack() if page_index == (pages_amount - 1) else _set(
             copy(page_callback),
             'page',
-            pages_amount-1
+            pages_amount - 1
         ).pack()
 
     )
@@ -112,13 +112,55 @@ def footer_builder(
         callback_data=cbs.Dummy().pack() if page_index == (pages_amount - 1) else _set(
             copy(page_callback),
             'page',
-            page_index+1
+            page_index + 1
         ).pack()
     )
 
     builder.row(to_first_btn, back_btn, page_amount_btn, next_btn, to_last_btn)
 
+    pages_btns = _build_pages_buttons(pages_amount, page_callback)
+    if pages_btns.inline_keyboard:
+        builder.row(*pages_btns.inline_keyboard[0])
+
     return builder.as_markup()
+
+
+def _build_pages_buttons(
+    pages_amount: int,
+    page_callback: HasPageField
+) -> InlineKeyboardMarkup:
+    max_buttons = 8
+    buttons = InlineKeyboardBuilder()
+
+    if pages_amount <= 1:
+        return buttons.as_markup()
+
+    if pages_amount <= max_buttons:
+        for i in range(1, pages_amount - 1):
+            buttons.add(
+                InlineKeyboardButton(
+                    text=f'{i+1}',
+                    callback_data=_set(copy(page_callback), 'page', i).pack()
+                )
+            )
+        return buttons.as_markup()
+
+    # Количество промежуточных кнопок (не считаем первую и последнюю)
+    intermediate_count = max_buttons
+
+    step = (pages_amount - 2) / intermediate_count
+    for i in range(1, intermediate_count + 1):
+        page = round(i * step)
+        page = min(page, pages_amount - 2)
+        buttons.add(
+            InlineKeyboardButton(
+                text=f'{page+1}',
+                callback_data=_set(copy(page_callback), 'page', page).pack()
+            )
+        )
+
+    return buttons.as_markup()
+
 
 
 def props_footer_builder(props: Properties, page_index: int, elements_on_page_amount: int) -> InlineKeyboardMarkup:

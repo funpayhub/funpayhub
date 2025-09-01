@@ -35,3 +35,7 @@ class SelectParameterValue(CallbackData, prefix='select_param_val'):
     path: str
     index: int
     page: int
+
+
+class SelectPage(CallbackData, prefix='select_page'):
+    query: str
