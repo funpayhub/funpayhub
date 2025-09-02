@@ -76,7 +76,7 @@ def footer_builder(
     builder = InlineKeyboardBuilder()
     page_amount_btn = InlineKeyboardButton(
         text=f'{page_index + (1 if pages_amount else 0)}/{pages_amount}',
-        callback_data=cbs.Dummy().pack()
+        callback_data=cbs.SelectPage(query=page_callback.pack()).pack()
     )
 
     to_first_btn = InlineKeyboardButton(
@@ -118,9 +118,9 @@ def footer_builder(
 
     builder.row(to_first_btn, back_btn, page_amount_btn, next_btn, to_last_btn)
 
-    pages_btns = _build_pages_buttons(pages_amount, page_callback)
-    if pages_btns.inline_keyboard:
-        builder.row(*pages_btns.inline_keyboard[0])
+    # pages_btns = _build_pages_buttons(pages_amount, page_callback)
+    # if pages_btns.inline_keyboard:
+    #     builder.row(*pages_btns.inline_keyboard[0])
 
     return builder.as_markup()
 

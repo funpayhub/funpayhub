@@ -140,7 +140,7 @@ async def open_parameter_choice(query: CallbackQuery, hub_properties: FunPayHubP
     entries = param.choices[start_point:end_point]
 
     for index, i in enumerate(entries):
-        text = f'⮞⮞ {str(i)} ⮜⮜' if start_point + index == param.value else str(i)
+        text = f'【 {str(i)} 】' if start_point + index == param.value else str(i)
         markup.inline_keyboard.append([
             InlineKeyboardButton(
                 text=tr.translate_text(text, hub_properties.general.language.real_value()),
@@ -189,6 +189,59 @@ async def select_parameter_value(query: CallbackQuery, hub_properties: FunPayHub
         menu_renderer=menu_renderer,
         tr=tr
     )
+
+
+@r.callback_query(cbs.SelectPage.filter())
+async def change_parameter_value(query: CallbackQuery, bot: Bot, dispatcher: Dispatcher) -> None:
+    unpacked = cbs.SelectPage.unpack(query.data)
+
+    state = dispatcher.fsm.get_context(bot, chat_id=query.message.chat.id, user_id=query.from_user.id, thread_id=query.message.message_thread_id)
+    await state.clear()
+
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='Отмена', callback_data=cbs.Clear().pack())]
+    ])
+    msg = await bot.send_message(
+        chat_id=query.message.chat.id,
+        message_thread_id=query.message.message_thread_id,
+        text=f'Введите номер страницы:',
+        reply_markup=kb
+    )
+
+    await state.set_state('select_page')
+    await state.set_data({'query': unpacked.query, 'menu_msg': query.message, 'msg': msg, 'callback_query': query})
+    await query.answer()
+
+
+@r.message(StateFilter('select_page'))
+async def update_page(message: Message, dispatcher: Dispatcher, bot: Bot):
+    import re
+    from aiogram.types import Update
+    if not message.text.isnumeric():
+        return
+
+    state = dispatcher.fsm.get_context(bot, chat_id=message.chat.id,
+                                       user_id=message.from_user.id,
+                                       thread_id=message.message_thread_id)
+    data = await state.get_data()
+
+    query = data['query']
+    callback_query: CallbackQuery = data['callback_query']
+    new_query = re.sub(r'page-\d+', f'page-{int(message.text) - 1}', query)
+
+    event = callback_query.model_copy(update={'data': new_query})
+    message_to_delete: Message = data['msg']
+
+    await state.clear()
+
+    await bot.delete_message(chat_id=message_to_delete.chat.id, message_id=message_to_delete.message_id)
+
+    try:
+        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+    except:
+        pass
+
+    await dispatcher.feed_update(bot=bot, update=Update(update_id=0, callback_query=event))
 
 
 @r.message(StateFilter('edit_parameter'))

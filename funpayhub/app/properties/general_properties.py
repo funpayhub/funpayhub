@@ -24,6 +24,8 @@ class GeneralProperties(Properties):
                 choices=(
                     Item('🇷🇺 Русский', 'ru'),
                     Item('🇬🇧 English', 'en'),
+                    Item('🇺🇦 Українська', 'uk'),
+                    Item('🍌 Bacunana', 'banana'),
                     Item('🇪🇸 Español', 'es'),
                     Item('🇫🇷 Français', 'fr'),
                     Item('🇩🇪 Deutsch', 'de'),

@@ -133,7 +133,8 @@ class Properties(Entry):
         if not self._file:
             if not self.parent:
                 raise RuntimeError('Unable to save')
-            return self.parent.save(same_file_only=True)
+            self.parent.save(same_file_only=True)
+            return
 
         if not os.path.exists(self._file):
             os.makedirs(os.path.dirname(self._file), exist_ok=True)

@@ -1,4 +1,19 @@
 from aiogram.filters.callback_data import CallbackData
+from pydantic import BaseModel, field_serializer, field_validator
+
+
+class Pagable(BaseModel):
+    page: int = 0
+
+    @field_validator("page", mode="before")
+    def parse_page(cls, v: str | int):
+        if isinstance(v, str) and v.startswith("page-"):
+            return int(v.split("-", 1)[1])
+        return v
+
+    @field_serializer("page")
+    def serialize_page(self, v: int):
+        return f"page-{v}"
 
 
 class Dummy(CallbackData, prefix='dummy'): ...
@@ -11,31 +26,26 @@ class Hash(CallbackData, prefix='hash'):
     hash: str
 
 
-class OpenProperties(CallbackData, prefix='o'):
+class OpenProperties(CallbackData, Pagable, prefix='o'):
     path: str
-    page: int = 0
 
 
-class ToggleParameter(CallbackData, prefix='t'):
+class ToggleParameter(CallbackData, Pagable, prefix='t'):
     path: str
-    page: int
 
 
-class ChangeParameter(CallbackData, prefix='c'):
+class ChangeParameter(CallbackData, Pagable, prefix='c'):
     path: str
-    page: int
 
 
-class OpenChoiceParameter(CallbackData, prefix='open_choice_param'):
+class OpenChoiceParameter(CallbackData, Pagable, prefix='open_choice_param'):
     path: str
-    page: int = 0
 
 
-class SelectParameterValue(CallbackData, prefix='select_param_val'):
+class SelectParameterValue(CallbackData, Pagable, prefix='select_param_val'):
     path: str
     index: int
-    page: int
 
 
-class SelectPage(CallbackData, prefix='select_page'):
+class SelectPage(CallbackData, prefix='select_page', sep='|'):
     query: str
