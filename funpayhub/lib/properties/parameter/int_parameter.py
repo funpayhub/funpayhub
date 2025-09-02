@@ -30,5 +30,11 @@ class IntParameter(MutableParameter[int]):
             default_value=default_value,
             value=value,
             validator=validator,
-            converter=int,
+            converter=int_convertor,
         )
+
+def int_convertor(val: str):
+    try:
+        return int(val)
+    except:
+        raise ValueError('Значение должно быть валидным числом.')

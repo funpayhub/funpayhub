@@ -102,3 +102,12 @@ msgstr "Текст выдачи"
 
 msgid "$props.auto_delivery.*.delivery_text:description"
 msgstr ""
+
+
+# Messages
+msgid "$enter_new_value_message"
+msgstr ""
+"Введите новое значение для <b>{parameter_name}</b>\n\n"
+"{parameter_description}\n\n"
+"Текущее значение:\n"
+"<b>{current_parameter_value}</b>"
