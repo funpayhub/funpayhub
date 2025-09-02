@@ -1,8 +1,12 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
+
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery
+
 from funpayhub.lib.telegram.callbacks import Hash
+
 
 if TYPE_CHECKING:
     from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000

@@ -1,19 +1,21 @@
+from __future__ import annotations
+
+from pydantic import BaseModel, field_validator, field_serializer
 from aiogram.filters.callback_data import CallbackData
-from pydantic import BaseModel, field_serializer, field_validator
 
 
 class Pagable(BaseModel):
     page: int = 0
 
-    @field_validator("page", mode="before")
+    @field_validator('page', mode='before')
     def parse_page(cls, v: str | int):
-        if isinstance(v, str) and v.startswith("page-"):
-            return int(v.split("-", 1)[1])
+        if isinstance(v, str) and v.startswith('page-'):
+            return int(v.split('-', 1)[1])
         return v
 
-    @field_serializer("page")
+    @field_serializer('page')
     def serialize_page(self, v: int):
-        return f"page-{v}"
+        return f'page-{v}'
 
 
 class Dummy(CallbackData, prefix='dummy'): ...

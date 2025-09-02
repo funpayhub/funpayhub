@@ -1,15 +1,21 @@
 from __future__ import annotations
 
+import math
+from typing import TYPE_CHECKING, Any, TypeVar, Protocol
+from copy import copy
+
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 import funpayhub.lib.telegram.callbacks as cbs
-from copy import copy
-import math
-from typing import TypeVar, Any, Protocol
-from funpayhub.lib.properties import Properties, ToggleParameter, ChoiceParameter, MutableParameter
+from funpayhub.lib.properties import Properties, ChoiceParameter, ToggleParameter, MutableParameter
 
 
-T = TypeVar("T", bound=Any)
+if TYPE_CHECKING:
+    from .types import PropertiesMenuRenderContext
+
+
+T = TypeVar('T', bound=Any)
 
 
 class HasPageField(Protocol):
@@ -18,45 +24,53 @@ class HasPageField(Protocol):
     def pack(self) -> str: ...
 
 
-def props_message_builder(props: Properties, page_index: int, elements_on_page: int) -> str:
-    return f'<b><u>{props.name}</u></b>\n\n<i>{props.description}</i>'
+def props_message_builder(ctx: PropertiesMenuRenderContext) -> str:
+    return f'<b><u>{ctx.properties.name}</u></b>\n\n<i>{ctx.properties.description}</i>'
 
 
-def props_menu_builder(props: Properties, page_index: int, elements_on_page: int) -> InlineKeyboardMarkup:
-    start_point = page_index * elements_on_page
-    end_point = start_point + elements_on_page
+def props_menu_builder(ctx: PropertiesMenuRenderContext) -> InlineKeyboardMarkup:
+    start_point = ctx.page_index * ctx.max_elements_on_page
+    end_point = start_point + ctx.max_elements_on_page
 
-    entries = list(props.entries.items())[start_point:end_point]
+    entries = list(ctx.properties.entries.items())[start_point:end_point]
 
     builder = InlineKeyboardBuilder()
     for id, obj in entries:
         if isinstance(obj, Properties):
-            builder.row(InlineKeyboardButton(
-                text=obj.name,
-                callback_data=cbs.OpenProperties(path=obj.path).pack()
-            ))
+            builder.row(
+                InlineKeyboardButton(
+                    text=obj.name,
+                    callback_data=cbs.OpenProperties(path=obj.path).pack(),
+                )
+            )
 
         elif isinstance(obj, ToggleParameter):
-            builder.row(InlineKeyboardButton(
-                text=f'{"🟢" if obj.value else "🔴"} {obj.name}',
-                callback_data=cbs.ToggleParameter(path=obj.path, page=page_index).pack()
-            ))
+            builder.row(
+                InlineKeyboardButton(
+                    text=f'{"🟢" if obj.value else "🔴"} {obj.name}',
+                    callback_data=cbs.ToggleParameter(path=obj.path, page=ctx.page_index).pack(),
+                )
+            )
 
         elif isinstance(obj, ChoiceParameter):
-            builder.row(InlineKeyboardButton(
-                text=f'{obj.name}',
-                callback_data=cbs.OpenChoiceParameter(path=obj.path).pack()
-            ))
+            builder.row(
+                InlineKeyboardButton(
+                    text=f'{obj.name}',
+                    callback_data=cbs.OpenChoiceParameter(path=obj.path).pack(),
+                )
+            )
 
         elif isinstance(obj, MutableParameter):
-            builder.row(InlineKeyboardButton(
-                text=f'{obj.name}',
-                callback_data=cbs.ChangeParameter(path=obj.path, page=page_index).pack()
-            ))
+            builder.row(
+                InlineKeyboardButton(
+                    text=f'{obj.name}',
+                    callback_data=cbs.ChangeParameter(path=obj.path, page=ctx.page_index).pack(),
+                )
+            )
     return builder.as_markup()
 
 
-def props_menu_header_builder(props: Properties, page_index: int, elements_on_page: int) -> InlineKeyboardMarkup:
+def props_menu_header_builder(ctx: PropertiesMenuRenderContext) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[])
 
 
@@ -68,7 +82,7 @@ def _set(obj: T, key: str, value: Any) -> T:
 def footer_builder(
     page_index: int,
     pages_amount: int,
-    page_callback: HasPageField
+    page_callback: HasPageField,
 ) -> InlineKeyboardMarkup:
     if pages_amount < 2:
         return InlineKeyboardMarkup(inline_keyboard=[])
@@ -76,108 +90,71 @@ def footer_builder(
     builder = InlineKeyboardBuilder()
     page_amount_btn = InlineKeyboardButton(
         text=f'{page_index + (1 if pages_amount else 0)}/{pages_amount}',
-        callback_data=cbs.SelectPage(query=page_callback.pack()).pack()
+        callback_data=cbs.SelectPage(query=page_callback.pack()).pack(),
     )
 
     to_first_btn = InlineKeyboardButton(
         text='⏮️',
-        callback_data=cbs.Dummy().pack() if not page_index else _set(
+        callback_data=cbs.Dummy().pack()
+        if not page_index
+        else _set(
             copy(page_callback),
             'page',
-            0
-        ).pack()
+            0,
+        ).pack(),
     )
 
     back_btn = InlineKeyboardButton(
         text='◀️',
-        callback_data=cbs.Dummy().pack() if not page_index else _set(
+        callback_data=cbs.Dummy().pack()
+        if not page_index
+        else _set(
             copy(page_callback),
             'page',
-            page_index - 1
-        ).pack()
+            page_index - 1,
+        ).pack(),
     )
 
     to_last_btn = InlineKeyboardButton(
         text='⏭️',
-        callback_data=cbs.Dummy().pack() if page_index == (pages_amount - 1) else _set(
+        callback_data=cbs.Dummy().pack()
+        if page_index == (pages_amount - 1)
+        else _set(
             copy(page_callback),
             'page',
-            pages_amount - 1
-        ).pack()
-
+            pages_amount - 1,
+        ).pack(),
     )
 
     next_btn = InlineKeyboardButton(
         text='▶️',
-        callback_data=cbs.Dummy().pack() if page_index == (pages_amount - 1) else _set(
+        callback_data=cbs.Dummy().pack()
+        if page_index == (pages_amount - 1)
+        else _set(
             copy(page_callback),
             'page',
-            page_index + 1
-        ).pack()
+            page_index + 1,
+        ).pack(),
     )
 
     builder.row(to_first_btn, back_btn, page_amount_btn, next_btn, to_last_btn)
-
-    # pages_btns = _build_pages_buttons(pages_amount, page_callback)
-    # if pages_btns.inline_keyboard:
-    #     builder.row(*pages_btns.inline_keyboard[0])
-
     return builder.as_markup()
 
 
-def _build_pages_buttons(
-    pages_amount: int,
-    page_callback: HasPageField
-) -> InlineKeyboardMarkup:
-    max_buttons = 8
-    buttons = InlineKeyboardBuilder()
-
-    if pages_amount <= 1:
-        return buttons.as_markup()
-
-    if pages_amount <= max_buttons:
-        for i in range(1, pages_amount - 1):
-            buttons.add(
-                InlineKeyboardButton(
-                    text=f'{i+1}',
-                    callback_data=_set(copy(page_callback), 'page', i).pack()
-                )
-            )
-        return buttons.as_markup()
-
-    # Количество промежуточных кнопок (не считаем первую и последнюю)
-    intermediate_count = max_buttons
-
-    step = (pages_amount - 2) / intermediate_count
-    for i in range(1, intermediate_count + 1):
-        page = round(i * step)
-        page = min(page, pages_amount - 2)
-        buttons.add(
-            InlineKeyboardButton(
-                text=f'{page+1}',
-                callback_data=_set(copy(page_callback), 'page', page).pack()
-            )
-        )
-
-    return buttons.as_markup()
-
-
-
-def props_footer_builder(props: Properties, page_index: int, elements_on_page_amount: int) -> InlineKeyboardMarkup:
-    entries_amount = len(props.entries)
+def props_footer_builder(ctx: PropertiesMenuRenderContext) -> InlineKeyboardMarkup:
+    entries_amount = len(ctx.properties.entries)
     footer = footer_builder(
-        page_index=page_index,
-        pages_amount=math.ceil(entries_amount / elements_on_page_amount),
-        page_callback=cbs.OpenProperties(path=props.path)
+        page_index=ctx.page_index,
+        pages_amount=math.ceil(entries_amount / ctx.max_elements_on_page),
+        page_callback=cbs.OpenProperties(path=ctx.properties.path),
     )
-    if props.parent:
-        p = props.parent
+    if ctx.properties.parent:
         footer.inline_keyboard.append(
             [
                 InlineKeyboardButton(
-                    text=f'◀️ {p.name}',
-                    callback_data=cbs.OpenProperties(path=p.path).pack()
-                )
-            ]
+                    text=f'◀️ {ctx.properties.parent.name}',
+                    callback_data=cbs.OpenProperties(path=ctx.properties.parent.path).pack(),
+                ),
+            ],
         )
     return footer

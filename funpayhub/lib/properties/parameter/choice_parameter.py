@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 
-__all__ = ['ChoiceParameter', 'Item',]
+__all__ = ['ChoiceParameter', 'Item']
 
 
-from typing import Any, TYPE_CHECKING, Generic, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar
+from dataclasses import dataclass
 from collections.abc import Callable
 
 from .base import _UNSET, _UNSET_TYPE, CallableValue, MutableParameter
-from dataclasses import dataclass
 
 
 if TYPE_CHECKING:
@@ -25,7 +25,6 @@ class Item(Generic[T]):
 
     def __str__(self) -> str:
         return self.name
-
 
 
 class ChoiceParameter(MutableParameter[int], Generic[T]):
@@ -51,7 +50,7 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
             default_value=default_value,
             value=value,
             validator=self._validator_factory(validator),
-            converter=int
+            converter=int,
         )
 
     @property
@@ -66,11 +65,12 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
 
     def _validator_factory(
         self,
-        validator: Callable[[int], Any] | _UNSET_TYPE
+        validator: Callable[[int], Any] | _UNSET_TYPE,
     ) -> Callable[[int], None]:
         def real_validator(value: int) -> None:
             if value > len(self.choices) - 1:
                 raise ValueError('Index out of range!')  # todo: validation text
             if not isinstance(validator, _UNSET_TYPE):
                 validator(value)
+
         return real_validator

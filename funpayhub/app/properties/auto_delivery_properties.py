@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import NoReturn, Any
-
-from funpayhub.lib.properties import Properties, ToggleParameter, StringParameter
-from funpayhub.lib.properties.base import Entry
 import os
-from types import MappingProxyType
 import tomllib
+from typing import Any, NoReturn
+from types import MappingProxyType
+
+from funpayhub.lib.properties import Properties, StringParameter, ToggleParameter
+from funpayhub.lib.properties.base import Entry
 
 
 class AutoDeliveryEntryProperties(Properties):
@@ -14,40 +14,48 @@ class AutoDeliveryEntryProperties(Properties):
         super().__init__(
             id=offer_name,
             name=offer_name,
-            description=f'Auto delivery options for {offer_name}'
+            description=f'Auto delivery options for {offer_name}',
         )
 
-        self.auto_delivery = self.attach_parameter(ToggleParameter(
-            properties=self,
-            id='auto_delivery',
-            name='$props.auto_delivery.*.auto_delivery:name',
-            description='$props.auto_delivery.*.auto_delivery:description',
-            default_value=True
-        ))
+        self.auto_delivery = self.attach_parameter(
+            ToggleParameter(
+                properties=self,
+                id='auto_delivery',
+                name='$props.auto_delivery.*.auto_delivery:name',
+                description='$props.auto_delivery.*.auto_delivery:description',
+                default_value=True,
+            )
+        )
 
-        self.multi_delivery = self.attach_parameter(ToggleParameter(
-            properties=self,
-            id='multi_delivery',
-            name='$props.auto_delivery.*.multi_delivery:name',
-            description='$props.auto_delivery.*.multi_delivery:description',
-            default_value=True
-        ))
+        self.multi_delivery = self.attach_parameter(
+            ToggleParameter(
+                properties=self,
+                id='multi_delivery',
+                name='$props.auto_delivery.*.multi_delivery:name',
+                description='$props.auto_delivery.*.multi_delivery:description',
+                default_value=True,
+            )
+        )
 
-        self.products_file = self.attach_parameter(StringParameter(
-            properties=self,
-            id='products_file',
-            name='$props.auto_delivery.*.products_file:name',
-            description='$props.auto_delivery.*.products_file:description',
-            default_value='',
-        ))
+        self.products_file = self.attach_parameter(
+            StringParameter(
+                properties=self,
+                id='products_file',
+                name='$props.auto_delivery.*.products_file:name',
+                description='$props.auto_delivery.*.products_file:description',
+                default_value='',
+            )
+        )
 
-        self.delivery_text = self.attach_parameter(StringParameter(
-            properties=self,
-            id='delivery_text',
-            name='$props.auto_delivery.*.delivery_text:name',
-            description='$props.auto_delivery.*.delivery_text:description',
-            default_value='Thank you for buying this staff!'
-        ))
+        self.delivery_text = self.attach_parameter(
+            StringParameter(
+                properties=self,
+                id='delivery_text',
+                name='$props.auto_delivery.*.delivery_text:name',
+                description='$props.auto_delivery.*.delivery_text:description',
+                default_value='Thank you for buying this staff!',
+            )
+        )
 
     @property
     def parent(self) -> AutoDeliveryProperties | None:
@@ -68,14 +76,13 @@ class AutoDeliveryEntryProperties(Properties):
         return self.parent.path + (f'.{id}' if self.parent.path else str(id))
 
 
-
 class AutoDeliveryProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='auto_delivery',
             name='$props.auto_delivery:name',
             description='$props.auto_delivery:description',
-            file='config/auto_delivery.toml'
+            file='config/auto_delivery.toml',
         )
 
     @property

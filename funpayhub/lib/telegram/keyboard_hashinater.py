@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hashlib
 
 
@@ -6,7 +8,7 @@ class HashinatorT1000:
         self.hashes: dict[str, str] = {}
 
     def _sha1(self, text: str) -> str:
-        return hashlib.sha1(text.encode("utf-8")).hexdigest()
+        return hashlib.sha1(text.encode('utf-8')).hexdigest()
 
     def hash(self, text: str) -> str:
         candidate = self._sha1(text)
@@ -14,10 +16,9 @@ class HashinatorT1000:
             if candidate not in self.hashes:
                 self.hashes[candidate] = text
                 return candidate
-            elif self.hashes[candidate] == text:
+            if self.hashes[candidate] == text:
                 return candidate
-            else:
-                candidate = self._sha1(candidate + ".")
+            candidate = self._sha1(candidate + '.')
 
     def unhash(self, hash: str) -> str | None:
         return self.hashes.get(hash, None)

@@ -40,7 +40,7 @@ class Parameter(Entry, ABC, Generic[ParamValueType]):
 
     @property
     def parent(self) -> Properties:
-        return super().parent # type: ignore  # always has a parent
+        return super().parent  # type: ignore  # always has a parent
 
     @property
     def properties(self) -> Properties:

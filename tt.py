@@ -1,5 +1,10 @@
-from funpayhub.lib.telegram.menu_constructor.renderer import PropsMenuOverridesDict
+from __future__ import annotations
+
 import json
+
+from funpayhub.lib.telegram.menu_constructor.renderer import PropsMenuOverridesDict
+
+
 a = PropsMenuOverridesDict()
 
 a['category1.*'] = 1

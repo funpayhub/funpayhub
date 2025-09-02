@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-__all__ = ['Properties',]
+
+__all__ = ['Properties']
 
 
 import os
 import tomllib
 from typing import Any, TypeVar, TypeAlias
+from types import MappingProxyType
 from collections.abc import Generator
 
 import tomli_w
 
 from .base import Entry, CallableValue
 from .parameter.base import Parameter, MutableParameter
-from types import MappingProxyType
 
 
 T = TypeVar('T', bound='Parameter[Any]')
@@ -42,7 +43,7 @@ class Properties(Entry):
             parent=parent,
             id=id,
             name=name,
-            description=description
+            description=description,
         )
 
     @property
@@ -79,7 +80,9 @@ class Properties(Entry):
         return self.file or (self.parent.file_to_save if self.parent else None)
 
     @property
-    def entries(self) -> MappingProxyType[str, Parameter[Any] | MutableParameter[Any] | Properties]:
+    def entries(
+        self,
+    ) -> MappingProxyType[str, Parameter[Any] | MutableParameter[Any] | Properties]:
         return MappingProxyType(self._entries)
 
     def attach_parameter(self, param: T) -> T:
@@ -175,7 +178,7 @@ class Properties(Entry):
         next_entry = self.entries.get(split[0])
         if isinstance(next_entry, Parameter):
             return next_entry
-        elif isinstance(next_entry, Properties):
+        if isinstance(next_entry, Properties):
             try:
                 return next_entry.get_entry('.'.join(split[1:]))
             except LookupError as e:

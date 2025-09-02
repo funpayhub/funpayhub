@@ -30,10 +30,10 @@ class Entry:
         id: str,
         name: CallableValue[str],
         description: CallableValue[str],
-        flags: set[Any] | None = None
+        flags: set[Any] | None = None,
     ) -> None:
         if '.' in id or id.isnumeric():
-            raise ValueError('Entry id must not contain \'.\' and must not be a number.')
+            raise ValueError("Entry id must not contain '.' and must not be a number.")
         self._parent = parent
         self._id = id
         self._name = name

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-__all__ = ['GeneralProperties',]
+
+__all__ = ['GeneralProperties']
 
 
 from funpayhub.lib.properties import Properties, ChoiceParameter
@@ -12,7 +13,7 @@ class GeneralProperties(Properties):
         super().__init__(
             id='general',
             name='$props.general:name',
-            description='$props.general:description'
+            description='$props.general:description',
         )
 
         self.language = self.attach_parameter(
@@ -78,5 +79,5 @@ class GeneralProperties(Properties):
                     Item('🇮🇩 Jawa', 'jv'),
                 ),
                 default_value=0,
-            )
+            ),
         )
