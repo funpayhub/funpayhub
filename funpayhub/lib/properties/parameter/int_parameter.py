@@ -37,4 +37,4 @@ def int_convertor(val: str):
     try:
         return int(val)
     except:
-        raise ValueError('Значение должно быть валидным числом.')
+        raise ValueError('$value_should_be_an_int')

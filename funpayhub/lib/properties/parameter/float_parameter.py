@@ -32,3 +32,10 @@ class FloatParameter(MutableParameter[float]):
             validator=validator,
             converter=float,
         )
+
+
+def float_convertor(val: str):
+    try:
+        return float(val)
+    except:
+        raise ValueError('$value_should_be_a_float')
