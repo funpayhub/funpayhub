@@ -51,3 +51,4 @@ class SelectParameterValue(CallbackData, Pagable, prefix='select_param_val'):
 
 class SelectPage(CallbackData, prefix='select_page', sep='|'):
     query: str
+    pages_amount: int

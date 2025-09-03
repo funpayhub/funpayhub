@@ -7,16 +7,15 @@ from aiogram.client.default import DefaultBotProperties
 
 from funpayhub.lib.translater import Translater
 from funpayhub.app.properties.properties import FunPayHubProperties
-from funpayhub.app.telegram.routers.properties_menu import router as properties_menu_r
 from funpayhub.app.telegram.middlewares.unhash import UnhashMiddleware
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
+from funpayhub.app.telegram.routers.properties_menu import router as properties_menu_r
 from funpayhub.lib.telegram.menu_constructor.renderer import TelegramPropertiesMenuRenderer
-from funpayhub.lib.telegram.menu_constructor.types import PropertiesMenuRenderContext
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
 bot = Bot(
-    token=os.environ['FUNPAYHUB_TELEGRAM_TOKEN'], default=DefaultBotProperties(parse_mode='HTML')
+    token=os.environ['FUNPAYHUB_TELEGRAM_TOKEN'],
+    default=DefaultBotProperties(parse_mode='HTML'),
 )
 
 props = FunPayHubProperties()
@@ -34,7 +33,7 @@ dp = Dispatcher(
         'translater': translater,
         'menu_renderer': renderer,
         'keyboard_hashinater': keyboard_hashinater,
-    }
+    },
 )
 
 print(properties_menu_r.name)

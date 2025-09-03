@@ -49,7 +49,7 @@ class TelegramPropertiesMenuRenderer:
                 *header.inline_keyboard,
                 *keyboard.inline_keyboard,
                 *footer.inline_keyboard,
-            ]
+            ],
         )
 
         self.process_keyboard(total, language)
@@ -61,7 +61,7 @@ class TelegramPropertiesMenuRenderer:
         param: ChoiceParameter,
         page_index: int,
         max_elements_on_page: int,
-        language: str
+        language: str,
     ) -> tuple[str, InlineKeyboardMarkup]:
         start_point = page_index * max_elements_on_page
         end_point = start_point + max_elements_on_page
@@ -76,10 +76,12 @@ class TelegramPropertiesMenuRenderer:
                     InlineKeyboardButton(
                         text=self._tr.translate_text(text, language=language),
                         callback_data=cbs.SelectParameterValue(
-                            path=param.path, page=page_index, index=start_point + index
+                            path=param.path,
+                            page=page_index,
+                            index=start_point + index,
                         ).pack(),
                     ),
-                ]
+                ],
             )
 
         footer = footer_builder(
@@ -96,7 +98,7 @@ class TelegramPropertiesMenuRenderer:
                     text=f'◀️  {param.parent.name}',
                     callback_data=cbs.OpenProperties(path=param.parent.path).pack(),
                 ),
-            ]
+            ],
         )
 
         text = f'<b><u>{param.name}</u></b>\n\n<i>{param.description}</i>'

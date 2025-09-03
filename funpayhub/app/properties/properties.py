@@ -27,7 +27,7 @@ class TogglesProperties(Properties):
                 name='$props.toggles.auto_delivery:name',
                 description='$props.toggles.auto_delivery:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.multi_delivery = self.attach_parameter(
@@ -37,7 +37,7 @@ class TogglesProperties(Properties):
                 name='$props.toggles.multi_delivery:name',
                 description='$props.toggles.multi_delivery:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.auto_response = self.attach_parameter(
@@ -47,7 +47,7 @@ class TogglesProperties(Properties):
                 name='$props.toggles.auto_response:name',
                 description='$props.toggles.auto_response:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.auto_raise = self.attach_parameter(
@@ -57,7 +57,7 @@ class TogglesProperties(Properties):
                 name='$props.toggles.auto_raise:name',
                 description='$props.toggles.auto_raise:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.auto_raise2 = self.attach_parameter(
@@ -67,7 +67,7 @@ class TogglesProperties(Properties):
                 name='Auto raise2',
                 description='Whether auto raise is enabled or not.',
                 default_value=True,
-            )
+            ),
         )
 
         self.auto_raise3 = self.attach_parameter(
@@ -77,7 +77,7 @@ class TogglesProperties(Properties):
                 name='Auto raise3',
                 description='Whether auto raise is enabled or not.',
                 default_value=True,
-            )
+            ),
         )
 
         self.auto_raise4 = self.attach_parameter(
@@ -87,7 +87,7 @@ class TogglesProperties(Properties):
                 name='Auto raise4',
                 description='Whether auto raise is enabled or not.',
                 default_value=True,
-            )
+            ),
         )
 
 

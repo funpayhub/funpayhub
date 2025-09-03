@@ -41,7 +41,7 @@ def props_menu_builder(ctx: PropertiesMenuRenderContext) -> InlineKeyboardMarkup
                 InlineKeyboardButton(
                     text=obj.name,
                     callback_data=cbs.OpenProperties(path=obj.path).pack(),
-                )
+                ),
             )
 
         elif isinstance(obj, ToggleParameter):
@@ -49,7 +49,7 @@ def props_menu_builder(ctx: PropertiesMenuRenderContext) -> InlineKeyboardMarkup
                 InlineKeyboardButton(
                     text=f'{"🟢" if obj.value else "🔴"} {obj.name}',
                     callback_data=cbs.ToggleParameter(path=obj.path, page=ctx.page_index).pack(),
-                )
+                ),
             )
 
         elif isinstance(obj, ChoiceParameter):
@@ -57,7 +57,7 @@ def props_menu_builder(ctx: PropertiesMenuRenderContext) -> InlineKeyboardMarkup
                 InlineKeyboardButton(
                     text=f'{obj.name}',
                     callback_data=cbs.OpenChoiceParameter(path=obj.path).pack(),
-                )
+                ),
             )
 
         elif isinstance(obj, MutableParameter):
@@ -65,7 +65,7 @@ def props_menu_builder(ctx: PropertiesMenuRenderContext) -> InlineKeyboardMarkup
                 InlineKeyboardButton(
                     text=f'{obj.name}',
                     callback_data=cbs.ChangeParameter(path=obj.path, page=ctx.page_index).pack(),
-                )
+                ),
             )
     return builder.as_markup()
 
@@ -90,7 +90,12 @@ def footer_builder(
     builder = InlineKeyboardBuilder()
     page_amount_btn = InlineKeyboardButton(
         text=f'{page_index + (1 if pages_amount else 0)}/{pages_amount}',
-        callback_data=cbs.SelectPage(query=page_callback.pack()).pack(),
+        callback_data=cbs.SelectPage(
+            query=page_callback.pack(),
+            pages_amount=pages_amount,
+        ).pack()
+        if pages_amount > 1
+        else cbs.Dummy().pack(),
     )
 
     to_first_btn = InlineKeyboardButton(

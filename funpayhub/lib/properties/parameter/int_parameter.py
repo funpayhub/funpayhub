@@ -33,6 +33,7 @@ class IntParameter(MutableParameter[int]):
             converter=int_convertor,
         )
 
+
 def int_convertor(val: str):
     try:
         return int(val)

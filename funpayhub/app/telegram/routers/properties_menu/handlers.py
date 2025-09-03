@@ -1,22 +1,41 @@
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
+from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
-from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.properties import ChoiceParameter, ToggleParameter, MutableParameter
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.menu_constructor.renderer import TelegramPropertiesMenuRenderer
-from .router import router as r
-from funpayhub.lib.telegram.states import ChangingParameterValueState
+from funpayhub.lib.telegram.states import ChangingPage, ChangingParameterValueState
 from funpayhub.lib.telegram.keyboards import clear_state_keyboard
+from funpayhub.lib.telegram.menu_constructor.renderer import TelegramPropertiesMenuRenderer
+
+from .router import router as r
+
 
 if TYPE_CHECKING:
-    from funpayhub.app.properties.properties import FunPayHubProperties
     from funpayhub.lib.properties import Properties
+    from funpayhub.app.properties.properties import FunPayHubProperties
+
+
+async def _delete_message(msg: Message):
+    with suppress(Exception):
+        await msg.delete()
+
+
+def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery):
+    msg = obj if isinstance(obj, Message) else obj.message
+    return dp.fsm.get_context(
+        bot=bot,
+        chat_id=msg.chat.id,
+        thread_id=msg.chat.id,
+        user_id=obj.from_user.id,
+    )
 
 
 @r.callback_query(cbs.Dummy.filter())
@@ -26,17 +45,13 @@ async def dummy(query: CallbackQuery) -> None:
 
 @r.callback_query(cbs.Clear.filter())
 async def clear(query: CallbackQuery, bot: Bot, dispatcher: Dispatcher) -> None:
-    state = dispatcher.fsm.get_context(
-        bot=bot,
-        chat_id=query.message.chat.id,
-        thread_id=query.message.message_thread_id,
-        user_id=query.from_user.id,
-    )
-    await state.clear()
+    context = _get_context(dispatcher, bot, query)
+    await context.clear()
     await query.message.delete()
 
 
 @r.message(Command('start'))
+@r.message(Command('menu'))
 async def send_menu(
     message: Message,
     hub_properties: FunPayHubProperties,
@@ -60,7 +75,7 @@ async def open_properties(
     query: CallbackQuery,
     hub_properties: FunPayHubProperties,
     menu_renderer: TelegramPropertiesMenuRenderer,
-    properties: Properties
+    properties: Properties,
 ) -> None:
     unpacked = cbs.OpenProperties.unpack(query.data)
     text, keyboard = menu_renderer.build_properties_menu(
@@ -81,7 +96,7 @@ async def open_parameter_choice(
     query: CallbackQuery,
     hub_properties: FunPayHubProperties,
     menu_renderer: TelegramPropertiesMenuRenderer,
-    parameter: ChoiceParameter
+    parameter: ChoiceParameter,
 ):
     unpacked = cbs.OpenChoiceParameter.unpack(query.data)
     text, kb = menu_renderer.build_choice_parameter_menu(
@@ -127,20 +142,13 @@ async def change_parameter_value(
 ) -> None:
     unpacked = cbs.ChangeParameter.unpack(query.data)
 
-    state = dispatcher.fsm.get_context(
-        bot,
-        chat_id=query.message.chat.id,
-        user_id=query.from_user.id,
-        thread_id=query.message.message_thread_id,
-    )
-
     text = translater.translate(
         '$enter_new_value_message',
         language=hub_properties.general.language.real_value(),
     ).format(
-        parameter_name = parameter.name,
-        parameter_description = parameter.description,
-        current_parameter_value = str(parameter.value),
+        parameter_name=parameter.name,
+        parameter_description=parameter.description,
+        current_parameter_value=str(parameter.value),
     )
 
     kb = clear_state_keyboard()
@@ -156,19 +164,19 @@ async def change_parameter_value(
         reply_markup=kb,
     )
 
-
-    await state.clear()
-    await state.set_state(ChangingParameterValueState.name)
-    await state.set_data(
+    context = _get_context(dispatcher, bot, query)
+    await context.clear()
+    await context.set_state(ChangingParameterValueState.name)
+    await context.set_data(
         {
             'data': ChangingParameterValueState(
                 parameter=parameter,
                 page=unpacked.page,
                 menu_message=query.message,
                 message=message,
-                user_messages=[]
-            )
-        }
+                user_messages=[],
+            ),
+        },
     )
     await query.answer()
 
@@ -194,70 +202,65 @@ async def select_parameter_value(
 
 
 @r.callback_query(cbs.SelectPage.filter())
-async def change_page(query: CallbackQuery, bot: Bot, dispatcher: Dispatcher) -> None:
-    unpacked = cbs.SelectPage.unpack(query.data)
-
-    state = dispatcher.fsm.get_context(
-        bot,
-        chat_id=query.message.chat.id,
-        user_id=query.from_user.id,
-        thread_id=query.message.message_thread_id,
-    )
+async def change_page(
+    query: CallbackQuery,
+    bot: Bot,
+    dispatcher: Dispatcher,
+    menu_renderer: TelegramPropertiesMenuRenderer,
+    hub_properties: FunPayHubProperties,
+) -> None:
+    state = _get_context(dispatcher, bot, query)
     await state.clear()
 
-    kb = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text='Отмена', callback_data=cbs.Clear().pack())],
-        ]
-    )
+    kb = clear_state_keyboard()
+    menu_renderer.process_keyboard(kb, hub_properties.general.language.real_value())
+
     msg = await bot.send_message(
         chat_id=query.message.chat.id,
         message_thread_id=query.message.message_thread_id,
-        text='Введите номер страницы:',
+        text='$enter_new_page_index_message',
         reply_markup=kb,
     )
 
-    await state.set_state('select_page')
+    await state.set_state(ChangingPage.name)
     await state.set_data(
-        {'query': unpacked.query, 'menu_msg': query.message, 'msg': msg, 'callback_query': query}
+        {
+            'data': ChangingPage(
+                query=query,
+                unpacked_query=cbs.SelectPage.unpack(query.data),
+                message=msg,
+                user_messages=[],
+            ),
+        },
     )
     await query.answer()
 
 
-@r.message(StateFilter('select_page'))
+@r.message(StateFilter(ChangingPage.name))
 async def update_page(message: Message, dispatcher: Dispatcher, bot: Bot):
-    import re
-    from aiogram.types import Update
+    await _delete_message(message)
 
     if not message.text.isnumeric():
         return
+    new_page_index = int(message.text) - 1
 
-    state = dispatcher.fsm.get_context(
-        bot,
-        chat_id=message.chat.id,
-        user_id=message.from_user.id,
-        thread_id=message.message_thread_id,
-    )
-    data = await state.get_data()
+    context = _get_context(dispatcher, bot, message)
+    data: ChangingPage = (await context.get_data())['data']
 
-    query = data['query']
-    callback_query: CallbackQuery = data['callback_query']
-    new_query = re.sub(r'page-\d+', f'page-{int(message.text) - 1}', query)
+    if new_page_index > data.unpacked_query.pages_amount - 1 or new_page_index < 0:
+        return
 
-    event = callback_query.model_copy(update={'data': new_query})
-    message_to_delete: Message = data['msg']
+    await context.clear()
 
-    await state.clear()
+    await _delete_message(data.message)
 
-    await bot.delete_message(
-        chat_id=message_to_delete.chat.id, message_id=message_to_delete.message_id
+    new_query = re.sub(
+        r'page-\d+',
+        f'page-{new_page_index}',
+        data.unpacked_query.query,
     )
 
-    try:
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-    except:
-        pass
-
+    event = data.query.model_copy(update={'data': new_query})
     await dispatcher.feed_update(bot=bot, update=Update(update_id=0, callback_query=event))
 
 
@@ -269,28 +272,23 @@ async def edit_parameter(
     dispatcher: Dispatcher,
     menu_renderer: TelegramPropertiesMenuRenderer,
 ) -> None:
-    await message.delete()
+    await _delete_message(message)
 
-    state = dispatcher.fsm.get_context(
-        bot,
-        chat_id=message.chat.id,
-        user_id=message.from_user.id,
-        thread_id=message.message_thread_id,
-    )
-    data: ChangingParameterValueState = (await state.get_data())['data']
+    context = _get_context(dispatcher, bot, message)
+    data: ChangingParameterValueState = (await context.get_data())['data']
 
     try:
         data.parameter.set_value(message.text)
-        await state.clear()
+        await context.clear()
     except ValueError as e:
         await data.message.edit_text(
-            text=data.message.text +
-                 f'\n\nНе удалось изменить значение параметра {data.parameter.name}:\n\n{str(e)}',
+            text=data.message.text
+            + f'\n\nНе удалось изменить значение параметра {data.parameter.name}:\n\n{str(e)}',
             reply_markup=data.message.reply_markup,
         )
         return
 
-    await data.message.delete()
+    await _delete_message(data.message)
 
     text, keyboard = menu_renderer.build_properties_menu(
         properties=data.parameter.parent,
@@ -306,4 +304,4 @@ async def edit_parameter(
         reply_markup=keyboard,
     )
 
-    await data.menu_message.delete()
+    await _delete_message(data.menu_message)

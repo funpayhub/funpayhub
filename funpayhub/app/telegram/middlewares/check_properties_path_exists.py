@@ -19,7 +19,7 @@ _PARAMS = [
     cbs.ToggleParameter,
     cbs.OpenChoiceParameter,
     cbs.SelectParameterValue,
-    cbs.ChangeParameter
+    cbs.ChangeParameter,
 ]
 
 
@@ -36,7 +36,7 @@ class CheckPropertiesPathExists(BaseMiddleware):
         try:
             props = hub_properties.get_properties(i.unpack(event.data).path)
         except LookupError:
-            await event.answer(f'$no_such_props_message')
+            await event.answer('$no_such_props_message')
             return
 
         data['properties'] = props
@@ -56,7 +56,7 @@ class CheckParameterPathExists(BaseMiddleware):
         try:
             props = hub_properties.get_parameter(i.unpack(event.data).path)
         except LookupError:
-            await event.answer(f'$no_such_param_message')
+            await event.answer('$no_such_param_message')
             return
 
         data['parameter'] = props

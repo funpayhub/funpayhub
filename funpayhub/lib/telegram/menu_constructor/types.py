@@ -28,9 +28,7 @@ class PropertiesMenuRenderContext:
 
 @dataclass
 class PropertiesMenuOverride:
-    message_builder: Callable[[PropertiesMenuRenderContext], str] = (
-        props_message_builder
-    )
+    message_builder: Callable[[PropertiesMenuRenderContext], str] = props_message_builder
 
     keyboard_builder: Callable[[PropertiesMenuRenderContext], InlineKeyboardMarkup] = (
         props_menu_builder

@@ -24,7 +24,7 @@ class AutoDeliveryEntryProperties(Properties):
                 name='$props.auto_delivery.*.auto_delivery:name',
                 description='$props.auto_delivery.*.auto_delivery:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.multi_delivery = self.attach_parameter(
@@ -34,7 +34,7 @@ class AutoDeliveryEntryProperties(Properties):
                 name='$props.auto_delivery.*.multi_delivery:name',
                 description='$props.auto_delivery.*.multi_delivery:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.products_file = self.attach_parameter(
@@ -44,7 +44,7 @@ class AutoDeliveryEntryProperties(Properties):
                 name='$props.auto_delivery.*.products_file:name',
                 description='$props.auto_delivery.*.products_file:description',
                 default_value='',
-            )
+            ),
         )
 
         self.delivery_text = self.attach_parameter(
@@ -54,7 +54,7 @@ class AutoDeliveryEntryProperties(Properties):
                 name='$props.auto_delivery.*.delivery_text:name',
                 description='$props.auto_delivery.*.delivery_text:description',
                 default_value='Thank you for buying this staff!',
-            )
+            ),
         )
 
     @property
