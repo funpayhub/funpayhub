@@ -33,7 +33,7 @@ def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery):
     return dp.fsm.get_context(
         bot=bot,
         chat_id=msg.chat.id,
-        thread_id=msg.chat.id,
+        thread_id=msg.message_thread_id,
         user_id=obj.from_user.id,
     )
 
