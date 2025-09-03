@@ -14,46 +14,52 @@ msgstr ""
 
 # Properties 
 msgid "$props:name"
-msgstr "Настройки"
+msgstr "⚙️ Настройки"
 
 msgid "$props:description"
-msgstr "Корневой раздел настроек FunPay Hub"
+msgstr "Корневой раздел настроек FunPay Hub."
+
+msgid "$props.toggles:name"
+msgstr "🕹️ Глобальные переключатели"
+
+msgid "$props.toggles:description"
+msgstr "__empty__"
 
 msgid "$props.general:name"
 msgstr "Общие настройки"
 
 msgid "$props.general:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.general.language:name"
 msgstr "Язык"
 
 msgid "$props.general.language:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.telegram:name"
 msgstr "Настройки Telegram бота"
 
 msgid "$props.telegram:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.telegram.general:name"
 msgstr "Общие"
 
 msgid "$props.telegram.general:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.telegram.general.token:name"
 msgstr "Токен бота"
 
 msgid "$props.telegram.general.token:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.telegram.general.password:name"
 msgstr "Пароль бота"
 
 msgid "$props.telegram.general.password:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.telegram.appearance:name"
 msgstr "Внешний вид"
@@ -65,43 +71,43 @@ msgid "$props.telegram.appearance.show_emoji:name"
 msgstr "Показывать эмодзи"
 
 msgid "$props.telegram.appearance.show_emoji:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.telegram.appearance.menu_entries_amount:name"
 msgstr "Кол-во элементов на странице"
 
 msgid "$props.telegram.appearance.menu_entries_amount:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.auto_delivery:name"
 msgstr "Настройки автовыдачи"
 
 msgid "$props.auto_delivery:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.auto_delivery.*.auto_delivery:name"
 msgstr "Автовыдача"
 
 msgid "$props.auto_delivery.*.auto_delivery:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.auto_delivery.*.multi_delivery:name"
 msgstr "Мультивыдача"
 
 msgid "$props.auto_delivery.*.multi_delivery:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.auto_delivery.*.products_file:name"
 msgstr "Товарный файл"
 
 msgid "$props.auto_delivery.*.products_file:description"
-msgstr ""
+msgstr "__empty__"
 
 msgid "$props.auto_delivery.*.delivery_text:name"
 msgstr "Текст выдачи"
 
 msgid "$props.auto_delivery.*.delivery_text:description"
-msgstr ""
+msgstr "__empty__"
 
 
 # Messages

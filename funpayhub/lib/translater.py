@@ -29,12 +29,12 @@ class Translater:
         for tr in self._catalogs.get(language, []):
             result = tr.gettext(key)
             if result != key:
-                return result
+                return result if result != '__empty__' else ''
 
         for tr in self._catalogs.get('ru', []):
             result = tr.gettext(key)
             if result != key:
-                return result
+                return result if result != '__empty__' else ''
 
         return key
 
