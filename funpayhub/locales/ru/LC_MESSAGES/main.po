@@ -19,10 +19,29 @@ msgstr "⚙️ Настройки"
 msgid "$props:description"
 msgstr "Корневой раздел настроек FunPay Hub."
 
+# Toggles
 msgid "$props.toggles:name"
 msgstr "🕹️ Глобальные переключатели"
 
 msgid "$props.toggles:description"
+msgstr "__empty__"
+
+msgid "$props.toggles.auto_delivery:name"
+msgstr "📦 Автовыдача"
+
+msgid "$props.toggles.auto_delivery:description"
+msgstr "__empty__"
+
+msgid "$props.toggles.auto_restock:name"
+msgstr "📥 Автопополнение товаров"
+
+msgid "$props.toggles.auto_restock:description"
+msgstr "__empty__"
+
+msgid "$props.toggles.auto_restock:name"
+msgstr "📥 Автопополнение товаров"
+
+msgid "$props.toggles.auto_restock:description"
 msgstr "__empty__"
 
 msgid "$props.general:name"
