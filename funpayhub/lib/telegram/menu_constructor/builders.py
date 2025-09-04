@@ -64,7 +64,7 @@ def props_menu_builder(ctx: PropertiesMenuRenderContext) -> InlineKeyboardMarkup
             val_str = f'{str(obj.value)[:20] + ("..." if len(str(obj.value)) > 20 else "")}'
             builder.row(
                 InlineKeyboardButton(
-                    text=f'{obj.name}: 【 {val_str} 】',
+                    text=f'{obj.name} 【 {val_str} 】',
                     callback_data=cbs.ChangeParameter(path=obj.path, page=ctx.page_index).pack(),
                 ),
             )

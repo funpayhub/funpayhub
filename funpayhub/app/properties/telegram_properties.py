@@ -56,16 +56,6 @@ class TelegramAppearance(Properties):
             description='$props.telegram.appearance:description',
         )
 
-        self.show_emoji = self.attach_parameter(
-            ToggleParameter(
-                properties=self,
-                id='show_emoji',
-                name='$props.telegram.appearance.show_emoji:name',
-                description='$props.telegram.appearance.show_emoji:description',
-                default_value=True,
-            ),
-        )
-
         self.menu_entries_amount = self.attach_parameter(
             IntParameter(
                 properties=self,

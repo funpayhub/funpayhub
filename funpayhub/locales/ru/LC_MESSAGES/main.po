@@ -27,79 +27,95 @@ msgid "$props.toggles:description"
 msgstr "__empty__"
 
 msgid "$props.toggles.auto_delivery:name"
-msgstr "📦 Автовыдача"
+msgstr "📦 Выдача товаров"
 
 msgid "$props.toggles.auto_delivery:description"
 msgstr "__empty__"
 
 msgid "$props.toggles.auto_restock:name"
-msgstr "📥 Автопополнение товаров"
+msgstr "📤 Пополнение товаров"
 
 msgid "$props.toggles.auto_restock:description"
 msgstr "__empty__"
 
-msgid "$props.toggles.auto_restock:name"
-msgstr "📥 Автопополнение товаров"
+msgid "$props.toggles.auto_response:name"
+msgstr "🤖 Автоответ"
 
-msgid "$props.toggles.auto_restock:description"
+msgid "$props.toggles.auto_response:description"
 msgstr "__empty__"
 
+msgid "$props.toggles.auto_raise:name"
+msgstr "⏫ Поднятие лотов"
+
+msgid "$props.toggles.auto_raise:description"
+msgstr "__empty__"
+
+# General
 msgid "$props.general:name"
-msgstr "Общие настройки"
+msgstr "🔧 Общие"
 
 msgid "$props.general:description"
 msgstr "__empty__"
 
 msgid "$props.general.language:name"
-msgstr "Язык"
+msgstr "🌎 Язык"
 
 msgid "$props.general.language:description"
 msgstr "__empty__"
 
+msgid "$props.general.runner_request_interval:name"
+msgstr "⏱️ Интервал получения событий"
+
+msgid "$props.general.runner_request_interval:description"
+msgstr ""
+"Интервал между запросами к FunPay на получение событий.\n"
+"Чем меньше интервал, тем быстрее FunPay Hub получает информацию о новых "
+"сообщениях / заказах и т.д.\n\n"
+
+# Telegram
 msgid "$props.telegram:name"
-msgstr "Настройки Telegram бота"
+msgstr "🔷 Настройки Telegram бота"
 
 msgid "$props.telegram:description"
 msgstr "__empty__"
 
+# Telegram General
 msgid "$props.telegram.general:name"
-msgstr "Общие"
+msgstr "🔧  Общие"
 
 msgid "$props.telegram.general:description"
 msgstr "__empty__"
 
 msgid "$props.telegram.general.token:name"
-msgstr "Токен бота"
+msgstr "🔑 Токен"
 
 msgid "$props.telegram.general.token:description"
 msgstr "__empty__"
 
 msgid "$props.telegram.general.password:name"
-msgstr "Пароль бота"
+msgstr "🔑 Пароль"
 
 msgid "$props.telegram.general.password:description"
-msgstr "__empty__"
+msgstr "Пароль от Telegram панели управления FunPayHub."
 
+# Telegram appearance
 msgid "$props.telegram.appearance:name"
-msgstr "Внешний вид"
+msgstr "🎨 Внешний вид"
 
 msgid "$props.telegram.appearance:description"
 msgstr "Настройки внешнего вида Telegram бота."
 
-msgid "$props.telegram.appearance.show_emoji:name"
-msgstr "Показывать эмодзи"
-
-msgid "$props.telegram.appearance.show_emoji:description"
-msgstr "__empty__"
-
 msgid "$props.telegram.appearance.menu_entries_amount:name"
-msgstr "Кол-во элементов на странице"
+msgstr "📋 Кол-во элементов на странице"
 
 msgid "$props.telegram.appearance.menu_entries_amount:description"
-msgstr "__empty__"
+msgstr ""
+"Максимальное кол-во элементов на 1 странице Telegam меню.\n"
+"Кнопки навигации не учитываются."
 
+# Autodelivery
 msgid "$props.auto_delivery:name"
-msgstr "Настройки автовыдачи"
+msgstr "📦 Настройки автовыдачи"
 
 msgid "$props.auto_delivery:description"
 msgstr "__empty__"
@@ -111,13 +127,13 @@ msgid "$props.auto_delivery.*.auto_delivery:description"
 msgstr "__empty__"
 
 msgid "$props.auto_delivery.*.multi_delivery:name"
-msgstr "Мультивыдача"
+msgstr "Определять к-во товара"
 
 msgid "$props.auto_delivery.*.multi_delivery:description"
 msgstr "__empty__"
 
 msgid "$props.auto_delivery.*.products_file:name"
-msgstr "Товарный файл"
+msgstr "🗃️ Товарный файл"
 
 msgid "$props.auto_delivery.*.products_file:description"
 msgstr "__empty__"
