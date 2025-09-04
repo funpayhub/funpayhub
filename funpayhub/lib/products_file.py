@@ -62,6 +62,9 @@ class ProductsFile:
             self._path.touch()
             self._products_amount = 0
 
+    def remove(self):
+        os.remove(self.path)
+
     @property
     def products_amount(self) -> int:
         return self._products_amount
@@ -71,5 +74,37 @@ class ProductsFile:
         return self._path
 
 
+
 class ProductsFileManager:
-    ...
+    def __init__(self, path: str | Path):
+        self._path = Path(path) if isinstance(path, str) else path
+        self._files: dict[Path, ProductsFile] = {}
+
+    def load(self) -> None:
+        if not self._path.exists():
+            self._path.mkdir(parents=True)
+            return
+
+        for products_file in self._path.iterdir():
+            if not products_file.is_file():
+                continue
+
+            self._files[products_file] = ProductsFile(products_file)
+
+    def get(self, path: str | Path) -> ProductsFile | None:
+        return self._files.get(Path(path) if isinstance(path, str) else path)
+
+    def create(self, path: str | Path) -> ProductsFile:
+        path = Path(path) if isinstance(path, str) else path
+        if self._files.get(path):
+            return self._files[path]
+
+        f = ProductsFile(path)
+        self._files[path] = f
+        return f
+
+    def remove(self, path: str | Path) -> None:
+        path = Path(path) if isinstance(path, str) else path
+        if path in self._files:
+            self._files[path].remove()
+            del self._files[path]
