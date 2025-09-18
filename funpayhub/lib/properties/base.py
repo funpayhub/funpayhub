@@ -32,6 +32,17 @@ class Entry:
         description: CallableValue[str],
         flags: set[Any] | None = None,
     ) -> None:
+        """
+        Базовый класс для параметров / категорий параметров.
+
+        :param parent: родительский объекта.
+        :param id: ID объекта.
+        :param name: название объекта. Может быть строкой или функцией,
+            которая не принимает параметров и возвращает строку.
+        :param description: описание объекта. Может быть строкой или функцией,
+            которая не принимает параметров и возвращает строку.
+        :param flags: флаги объекта.
+        """
         if '.' in id or id.isnumeric():
             raise ValueError("Entry id must not contain '.' and must not be a number.")
         self._parent = parent
@@ -42,38 +53,55 @@ class Entry:
 
     @property
     def id(self) -> str:
+        """ID объекта."""
         return self._id
 
     @property
     def name(self) -> str:
+        """Имя объекта."""
         return resolve(self._name)
 
     @property
     def description(self) -> str:
+        """Описание объекта."""
         return resolve(self._description)
 
     @property
     def parent(self) -> Entry | None:
+        """Родительский объект."""
         return self._parent
 
     @property
     def path(self) -> str:
+        """
+        Путь до объекта начиная с корневого объекта.
+
+        Объединяет ID объектов от родительского до данного в одну строку, разделяя их точкой.
+        """
         if self._parent is None:
             return ''
         return self._parent.path + (f'.{self.id}' if self._parent.path else self.id)
 
     @property
     def root(self) -> Entry:
+        """Корневой объект."""
         if self.parent is None:
             return self
         return self.parent.root
 
     @property
     def is_root(self) -> bool:
+        """
+        Является ли данный объект корневым?
+        (True, если нет родителя, иначе - False)
+        """
         return self.parent is not None
 
     @property
     def chain_to_root(self) -> Generator[Entry, None, None]:
+        """
+        Генератор до корневого объекта.
+        """
         yield self
         if self.parent:
             yield from self.parent.chain_to_root
