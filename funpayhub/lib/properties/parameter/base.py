@@ -89,7 +89,7 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
         default_value: CallableValue[ValueT],
         value: CallableValue[ValueT] | _UNSET_TYPE = _UNSET,
         validator: Callable[[ValueT], Any] | _UNSET_TYPE = _UNSET,
-        converter: Callable[[str], ValueT],
+        converter: Callable[[Any], ValueT],
     ) -> None:
         self._convertor = converter
         self._validator = validator

@@ -130,7 +130,7 @@ class Properties(Entry):
         self._entries[param.id] = param
         return param
 
-    def unattach_parameter(self, id: str) -> Parameter[Any, Self] | None:
+    def detach_parameter(self, id: str) -> Parameter[Any, Self] | None:
         result = self._entries.get(id)
         if result is not None and not isinstance(result, Parameter):
             raise ValueError(f'{id} is not a Parameter, but {result.__class__.__name__}.')
@@ -144,7 +144,7 @@ class Properties(Entry):
         self._entries[properties.id] = properties
         return properties
 
-    def unattach_properties(self, id: str) -> Properties | None:
+    def detach_properties(self, id: str) -> Properties | None:
         result = self._entries.get(id)
         if result is not None and not isinstance(result, Properties):
             raise ValueError(f'{id} is not a Properties, but {result.__class__.__name__}.')
