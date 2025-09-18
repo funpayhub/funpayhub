@@ -20,10 +20,7 @@ if TYPE_CHECKING:
     from ..properties import Properties
 
 
-T = TypeVar('T', bound=Any)
-
-
-class ListParameter(MutableParameter[list[str]], Generic[T]):
+class ListParameter(MutableParameter[list[str]]):
     def __init__(
         self,
         *,
@@ -43,7 +40,7 @@ class ListParameter(MutableParameter[list[str]], Generic[T]):
             default_value=default_value,
             value=value,
             validator=self._validator_factory(validator),
-            converter=json.loads,
+            converter=lambda _: _,
         )
 
     def add(self, value: str, check_exists: bool = True, save: bool = True) -> None:

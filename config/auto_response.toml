@@ -1,0 +1,4 @@
+["/my_command"]
+is_regexp = false
+response_text = "Ответ на $message_text"
+hooks = []

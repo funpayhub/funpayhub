@@ -8,6 +8,7 @@ from .general_properties import GeneralProperties
 from .telegram_properties import TelegramProperties
 from .auto_delivery_properties import AutoDeliveryProperties
 from .global_toggles import TogglesProperties
+from .auto_response import AutoResponseProperties
 
 
 T = TypeVar('T', bound=Properties)
@@ -28,4 +29,5 @@ class FunPayHubProperties(Properties):
         self.toggles = self.attach_properties(TogglesProperties())
         self.general = self.attach_properties(GeneralProperties())
         self.telegram = self.attach_properties(TelegramProperties())
+        self.auto_response = self.attach_properties(AutoResponseProperties())
         self.auto_delivery = self.attach_properties(AutoDeliveryProperties())

@@ -36,8 +36,6 @@ dp = Dispatcher(
     },
 )
 
-print(properties_menu_r.name)
-print(properties_menu_r.callback_query.handlers)
 dp.include_router(properties_menu_r)
 dp.callback_query.outer_middleware(UnhashMiddleware())
 
