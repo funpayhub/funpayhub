@@ -22,14 +22,6 @@ def resolve(value: CallableValue[ParamValueType]) -> ParamValueType:
 
 
 class Parameter(Entry, ABC, Generic[ParamValueType]):
-    """
-    Класс неизменяемого параметра.
-
-    Значение неизменяемых параметров обычно образуется из значений других параметров,
-    параметров запуска приложения и т.д.
-
-    Т.к. параметр неизменяемый, он не может быть сохранен в файл.
-    """
     def __init__(
         self,
         *,
@@ -39,15 +31,41 @@ class Parameter(Entry, ABC, Generic[ParamValueType]):
         description: CallableValue[str],
         value: CallableValue[ParamValueType],
     ) -> None:
+        """
+        Базовый класс неизменяемого параметра.
+
+        Значение неизменяемых параметров обычно образуется из значений других параметров,
+        параметров запуска приложения и т.д.
+
+        Т.к. параметр неизменяемый, он не может быть сохранен в файл.
+
+        :param properties: объект категории параметров, к которому принадлежит данный параметр.
+            (родительский объект).
+
+        :param id: ID параметра.
+        :param name: название параметра. Может быть строкой или функцией,
+            которая не принимает аргументов и возвращает строку.
+        :param description: описание параметра. Может быть строкой или функцией,
+            которая не принимает аргументов и возвращает строку.
+        :param value: значение параметра. Может быть любым объектом или функцией,
+            которая не принимает аргументов и возвращает значение параметра.
+        """
         super().__init__(id=id, name=name, description=description, parent=properties)
         self._value = value
 
     @property
     def value(self) -> ParamValueType:
+        """Значение параметра."""
         return resolve(self._value)
 
     @property
     def parent(self) -> Properties:
+        """
+        Категория параметров, к которой принадлежит данный параметр.
+
+        Из-за особенности архитектуры параметры **всегда** принадлежат какой-то категории
+        (имеют родителя).
+        """
         return super().parent  # type: ignore  # always has a parent
 
     @property
