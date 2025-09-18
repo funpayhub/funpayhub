@@ -5,8 +5,9 @@ from collections.abc import Callable
 
 from typing_extensions import Self
 
-from .base import _UNSET, _UNSET_TYPE, CallableValue, MutableParameter
-from .convertors import toggle_converter
+from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
+from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.parameter.converters import bool_converter
 
 
 if TYPE_CHECKING:
@@ -33,7 +34,7 @@ class ToggleParameter(MutableParameter[bool]):
             default_value=default_value,
             value=value,
             validator=validator,
-            converter=toggle_converter,
+            converter=bool_converter,
         )
 
     def on(self, *, save: bool = True) -> Self:

@@ -1,3 +1,7 @@
+"""
+В данном модуле находятся конвертеры для всех стандартных типов параметров.
+"""
+
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -5,17 +9,37 @@ from json import JSONDecodeError
 from typing import Any
 import json
 
-__all__ = ['toggle_converter']
+
+__all__ = [
+    'bool_converter',
+    'int_converter',
+    'float_converter',
+    'string_converter',
+    'list_converter',
+]
 
 
-def toggle_converter(value: Any) -> bool:
+def bool_converter(value: Any) -> bool:
+    """
+    Преобразует объект в булево значение.
+
+    Если значение является строкой `true` / `on` (нечувствителен к регистру) - возвращает `True`.
+    Если значение является строкой `false` / `off` / `none` / `null` (нечувствителен к регистру) -
+    возвращает `False`.
+
+    В любых других случаях возвращает `value.__bool__()`.
+    :param value: Исходное значение.
+    :return: Конвертированное значение (`bool`).
+    :raises ValueError: Если произошла ошибка при выполнении `value.__bool__()`.
+    """
     if not isinstance(value, str) and hasattr(value, '__bool__'):
         return bool(value)
 
-    try:
-        value = str(value)
-    except:
-        raise ValueError('Unable to convert value to bool')  # todo: использовать строку из перевода.
+    if not isinstance(value, str):
+        try:
+            value = str(value)
+        except:
+            raise ValueError('Unable to convert value to bool')  # todo: использовать строку из перевода.
 
     values = {
         'true': True,
@@ -32,14 +56,14 @@ def toggle_converter(value: Any) -> bool:
     return bool(value)
 
 
-def int_convertor(value: Any) -> int:
+def int_converter(value: Any) -> int:
     try:
         return int(value)
     except ValueError:
         raise ValueError(f'Unable to convert value {value} to integer.')  # todo: использовать строку из перевода.
 
 
-def float_convertor(value: Any) -> float:
+def float_converter(value: Any) -> float:
     try:
         return float(value)
     except ValueError:
@@ -61,9 +85,6 @@ def list_converter(value: Any) -> list[str]:
             raise ValueError(f'Unable to convert string {value} to list.')
 
     if isinstance(value, Iterable):
-        return [i if isinstance(i, str) else str(i) for i in value]
-
-    if isinstance(value, list):
         return [i if isinstance(i, str) else str(i) for i in value]
 
     else:

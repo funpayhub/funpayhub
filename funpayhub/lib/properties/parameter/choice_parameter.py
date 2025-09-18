@@ -8,7 +8,9 @@ from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar
 from dataclasses import dataclass
 from collections.abc import Callable
 
-from .base import _UNSET, _UNSET_TYPE, CallableValue, MutableParameter
+from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
+from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.parameter.converters import int_converter
 
 
 if TYPE_CHECKING:
@@ -50,13 +52,14 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
             default_value=default_value,
             value=value,
             validator=self._validator_factory(validator),
-            converter=int,
+            converter=int_converter,
         )
 
     @property
     def choices(self) -> tuple[Union[T, Item[T]], ...]:
         return self._choices
 
+    @property
     def real_value(self) -> T:
         result = self.choices[self.value]
         if isinstance(result, Item):

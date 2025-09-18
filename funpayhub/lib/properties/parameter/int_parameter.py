@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
 
-from .base import _UNSET, _UNSET_TYPE, CallableValue, MutableParameter
+from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
+from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.parameter.converters import int_converter
 
 
 if TYPE_CHECKING:
@@ -20,7 +22,7 @@ class IntParameter(MutableParameter[int]):
         description: CallableValue[str],
         default_value: CallableValue[int],
         value: CallableValue[int] | _UNSET_TYPE = _UNSET,
-        validator: Callable[[Any], int] | _UNSET_TYPE = _UNSET,
+        validator: Callable[[int], int] | _UNSET_TYPE = _UNSET,
     ) -> None:
         super().__init__(
             properties=properties,
@@ -30,12 +32,5 @@ class IntParameter(MutableParameter[int]):
             default_value=default_value,
             value=value,
             validator=validator,
-            converter=int_convertor,
+            converter=int_converter,
         )
-
-
-def int_convertor(val: str):
-    try:
-        return int(val)
-    except:
-        raise ValueError('$value_should_be_an_int')

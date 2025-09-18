@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
 
-from .base import _UNSET, _UNSET_TYPE, CallableValue, MutableParameter
+from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
+from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.parameter.converters import float_converter
 
 
 if TYPE_CHECKING:
@@ -20,7 +22,7 @@ class FloatParameter(MutableParameter[float]):
         description: CallableValue[str],
         default_value: CallableValue[float],
         value: CallableValue[float] | _UNSET_TYPE = _UNSET,
-        validator: Callable[[Any], float] | _UNSET_TYPE = _UNSET,
+        validator: Callable[[float], float] | _UNSET_TYPE = _UNSET,
     ) -> None:
         super().__init__(
             properties=properties,
@@ -30,12 +32,5 @@ class FloatParameter(MutableParameter[float]):
             default_value=default_value,
             value=value,
             validator=validator,
-            converter=float,
+            converter=float_converter,
         )
-
-
-def float_convertor(val: str):
-    try:
-        return float(val)
-    except:
-        raise ValueError('$value_should_be_a_float')
