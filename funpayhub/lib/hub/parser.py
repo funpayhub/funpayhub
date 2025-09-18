@@ -1,14 +1,36 @@
+from importlib.metadata import pass_none
 from typing import Any
 import re
-import csv
-from io import StringIO
 from collections.abc import Generator
 
 
 KEY_RE = re.compile(r'(?<!\$)\$[a-zA-Zа-яА-Я0-9-_.]+')
 
-
 def extract_calls(text: str, /) -> Generator[tuple[str, list[Any]], None, None]:
+    """
+    Извлекает из текста вызовы вида `$call_name<arg1, arg2, ...>` или `$call_name`.
+
+    Синтаксис:
+    - Вызов начинается с символа `$`.
+    - Аргументы (необязательные) указываются в `<>` сразу после имени вызова.
+    - Аргументы разделяются запятой.
+
+    Типизация аргументов:
+    - Целые числа конвертируются в `int`.
+    - Числа с плавающей точкой — в `float`.
+    - Значения `True`, `False`, `None` — в соответствующие типы Python.
+    - Все остальные аргументы остаются строками.
+    - Чтобы явно передать строку, используйте кавычки: `$call_name<"True">`.
+    - Для кавычек внутри строкового аргумента используйте экранирование `\"`:
+      `$call_name<"Текст с \"кавычками\".">`.
+
+    Экранирование:
+    - Чтобы указать символ `$`, используйте `$$`.
+      Например: `$$call_name` не будет извлечён, а `$call_name` — будет.
+
+    :param text: Строка, из которой необходимо извлечь вызовы.
+    :return: Генератор, который возвращает кортежи `(имя_вызова, список_аргументов)`.
+    """
     for key in KEY_RE.finditer(text):
         start, end = key.start(), key.end()-1
         if len(text) <= end+1 or text[end+1] != '<':
@@ -66,25 +88,14 @@ def evaluate_type(arg: str) -> Any:
         return False
     elif arg == 'None':
         return None
-    elif arg.isnumeric():
+    try:
         return int(arg)
+    except ValueError:
+        pass
+
     try:
         return float(arg)
     except ValueError:
-        return arg
+        pass
 
-text = """$for_text This is my text with some formatters like $my_formatter and $parametrized_formatter<text arg1, "text arg 2 with \\"<>\\"", 123, True, False, None>
-$$this_formatter should not work as well as $$this<arg1, True, arg3>,
-but $this_one<some_arg1, some_text, 123, 321>, is OK!"""
-
-args_str = '<arg1, arg2, "text arg3", 123>'
-
-
-def main():
-    return [i for i in extract_calls(text)]
-
-if __name__ == '__main__':
-    import timeit
-
-    print(text)
-    print(main())
+    return arg
