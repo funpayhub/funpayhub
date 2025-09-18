@@ -1,4 +1,3 @@
-from importlib.metadata import pass_none
 from typing import Any
 import re
 from collections.abc import Generator
@@ -29,7 +28,7 @@ def extract_calls(text: str, /) -> Generator[tuple[str, list[Any]], None, None]:
       Например: `$$call_name` не будет извлечён, а `$call_name` — будет.
 
     :param text: Строка, из которой необходимо извлечь вызовы.
-    :return: Генератор, который возвращает кортежи `(имя_вызова, список_аргументов)`.
+    :return: Генератор, выдающий кортежи `(имя_вызова, список_аргументов)`.
     """
     for key in KEY_RE.finditer(text):
         start, end = key.start(), key.end()-1
@@ -41,7 +40,14 @@ def extract_calls(text: str, /) -> Generator[tuple[str, list[Any]], None, None]:
         yield text[start+1:end+1], args
 
 
-def parse_args(text: str, args_start: int) -> Generator[Any, None, None]:
+def parse_args(text: str, args_start: int = 0) -> Generator[Any, None, None]:
+    """
+    Находит конец списка аргументов вызова, а так же парсит сами аргументы.
+
+    :param text: Оригинальный текст.
+    :param args_start: Индекс символа, с которого начинается список аргументов (индекс символа `<`).
+    :return: Генератор, выдающий конвертированные аргументы вызова.
+    """
     quote_opened = False
     if text[args_start] != '<':
         raise ValueError('Expected <')  # todo: parsing error
@@ -78,6 +84,20 @@ def parse_args(text: str, args_start: int) -> Generator[Any, None, None]:
 
 
 def evaluate_type(arg: str) -> Any:
+    """
+    Конвертирует аргумент в соответсвующий тип.
+
+    Если аргумент заключен в кавычки - возвращает его как строку без кавычек.
+    Если аргумент является числом / числом с плавающей точкой - возвращает `int` / `float`
+        соответственно.
+    Если аргумент является одним из ключевых слов `True`, `False`, `None` - возвращает
+        соответствующий Python тип.
+
+    В любых других случаях возвращает переданный аргумент без изменений.
+
+    :param arg: Строковое представление аргумента.
+    :return: Конвертированный аргумент.
+    """
     if arg.startswith('"'):
         return arg[1:-1].replace('\\"', '"')
     elif arg.startswith('\\'):
