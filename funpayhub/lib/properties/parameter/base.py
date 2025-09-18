@@ -43,7 +43,6 @@ class Parameter(Entry, ABC, Generic[ValueT, PropertiesT]):
 
         :param properties: объект категории параметров, к которому принадлежит данный параметр.
             (родительский объект).
-
         :param id: ID параметра.
         :param name: Название параметра. Может быть строкой или функцией,
             которая не принимает аргументов и возвращает строку.
@@ -76,9 +75,6 @@ class Parameter(Entry, ABC, Generic[ValueT, PropertiesT]):
 
 
 class MutableParameter(Parameter[ValueT, PropertiesT]):
-    """
-    Класс изменяемого параметра.
-    """
     def __init__(
         self,
         *,
@@ -91,6 +87,27 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
         validator: Callable[[ValueT], Any] | _UNSET_TYPE = _UNSET,
         converter: Callable[[Any], ValueT],
     ) -> None:
+        """
+        Базовый класс изменяемого параметра.
+
+        :param properties: Объект категории параметров, к которому принадлежит данный параметр.
+            (родительский объект).
+        :param id: ID параметра.
+        :param name: Название параметра. Может быть строкой или функцией,
+            которая не принимает аргументов и возвращает строку.
+        :param description: Описание параметра. Может быть строкой или функцией,
+            которая не принимает аргументов и возвращает строку.
+        :param default_value: Значение параметра по умолчанию.  Может быть любым объектом или
+            функцией, которая не принимает аргументов и возвращает значение параметра.
+        :param value: Значение параметра. Может быть любым объектом или функцией,
+            которая не принимает аргументов и возвращает значение параметра.
+        :param converter: Функция-конвертер, которая в качестве единственного аргумента принимает
+            любой тип данных и возвращает конвертированный в тип данных параметра объект.
+            Если конвертация невозможна, функция должна бросать `ValueError` с текстом ошибки.
+        :param validator: Функция-валидатор, которая в качестве единственного аргумента
+            принимает уже конвертированный объект и проверяет его валидность.
+            Если значение невалидно, должна бросать `ValueError` с текстом ошибки.
+        """
         self._convertor = converter
         self._validator = validator
 
@@ -111,16 +128,27 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
 
     @property
     def default_value(self) -> ValueT:
+        """Значение параметра по умолчанию."""
         return resolve(self._default_value)
 
     def set_value(
         self,
-        value: ValueT | str,
+        value: Any,
         *,
         skip_converter: bool = False,
         skip_validator: bool = False,
         save: bool = True,
     ) -> Self:
+        """
+        Конвертирует, валидирует и устанавливает значение параметра.
+
+        :param value: Новое значение параметра.
+        :param skip_converter: Пропустить этап конвертации. Если `True`, значение будет передано
+            валидатору в том виде, в котором оно было передано в данный метод.
+        :param skip_validator: Пропустить этап валидации. Если `True`, значение будет установлено
+            без проверки.
+        :param save: Сохранить значение в файл.
+        """
         if not skip_converter:
             value = self.convert(value)
         if not skip_validator:
@@ -132,11 +160,26 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
         return self
 
     def convert(self, value: Any) -> ValueT:
+        """
+        Конвертирует объект в нужный параметру тип.
+
+        :param value: Объект, который необходимо конвертировать.
+        :return: Конвертированный объект.
+        """
         return self._convertor(value)
 
     def validate(self, value: Any) -> None:
+        """
+        Валидирует переданное значение.
+
+        :param value: Значение, которое необходимо валидировать.
+        """
         if not isinstance(self._validator, _UNSET_TYPE):
             self._validator(value)
 
     def save(self) -> None:
+        """
+        Сохраняет значение в файл.
+        """
         self.parent.save()
+        # У параметров родитель - всегда категория параметров.
