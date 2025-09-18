@@ -10,26 +10,28 @@ from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE, Entry
 
 
 if TYPE_CHECKING:
-    from ..properties import Properties
+    from funpayhub.lib.properties import Properties
 
 
-ParamValueType = TypeVar('ParamValueType')
-CallableValue = Union[ParamValueType, Callable[[], ParamValueType]]
+ValueT = TypeVar('ValueT')
+PropertiesT = TypeVar('PropertiesT', bound=Properties)
+
+CallableValue = Union[ValueT, Callable[[], ValueT]]
 
 
-def resolve(value: CallableValue[ParamValueType]) -> ParamValueType:
+def resolve(value: CallableValue[ValueT]) -> ValueT:
     return value() if callable(value) else value
 
 
-class Parameter(Entry, ABC, Generic[ParamValueType]):
+class Parameter(Entry, ABC, Generic[ValueT, PropertiesT]):
     def __init__(
         self,
         *,
-        properties: Properties,
+        properties: PropertiesT,
         id: str,
         name: CallableValue[str],
         description: CallableValue[str],
-        value: CallableValue[ParamValueType],
+        value: CallableValue[ValueT],
     ) -> None:
         """
         Базовый класс неизменяемого параметра.
@@ -54,12 +56,12 @@ class Parameter(Entry, ABC, Generic[ParamValueType]):
         self._value = value
 
     @property
-    def value(self) -> ParamValueType:
+    def value(self) -> ValueT:
         """Значение параметра."""
         return resolve(self._value)
 
     @property
-    def parent(self) -> Properties:
+    def parent(self) -> PropertiesT:
         """
         Категория параметров, к которой принадлежит данный параметр.
 
@@ -69,29 +71,25 @@ class Parameter(Entry, ABC, Generic[ParamValueType]):
         return super().parent  # type: ignore  # always has a parent
 
     @property
-    def properties(self) -> Properties:
-        return self.parent
-
-    @property
     def serialized_value(self) -> Any:
         return self.value
 
 
-class MutableParameter(Parameter[ParamValueType]):
+class MutableParameter(Parameter[ValueT, PropertiesT]):
     """
     Класс изменяемого параметра.
     """
     def __init__(
         self,
         *,
-        properties: Properties,
+        properties: PropertiesT,
         id: str,
         name: CallableValue[str],
         description: CallableValue[str],
-        default_value: CallableValue[ParamValueType],
-        value: CallableValue[ParamValueType] | _UNSET_TYPE = _UNSET,
-        validator: Callable[[ParamValueType], Any] | _UNSET_TYPE = _UNSET,
-        converter: Callable[[str], ParamValueType],
+        default_value: CallableValue[ValueT],
+        value: CallableValue[ValueT] | _UNSET_TYPE = _UNSET,
+        validator: Callable[[ValueT], Any] | _UNSET_TYPE = _UNSET,
+        converter: Callable[[str], ValueT],
     ) -> None:
         self._convertor = converter
         self._validator = validator
@@ -112,12 +110,12 @@ class MutableParameter(Parameter[ParamValueType]):
         )
 
     @property
-    def default_value(self) -> ParamValueType:
+    def default_value(self) -> ValueT:
         return resolve(self._default_value)
 
     def set_value(
         self,
-        value: ParamValueType | str,
+        value: ValueT | str,
         *,
         skip_converter: bool = False,
         skip_validator: bool = False,
@@ -133,7 +131,7 @@ class MutableParameter(Parameter[ParamValueType]):
             self.save()
         return self
 
-    def convert(self, value: Any) -> ParamValueType:
+    def convert(self, value: Any) -> ValueT:
         return self._convertor(value)
 
     def validate(self, value: Any) -> None:

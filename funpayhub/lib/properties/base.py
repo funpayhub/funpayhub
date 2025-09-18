@@ -4,7 +4,7 @@ from typing import Any, Union, TypeVar, Callable
 from collections.abc import Generator
 
 
-ParamValueType = TypeVar('ParamValueType', bound=Any)
+ParamValueType = TypeVar('ParamValueType')
 CallableValue = Union[ParamValueType, Callable[[], ParamValueType]]
 
 
