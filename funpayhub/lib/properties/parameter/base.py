@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 ValueT = TypeVar('ValueT')
-PropertiesT = TypeVar('PropertiesT', bound=Properties)
+PropertiesT = TypeVar('PropertiesT', bound='Properties', default='Properties')
 
 CallableValue = Union[ValueT, Callable[[], ValueT]]
 

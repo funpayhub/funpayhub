@@ -23,7 +23,7 @@ class ToggleParameter(MutableParameter[bool]):
         description: CallableValue[str],
         default_value: CallableValue[bool],
         value: CallableValue[bool] | _UNSET_TYPE = _UNSET,
-        validator: Callable[[Any], bool] | _UNSET_TYPE = _UNSET,
+        validator: Callable[[bool], Any] | _UNSET_TYPE = _UNSET,
     ) -> None:
         super().__init__(
             properties=properties,
@@ -37,10 +37,10 @@ class ToggleParameter(MutableParameter[bool]):
         )
 
     def on(self, *, save: bool = True) -> Self:
-        return self.set_value(True, save=save)
+        return self.set_value(True, skip_converter=True, save=save)
 
     def off(self, *, save: bool = True) -> Self:
-        return self.set_value(False, save=save)
+        return self.set_value(False, skip_converter=True, save=save)
 
     def toggle(self, *, save: bool = True) -> Self:
-        return self.set_value(not self.value, save=save)
+        return self.set_value(not self.value, skip_converter=True, save=save)
