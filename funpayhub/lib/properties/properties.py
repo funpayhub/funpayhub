@@ -7,6 +7,7 @@ __all__ = ['Properties']
 import os
 import tomllib
 from typing import Any, TypeVar, TypeAlias
+from typing_extensions import Self
 from types import MappingProxyType
 from collections.abc import Generator
 
@@ -16,7 +17,7 @@ from .base import Entry, CallableValue
 from .parameter.base import Parameter, MutableParameter
 
 
-T = TypeVar('T', bound='Parameter[Any]')
+T = TypeVar('T', bound='Parameter[Any, Any]')
 P = TypeVar('P', bound='Properties')
 InnerEntries: TypeAlias = Parameter[Any] | MutableParameter[Any] | 'Properties'
 
@@ -33,6 +34,22 @@ class Properties(Entry):
         parent: Properties | None = None,
         file: str | None = None,
     ) -> None:
+        """
+        Категория параметров.
+
+        Категории могут образовывать иерархию: каждая категория может содержать
+        дочерние элементы (параметры или подкатегории) и ссылку на родителя.
+        Также поддерживается сохранение в отдельный файл или в файл родительской категории.
+
+        :param id: Уникальный идентификатор категории.
+        :param name: Название категории. Может быть строкой или функцией без аргументов,
+            возвращающей строку.
+        :param description: Описание категории. Может быть строкой или функцией без аргументов,
+            возвращающей строку.
+        :param parent: Родительская категория. Если `None`, категория является корневой.
+        :param file: Путь к файлу для сохранения категории. Если `None` —
+            используется файл родительской категории.
+        """
         if parent is not None and not isinstance(parent, Properties):
             raise TypeError('Parent should be an instance of Properties.')
 
@@ -48,6 +65,7 @@ class Properties(Entry):
 
     @property
     def parent(self) -> Properties | None:
+        """Родительская категория или `None`, если категория корневая."""
         return self._parent
 
     @parent.setter
@@ -58,14 +76,25 @@ class Properties(Entry):
 
     @property
     def root(self) -> Properties:
+        """Корневая категория (верхний элемент в иерархии)."""
         return super().root  # type: ignore  # check in __init__
 
     @property
     def chain_to_root(self) -> Generator[Properties, None, None]:
+        """
+        Генератор всех категорий от текущей до корневой.
+
+        :yield: Категории начиная с текущей и заканчивая корневой.
+        """
         return super().chain_to_root  # type: ignore  # check in __init__
 
     @property
     def chain_to_tail(self) -> Generator[Properties, None, None]:
+        """
+        Генератор всех категорий от текущей до всех листовых узлов.
+
+        :yield: Текущая категория и все вложенные конечные категории (без дочерних элементов).
+        """
         yield self
         for entry in self._entries.values():
             if isinstance(entry, Properties):
@@ -73,16 +102,26 @@ class Properties(Entry):
 
     @property
     def file(self) -> str | None:
+        """Файл сохранения текущей категории или `None`."""
         return self._file
 
     @property
     def file_to_save(self) -> str | None:
+        """
+        Итоговый путь файла для сохранения.
+
+        Если у текущей категории `.file` равен `None`, ищется ближайший родитель с
+        ненулевым `.file`. Если такого нет, возвращается `None`.
+        """
         return self.file or (self.parent.file_to_save if self.parent else None)
 
     @property
     def entries(
         self,
-    ) -> MappingProxyType[str, Parameter[Any] | MutableParameter[Any] | Properties]:
+    ) -> MappingProxyType[str, Parameter[Any, Self] | MutableParameter[Any, Self] | Properties]:
+        """
+        Неизменяемый словарь со всеми вложенными элементами (параметрами / подкатегориями).
+        """
         return MappingProxyType(self._entries)
 
     def attach_parameter(self, param: T) -> T:
@@ -91,7 +130,7 @@ class Properties(Entry):
         self._entries[param.id] = param
         return param
 
-    def unattach_parameter(self, id: str) -> Parameter[Any] | None:
+    def unattach_parameter(self, id: str) -> Parameter[Any, Self] | None:
         result = self._entries.get(id)
         if result is not None and not isinstance(result, Parameter):
             raise ValueError(f'{id} is not a Parameter, but {result.__class__.__name__}.')
@@ -186,7 +225,7 @@ class Properties(Entry):
         else:
             raise LookupError(f'No entry with path {path}') from None
 
-    def get_parameter(self, path: str) -> Parameter[Any] | MutableParameter[Any]:
+    def get_parameter(self, path: str) -> Parameter[Any, Self] | MutableParameter[Any, Self]:
         result = self.get_entry(path)
         if not isinstance(result, Parameter):
             raise LookupError(f'No parameter with path {path}')
