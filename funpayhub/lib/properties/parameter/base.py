@@ -6,22 +6,30 @@ from collections.abc import Callable
 
 from typing_extensions import Self
 
-from ..base import _UNSET, _UNSET_TYPE, Entry
+from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE, Entry
 
 
 if TYPE_CHECKING:
     from ..properties import Properties
 
 
-ParamValueType = TypeVar('ParamValueType', bound=Any)
+ParamValueType = TypeVar('ParamValueType')
 CallableValue = Union[ParamValueType, Callable[[], ParamValueType]]
 
 
 def resolve(value: CallableValue[ParamValueType]) -> ParamValueType:
-    return value() if callable(value) else value  # type: ignore
+    return value() if callable(value) else value
 
 
 class Parameter(Entry, ABC, Generic[ParamValueType]):
+    """
+    Класс неизменяемого параметра.
+
+    Значение неизменяемых параметров обычно образуется из значений других параметров,
+    параметров запуска приложения и т.д.
+
+    Т.к. параметр неизменяемый, он не может быть сохранен в файл.
+    """
     def __init__(
         self,
         *,
@@ -51,7 +59,10 @@ class Parameter(Entry, ABC, Generic[ParamValueType]):
         return self.value
 
 
-class MutableParameter(Parameter[ParamValueType], Generic[ParamValueType]):
+class MutableParameter(Parameter[ParamValueType]):
+    """
+    Класс изменяемого параметра.
+    """
     def __init__(
         self,
         *,
