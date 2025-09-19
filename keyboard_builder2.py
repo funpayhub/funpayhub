@@ -115,6 +115,9 @@ async def build_manual_change_button(ctx: ManualChangeButtonBuilderContext) -> I
 async def build_message_keyboard(ctx: ManualChangeButtonBuilderContext) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text='$clear_state', )]
+            [InlineKeyboardButton(text='$clear_state', callback_data=cbs.Clear().pack())]
         ]
     )
+
+async def build_manual_change_message(ctx: ManualChangeButtonBuilderContext) -> str:
+    return ''

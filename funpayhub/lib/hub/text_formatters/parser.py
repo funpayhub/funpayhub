@@ -5,7 +5,7 @@ from collections.abc import Generator
 
 KEY_RE = re.compile(r'(?<!\$)\$[a-zA-Zа-яА-Я0-9-_.]+')
 
-def extract_calls(text: str, /) -> Generator[tuple[str, list[Any]], None, None]:
+def extract_calls(text: str, /) -> Generator[tuple[str, list[Any], int, int], str | None, None]:
     """
     Извлекает из текста вызовы вида `$call_name<arg1, arg2, ...>` или `$call_name`.
 
@@ -28,19 +28,38 @@ def extract_calls(text: str, /) -> Generator[tuple[str, list[Any]], None, None]:
       Например: `$$call_name` не будет извлечён, а `$call_name` — будет.
 
     :param text: Строка, из которой необходимо извлечь вызовы.
-    :return: Генератор, выдающий кортежи `(имя_вызова, список_аргументов)`.
+    :return: Генератор, выдающий кортежи `(имя_вызова, список_аргументов, индекс начала вызова, индекс конца вызова).`.
     """
-    for key in KEY_RE.finditer(text):
+    finditer = KEY_RE.finditer(text)
+
+    while True:
+        try:
+            key = next(finditer)
+        except StopIteration:
+            return
+
         start, end = key.start(), key.end()-1
         if len(text) <= end+1 or text[end+1] != '<':
-            yield text[start+1:end+1], []
+            new_text = yield text[start+1:end+1], [], start, end+1
+            if new_text is not None:
+                finditer = KEY_RE.finditer(new_text)
             continue
 
-        args = [_ for _ in parse_args(text, end+1)]
-        yield text[start+1:end+1], args
+        args = []
+        args_gen = parse_args(text, end+1)
+        while True:
+            try:
+                args.append(next(args_gen))
+            except StopIteration as e:
+                end_index = e.value
+                break
+
+        new_text = yield text[start+1:end+1], args, start, end_index
+        if new_text is not None:
+            finditer = KEY_RE.finditer(new_text)
 
 
-def parse_args(text: str, args_start: int = 0) -> Generator[Any, None, None]:
+def parse_args(text: str, args_start: int = 0) -> Generator[Any, None, int]:
     """
     Находит конец списка аргументов вызова, а так же парсит сами аргументы.
 
@@ -52,11 +71,11 @@ def parse_args(text: str, args_start: int = 0) -> Generator[Any, None, None]:
     if text[args_start] != '<':
         raise ValueError('Expected <')  # todo: parsing error
 
-    curr_arg_index = curr_index = args_start + 1  # excluding '<'
+    curr_arg_index = next_index = args_start + 1  # excluding '<'
 
     while True:
-        index = curr_index
-        curr_index += 1
+        index = next_index
+        next_index += 1
 
         try:
             sym = text[index]
@@ -71,9 +90,9 @@ def parse_args(text: str, args_start: int = 0) -> Generator[Any, None, None]:
 
         elif sym == '>' and not quote_opened:
             if curr_arg_index == index:
-                return
+                return index
             yield evaluate_type(text[curr_arg_index:index].strip())
-            return
+            return index
 
         elif sym == ',' and not quote_opened:
             if index == curr_arg_index:  # ,,
