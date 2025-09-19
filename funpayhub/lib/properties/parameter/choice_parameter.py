@@ -77,3 +77,11 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
                 validator(value)
 
         return real_validator
+
+    def __next__(self) -> T:
+        if len(self.choices) == self.value+1:
+            self.set_value(0, save=True)
+            return self.real_value
+
+        self.set_value(self.value + 1, save=True)
+        return self.real_value

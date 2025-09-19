@@ -45,3 +45,7 @@ class ToggleParameter(MutableParameter[bool]):
 
     def toggle(self, *, save: bool = True) -> Self:
         return self.set_value(not self.value, skip_converter=True, save=save)
+
+    def __next__(self) -> bool:
+        self.toggle(save=True)
+        return self.value
