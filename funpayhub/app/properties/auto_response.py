@@ -47,7 +47,7 @@ class AutoResponseEntryProperties(Properties):
         )
 
     @property
-    def parent(self) -> AutoResponseEntryProperties | None:
+    def parent(self) -> AutoResponseProperties | None:
         return super().parent  # type: ignore
 
     @parent.setter
