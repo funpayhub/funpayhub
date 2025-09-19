@@ -40,9 +40,10 @@ def extract_calls(text: str, /) -> Generator[tuple[str, list[Any], int, int], st
 
         start, end = key.start(), key.end()-1
         if len(text) <= end+1 or text[end+1] != '<':
-            new_text = yield text[start+1:end+1], [], start, end+1
+            new_text = yield text[start+1:end+1], [], start, end
             if new_text is not None:
-                finditer = KEY_RE.finditer(new_text)
+                text = new_text
+                finditer = KEY_RE.finditer(text)
             continue
 
         args = []
@@ -56,7 +57,8 @@ def extract_calls(text: str, /) -> Generator[tuple[str, list[Any], int, int], st
 
         new_text = yield text[start+1:end+1], args, start, end_index
         if new_text is not None:
-            finditer = KEY_RE.finditer(new_text)
+            text = new_text
+            finditer = KEY_RE.finditer(text)
 
 
 def parse_args(text: str, args_start: int = 0) -> Generator[Any, None, int]:
