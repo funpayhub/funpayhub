@@ -3,6 +3,7 @@ __all__ = [
     'ImageFormatter',
     'UsernameFormatter',
     'OrderIdFormatter',
+    'FORMATTERS_LIST'
 ]
 
 from funpayhub.lib.hub.text_formatters import Formatter, Image
@@ -81,3 +82,11 @@ OrderIdFormatter = Formatter(
     description='$formatter:order_id:description',
     formatter=order_id_formatter
 )
+
+
+FORMATTERS_LIST = [
+    DateTimeFormatter,
+    ImageFormatter,
+    UsernameFormatter,
+    OrderIdFormatter,
+]
