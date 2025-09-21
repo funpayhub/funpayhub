@@ -1,8 +1,9 @@
 ["/my_command"]
-reply = true
+case_sensitive = false
+reply = false
 abort_on_formatters_error = false
-abort_on_hooks_error = false
-react_on_me = true
-react_on_others = true
-response_text = "Привет, $username"
+abort_on_hooks_error = true
+react_on_me = false
+react_on_others = false
+response_text = "Текущее время: $time<datetime>"
 hooks = []

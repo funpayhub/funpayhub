@@ -16,6 +16,16 @@ class AutoResponseEntryProperties(Properties):
             description=f'$props.auto_response.*',
         )
 
+        self.case_sensitive = self.attach_parameter(
+            ToggleParameter(
+                properties=self,
+                id='case_sensitive',
+                name='$props.auto_response.*.case_sensitive:name',
+                description='$props.auto_response.*.case_sensitive:description',
+                default_value=False
+            )
+        )
+
         self.reply = self.attach_parameter(
             ToggleParameter(
                 properties=self,

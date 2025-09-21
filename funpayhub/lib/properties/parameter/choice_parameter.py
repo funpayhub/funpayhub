@@ -59,7 +59,6 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
     def choices(self) -> tuple[Union[T, Item[T]], ...]:
         return self._choices
 
-    @property
     def real_value(self) -> T:
         result = self.choices[self.value]
         if isinstance(result, Item):

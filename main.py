@@ -11,10 +11,12 @@ from funpayhub.app.telegram.middlewares.unhash import UnhashMiddleware
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 from funpayhub.app.telegram.routers.properties_menu import router as properties_menu_r
 from funpayhub.lib.telegram.menu_constructor.renderer import TelegramPropertiesMenuRenderer
+from load_dotenv import load_dotenv
 
+load_dotenv()
 
 bot = Bot(
-    token=os.environ['FUNPAYHUB_TELEGRAM_TOKEN'],
+    token=os.environ['FPH_TELEGRAM_TOKEN'],
     default=DefaultBotProperties(parse_mode='HTML'),
 )
 
