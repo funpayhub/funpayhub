@@ -8,13 +8,13 @@ class Pagable(BaseModel):
     page: int = 0
 
     @field_validator('page', mode='before')
-    def parse_page(cls, v: str | int):
+    def parse_page(cls, v: str | int) -> int:
         if isinstance(v, str) and v.startswith('page-'):
             return int(v.split('-', 1)[1])
-        return v
+        return int(v)
 
     @field_serializer('page')
-    def serialize_page(self, v: int):
+    def serialize_page(self, v: int) -> str:
         return f'page-{v}'
 
 
@@ -52,3 +52,16 @@ class SelectParameterValue(CallbackData, Pagable, prefix='select_param_val'):
 class SelectPage(CallbackData, prefix='select_page', sep='|'):
     query: str
     pages_amount: int
+
+
+# new
+class NextParamValue(CallbackData, Pagable, prefix='next_param_value'):
+    path: str
+
+
+class ManualParamValueInput(CallbackData, Pagable, prefix='manual_value_input'):
+    path: str
+
+
+class MenuParamValueInput(CallbackData, Pagable, prefix='menu_value_input'):
+    path: str

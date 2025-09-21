@@ -2,122 +2,116 @@ from __future__ import annotations
 
 
 from dataclasses import dataclass
-import funpayhub.lib.properties.parameter as p
-from typing import TYPE_CHECKING
+import funpayhub.lib.properties.parameter as params
+from typing import TYPE_CHECKING, TypeAlias
 from collections.abc import Callable, Awaitable
+from aiogram.types import InlineKeyboardButton as InlineKBB, InlineKeyboardMarkup as InlineKBM
+from typing import Any, TypeVar
+import funpayhub.lib.telegram.callbacks as cbs
+from abc import ABC, abstractmethod
+from funpayhub.lib.translater import Translater
+
 if TYPE_CHECKING:
-    from funpayhub.lib.properties import Properties, MutableParameter
+    from funpayhub.lib.properties import Properties, MutableParameter, Parameter
+
+
+KB_BUILDER_RETURN_TYPE: TypeAlias = InlineKBB | list[InlineKBB | list[InlineKBB]]
 
 
 @dataclass
-class InPlaceChangeButtonBuilderContext:
-    parameter: MutableParameter
-    properties_page_index: int
-    builder: KeyboardBuilder
+class Window:
+    message: str
+    header_keyboard: InlineKBB | KB_BUILDER_RETURN_TYPE
+    keyboard: InlineKBB | KB_BUILDER_RETURN_TYPE
+    footer_keyboard: InlineKBB | KB_BUILDER_RETURN_TYPE
+    image: str | None = None
 
 
 @dataclass
-class InPlaceChangeButtonBuilder:
-    builder: Callable[[InPlaceChangeButtonBuilderContext], Awaitable[InlineKeyboardButton]]
-
-    async def build(self, context: InPlaceChangeButtonBuilderContext) -> InlineKeyboardButton:
-        return await self.builder(context)
-
-
-@dataclass
-class ManualChangeButtonBuilderContext:
-    parameter: MutableParameter
-    properties_page_index: int
-    builder: KeyboardBuilder
+class MenuRenderContext:
+    entry: Parameter | MutableParameter | Properties
+    translater: Translater
+    page: int = 0
+    previous_callback: str | None = None
+    language: str = 'ru'  # todo: ?
 
 
 @dataclass
-class ManualChangeButtonBuilder:
-    button_builder: Callable[[ManualChangeButtonBuilderContext], Awaitable[InlineKeyboardButton]]
-    change_message_text_builder: Callable[[ManualChangeButtonBuilderContext], Awaitable[str]]
-    change_message_keyboard_builder: Callable[[ManualChangeButtonBuilderContext], Awaitable[InlineKeyboardMarkup]]
+class ButtonWrapper(ABC):
+    button_text: str | Callable[[MenuRenderContext], Awaitable[str]]
+
+    async def build_button_text(self, ctx: MenuRenderContext) -> str:
+        if isinstance(self.button_text, str):
+            return self.button_text
+        return await self.button_text(ctx)
+
+    @abstractmethod
+    async def build_button_obj(self, ctx: MenuRenderContext) -> InlineKBB:
+        ...
 
 
 @dataclass
-class MenuChangeButtonBuilder:
-    buttons: list[ManualChangeButtonBuilder]
+class InPlaceChangeButton(ButtonWrapper):
+    """
+    Кнопка изменения параметра "на месте" (без вызовов доп. меню / сообщений и т.д.).
+
+    Подходит только для параметров, которые поддерживает метод __next__.
+    """
+
+    async def build_button_obj(self, ctx: MenuRenderContext) -> InlineKBB:
+        return InlineKBB(
+            text=await self.build_button_text(ctx),
+            callback_data=cbs.NextParamValue(page=ctx.page, path=ctx.entry.path).pack()
+        )
 
 
 @dataclass
-class PropertiesMenuRenderContext:
-    properties: Properties
-    page_index: int
-    max_elements_on_page: int
-    builder: KeyboardBuilder
+class ManualChangeButton(ButtonWrapper):
+    change_param_window: Window | Callable[[MutableParameter[Any]], Awaitable[Window]]
+
+    async def build_button_obj(self, ctx: MenuRenderContext) -> InlineKBB:
+        return InlineKBB(
+            text=await self.build_button_text(ctx),
+            callback_data=cbs.ManualParamValueInput(page=ctx.page, path=ctx.entry.path).pack()
+        )
+
+
+@dataclass
+class OpenMenuButton(ButtonWrapper):
+    change_param_window: Window | Callable[[MutableParameter[Any]], Window]
+
+    async def build_button_obj(self, parameter: MutableParameter[Any]) -> InlineKBB:
+        ...
+
+    async def build_menu(self) -> Window:
+        ...
 
 
 class KeyboardBuilder:
     def __init__(self):
-        self.default = {
-        p.ToggleParameter: InPlaceChangeButtonBuilder(build_toggle_keyboard),
-        p.IntParameter: ManualChangeButtonBuilder('some_text'),
-        p.FloatParameter: ManualChangeButtonBuilder('some_text'),
-        p.StringParameter: ManualChangeButtonBuilder('some_text'),
-        p.ListParameter: MenuChangeButtonBuilder([]),
-        p.ChoiceParameter: MenuChangeButtonBuilder([])
-    }
-
-    def make_context(self, properties: Properties, page_index: int, max_elements_on_page: int) -> PropertiesMenuRenderContext:
-        return PropertiesMenuRenderContext(
-            properties=properties,
-            page_index=page_index,
-            max_elements_on_page=max_elements_on_page,
-            builder=self
-        )
+        self.default_parameter_buttons = {
+            params.ToggleParameter: InPlaceChangeButton(button_text=toggle_btn_text),
+            params.IntParameter: ManualChangeButtonBuilder(button_text=btn_text),
+            params.FloatParameter: ManualChangeButtonBuilder(button_text=btn_text),
+            params.StringParameter: ManualChangeButtonBuilder(button_text=btn_text),
+            params.ListParameter: MenuChangeButtonBuilder([]),
+            params.ChoiceParameter: MenuChangeButtonBuilder([]),
+            Properties: OpenMenuButton()
+        }
 
 
-from aiogram.utils.keyboard import InlineKeyboardButton, InlineKeyboardMarkup
-import funpayhub.lib.telegram.callbacks as cbs
+async def toggle_btn_text(ctx: MenuRenderContext) -> str:
+    return f'{"🟢" if ctx.entry.value else "🔴"} {ctx.entry.name}'
 
 
-async def build_properties_keyboard(ctx: PropertiesMenuRenderContext) -> InlineKeyboardMarkup:
-    result = []
-    for entry_id, obj in ctx.properties.entries.items():
-        if type(obj) not in ctx.builder.default:
-            continue
-
-        builder = ctx.builder.default[type(obj)]
-        if isinstance(builder, InPlaceChangeButtonBuilder):
-            context = InPlaceChangeButtonBuilderContext(
-                parameter=obj,
-                properties_page_index=ctx.page_index,
-                builder=ctx.builder
-            )
-            result.append(await builder.build(context))
-
-        elif isinstance(builder, ManualChangeButtonBuilder):
-            ...
-
-        elif isinstance(builder, MenuChangeButtonBuilder):
-            ...
+async def btn_text_with_value(p: MutableParameter) -> str:
+    val_str = f'{str(p.value)[:20] + ("..." if len(str(p.value)) > 20 else "")}'
+    return f'{p.name} 【 {val_str} 】'
 
 
-async def build_toggle_keyboard(ctx: InPlaceChangeButtonBuilderContext) -> InlineKeyboardButton:
-    return InlineKeyboardButton(
-        text=f'{"🟢" if ctx.parameter.value else "🔴"} {ctx.parameter.name}',
-        callback_data=cbs.ToggleParameter(path=ctx.parameter.path, page=ctx.properties_page_index).pack(),
-    )
+async def btn_text_without_value(p: MutableParameter) -> str:
+    return p.name
 
 
-async def build_manual_change_button(ctx: ManualChangeButtonBuilderContext) -> InlineKeyboardButton:
-    val_str = f'{str(ctx.parameter.value)[:20] + ("..." if len(str(ctx.parameter.value)) > 20 else "")}'
-    return InlineKeyboardButton(
-        text=f'{ctx.parameter.name} 【 {val_str} 】',
-        callback_data=cbs.ChangeParameter(path=ctx.parameter.path, page=ctx.properties_page_index).pack(),
-    )
-
-
-async def build_message_keyboard(ctx: ManualChangeButtonBuilderContext) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text='$clear_state', callback_data=cbs.Clear().pack())]
-        ]
-    )
-
-async def build_manual_change_message(ctx: ManualChangeButtonBuilderContext) -> str:
-    return ''
+async def build_manual_change_window(p: MutableParameter) -> Window:
+    message = f''

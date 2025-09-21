@@ -13,12 +13,29 @@ if TYPE_CHECKING:
     from funpaybotengine.client.bot import Bot
 
 
+type FORMATTER_R = str | 'Image' | list[str | 'Image']
+
+
 @dataclass
 class Formatter:
+    """
+    Класс, описывающий форматтер.
+    """
+
     key: str
+    """Ключ форматтера. Используется в тексте в виде `$ключ`."""
+
     name: str
+    """Человеко-читаемое название форматтера."""
+
     description: str
-    formatter: Callable[..., Awaitable[str | Image] | str | Image] | CallableWrapper[str | Image]
+    """Описание форматтера, документация и т.д."""
+
+    formatter: Callable[..., Awaitable[FORMATTER_R] | FORMATTER_R] | CallableWrapper[FORMATTER_R]
+    """
+    Функция-форматтер.
+    Должна возвращать текст или объект `Image`.
+    """
 
     def __post_init__(self) -> None:
         if not isinstance(self.formatter, CallableWrapper):
@@ -26,7 +43,6 @@ class Formatter:
 
     async def execute(self, user_passed_args: list[Any], data: dict[str, Any]) -> str:
         return await self.formatter(user_passed_args, data)
-
 
 
 @dataclass
@@ -41,11 +57,7 @@ class Image:
 
 class MessagesStack:
     def __init__(self, entries: list[str | Image]):
-        self.entries = []
-        for entry in entries:
-            self.entries.append(entry)
-
-        # todo: split too big messages
+        self.entries = entries
 
     async def send(self, bot: Bot, chat_id: int | str):
         for entry in self.entries:
@@ -57,9 +69,19 @@ class MessagesStack:
 
 class FormattersRegistry:
     def __init__(self) -> None:
+        """
+        Реестр форматтеров.
+        """
         self._formatters: dict[str, Formatter] = {}
 
     def add_formatter(self, formatter: Formatter, raise_if_exists: bool = True) -> None:
+        """
+        Добавляет форматтер в реестр.
+
+        :param formatter: Объект форматтера.
+        :param raise_if_exists: Возбуждать ли `ValueError`, если форматтер с таким же `key` уже
+            существует в реестре.
+        """
         if raise_if_exists and formatter.key in self._formatters:
             raise ValueError(f'Formatter with key {formatter.key} already exists.')
 
@@ -78,16 +100,34 @@ class FormattersRegistry:
 
     def __setitem__(self, key: str, value: Formatter) -> None:
         if not isinstance(key, str):
-            raise ValueError(f'Formatter key should be a str.')
+            raise ValueError(f'Key must be a {str!r}, not {type(key)!r}.')
         if not isinstance(value, Formatter):
-            raise ValueError(f'Value should be a Formatter.')
+            raise ValueError(
+                f'Value must be an instance of `Formatter`, '
+                f'not {type(key)!r}.'
+            )
 
         if key != value.key:
-            raise ValueError(f'Passed key should be equals to formatters key.')
+            raise ValueError(
+                f'Passed key must be equal to formatters key '
+                f'(key: {key!r}, formatters key: {value.key!r}).'
+            )
 
         self.add_formatter(formatter=value, raise_if_exists=False)
 
-    async def format_text(self, text: str, data: dict[str, Any]) -> MessagesStack:
+    async def format_text(
+        self,
+        text: str,
+        data: dict[str, Any],
+        raise_on_error: bool = True
+    ) -> MessagesStack:
+        """
+        Извлекает из переданного текста все вызовы форматтеров и выполняет их.
+
+        :param text: Исходный текст.
+        :param data: Словарь с данными, который будет передаваться в функции-форматтеры.
+        :return: `MessagesStack`.
+        """
         parser = extract_calls(text)
         result: list[str | Image] = []
         first_iter = True
@@ -98,29 +138,32 @@ class FormattersRegistry:
                 if first_iter:
                     first_iter = False
             except StopIteration:
-                self.append_or_concatenate(result, text)
+                append_or_concatenate(result, text)
                 return MessagesStack(result)
 
-            self.append_or_concatenate(result, text[:call_start])
+            append_or_concatenate(result, text[:call_start])
             text = text[call_end+1:]
 
             if call_name not in self:
                 continue
 
             try:
-                self.append_or_concatenate(result, await self[call_name].execute(args, data))
+                append_or_concatenate(result, await self[call_name].execute(args, data))
             except:
+                if raise_on_error:
+                    raise
                 continue
 
-    def append_or_concatenate(self, to: list[Any], obj: Any) -> None:
-        if not to:
-            to.append(obj)
-            return
 
-        if isinstance(obj, str):
-            if isinstance(to[-1], str):
-                to[-1] += obj
-            else:
-                to.append(obj)
+def append_or_concatenate(to: list[Any], obj: FORMATTER_R) -> None:
+    if not to or isinstance(obj, list):
+        to.append(obj) if not isinstance(obj, list) else to.extend(obj)
+        return
+
+    if isinstance(obj, str):
+        if isinstance(to[-1], str):
+            to[-1] += obj
         else:
             to.append(obj)
+    else:
+        to.append(obj)
