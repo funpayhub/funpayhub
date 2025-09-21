@@ -55,11 +55,11 @@ class SelectPage(CallbackData, prefix='select_page', sep='|'):
 
 
 # new
-class NextParamValue(CallbackData, Pagable, prefix='next_param_value'):
+class NextParamValue(CallbackData, prefix='next_param_value'):
     path: str
 
 
-class ManualParamValueInput(CallbackData, Pagable, prefix='manual_value_input'):
+class ManualParamValueInput(CallbackData, prefix='manual_value_input'):
     path: str
 
 
