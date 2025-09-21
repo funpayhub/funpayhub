@@ -8,15 +8,18 @@ class FunPayHub:
         self,
         properties: FunPayHubProperties | None = None,
     ):
-        workflow_data: dict[str, Any] = {
-            'hub': self,
-            'properties': properties,
-        }
+        workflow_data = {}
 
-        self.properties = properties or FunPayHubProperties()
-        self.funpay = FunPay(self.properties, workflow_data=workflow_data)
+        if properties is None:
+            properties = FunPayHubProperties()
+            properties.load()
+        self._properties = properties
+
+        self._funpay = FunPay(self, workflow_data=workflow_data)
 
         workflow_data.update({
+            'hub': self,
+            'properties': self.properties,
             'fp': self.funpay,
             'fp_bot': self.funpay.bot,
             'fp_dp': self.funpay.dispatcher,
@@ -25,3 +28,11 @@ class FunPayHub:
 
     async def start(self):
         await self.funpay.start()
+
+    @property
+    def properties(self) -> FunPayHubProperties:
+        return self._properties
+
+    @property
+    def funpay(self) -> FunPay:
+        return self._funpay

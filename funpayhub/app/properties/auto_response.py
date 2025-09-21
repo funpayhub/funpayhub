@@ -16,13 +16,53 @@ class AutoResponseEntryProperties(Properties):
             description=f'$props.auto_response.*',
         )
 
-        self.is_regexp = self.attach_parameter(
+        self.reply = self.attach_parameter(
             ToggleParameter(
                 properties=self,
-                id='is_regexp',
-                name='$props.auto_response.*.is_regexp:name',
-                description='$props.auto_response.*.response_text:description',
+                id='reply',
+                name='$props.auto_response.*.reply:name',
+                description='$props.auto_response.*.reply:description',
+                default_value=True
+            )
+        )
+
+        self.abort_on_formatters_error = self.attach_parameter(
+            ToggleParameter(
+                properties=self,
+                id='abort_on_formatters_error',
+                name='$props.auto_response.*.abort_on_formatters_error:name',
+                description='$props.auto_response.*.abort_on_formatters_error:description',
                 default_value=False
+            )
+        )
+
+        self.abort_on_hooks_error = self.attach_parameter(
+            ToggleParameter(
+                properties=self,
+                id='abort_on_hooks_error',
+                name='$props.auto_response.*.abort_on_hooks_error:name',
+                description='$props.auto_response.*.abort_on_hooks_error:description',
+                default_value=False
+            )
+        )
+
+        self.react_on_me = self.attach_parameter(
+            ToggleParameter(
+                properties=self,
+                id='react_on_me',
+                name='$props.auto_response.*.react_on_me:name',
+                description='$props.auto_response.*.react_on_me:description',
+                default_value=True
+            )
+        )
+
+        self.react_on_others = self.attach_parameter(
+            ToggleParameter(
+                properties=self,
+                id='react_on_others',
+                name='$props.auto_response.*.react_on_others:name',
+                description='$props.auto_response.*.react_on_others:description',
+                default_value=True
             )
         )
 

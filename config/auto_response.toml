@@ -1,4 +1,8 @@
 ["/my_command"]
-is_regexp = false
-response_text = "Ответ на $message_text"
+reply = true
+abort_on_formatters_error = false
+abort_on_hooks_error = false
+react_on_me = true
+react_on_others = true
+response_text = "Привет, $username"
 hooks = []
