@@ -45,7 +45,23 @@ class Menu:
         else:
             text = CallableWrapper(self.text)
 
+        if isinstance(self.image, str | None | CallableWrapper):
+            image = self.image
+        else:
+            image = CallableWrapper(self.image)
 
+        u_k, k, f_k = [
+            CallableWrapper(i) if not isinstance(i, list | CallableWrapper | None) else i
+            for i in [self.upper_keyboard, self.keyboard, self.footer_keyboard]
+        ]
+
+        return Menu(
+            text=text,
+            image=image,
+            upper_keyboard=u_k,
+            keyboard=k,
+            footer_keyboard=f_k,
+        )
 
 
 @dataclass
