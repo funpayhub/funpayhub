@@ -1,0 +1,10 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from aiogram import BaseMiddleware
+
+class AddDataMiddleware(BaseMiddleware):
+    async def __call__(self, handler, event, data):
+        data['data'] = data
+        await handler(event, data)

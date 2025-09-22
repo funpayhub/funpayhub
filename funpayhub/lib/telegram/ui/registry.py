@@ -36,15 +36,9 @@ class UIRegistry:
         :param ctx:
         :return:
         """
-        if type(ctx.entry) in self.default_properties_renderers:
-            ui = self.default_properties_renderers[type(ctx.entry)]
-        else:
-            for entry_type, ui_builder in self.default_properties_renderers.items():
-                if isinstance(ctx.entry, entry_type):
-                    ui = ui_builder
-                    break
-            else:
-                raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
+        ui = self.find_properties_builder(type(ctx.entry))
+        if ui is None:
+            raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
 
         menu: Menu = await ui.next_menu(self, ctx)
         keyboard = await menu.total_keyboard(self, ctx, data, convert=True)

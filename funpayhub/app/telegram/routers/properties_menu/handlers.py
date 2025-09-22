@@ -10,10 +10,15 @@ from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.properties import ChoiceParameter, ToggleParameter, MutableParameter
+from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.states import ChangingPage, ChangingParameterValueState
 from funpayhub.lib.telegram.keyboards import clear_state_keyboard
 from funpayhub.lib.telegram.menu_constructor.renderer import TelegramPropertiesMenuRenderer
+
+from funpayhub.lib.telegram.ui.registry import UIRegistry
+from funpayhub.lib.telegram.ui.types import PropertiesUIContext
+from typing import Any
 
 from .router import router as r
 
@@ -51,44 +56,107 @@ async def clear(query: CallbackQuery, bot: Bot, dispatcher: Dispatcher) -> None:
 
 
 @r.message(Command('start'))
-@r.message(Command('menu'))
 async def send_menu(
     message: Message,
-    hub_properties: FunPayHubProperties,
-    menu_renderer: TelegramPropertiesMenuRenderer,
+    properties: FunPayHubProperties,
+    translater: Translater,
+    hashinator: HashinatorT1000,
+    tg_ui: UIRegistry,
+    data: dict[str, Any]
 ) -> None:
-    text, keyboard = menu_renderer.build_properties_menu(
-        properties=hub_properties,
-        page_index=0,
-        max_elements_on_page=hub_properties.telegram.appearance.menu_entries_amount.value,
-        language=hub_properties.general.language.real_value(),
+    ctx = PropertiesUIContext(
+        translater=translater,
+        language=properties.general.language.value,
+        max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
+        page=0,
+        current_callback=cbs.MenuParamValueInput(path=properties.path).pack(),
+        callbacks_history=[],
+        entry=properties
     )
+
+    window = await tg_ui.build_properties_ui(ctx, hashinator, data)
 
     await message.answer(
-        text=text,
-        reply_markup=keyboard,
+        text=window.text,
+        reply_markup=window.keyboard,
     )
 
 
-@r.callback_query(cbs.OpenProperties.filter())
-async def open_properties(
+@r.callback_query(cbs.MenuParamValueInput.filter())
+async def open_menu(
     query: CallbackQuery,
-    hub_properties: FunPayHubProperties,
-    menu_renderer: TelegramPropertiesMenuRenderer,
-    properties: Properties,
-) -> None:
-    unpacked = cbs.OpenProperties.unpack(query.data)
-    text, keyboard = menu_renderer.build_properties_menu(
-        properties=properties,
-        page_index=unpacked.page,
-        max_elements_on_page=hub_properties.telegram.appearance.menu_entries_amount.value,
-        language=hub_properties.general.language.real_value(),
+    properties: FunPayHubProperties,
+    translater: Translater,
+    hashinator: HashinatorT1000,
+    tg_ui: UIRegistry,
+    callbacks_history: list[str],
+    data: dict[str, Any]
+):
+    unpacked = cbs.MenuParamValueInput.unpack(query.data)
+
+    ctx = PropertiesUIContext(
+        translater=translater,
+        language=properties.general.language.value,
+        max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
+        page=unpacked.page,
+        current_callback=query.data,
+        callbacks_history=callbacks_history,
+        entry=properties.get_entry(unpacked.path)
     )
+
+    window = await tg_ui.build_properties_ui(ctx, hashinator, data)
 
     await query.message.edit_text(
-        text=text,
-        reply_markup=keyboard,
+        text=window.text,
+        reply_markup=window.keyboard,
     )
+
+
+@r.callback_query(cbs.NextParamValue.filter())
+async def next_param_value(
+    query: CallbackQuery,
+    properties: FunPayHubProperties,
+    callbacks_history: list[str],
+    dispatcher: Dispatcher,
+    bot
+):
+    unpacked = cbs.NextParamValue.unpack(query.data)
+    param = properties.get_parameter(unpacked.path)
+
+    next(param)
+
+    new_query = '->'.join(callbacks_history)
+    new_event = query.model_copy(update={'data': new_query})
+    update = Update(
+        update_id=0,
+        callback_query=new_event,
+    )
+
+    await dispatcher.feed_update(bot, update)
+
+
+@r.callback_query(cbs.ChangePageTo.filter())
+async def change_page(
+    query: CallbackQuery,
+    callbacks_history: list[str],
+    dispatcher: Dispatcher,
+    bot
+):
+    unpacked = cbs.ChangePageTo.unpack(query.data)
+    new_query = re.sub(
+        r'page-\d+',
+        f'page-{unpacked.page}',
+        callbacks_history[-1],
+    )
+    callbacks_history[-1] = new_query
+
+    new_event = query.model_copy(update={'data': '->'.join(callbacks_history)})
+    update = Update(
+        update_id=0,
+        callback_query=new_event,
+    )
+
+    await dispatcher.feed_update(bot, update)
 
 
 @r.callback_query(cbs.OpenChoiceParameter.filter())

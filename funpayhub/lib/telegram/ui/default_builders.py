@@ -122,6 +122,22 @@ async def build_properties_footer(ui: UIRegistry, ctx: PropertiesUIContext) -> K
     total_pages = math.ceil(len(ctx.entry) / ctx.max_elements_on_page)
     new_history = ctx.callbacks_history + [ctx.current_callback]
 
+    kb = []
+
+    if ctx.callbacks_history:
+        back_btn = InlineKeyboardButton(
+            text=ctx.translater.translate('$back', ctx.language),
+            callback_data='->'.join(ctx.callbacks_history)
+        )
+        kb.append(
+            [
+                Button(id='back', obj=back_btn),
+            ]
+        )
+
+    if total_pages < 2:
+        return kb
+
     page_amount_cb = cbs.ManualPageChange(total_pages=total_pages).pack() \
         if total_pages > 1 \
         else cbs.Dummy().pack()
@@ -164,17 +180,19 @@ async def build_properties_footer(ui: UIRegistry, ctx: PropertiesUIContext) -> K
         callback_data=to_next_cb
     )
 
-    return [
+    kb.insert(0, [
         Button(id='to_first_page', obj=to_first_btn),
         Button(id='to_previous_page', obj=to_previous_btn),
         Button(id='page_counter', obj=page_amount_btn),
         Button(id='to_next_page', obj=to_next_btn),
         Button(id='to_last_page', obj=to_last_btn),
-    ]
+    ])
+
+    return kb
 
 
 async def build_properties_text(ui: UIRegistry, ctx: PropertiesUIContext) -> str:
-    return f"""</u><b>{ctx.translater.translate(ctx.entry.name, ctx.language)}</b></u>
+    return f"""<u><b>{ctx.translater.translate(ctx.entry.name, ctx.language)}</b></u>
 
 <i>{ctx.translater.translate(ctx.entry.description, ctx.language)}</i>
 """
