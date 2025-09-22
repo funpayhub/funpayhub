@@ -78,3 +78,6 @@ class ListParameter(MutableParameter[list[str]]):
                 validator(value)
 
         return real_validator
+
+    def __len__(self) -> int:
+        return len(self.value)

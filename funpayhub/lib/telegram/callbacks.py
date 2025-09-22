@@ -65,3 +65,11 @@ class ManualParamValueInput(CallbackData, prefix='manual_value_input'):
 
 class MenuParamValueInput(CallbackData, Pagable, prefix='menu_value_input'):
     path: str
+
+
+class ChangePageTo(CallbackData, prefix='change_page_to'):
+    page: int
+
+
+class ManualPageChange(CallbackData, prefix='manual_page_change'):
+    total_pages: int

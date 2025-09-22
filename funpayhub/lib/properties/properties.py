@@ -236,3 +236,6 @@ class Properties(Entry):
         if not isinstance(result, Properties):
             raise LookupError(f'No properties with path {path}')
         return result
+
+    def __len__(self) -> int:
+        return len(self.entries)

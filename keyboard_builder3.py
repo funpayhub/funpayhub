@@ -1,6 +1,6 @@
 from __future__ import annotations
 from aiogram.types import InlineKeyboardButton
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from collections.abc import Callable, Awaitable
 from eventry.asyncio.callable_wrappers import CallableWrapper
 from funpayhub.lib.properties import Properties, Parameter, MutableParameter
@@ -8,6 +8,7 @@ import funpayhub.lib.properties.parameter as param
 from typing import Any
 from funpayhub.lib.translater import Translater
 import funpayhub.lib.telegram.callbacks as cbs
+import math
 
 
 type Keyboard = list[Button | list[Button]]
@@ -52,12 +53,13 @@ class UIContext:
     language: str
     max_elements_on_page: int
     page: int
+    current_callback: str
+    callbacks_history: list[str]
 
 
 @dataclass
 class PropertiesUIContext(UIContext):
     entry: Properties | MutableParameter
-    callbacks_history: list[str]
 
 
 @dataclass
@@ -73,8 +75,14 @@ class ManualChangeableParameter:
 
 @dataclass
 class MenuChangeableParameter:
-    button_builder: Callable[..., Menu | Awaitable[Menu]]
+    button_builder: Callable[..., Button | Awaitable[Button]]
     change_menu_builder: Callable[..., Menu | Awaitable[Menu]]
+
+
+@dataclass
+class PropertiesMenu:
+    button_builder: Callable[..., Button | Awaitable[Button]]
+    menu_builder: Callable[..., Menu | Awaitable[Menu]]
 
 
 # Defaults
@@ -162,9 +170,83 @@ async def build_choice_parameter_menu(ctx: PropertiesUIContext) -> Menu:
         raise ValueError(f'')
 
 
+# properties
+async def build_properties_keyboard(ui: UIRegistry, ctx: PropertiesUIContext) -> Keyboard:
+    keyboard = []
 
+    first_element = ctx.page * ctx.max_elements_on_page
+    last_element = first_element + ctx.max_elements_on_page
+    entries = list(ctx.entry.entries.items())[first_element:last_element]
 
+    for entry_id, entry in entries:
+        if type(entry) not in ui.default_properties_renderers:
+            continue
 
+        builder = ui.default_properties_renderers[type(entry)]
+
+        btn_ctx = replace(
+            ctx,
+            page=0,
+            callbacks_history=ctx.callbacks_history + [ctx.current_callback]
+        )
+        keyboard.append([await builder.button_builder(btn_ctx)])
+    return keyboard
+
+async def build_properties_footer(ui: UIContext, ctx: PropertiesUIContext) -> Keyboard:
+    total_pages = math.ceil(len(ctx.entry) / ctx.max_elements_on_page)
+    new_history = ctx.callbacks_history + [ctx.current_callback]
+
+    page_amount_cb = cbs.ManualPageChange(total_pages=total_pages).pack() \
+        if total_pages > 1 \
+        else cbs.Dummy().pack()
+
+    page_amount_cb = '->'.join([*new_history, page_amount_cb])
+
+    page_amount_btn = InlineKeyboardButton(
+        text=f'{ctx.page + (1 if total_pages else 0)} / {total_pages}',
+        callback_data=page_amount_cb
+    )
+
+    to_first_cb = cbs.ChangePageTo(page=0).pack() if ctx.page > 0 else cbs.Dummy().pack()
+    to_first_cb = '->'.join([*new_history, to_first_cb])
+
+    to_first_btn = InlineKeyboardButton(
+        text='⏪' if ctx.page > 0 else '❌',
+        callback_data=to_first_cb
+    )
+
+    to_last_cb = cbs.ChangePageTo(page=total_pages-1).pack() if ctx.page < total_pages-1 else cbs.Dummy().pack()
+    to_last_cb = '->'.join([*new_history, to_last_cb])
+
+    to_last_btn = InlineKeyboardButton(
+        text='⏩' if ctx.page < total_pages-1 else '❌',
+        callback_data=to_last_cb
+    )
+
+    to_previous_cb = cbs.ChangePageTo(page=ctx.page-1).pack() if ctx.page > 0 else cbs.Dummy().pack()
+    to_previous_cb = '->'.join([*new_history, to_previous_cb])
+    to_previous_btn = InlineKeyboardButton(
+        text='◀️' if ctx.page > 0 else '❌',
+        callback_data=to_previous_cb
+    )
+
+    to_next_cb = cbs.ChangePageTo(page=ctx.page+1).pack() if ctx.page < total_pages - 1 else cbs.Dummy().pack()
+    to_next_cb = '->'.join([*new_history, to_next_cb])
+
+    to_next_btn = InlineKeyboardButton(
+        text='▶️' if ctx.page < total_pages - 1 else '❌',
+        callback_data=to_next_cb
+    )
+
+    return [
+        Button(id='to_first_page', obj=to_first_btn),
+        Button(id='to_previous_page', obj=to_previous_btn),
+        Button(id='page_counter', obj=page_amount_btn),
+        Button(id='to_next_page', obj=to_next_btn),
+        Button(id='to_last_page', obj=to_last_btn),
+    ]
+
+# common
 
 class UIRegistry:
     def __init__(self):

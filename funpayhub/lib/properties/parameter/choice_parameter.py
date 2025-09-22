@@ -84,3 +84,6 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
 
         self.set_value(self.value + 1, save=True)
         return self.real_value
+
+    def __len__(self) -> int:
+        return len(self.choices)
