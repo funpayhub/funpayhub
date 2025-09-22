@@ -5,26 +5,14 @@ from typing import TYPE_CHECKING, Any
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery
 
-import funpayhub.lib.telegram.callbacks as cbs
-
 
 if TYPE_CHECKING:
     from funpayhub.app.properties.properties import FunPayHubProperties
 
-_PROPS = [
-    cbs.OpenProperties,
-]
-
-_PARAMS = [
-    cbs.ToggleParameter,
-    cbs.OpenChoiceParameter,
-    cbs.SelectParameterValue,
-    cbs.ChangeParameter,
-]
-
 
 class CheckPropertiesPathExists(BaseMiddleware):
     async def __call__(self, handler: Any, event: CallbackQuery, data: dict[str, Any]):
+        """
         for i in _PROPS:
             if event.data.startswith(f'{i.__prefix__}{i.__separator__}'):
                 break
@@ -41,10 +29,13 @@ class CheckPropertiesPathExists(BaseMiddleware):
 
         data['properties'] = props
         await handler(event, data)
+        """
+        await handler(event, data)
 
 
 class CheckParameterPathExists(BaseMiddleware):
     async def __call__(self, handler: Any, event: CallbackQuery, data: dict[str, Any]):
+        """
         for i in _PARAMS:
             if event.data.startswith(f'{i.__prefix__}{i.__separator__}'):
                 break
@@ -60,4 +51,7 @@ class CheckParameterPathExists(BaseMiddleware):
             return
 
         data['parameter'] = props
+        await handler(event, data)
+        """
+
         await handler(event, data)

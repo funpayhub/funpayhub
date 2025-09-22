@@ -52,26 +52,26 @@ dictConfig(
                 'level': logging.DEBUG,
                 'handlers': ['console'],
             },
-            # 'aiogram.dispatcher': {
-            #     'level': logging.DEBUG,
-            #     'handlers': ['console'],
-            # },
-            # 'aiogram.event': {
-            #     'level': logging.DEBUG,
-            #     'handlers': ['console'],
-            # },
-            # 'aiogram.middlewares': {
-            #     'level': logging.DEBUG,
-            #     'handlers': ['console'],
-            # },
-            # 'aiogram.webhook': {
-            #     'level': logging.DEBUG,
-            #     'handlers': ['console'],
-            # },
-            # 'aiogram.scene': {
-            #     'level': logging.DEBUG,
-            #     'handlers': ['console'],
-            # },
+            'aiogram.dispatcher': {
+                'level': logging.DEBUG,
+                'handlers': ['console'],
+            },
+            'aiogram.event': {
+                'level': logging.DEBUG,
+                'handlers': ['console'],
+            },
+            'aiogram.middlewares': {
+                'level': logging.DEBUG,
+                'handlers': ['console'],
+            },
+            'aiogram.webhook': {
+                'level': logging.DEBUG,
+                'handlers': ['console'],
+            },
+            'aiogram.scene': {
+                'level': logging.DEBUG,
+                'handlers': ['console'],
+            },
         },
     },
 )
@@ -87,18 +87,19 @@ props.load()
 
 translater = Translater()
 translater.add_translations('funpayhub/locales')
+print(translater._catalogs)
 
-keyboard_hashinater = HashinatorT1000()
-renderer = TelegramPropertiesMenuRenderer(translater=translater, hashinator=keyboard_hashinater)
+keyboard_hashinator = HashinatorT1000()
+renderer = TelegramPropertiesMenuRenderer(translater=translater, hashinator=keyboard_hashinator)
 
-registry = UIRegistry()
+registry = UIRegistry(translater=translater, hashinator=keyboard_hashinator)
 
 dp = Dispatcher(
     **{
         'properties': props,
         'translater': translater,
         'menu_renderer': renderer,
-        'hashinator': keyboard_hashinater,
+        'hashinator': keyboard_hashinator,
         'tg_ui': registry,
     },
 )
@@ -107,6 +108,8 @@ dp.include_router(properties_menu_r)
 
 middleware = AddDataMiddleware()
 for i, o in dp.observers.items():
+    if i == 'error':
+        continue
     o.outer_middleware(middleware)
 
 

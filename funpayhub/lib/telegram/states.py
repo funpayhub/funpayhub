@@ -5,7 +5,6 @@ from dataclasses import field, dataclass
 from aiogram.types import Message, CallbackQuery
 
 from funpayhub.lib.properties import MutableParameter
-from funpayhub.lib.telegram.callbacks import SelectPage
 
 
 class State:
@@ -17,7 +16,7 @@ class ChangingParameterValueState(State):
     name: str = field(init=False, repr=False, default='changing_parameter_value')
 
     parameter: MutableParameter
-    callback_query: CallbackQuery
+    callback_query_obj: CallbackQuery
     callbacks_history: list[str]
     message: Message
     user_messages: list[Message]
@@ -27,7 +26,8 @@ class ChangingParameterValueState(State):
 class ChangingPage(State):
     name: str = field(init=False, repr=False, default='changing_page')
 
-    query: CallbackQuery
-    unpacked_query: SelectPage
+    callback_query_obj: CallbackQuery
+    callbacks_history: list[str]
     message: Message
+    max_pages: int
     user_messages: list[Message]

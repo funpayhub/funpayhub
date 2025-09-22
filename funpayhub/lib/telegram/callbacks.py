@@ -4,7 +4,7 @@ from pydantic import BaseModel, field_validator, field_serializer
 from aiogram.filters.callback_data import CallbackData
 
 
-class Pagable(BaseModel):
+class Pageable(BaseModel):
     page: int = 0
 
     @field_validator('page', mode='before')
@@ -18,58 +18,80 @@ class Pagable(BaseModel):
         return f'page-{v}'
 
 
-class Dummy(CallbackData, prefix='dummy'): ...
+class Dummy(CallbackData, prefix='dummy'):
+    """
+    Callback-пустышка.
+
+    На данный callback бот отвечает мгновенным `.answer()`
+    """
 
 
-class Clear(CallbackData, prefix='clear'): ...
+class Clear(CallbackData, prefix='clear'):
+    """
+    Callback очитки текущего состояния.
+
+    При срабатывании бот очищает состояние пользователя в чате / теме, откуда пришел callback +
+    удаляет привязанное сообщение.
+    """
 
 
 class Hash(CallbackData, prefix='hash'):
+    """
+    Хэшированный callback.
+
+    Одна из самых первых миддлварей бота должна перехватить данный callback, расшифровать и
+    подменить.
+    """
     hash: str
 
 
-class OpenProperties(CallbackData, Pagable, prefix='o'):
-    path: str
-
-
-class ToggleParameter(CallbackData, Pagable, prefix='t'):
-    path: str
-
-
-class ChangeParameter(CallbackData, Pagable, prefix='c'):
-    path: str
-
-
-class OpenChoiceParameter(CallbackData, Pagable, prefix='open_choice_param'):
-    path: str
-
-
-class SelectParameterValue(CallbackData, Pagable, prefix='select_param_val'):
-    path: str
-    index: int
-
-
-class SelectPage(CallbackData, prefix='select_page', sep='|'):
-    query: str
-    pages_amount: int
-
-
-# new
 class NextParamValue(CallbackData, prefix='next_param_value'):
+    """
+    Вызывает __next__ у параметра по пути `path`, после чего вызывает последний callback из
+    callback_history.
+
+    Подходит для всех параметров, у которых реализован __next__ (бесконечный), например:
+    `ToggleParameter`, `ChoiceParameter` и т.д.
+    """
+
     path: str
+    """Путь к параметру."""
 
 
 class ManualParamValueInput(CallbackData, prefix='manual_value_input'):
+    """
+    Устанавливает состояние на `ChangingParameterValueState`, отправляет меню параметра по пути
+    `path`.
+    """
+
     path: str
+    """Путь к параметру."""
 
 
-class MenuParamValueInput(CallbackData, Pagable, prefix='menu_value_input'):
+class OpenPropertiesMenu(CallbackData, Pageable, prefix='open_properties_menu'):
+    """
+    Обновляет привязанное сообщение и открывает меню параметра / категории по пути `path`.
+    """
     path: str
+    """Путь к параметру / категории."""
 
 
 class ChangePageTo(CallbackData, prefix='change_page_to'):
+    """
+    Обновляет привязанное сообщение, меня страницу последнего callback из callback_history,
+    если в нем имеется паттерн page-\d+
+    """
     page: int
+    """Новый индекс страницы."""
 
 
-class ManualPageChange(CallbackData, prefix='manual_page_change'):
+class ChangePageManually(CallbackData, prefix='change_page_manually'):
+    """
+    Устанавливает состояние на `ChangingPage`.
+    """
     total_pages: int
+
+
+class ChooseParamValue(CallbackData, prefix='choose_param_value'):
+    path: str
+    choice_index: int

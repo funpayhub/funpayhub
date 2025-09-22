@@ -2,32 +2,40 @@ from __future__ import annotations
 
 
 __all__ = [
-    'TOGGLE_UI',
-    'MANUAL_CHANGE_PARAM_UI',
-    'PROPERTIES_UI',
+    'TOGGLE_BTN',
+
+    'INT_PARAM_BTN',
+    'INT_PARAM_MENU',
+
+    'FLOAT_PARAM_BTN',
+    'FLOAT_PARAM_MENU',
+
+    'STRING_PARAM_BTN',
+    'STRING_PARAM_MENU',
+
+    'PROPERTIES_BTN',
+    'PROPERTIES_MENU',
 ]
 
 
-from .types import PropertiesUIBuilder, OneStepPropertiesUIBuilder
+from eventry.asyncio.callable_wrappers import CallableWrapper
 from .default_builders import (
     build_parameter_button,
     properties_menu_builder,
     build_parameter_change_menu,
     build_toggle_parameter_button,
     build_long_value_parameter_button,
+    choice_parameter_menu_builder
 )
 
 
-TOGGLE_UI = OneStepPropertiesUIBuilder(
-    button_builder=build_toggle_parameter_button,
-)
+TOGGLE_BTN = CallableWrapper(build_toggle_parameter_button)
 
-MANUAL_CHANGE_PARAM_UI = PropertiesUIBuilder(
-    button_builder=build_parameter_button,
-    next_menu=build_parameter_change_menu,
-)
+INT_PARAM_BTN = STRING_PARAM_BTN = FLOAT_PARAM_BTN = CallableWrapper(build_parameter_button)
+INT_PARAM_MENU = STRING_PARAM_MENU = FLOAT_PARAM_MENU = CallableWrapper(build_parameter_change_menu)
 
-PROPERTIES_UI = PropertiesUIBuilder(
-    button_builder=build_long_value_parameter_button,
-    next_menu=properties_menu_builder,
-)
+PROPERTIES_BTN = CallableWrapper(build_long_value_parameter_button)
+PROPERTIES_MENU = CallableWrapper(properties_menu_builder)
+
+CHOICE_PARAM_BTN = CallableWrapper(build_long_value_parameter_button)
+CHOICE_PARAM_MENU = CallableWrapper(choice_parameter_menu_builder)

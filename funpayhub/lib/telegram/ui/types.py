@@ -154,7 +154,6 @@ class Window:
 
 @dataclass
 class UIContext:
-    translater: Translater
     language: str
     max_elements_on_page: int
     page: int
@@ -170,8 +169,15 @@ class PropertiesUIContext(UIContext):
 @dataclass
 class OneStepPropertiesUIBuilder:
     button_builder: CallableValue[Button]
+    def __post_init__(self) -> None:
+        if not isinstance(self.button_builder, CallableWrapper):
+            self.button_builder = CallableWrapper(self.button_builder)
 
 
 @dataclass
 class PropertiesUIBuilder(OneStepPropertiesUIBuilder):
     next_menu: CallableValue[Menu]
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not isinstance(self.next_menu, CallableWrapper):
+            self.next_menu = CallableWrapper(self.next_menu)

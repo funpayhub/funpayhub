@@ -10,7 +10,7 @@ from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.states import ChangingParameterValueState
+from funpayhub.lib.telegram.states import ChangingParameterValueState, ChangingPage
 from funpayhub.lib.telegram.ui.types import PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
@@ -53,22 +53,19 @@ async def clear(query: CallbackQuery, bot: Bot, dispatcher: Dispatcher) -> None:
 async def send_menu(
     message: Message,
     properties: FunPayHubProperties,
-    translater: Translater,
-    hashinator: HashinatorT1000,
     tg_ui: UIRegistry,
     data: dict[str, Any],
 ) -> None:
     ctx = PropertiesUIContext(
-        translater=translater,
-        language=properties.general.language.value,
+        language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         page=0,
-        current_callback=cbs.MenuParamValueInput(path=properties.path).pack(),
+        current_callback=cbs.OpenPropertiesMenu(path=properties.path).pack(),
         callbacks_history=[],
         entry=properties,
     )
 
-    window = await tg_ui.build_properties_ui(ctx, hashinator, data)
+    window = await tg_ui.build_properties_menu(ctx, data)
 
     await message.answer(
         text=window.text,
@@ -76,21 +73,18 @@ async def send_menu(
     )
 
 
-@r.callback_query(cbs.MenuParamValueInput.filter())
+@r.callback_query(cbs.OpenPropertiesMenu.filter())
 async def open_menu(
     query: CallbackQuery,
     properties: FunPayHubProperties,
-    translater: Translater,
-    hashinator: HashinatorT1000,
     tg_ui: UIRegistry,
     callbacks_history: list[str],
     data: dict[str, Any],
 ):
-    unpacked = cbs.MenuParamValueInput.unpack(query.data)
+    unpacked = cbs.OpenPropertiesMenu.unpack(query.data)
 
     ctx = PropertiesUIContext(
-        translater=translater,
-        language=properties.general.language.value,
+        language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         page=unpacked.page,
         current_callback=query.data,
@@ -98,7 +92,7 @@ async def open_menu(
         entry=properties.get_entry(unpacked.path),
     )
 
-    window = await tg_ui.build_properties_ui(ctx, hashinator, data)
+    window = await tg_ui.build_properties_menu(ctx, data)
 
     await query.message.edit_text(
         text=window.text,
@@ -117,7 +111,34 @@ async def next_param_value(
     unpacked = cbs.NextParamValue.unpack(query.data)
     param = properties.get_parameter(unpacked.path)
 
-    next(param)
+    try:
+        next(param)
+    except Exception as e:
+        await query.answer(text=str(e), show_alert=True)
+        raise
+
+    new_query = '->'.join(callbacks_history)
+    new_event = query.model_copy(update={'data': new_query})
+    update = Update(
+        update_id=0,
+        callback_query=new_event,
+    )
+
+    await dispatcher.feed_update(bot, update)
+
+
+@r.callback_query(cbs.ChooseParamValue.filter())
+async def choose_param_value(
+    query: CallbackQuery,
+    properties: FunPayHubProperties,
+    callbacks_history: list[str],
+    dispatcher: Dispatcher,
+    bot,
+):
+    unpacked = cbs.ChooseParamValue.unpack(query.data)
+    param = properties.get_parameter(unpacked.path)
+
+    param.set_value(unpacked.choice_index)
 
     new_query = '->'.join(callbacks_history)
     new_event = query.model_copy(update={'data': new_query})
@@ -157,8 +178,6 @@ async def change_page(
 async def change_parameter_value(
     query: CallbackQuery,
     properties: FunPayHubProperties,
-    translater: Translater,
-    hashinator: HashinatorT1000,
     tg_ui: UIRegistry,
     callbacks_history: list[str],
     data: dict[str, Any],
@@ -172,8 +191,7 @@ async def change_parameter_value(
     param = properties.get_parameter(unpacked.path)
 
     ctx = PropertiesUIContext(
-        translater=translater,
-        language=properties.general.language.value,
+        language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         page=0,
         current_callback=query.data,
@@ -181,7 +199,7 @@ async def change_parameter_value(
         entry=param,
     )
 
-    window = await tg_ui.build_properties_ui(ctx=ctx, hashinator=hashinator, data=data)
+    window = await tg_ui.build_properties_menu(ctx=ctx, data=data)
 
     msg = await bot.send_message(
         chat_id=query.message.chat.id,
@@ -195,7 +213,7 @@ async def change_parameter_value(
         {
             'data': ChangingParameterValueState(
                 parameter=param,
-                callback_query=query,
+                callback_query_obj=query,
                 callbacks_history=callbacks_history,
                 message=msg,
                 user_messages=[],
@@ -231,11 +249,81 @@ async def edit_parameter(
 
     await _delete_message(data.message)
 
-    data.callback_query.__dict__['data'] = '->'.join(data.callbacks_history)
+    data.callback_query_obj.__dict__['data'] = '->'.join(data.callbacks_history)
     await dispatcher.feed_update(
         bot,
         Update(
             update_id=0,
-            callback_query=data.callback_query,
+            callback_query=data.callback_query_obj,
         ),
     )
+
+
+@r.callback_query(cbs.ChangePageManually.filter())
+async def manual_change_page_activate(
+    query: CallbackQuery,
+    bot: Bot,
+    dispatcher: Dispatcher,
+    callbacks_history: list[str]
+):
+    unpacked = cbs.ChangePageManually.unpack(query.data)
+    state = _get_context(dispatcher, bot, query)
+    await state.clear()
+
+    msg = await bot.send_message(
+        chat_id=query.message.chat.id,
+        message_thread_id=query.message.message_thread_id,
+        text='$enter_new_page_index_message',
+    )
+
+    await state.set_state(ChangingPage.name)
+    await state.set_data(
+        {
+            'data': ChangingPage(
+                callback_query_obj=query,
+                callbacks_history=callbacks_history,
+                message=msg,
+                max_pages=unpacked.total_pages,
+                user_messages=[],
+            ),
+        },
+    )
+    await query.answer()
+
+
+@r.message(StateFilter(ChangingPage.name))
+async def manual_page_change(
+    message: Message,
+    dispatcher: Dispatcher,
+    bot: Bot
+):
+    await _delete_message(message)
+
+    if not message.text.isnumeric():
+        return
+    new_page_index = int(message.text) - 1
+
+    context = _get_context(dispatcher, bot, message)
+    data: ChangingPage = (await context.get_data())['data']
+
+    if new_page_index > data.max_pages - 1 or new_page_index < 0:
+        return
+
+    await context.clear()
+
+    await _delete_message(data.message)
+
+    new_query = re.sub(
+        r'page-\d+',
+        f'page-{new_page_index}',
+        data.callbacks_history[-1],
+    )
+    data.callbacks_history[-1] = new_query
+
+    new_event = data.callback_query_obj.model_copy(update={'data': '->'.join(data.callbacks_history)})
+    update = Update(
+        update_id=0,
+        callback_query=new_event,
+    )
+
+    await dispatcher.feed_update(bot, update)
