@@ -17,8 +17,8 @@ class ChangingParameterValueState(State):
     name: str = field(init=False, repr=False, default='changing_parameter_value')
 
     parameter: MutableParameter
-    page: int
-    menu_message: Message
+    callback_query: CallbackQuery
+    callbacks_history: list[str]
     message: Message
     user_messages: list[Message]
 

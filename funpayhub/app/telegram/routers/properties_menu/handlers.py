@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
@@ -9,22 +9,16 @@ from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.properties import ChoiceParameter, ToggleParameter, MutableParameter
-from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.states import ChangingPage, ChangingParameterValueState
-from funpayhub.lib.telegram.keyboards import clear_state_keyboard
-from funpayhub.lib.telegram.menu_constructor.renderer import TelegramPropertiesMenuRenderer
-
-from funpayhub.lib.telegram.ui.registry import UIRegistry
+from funpayhub.lib.telegram.states import ChangingParameterValueState
 from funpayhub.lib.telegram.ui.types import PropertiesUIContext
-from typing import Any
+from funpayhub.lib.telegram.ui.registry import UIRegistry
+from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 
 from .router import router as r
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.properties import Properties
     from funpayhub.app.properties.properties import FunPayHubProperties
 
 
@@ -62,7 +56,7 @@ async def send_menu(
     translater: Translater,
     hashinator: HashinatorT1000,
     tg_ui: UIRegistry,
-    data: dict[str, Any]
+    data: dict[str, Any],
 ) -> None:
     ctx = PropertiesUIContext(
         translater=translater,
@@ -71,7 +65,7 @@ async def send_menu(
         page=0,
         current_callback=cbs.MenuParamValueInput(path=properties.path).pack(),
         callbacks_history=[],
-        entry=properties
+        entry=properties,
     )
 
     window = await tg_ui.build_properties_ui(ctx, hashinator, data)
@@ -90,7 +84,7 @@ async def open_menu(
     hashinator: HashinatorT1000,
     tg_ui: UIRegistry,
     callbacks_history: list[str],
-    data: dict[str, Any]
+    data: dict[str, Any],
 ):
     unpacked = cbs.MenuParamValueInput.unpack(query.data)
 
@@ -101,7 +95,7 @@ async def open_menu(
         page=unpacked.page,
         current_callback=query.data,
         callbacks_history=callbacks_history,
-        entry=properties.get_entry(unpacked.path)
+        entry=properties.get_entry(unpacked.path),
     )
 
     window = await tg_ui.build_properties_ui(ctx, hashinator, data)
@@ -118,7 +112,7 @@ async def next_param_value(
     properties: FunPayHubProperties,
     callbacks_history: list[str],
     dispatcher: Dispatcher,
-    bot
+    bot,
 ):
     unpacked = cbs.NextParamValue.unpack(query.data)
     param = properties.get_parameter(unpacked.path)
@@ -140,7 +134,7 @@ async def change_page(
     query: CallbackQuery,
     callbacks_history: list[str],
     dispatcher: Dispatcher,
-    bot
+    bot,
 ):
     unpacked = cbs.ChangePageTo.unpack(query.data)
     new_query = re.sub(
@@ -159,186 +153,64 @@ async def change_page(
     await dispatcher.feed_update(bot, update)
 
 
-@r.callback_query(cbs.OpenChoiceParameter.filter())
-async def open_parameter_choice(
-    query: CallbackQuery,
-    hub_properties: FunPayHubProperties,
-    menu_renderer: TelegramPropertiesMenuRenderer,
-    parameter: ChoiceParameter,
-):
-    unpacked = cbs.OpenChoiceParameter.unpack(query.data)
-    text, kb = menu_renderer.build_choice_parameter_menu(
-        param=parameter,
-        page_index=unpacked.page,
-        max_elements_on_page=hub_properties.telegram.appearance.menu_entries_amount.value,
-        language=hub_properties.general.language.real_value(),
-    )
-
-    await query.message.edit_text(text=text, reply_markup=kb)
-
-
-@r.callback_query(cbs.ToggleParameter.filter())
-async def toggle_parameter(
-    query: CallbackQuery,
-    hub_properties: FunPayHubProperties,
-    menu_renderer: TelegramPropertiesMenuRenderer,
-    parameter: ToggleParameter,
-) -> None:
-    unpacked = cbs.ToggleParameter.unpack(query.data)
-
-    parameter.toggle(save=True)
-
-    text, keyboard = menu_renderer.build_properties_menu(
-        properties=parameter.parent,
-        page_index=unpacked.page,
-        max_elements_on_page=hub_properties.telegram.appearance.menu_entries_amount.value,
-        language=hub_properties.general.language.real_value(),
-    )
-
-    await query.message.edit_text(text, reply_markup=keyboard)
-
-
-@r.callback_query(cbs.ChangeParameter.filter())
+@r.callback_query(cbs.ManualParamValueInput.filter())
 async def change_parameter_value(
     query: CallbackQuery,
-    hub_properties: FunPayHubProperties,
-    bot: Bot,
-    dispatcher: Dispatcher,
-    menu_renderer: TelegramPropertiesMenuRenderer,
+    properties: FunPayHubProperties,
     translater: Translater,
-    parameter: MutableParameter,
-) -> None:
-    unpacked = cbs.ChangeParameter.unpack(query.data)
-
-    text = translater.translate(
-        '$enter_new_value_message',
-        language=hub_properties.general.language.real_value(),
-    ).format(
-        parameter_name=parameter.name,
-        parameter_description=parameter.description,
-        current_parameter_value=str(parameter.value),
-    )
-
-    kb = clear_state_keyboard()
-    menu_renderer.process_keyboard(
-        kb,
-        language=hub_properties.general.language.real_value(),
-    )
-
-    message = await bot.send_message(
-        chat_id=query.message.chat.id,
-        message_thread_id=query.message.message_thread_id,
-        text=text,
-        reply_markup=kb,
-    )
-
-    context = _get_context(dispatcher, bot, query)
-    await context.clear()
-    await context.set_state(ChangingParameterValueState.name)
-    await context.set_data(
-        {
-            'data': ChangingParameterValueState(
-                parameter=parameter,
-                page=unpacked.page,
-                menu_message=query.message,
-                message=message,
-                user_messages=[],
-            ),
-        },
-    )
-    await query.answer()
-
-
-@r.callback_query(cbs.SelectParameterValue.filter())
-async def select_parameter_value(
-    query: CallbackQuery,
-    hub_properties: FunPayHubProperties,
-    menu_renderer: TelegramPropertiesMenuRenderer,
-    parameter: ChoiceParameter,
-):
-    unpacked = cbs.SelectParameterValue.unpack(query.data)
-    parameter.set_value(value=unpacked.index)
-
-    text, keyboard = menu_renderer.build_choice_parameter_menu(
-        param=parameter,
-        page_index=unpacked.page,
-        max_elements_on_page=hub_properties.telegram.appearance.menu_entries_amount.value,
-        language=hub_properties.general.language.real_value(),
-    )
-
-    await query.message.edit_text(text, reply_markup=keyboard)
-
-
-@r.callback_query(cbs.SelectPage.filter())
-async def change_page(
-    query: CallbackQuery,
+    hashinator: HashinatorT1000,
+    tg_ui: UIRegistry,
+    callbacks_history: list[str],
+    data: dict[str, Any],
     bot: Bot,
     dispatcher: Dispatcher,
-    menu_renderer: TelegramPropertiesMenuRenderer,
-    hub_properties: FunPayHubProperties,
 ) -> None:
     state = _get_context(dispatcher, bot, query)
     await state.clear()
 
-    kb = clear_state_keyboard()
-    menu_renderer.process_keyboard(kb, hub_properties.general.language.real_value())
+    unpacked = cbs.ManualParamValueInput.unpack(query.data)
+    param = properties.get_parameter(unpacked.path)
+
+    ctx = PropertiesUIContext(
+        translater=translater,
+        language=properties.general.language.value,
+        max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
+        page=0,
+        current_callback=query.data,
+        callbacks_history=callbacks_history,
+        entry=param,
+    )
+
+    window = await tg_ui.build_properties_ui(ctx=ctx, hashinator=hashinator, data=data)
 
     msg = await bot.send_message(
         chat_id=query.message.chat.id,
         message_thread_id=query.message.message_thread_id,
-        text='$enter_new_page_index_message',
-        reply_markup=kb,
+        text=window.text,
+        reply_markup=window.keyboard,
     )
 
-    await state.set_state(ChangingPage.name)
+    await state.set_state(ChangingParameterValueState.name)
     await state.set_data(
         {
-            'data': ChangingPage(
-                query=query,
-                unpacked_query=cbs.SelectPage.unpack(query.data),
+            'data': ChangingParameterValueState(
+                parameter=param,
+                callback_query=query,
+                callbacks_history=callbacks_history,
                 message=msg,
                 user_messages=[],
             ),
         },
     )
+
     await query.answer()
-
-
-@r.message(StateFilter(ChangingPage.name))
-async def update_page(message: Message, dispatcher: Dispatcher, bot: Bot):
-    await _delete_message(message)
-
-    if not message.text.isnumeric():
-        return
-    new_page_index = int(message.text) - 1
-
-    context = _get_context(dispatcher, bot, message)
-    data: ChangingPage = (await context.get_data())['data']
-
-    if new_page_index > data.unpacked_query.pages_amount - 1 or new_page_index < 0:
-        return
-
-    await context.clear()
-
-    await _delete_message(data.message)
-
-    new_query = re.sub(
-        r'page-\d+',
-        f'page-{new_page_index}',
-        data.unpacked_query.query,
-    )
-
-    event = data.query.model_copy(update={'data': new_query})
-    await dispatcher.feed_update(bot=bot, update=Update(update_id=0, callback_query=event))
 
 
 @r.message(StateFilter(ChangingParameterValueState.name))
 async def edit_parameter(
     message: Message,
-    hub_properties: FunPayHubProperties,
     bot: Bot,
     dispatcher: Dispatcher,
-    menu_renderer: TelegramPropertiesMenuRenderer,
 ) -> None:
     await _delete_message(message)
 
@@ -349,8 +221,9 @@ async def edit_parameter(
         data.parameter.set_value(message.text)
         await context.clear()
     except ValueError as e:
+        print('ERROR')
         await data.message.edit_text(
-            text=data.message.text
+            text=data.message.html_text
             + f'\n\nНе удалось изменить значение параметра {data.parameter.name}:\n\n{str(e)}',
             reply_markup=data.message.reply_markup,
         )
@@ -358,18 +231,11 @@ async def edit_parameter(
 
     await _delete_message(data.message)
 
-    text, keyboard = menu_renderer.build_properties_menu(
-        properties=data.parameter.parent,
-        page_index=data.page,
-        max_elements_on_page=hub_properties.telegram.appearance.menu_entries_amount.value,
-        language=hub_properties.general.language.real_value(),
+    data.callback_query.__dict__['data'] = '->'.join(data.callbacks_history)
+    await dispatcher.feed_update(
+        bot,
+        Update(
+            update_id=0,
+            callback_query=data.callback_query,
+        ),
     )
-
-    await bot.send_message(
-        chat_id=message.chat.id,
-        message_thread_id=message.message_thread_id,
-        text=text,
-        reply_markup=keyboard,
-    )
-
-    await _delete_message(data.menu_message)

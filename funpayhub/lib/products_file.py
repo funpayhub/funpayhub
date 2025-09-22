@@ -1,8 +1,10 @@
-from pathlib import Path
-from collections.abc import Sequence
+from __future__ import annotations
+
+import os
 from typing import Any
 from asyncio import Lock
-import os
+from pathlib import Path
+from collections.abc import Sequence
 
 
 class NotEnoughProductsError(RuntimeError):
@@ -13,7 +15,7 @@ class NotEnoughProductsError(RuntimeError):
 class ProductsFile:
     def __init__(
         self,
-        path: str | Path
+        path: str | Path,
     ):
         self._path = Path(path) if isinstance(path, str) else path
 
@@ -27,8 +29,8 @@ class ProductsFile:
     def _count_products(self) -> int:
         count = 0
         with open(self._path, 'rb') as f:
-            for block in iter(lambda: f.read(65536), b""):
-                count += block.count(b"\n")
+            for block in iter(lambda: f.read(65536), b''):
+                count += block.count(b'\n')
         return count
 
     async def add_products(self, products: Sequence[str]) -> None:
@@ -72,7 +74,6 @@ class ProductsFile:
     @property
     def path(self) -> Path:
         return self._path
-
 
 
 class ProductsFileManager:

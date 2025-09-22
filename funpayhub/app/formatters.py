@@ -1,14 +1,19 @@
+from __future__ import annotations
+
+
 __all__ = [
     'DateTimeFormatter',
     'ImageFormatter',
     'UsernameFormatter',
     'OrderIdFormatter',
-    'FORMATTERS_LIST'
+    'FORMATTERS_LIST',
 ]
 
-from funpayhub.lib.hub.text_formatters import Formatter, Image
-from funpaybotengine.dispatching.events import NewMessageEvent, OrderEvent
 import datetime
+
+from funpaybotengine.dispatching.events import OrderEvent, NewMessageEvent
+
+from funpayhub.lib.hub.text_formatters import Image, Formatter
 
 
 _time_formats = {
@@ -17,8 +22,9 @@ _time_formats = {
     'date': '%d.%m',
     'fulldate': '%d.%m.%Y',
     'datetime': '%d.%m %H:%M',
-    'fulldatetime': '%d.%m.%Y %H:%M:%S'
+    'fulldatetime': '%d.%m.%Y %H:%M:%S',
 }
+
 
 async def datetime_formatter(mode: str = 'time') -> str:
     now = datetime.datetime.now()
@@ -33,14 +39,14 @@ DateTimeFormatter = Formatter(
     key='time',
     name='$formatter:datetime:name',
     description='$formatter:datetime:description',
-    formatter=datetime_formatter
+    formatter=datetime_formatter,
 )
 
 
 async def image_formatter(path_or_id: int | str) -> Image:
     return Image(
         path=path_or_id if isinstance(path_or_id, str) else None,
-        id=path_or_id if isinstance(path_or_id, int) else None
+        id=path_or_id if isinstance(path_or_id, int) else None,
     )
 
 
@@ -48,7 +54,7 @@ ImageFormatter = Formatter(
     key='image',
     name='$formatter:image:name',
     description='$formatter:image:description',
-    formatter=image_formatter
+    formatter=image_formatter,
 )
 
 
@@ -64,13 +70,13 @@ UsernameFormatter = Formatter(
     key='username',
     name='$formatter:username:name',
     description='$formatter:username:description',
-    formatter=username_formatter
+    formatter=username_formatter,
 )
 
 
 async def order_id_formatter(event: OrderEvent) -> str:
     if not isinstance(event, OrderEvent):
-        raise ValueError('') # todo
+        raise ValueError('')  # todo
 
     order_preview = await event.get_order_preview()
     return order_preview.id
@@ -80,7 +86,7 @@ OrderIdFormatter = Formatter(
     key='id',
     name='$formatter:order_id:name',
     description='$formatter:order_id:description',
-    formatter=order_id_formatter
+    formatter=order_id_formatter,
 )
 
 

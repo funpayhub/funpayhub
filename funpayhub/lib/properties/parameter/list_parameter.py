@@ -4,16 +4,14 @@ from __future__ import annotations
 __all__ = ['ListParameter']
 
 
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
-import json
-
-from funpayhub.lib.properties.parameter.base import (
-    CallableValue,
-    MutableParameter
-)
 
 from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.parameter.base import (
+    CallableValue,
+    MutableParameter,
+)
 
 
 if TYPE_CHECKING:

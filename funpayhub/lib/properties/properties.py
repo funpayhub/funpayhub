@@ -7,11 +7,11 @@ __all__ = ['Properties']
 import os
 import tomllib
 from typing import Any, TypeVar, TypeAlias
-from typing_extensions import Self
 from types import MappingProxyType
 from collections.abc import Generator
 
 import tomli_w
+from typing_extensions import Self
 
 from .base import Entry, CallableValue
 from .parameter.base import Parameter, MutableParameter
@@ -205,7 +205,7 @@ class Properties(Entry):
             elif v.id not in values:
                 continue
             elif isinstance(v, MutableParameter):
-                v.set_value(values[v.id], save=False)
+                v.set_value(values[v.id], save=False, skip_validator=True)
             elif isinstance(v, Properties):
                 v._set_values(values[v.id])
 

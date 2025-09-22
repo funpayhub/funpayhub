@@ -1,15 +1,18 @@
 from __future__ import annotations
 
-from .types import Window, Menu, PropertiesUIContext
-from funpayhub.lib.properties import Properties, MutableParameter
-from typing import Any, Type, TYPE_CHECKING
-from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
+from typing import TYPE_CHECKING, Any, Type
+
 import funpayhub.lib.telegram.callbacks as cbs
 import funpayhub.lib.properties.parameter as param
+from funpayhub.lib.properties import Properties, MutableParameter
+from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
+
 from . import default_ui as default
+from .types import Menu, Window, PropertiesUIContext
+
 
 if TYPE_CHECKING:
-    from .types import OneStepPropertiesUIBuilder, PropertiesUIBuilder
+    from .types import PropertiesUIBuilder, OneStepPropertiesUIBuilder
 
 
 class UIRegistry:
@@ -19,7 +22,7 @@ class UIRegistry:
             param.IntParameter: default.MANUAL_CHANGE_PARAM_UI,
             param.FloatParameter: default.MANUAL_CHANGE_PARAM_UI,
             param.StringParameter: default.MANUAL_CHANGE_PARAM_UI,
-            Properties: default.PROPERTIES_UI
+            Properties: default.PROPERTIES_UI,
         }
         self.properties_renderers_overloads: dict[type[MutableParameter | Properties], Any] = {}
 
@@ -30,7 +33,7 @@ class UIRegistry:
         self,
         ctx: PropertiesUIContext,
         hashinator: HashinatorT1000,
-        data: dict[str, Any]
+        data: dict[str, Any],
     ) -> Window:
         """
         :param ctx:
@@ -47,7 +50,7 @@ class UIRegistry:
             for line in keyboard.inline_keyboard:
                 for button in line:
                     button.callback_data = cbs.Hash(
-                        hash=hashinator.hash(button.callback_data)
+                        hash=hashinator.hash(button.callback_data),
                     ).pack()
 
         return Window(
@@ -58,11 +61,10 @@ class UIRegistry:
 
     def find_properties_builder(
         self,
-        entry_type: Type[MutableParameter | Properties]
+        entry_type: Type[MutableParameter | Properties],
     ) -> PropertiesUIBuilder | OneStepPropertiesUIBuilder | None:
         if entry_type in self.default_properties_renderers:
             return self.default_properties_renderers[entry_type]
-        else:
-            for t, u in self.default_properties_renderers.items():
-                if issubclass(entry_type, t):
-                    return u
+        for t, u in self.default_properties_renderers.items():
+            if issubclass(entry_type, t):
+                return u

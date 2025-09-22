@@ -1,6 +1,6 @@
 from __future__ import annotations
-from funpayhub.lib.properties import Properties, ToggleParameter
 
+from funpayhub.lib.properties import Properties, ToggleParameter
 
 
 class TogglesProperties(Properties):
@@ -28,7 +28,7 @@ class TogglesProperties(Properties):
                 name='$props.toggles.auto_restock:name',
                 description='$props.toggles.auto_restock:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.auto_response = self.attach_parameter(

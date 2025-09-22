@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from funpayhub.app.properties.properties import FunPayHubProperties
 
 

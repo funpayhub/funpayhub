@@ -1,6 +1,7 @@
-from funpayhub.app.funpay.main import FunPay
+from __future__ import annotations
+
 from funpayhub.app.properties import FunPayHubProperties
-from typing import Any
+from funpayhub.app.funpay.main import FunPay
 
 
 class FunPayHub:
@@ -17,14 +18,16 @@ class FunPayHub:
 
         self._funpay = FunPay(self, workflow_data=workflow_data)
 
-        workflow_data.update({
-            'hub': self,
-            'properties': self.properties,
-            'fp': self.funpay,
-            'fp_bot': self.funpay.bot,
-            'fp_dp': self.funpay.dispatcher,
-            'fp_formatters': self.funpay.text_formatters
-        })
+        workflow_data.update(
+            {
+                'hub': self,
+                'properties': self.properties,
+                'fp': self.funpay,
+                'fp_bot': self.funpay.bot,
+                'fp_dp': self.funpay.dispatcher,
+                'fp_formatters': self.funpay.text_formatters,
+            }
+        )
 
     async def start(self):
         await self.funpay.start()

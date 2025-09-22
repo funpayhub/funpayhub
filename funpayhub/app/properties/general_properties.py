@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = ['GeneralProperties']
 
 
-from funpayhub.lib.properties import Properties, ChoiceParameter, FloatParameter
+from funpayhub.lib.properties import Properties, FloatParameter, ChoiceParameter
 from funpayhub.lib.properties.parameter.choice_parameter import Item
 
 
@@ -38,7 +38,6 @@ class GeneralProperties(Properties):
                 id='runner_request_interval',
                 name='$props.general.runner_request_interval:name',
                 description='$props.general.runner_request_interval:description',
-                default_value=5.0
-            )
+                default_value=5.0,
+            ),
         )
-

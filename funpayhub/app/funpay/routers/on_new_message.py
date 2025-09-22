@@ -1,14 +1,18 @@
 from __future__ import annotations
-from funpaybotengine import Router
+
 from typing import TYPE_CHECKING, Any
+
+from funpaybotengine import Router
 from funpaybotengine.dispatching.filters import all_of
 
+
 if TYPE_CHECKING:
-    from funpaybotengine.dispatching.events import NewMessageEvent
     from funpaybotengine import Bot
-    from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
+    from funpaybotengine.dispatching.events import NewMessageEvent
+
     from funpayhub.app.properties import FunPayHubProperties
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
+    from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
 
 
 on_new_message_router = r = Router(router_id='fph:on_new_message_router')
@@ -26,7 +30,10 @@ def commands_filter(event: NewMessageEvent, properties: FunPayHubProperties, dat
             if not msg_text.startswith(command + ' ') and not msg_text == command:
                 continue
         else:
-            if not lowered_text.startswith(command.lower() + ' ') and not lowered_text == command.lower():
+            if (
+                not lowered_text.startswith(command.lower() + ' ')
+                and not lowered_text == command.lower()
+            ):
                 continue
 
         if not params.react_on_me.value and event.message.from_me:
@@ -45,14 +52,14 @@ def command_has_reply_filter(_command: AutoResponseEntryProperties):
 
 @r.on_new_message(
     handler_id='fph:process_command',
-    filter=all_of(commands_filter, command_has_reply_filter)
+    filter=all_of(commands_filter, command_has_reply_filter),
 )
 async def process_command(
     event: NewMessageEvent,
     fp_formatters: FormattersRegistry,
     fp_bot: Bot,
     _command: AutoResponseEntryProperties,
-    data: dict[str, Any]
+    data: dict[str, Any],
 ):
     """
     Хэндлер ищет команду в списке команд и выполняет ее.

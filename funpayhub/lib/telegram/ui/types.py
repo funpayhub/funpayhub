@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, Literal, ParamSpec, Concatenate, overload
 from dataclasses import dataclass
+from collections.abc import Callable, Awaitable
+
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from eventry.asyncio.callable_wrappers import CallableWrapper
-from typing import Any, overload, ParamSpec, Concatenate, Literal, Protocol, TYPE_CHECKING
-from collections.abc import Callable, Awaitable
+
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.translater import Translater
 
@@ -20,7 +22,7 @@ type KeyboardOrButton = Button | Keyboard
 P = ParamSpec('P')
 type CallableSignatures[R] = Callable[
     Concatenate[UIRegistry, UIContext, PropertiesUIContext],
-    R | Awaitable[R]
+    R | Awaitable[R],
 ]
 type CallableAndValue[R] = CallableSignatures[R] | CallableWrapper[R] | R
 type CallableValue[R] = CallableSignatures[R] | CallableWrapper[R]
@@ -31,6 +33,7 @@ class Button:
     """
     Готовый объект кнопки с уже переведенным именем, но не хэшированным callback.
     """
+
     id: str
     obj: InlineKeyboardButton
 
@@ -40,6 +43,7 @@ class Menu:
     """
     Объект меню.
     """
+
     text: CallableAndValue[str] | None = None
     image: CallableAndValue[str] | None = None
     upper_keyboard: CallableAndValue[Keyboard] | None = None
@@ -47,10 +51,16 @@ class Menu:
     footer_keyboard: CallableAndValue[Keyboard] | None = None
 
     def __post_init__(self):
-        self.text = self.text if isinstance(self.text, str | None | CallableWrapper) \
+        self.text = (
+            self.text
+            if isinstance(self.text, str | None | CallableWrapper)
             else CallableWrapper(self.text)
-        self.image = self.image if isinstance(self.image, str | None | CallableWrapper) \
+        )
+        self.image = (
+            self.image
+            if isinstance(self.image, str | None | CallableWrapper)
             else CallableWrapper(self.image)
+        )
 
         u_k, k, f_k = [
             CallableWrapper(i) if not isinstance(i, list | CallableWrapper | None) else i
@@ -58,12 +68,16 @@ class Menu:
         ]
         self.upper_keyboard, self.keyboard, self.footer_keyboard = u_k, k, f_k
 
-    async def menu_text(self, ui: UIRegistry, ctx: UIContext | PropertiesUIContext, data: dict[str, Any]) -> str | None:
+    async def menu_text(
+        self, ui: UIRegistry, ctx: UIContext | PropertiesUIContext, data: dict[str, Any]
+    ) -> str | None:
         if isinstance(self.text, str | None):
             return self.text
         return await self.text((ui, ctx), data)
 
-    async def menu_image(self, ui: UIRegistry, ctx: UIContext | PropertiesUIContext, data: dict[str, Any]) -> str | None:
+    async def menu_image(
+        self, ui: UIRegistry, ctx: UIContext | PropertiesUIContext, data: dict[str, Any]
+    ) -> str | None:
         if isinstance(self.image, str | None):
             return self.image
         return await self.image((ui, ctx), data)
@@ -74,7 +88,7 @@ class Menu:
         ui: UIRegistry,
         ctx: UIContext | PropertiesUIContext,
         data: dict[str, Any],
-        convert: Literal[True]
+        convert: Literal[True],
     ) -> InlineKeyboardMarkup | None:
         pass
 
@@ -84,7 +98,7 @@ class Menu:
         ui: UIRegistry,
         ctx: UIContext | PropertiesUIContext,
         data: dict[str, Any],
-        convert: Literal[False]
+        convert: Literal[False],
     ) -> TotalKeyboard | None:
         pass
 
@@ -93,7 +107,7 @@ class Menu:
         ui: UIRegistry,
         ctx: UIContext | PropertiesUIContext,
         data: dict[str, Any],
-        convert: bool = False
+        convert: bool = False,
     ) -> TotalKeyboard | InlineKeyboardMarkup | None:
         total_keyboard = []
         for kb in [self.upper_keyboard, self.keyboard, self.footer_keyboard]:
@@ -132,6 +146,7 @@ class Window:
     """
     Итоговый объект меню после всех модификаций.
     """
+
     text: str | None = None
     image: str | None = None
     keyboard: Keyboard | None = None
@@ -155,6 +170,7 @@ class PropertiesUIContext(UIContext):
 @dataclass
 class OneStepPropertiesUIBuilder:
     button_builder: CallableValue[Button]
+
 
 @dataclass
 class PropertiesUIBuilder(OneStepPropertiesUIBuilder):

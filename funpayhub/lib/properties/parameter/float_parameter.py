@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 from collections.abc import Callable
 
-from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
 from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
 from funpayhub.lib.properties.parameter.converters import float_converter
 
 

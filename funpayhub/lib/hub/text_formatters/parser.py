@@ -1,9 +1,12 @@
-from typing import Any
+from __future__ import annotations
+
 import re
+from typing import Any
 from collections.abc import Generator
 
 
 KEY_RE = re.compile(r'(?<!\$)\$[a-zA-Zа-яА-Я0-9-_.]+')
+
 
 def extract_calls(text: str, /) -> Generator[tuple[str, list[Any], int, int], str | None, None]:
     """
@@ -38,16 +41,16 @@ def extract_calls(text: str, /) -> Generator[tuple[str, list[Any], int, int], st
         except StopIteration:
             return
 
-        start, end = key.start(), key.end()-1
-        if len(text) <= end+1 or text[end+1] != '<':
-            new_text = yield text[start+1:end+1], [], start, end
+        start, end = key.start(), key.end() - 1
+        if len(text) <= end + 1 or text[end + 1] != '<':
+            new_text = yield text[start + 1 : end + 1], [], start, end
             if new_text is not None:
                 text = new_text
                 finditer = KEY_RE.finditer(text)
             continue
 
         args = []
-        args_gen = parse_args(text, end+1)
+        args_gen = parse_args(text, end + 1)
         while True:
             try:
                 args.append(next(args_gen))
@@ -55,7 +58,7 @@ def extract_calls(text: str, /) -> Generator[tuple[str, list[Any], int, int], st
                 end_index = e.value
                 break
 
-        new_text = yield text[start+1:end+1], args, start, end_index
+        new_text = yield text[start + 1 : end + 1], args, start, end_index
         if new_text is not None:
             text = new_text
             finditer = KEY_RE.finditer(text)
@@ -82,13 +85,13 @@ def parse_args(text: str, args_start: int = 0) -> Generator[Any, None, int]:
         try:
             sym = text[index]
         except IndexError:
-            raise ValueError('Unexpected end of text') # todo: parsing error
+            raise ValueError('Unexpected end of text')  # todo: parsing error
 
-        if sym == '"' and text[index-1] != '\\':
+        if sym == '"' and text[index - 1] != '\\':
             quote_opened = not quote_opened
 
         elif sym == '<' and not quote_opened:
-            raise ValueError("Unexpected <") # todo: parsing error
+            raise ValueError('Unexpected <')  # todo: parsing error
 
         elif sym == '>' and not quote_opened:
             if curr_arg_index == index:
@@ -98,7 +101,7 @@ def parse_args(text: str, args_start: int = 0) -> Generator[Any, None, int]:
 
         elif sym == ',' and not quote_opened:
             if index == curr_arg_index:  # ,,
-                raise ValueError("Unexpected ,")
+                raise ValueError('Unexpected ,')
 
             yield evaluate_type(text[curr_arg_index:index].strip())
             curr_arg_index = index + 1
@@ -121,13 +124,13 @@ def evaluate_type(arg: str) -> Any:
     """
     if arg.startswith('"'):
         return arg[1:-1].replace('\\"', '"')
-    elif arg.startswith('\\'):
+    if arg.startswith('\\'):
         return arg.replace('\\"', '"')
-    elif arg == 'True':
+    if arg == 'True':
         return True
-    elif arg == 'False':
+    if arg == 'False':
         return False
-    elif arg == 'None':
+    if arg == 'None':
         return None
     try:
         return int(arg)

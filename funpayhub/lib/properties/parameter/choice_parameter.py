@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar
 from dataclasses import dataclass
 from collections.abc import Callable
 
-from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
 from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
 from funpayhub.lib.properties.parameter.converters import int_converter
 
 
@@ -78,7 +78,7 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
         return real_validator
 
     def __next__(self) -> T:
-        if len(self.choices) == self.value+1:
+        if len(self.choices) == self.value + 1:
             self.set_value(0, save=True)
             return self.real_value
 

@@ -1,28 +1,29 @@
 from __future__ import annotations
 
 import os
+import sys
+import logging
+from logging.config import dictConfig
 
 from aiogram import Bot, Dispatcher
+from load_dotenv import load_dotenv
 from aiogram.client.default import DefaultBotProperties
 
 from funpayhub.lib.translater import Translater
+from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.properties.properties import FunPayHubProperties
 from funpayhub.app.telegram.middlewares.unhash import UnpackMiddleware
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 from funpayhub.app.telegram.routers.properties_menu import router as properties_menu_r
 from funpayhub.lib.telegram.menu_constructor.renderer import TelegramPropertiesMenuRenderer
-from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
-from load_dotenv import load_dotenv
-import logging
-import sys
-from logging.config import dictConfig
+
 
 load_dotenv()
 
 
 dictConfig(
-    config = {
+    config={
         'version': 1,
         'disable_existing_loggers': False,
         'handlers': {
@@ -30,13 +31,13 @@ dictConfig(
                 'formatter': 'brief',
                 'level': logging.DEBUG,
                 'class': 'logging.StreamHandler',
-                'stream': sys.stdout
-            }
+                'stream': sys.stdout,
+            },
         },
         'formatters': {
             'brief': {
-                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-            }
+                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            },
         },
         'loggers': {
             'funpaybotengine.session_logger': {
@@ -71,8 +72,8 @@ dictConfig(
             #     'level': logging.DEBUG,
             #     'handlers': ['console'],
             # },
-        }
-    }
+        },
+    },
 )
 
 
@@ -98,7 +99,7 @@ dp = Dispatcher(
         'translater': translater,
         'menu_renderer': renderer,
         'hashinator': keyboard_hashinater,
-        'tg_ui': registry
+        'tg_ui': registry,
     },
 )
 
@@ -111,5 +112,5 @@ for i, o in dp.observers.items():
 
 dp.callback_query.outer_middleware(UnpackMiddleware())
 
-print("START")
+print('START')
 dp.run_polling(bot)

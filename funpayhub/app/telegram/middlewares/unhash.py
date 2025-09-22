@@ -19,15 +19,11 @@ class UnpackMiddleware(BaseMiddleware):
             unpacked = Hash.unpack(event.data)
             hashinator: HashinatorT1000 = data['hashinator']
             callback_data = hashinator.unhash(unpacked.hash)
-            print(f'Query unhashed: {event.data} ~ {callback_data} ')
-
             if not callback_data:
                 await event.answer(text='Ваще не знаю че это за кнопка', show_alert=True)
                 return
 
         split = callback_data.split('->')
         data['callbacks_history'] = split[:-1]
-        print(f'History: {data["callbacks_history"]}')
-
-        new_event = event.model_copy(update={'data': split[-1]}, deep=False)
-        await handler(new_event, data)
+        event.__dict__['data'] = split[-1]
+        await handler(event, data)

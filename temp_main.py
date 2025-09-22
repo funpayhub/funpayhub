@@ -1,12 +1,16 @@
-from funpayhub.app import FunPayHub
+from __future__ import annotations
+
+import sys
 import asyncio
 import logging
-import sys
 from logging.config import dictConfig
+
+from funpayhub.app import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
 
+
 dictConfig(
-    config = {
+    config={
         'version': 1,
         'disable_existing_loggers': False,
         'handlers': {
@@ -14,13 +18,13 @@ dictConfig(
                 'formatter': 'brief',
                 'level': logging.DEBUG,
                 'class': 'logging.StreamHandler',
-                'stream': sys.stdout
-            }
+                'stream': sys.stdout,
+            },
         },
         'formatters': {
             'brief': {
-                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-            }
+                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            },
         },
         'loggers': {
             'funpaybotengine.session_logger': {
@@ -34,9 +38,9 @@ dictConfig(
             'eventry.router': {
                 'level': logging.DEBUG,
                 'handlers': ['console'],
-            }
-        }
-    }
+            },
+        },
+    },
 )
 
 
@@ -50,5 +54,6 @@ async def main():
 
 if __name__ == '__main__':
     from load_dotenv import load_dotenv
+
     load_dotenv()
     asyncio.run(main())

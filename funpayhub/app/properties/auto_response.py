@@ -1,11 +1,13 @@
 from __future__ import annotations
+
+import os
+import tomllib
+from typing import Any, NoReturn
+from types import MappingProxyType
+
 from funpayhub.lib.properties import Properties
 from funpayhub.lib.properties.base import Entry
-from funpayhub.lib.properties.parameter import StringParameter, ListParameter, ToggleParameter
-from types import MappingProxyType
-from typing import Any, NoReturn
-import tomllib
-import os
+from funpayhub.lib.properties.parameter import ListParameter, StringParameter, ToggleParameter
 
 
 class AutoResponseEntryProperties(Properties):
@@ -13,7 +15,7 @@ class AutoResponseEntryProperties(Properties):
         super().__init__(
             id=command,
             name=command,
-            description=f'$props.auto_response.*',
+            description='$props.auto_response.*',
         )
 
         self.case_sensitive = self.attach_parameter(
@@ -22,8 +24,8 @@ class AutoResponseEntryProperties(Properties):
                 id='case_sensitive',
                 name='$props.auto_response.*.case_sensitive:name',
                 description='$props.auto_response.*.case_sensitive:description',
-                default_value=False
-            )
+                default_value=False,
+            ),
         )
 
         self.reply = self.attach_parameter(
@@ -32,8 +34,8 @@ class AutoResponseEntryProperties(Properties):
                 id='reply',
                 name='$props.auto_response.*.reply:name',
                 description='$props.auto_response.*.reply:description',
-                default_value=True
-            )
+                default_value=True,
+            ),
         )
 
         self.abort_on_formatters_error = self.attach_parameter(
@@ -42,8 +44,8 @@ class AutoResponseEntryProperties(Properties):
                 id='abort_on_formatters_error',
                 name='$props.auto_response.*.abort_on_formatters_error:name',
                 description='$props.auto_response.*.abort_on_formatters_error:description',
-                default_value=False
-            )
+                default_value=False,
+            ),
         )
 
         self.abort_on_hooks_error = self.attach_parameter(
@@ -52,8 +54,8 @@ class AutoResponseEntryProperties(Properties):
                 id='abort_on_hooks_error',
                 name='$props.auto_response.*.abort_on_hooks_error:name',
                 description='$props.auto_response.*.abort_on_hooks_error:description',
-                default_value=False
-            )
+                default_value=False,
+            ),
         )
 
         self.react_on_me = self.attach_parameter(
@@ -62,8 +64,8 @@ class AutoResponseEntryProperties(Properties):
                 id='react_on_me',
                 name='$props.auto_response.*.react_on_me:name',
                 description='$props.auto_response.*.react_on_me:description',
-                default_value=True
-            )
+                default_value=True,
+            ),
         )
 
         self.react_on_others = self.attach_parameter(
@@ -72,8 +74,8 @@ class AutoResponseEntryProperties(Properties):
                 id='react_on_others',
                 name='$props.auto_response.*.react_on_others:name',
                 description='$props.auto_response.*.react_on_others:description',
-                default_value=True
-            )
+                default_value=True,
+            ),
         )
 
         self.response_text = self.attach_parameter(
@@ -82,8 +84,8 @@ class AutoResponseEntryProperties(Properties):
                 id='response_text',
                 name='$props.auto_response.*.response_text:name',
                 description='$props.auto_response.*.response_text:description',
-                default_value='Ответ на $message_text'
-            )
+                default_value='Ответ на $message_text',
+            ),
         )
 
         self.hooks = self.attach_parameter(
@@ -92,8 +94,8 @@ class AutoResponseEntryProperties(Properties):
                 id='hooks',
                 name='$props.auto_response.*.hooks:name',
                 description='$props.auto_response.*.hooks:description',
-                default_value=[]
-            )
+                default_value=[],
+            ),
         )
 
     @property
@@ -141,9 +143,9 @@ class AutoResponseProperties(Properties):
         raise RuntimeError('AutoDeliveryProperties does not support this :(')
 
     def load(self):
-        if not os.path.exists(self.file):  #type: ignore #  always has file
+        if not os.path.exists(self.file):  # type: ignore #  always has file
             return
-        with open(self.file, 'r', encoding='utf-8') as f:  #type: ignore #  always has file
+        with open(self.file, 'r', encoding='utf-8') as f:  # type: ignore #  always has file
             data = tomllib.loads(f.read())
 
         self._entries = {}

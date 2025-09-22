@@ -1,12 +1,13 @@
 from __future__ import annotations
+
+import os
 from typing import TYPE_CHECKING
 
-from funpayhub.lib.hub.text_formatters import FormattersRegistry
+from funpaybotengine import Bot, Dispatcher, AioHttpSession
+
 from funpayhub.app.formatters import FORMATTERS_LIST
 from funpayhub.app.funpay.routers import ALL_ROUTERS
-
-from funpaybotengine import Bot, Dispatcher, AioHttpSession
-import os
+from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 
 if TYPE_CHECKING:
@@ -28,7 +29,7 @@ class FunPay:
         )
         self._bot = Bot(
             golden_key=os.environ.get('FPH_GOLDEN_KEY'),  # todo: or from properites
-            session=session
+            session=session,
         )
 
         self._dispatcher = Dispatcher(workflow_data=workflow_data)

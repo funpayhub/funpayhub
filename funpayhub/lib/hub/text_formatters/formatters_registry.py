@@ -1,12 +1,12 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
+from typing import TYPE_CHECKING, Any
 from dataclasses import dataclass
 from collections.abc import Callable, Awaitable
+
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from .parser import extract_calls
-from typing import Any
 
 
 if TYPE_CHECKING:
@@ -91,7 +91,7 @@ class FormattersRegistry:
         if isinstance(item, str):
             return item in self._formatters
 
-        elif isinstance(item, Formatter):
+        if isinstance(item, Formatter):
             return item.key in self._formatters
         return False
 
@@ -103,14 +103,13 @@ class FormattersRegistry:
             raise ValueError(f'Key must be a {str!r}, not {type(key)!r}.')
         if not isinstance(value, Formatter):
             raise ValueError(
-                f'Value must be an instance of `Formatter`, '
-                f'not {type(key)!r}.'
+                f'Value must be an instance of `Formatter`, not {type(key)!r}.',
             )
 
         if key != value.key:
             raise ValueError(
                 f'Passed key must be equal to formatters key '
-                f'(key: {key!r}, formatters key: {value.key!r}).'
+                f'(key: {key!r}, formatters key: {value.key!r}).',
             )
 
         self.add_formatter(formatter=value, raise_if_exists=False)
@@ -119,7 +118,7 @@ class FormattersRegistry:
         self,
         text: str,
         data: dict[str, Any],
-        raise_on_error: bool = True
+        raise_on_error: bool = True,
     ) -> MessagesStack:
         """
         Извлекает из переданного текста все вызовы форматтеров и выполняет их.
@@ -142,7 +141,7 @@ class FormattersRegistry:
                 return MessagesStack(result)
 
             append_or_concatenate(result, text[:call_start])
-            text = text[call_end+1:]
+            text = text[call_end + 1 :]
 
             if call_name not in self:
                 continue

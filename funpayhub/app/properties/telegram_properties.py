@@ -4,7 +4,10 @@ from __future__ import annotations
 __all__ = ['TelegramProperties']
 
 
-from funpayhub.lib.properties import Properties, IntParameter, StringParameter, ToggleParameter
+from funpayhub.lib.properties import Properties, IntParameter, StringParameter
+from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
+
+from .validators import validate_password
 
 
 class TelegramProperties(Properties):
@@ -44,8 +47,11 @@ class TelegramGeneral(Properties):
                 name='$props.telegram.general.password:name',
                 description='$props.telegram.general.password:description',
                 default_value='',
+                validator=validate_password,
             ),
         )
+
+        self.password._flags.add(Flags.PROTECT_VALUE)
 
 
 class TelegramAppearance(Properties):

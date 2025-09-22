@@ -4,10 +4,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from json import JSONDecodeError
-from typing import Any
 import json
+from typing import Any
+from json import JSONDecodeError
+from collections.abc import Iterable
 
 
 __all__ = [
@@ -39,7 +39,9 @@ def bool_converter(value: Any) -> bool:
         try:
             value = str(value)
         except:
-            raise ValueError('Unable to convert value to bool')  # todo: использовать строку из перевода.
+            raise ValueError(
+                'Unable to convert value to bool'
+            )  # todo: использовать строку из перевода.
 
     values = {
         'true': True,
@@ -60,21 +62,27 @@ def int_converter(value: Any) -> int:
     try:
         return int(value)
     except ValueError:
-        raise ValueError(f'Unable to convert value {value} to integer.')  # todo: использовать строку из перевода.
+        raise ValueError(
+            f'Unable to convert value {value} to integer.'
+        )  # todo: использовать строку из перевода.
 
 
 def float_converter(value: Any) -> float:
     try:
         return float(value)
     except ValueError:
-        raise ValueError(f'Unable to convert value {value} to float.')  # todo: использовать строку из перевода
+        raise ValueError(
+            f'Unable to convert value {value} to float.'
+        )  # todo: использовать строку из перевода
 
 
 def string_converter(value: Any) -> str:
     try:
         return str(value)
     except ValueError:
-        raise ValueError(f'Unable to convert value {value} to string.')   # todo: использовать строку из перевода
+        raise ValueError(
+            f'Unable to convert value {value} to string.'
+        )  # todo: использовать строку из перевода
 
 
 def list_converter(value: Any) -> list[str]:
@@ -87,5 +95,4 @@ def list_converter(value: Any) -> list[str]:
     if isinstance(value, Iterable):
         return [i if isinstance(i, str) else str(i) for i in value]
 
-    else:
-        raise ValueError(f'Unable to convert {value} to list of strings.')
+    raise ValueError(f'Unable to convert {value} to list of strings.')

@@ -5,8 +5,8 @@ from collections.abc import Callable
 
 from typing_extensions import Self
 
-from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
 from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
 from funpayhub.lib.properties.parameter.converters import bool_converter
 
 
