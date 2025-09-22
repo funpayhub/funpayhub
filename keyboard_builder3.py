@@ -36,6 +36,17 @@ class Menu:
     keyboard: CallableValue[Keyboard] | None = None
     footer_keyboard: CallableValue[Keyboard] | None = None
 
+    async def to_window(self, ui: UIRegistry, ctx: UIContext | PropertiesUIContext) -> Window:
+        ...
+
+    def copy_and_transform(self) -> Menu:
+        if isinstance(self.text, str | None | CallableWrapper):
+            text = self.text
+        else:
+            text = CallableWrapper(self.text)
+
+
+
 
 @dataclass
 class Window:
@@ -70,24 +81,24 @@ class InplaceChangeableParameter:
 @dataclass
 class ManualChangeableParameter:
     button_builder: Callable[..., Button | Awaitable[Button]]
-    change_message_builder: Callable[..., Menu | Awaitable[Menu]]
+    next_menu: Callable[..., Menu | Awaitable[Menu]]
 
 
 @dataclass
 class MenuChangeableParameter:
     button_builder: Callable[..., Button | Awaitable[Button]]
-    change_menu_builder: Callable[..., Menu | Awaitable[Menu]]
+    next_menu: Callable[..., Menu | Awaitable[Menu]]
 
 
 @dataclass
 class PropertiesMenu:
     button_builder: Callable[..., Button | Awaitable[Button]]
-    menu_builder: Callable[..., Menu | Awaitable[Menu]]
+    next_menu: Callable[..., Menu | Awaitable[Menu]]
 
 
 # Defaults
 # ToggleParameter
-async def build_toggle_parameter_button(ctx: PropertiesUIContext) -> Button:
+async def build_toggle_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
     if not isinstance(ctx.entry, Parameter):
         raise ValueError(f'')  # todo
 
@@ -104,7 +115,7 @@ async def build_toggle_parameter_button(ctx: PropertiesUIContext) -> Button:
 
 
 # Int / Float / String parameter
-async def build_parameter_button(ctx: PropertiesUIContext) -> Button:
+async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
     if not isinstance(ctx.entry, Parameter):
         raise ValueError(f'')
 
@@ -121,7 +132,7 @@ async def build_parameter_button(ctx: PropertiesUIContext) -> Button:
     return Button(id=f'param_change:{ctx.entry.path}', obj=btn)
 
 
-async def build_parameter_change_menu(ctx: PropertiesUIContext) -> Menu:
+async def build_parameter_change_menu(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
     if not isinstance(ctx.entry, Parameter):
         raise ValueError(f'')
 
@@ -148,7 +159,7 @@ async def build_parameter_change_menu(ctx: PropertiesUIContext) -> Menu:
 
 
 # List / Choice
-async def build_long_value_parameter_button(ctx: PropertiesUIContext) -> Button:
+async def build_long_value_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
     if not isinstance(ctx.entry, Parameter):
         raise ValueError(f'')
 
@@ -165,7 +176,7 @@ async def build_long_value_parameter_button(ctx: PropertiesUIContext) -> Button:
 
 
 # choice builder
-async def build_choice_parameter_menu(ctx: PropertiesUIContext) -> Menu:
+async def build_choice_parameter_menu(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
     if not isinstance(ctx.entry, Parameter):
         raise ValueError(f'')
 
@@ -191,6 +202,7 @@ async def build_properties_keyboard(ui: UIRegistry, ctx: PropertiesUIContext) ->
         )
         keyboard.append([await builder.button_builder(btn_ctx)])
     return keyboard
+
 
 async def build_properties_footer(ui: UIContext, ctx: PropertiesUIContext) -> Keyboard:
     total_pages = math.ceil(len(ctx.entry) / ctx.max_elements_on_page)
@@ -246,18 +258,48 @@ async def build_properties_footer(ui: UIContext, ctx: PropertiesUIContext) -> Ke
         Button(id='to_last_page', obj=to_last_btn),
     ]
 
-# common
+
+async def build_properties_text(ui: UIRegistry, ctx: PropertiesUIContext) -> str:
+    return f"""</u><b>{ctx.translater.translate(ctx.entry.name, ctx.language)}</b></u>
+
+<i>{ctx.translater.translate(ctx.entry.description, ctx.language)}</i>
+"""
+
+async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
+    return Menu(
+        text=build_properties_text,
+        image=None,
+        upper_keyboard=None,
+        keyboard=build_properties_keyboard,
+        footer_keyboard=build_properties_footer
+    )
+
+
+# Defaults
+TOGGLE_UI = InplaceChangeableParameter(
+    button_builder=build_toggle_parameter_button
+)
+
+MANUAL_CHANGE_PARAM_UI = ManualChangeableParameter(
+    button_builder=build_parameter_button,
+    next_menu=build_parameter_change_menu,
+)
+
+PROPERTIES_UI = PropertiesMenu(
+    button_builder=build_long_value_parameter_button,
+    next_menu=properties_menu_builder,
+)
 
 class UIRegistry:
     def __init__(self):
         self.default_properties_renderers: dict[type[MutableParameter | Properties], Any] = {
-            param.ToggleParameter: ...,
-            param.IntParameter: ...,
-            param.FloatParameter: ...,
-            param.StringParameter: ...,
+            param.ToggleParameter: TOGGLE_UI,
+            param.IntParameter: MANUAL_CHANGE_PARAM_UI,
+            param.FloatParameter: MANUAL_CHANGE_PARAM_UI,
+            param.StringParameter: MANUAL_CHANGE_PARAM_UI,
             param.ChoiceParameter: ...,
             param.ListParameter: ...,
-            Properties: ...
+            Properties: PROPERTIES_UI
         }
         self.properties_renderers_overloads: dict[type[MutableParameter | Properties], Any] = {}
 
@@ -269,5 +311,11 @@ class UIRegistry:
         :param ctx:
         :return:
         """
+        if type(ctx.entry) not in self.default_properties_renderers:
+            raise ValueError(f'Unknown entry type: {type(ctx.entry)}')
+
+        ui = self.default_properties_renderers[type(ctx.entry)]
+        menu: Menu = await ui.next_menu()
+
 
     async def build_menu(self, menu: str, ctx: PropertiesUIContext) -> Window: ...
