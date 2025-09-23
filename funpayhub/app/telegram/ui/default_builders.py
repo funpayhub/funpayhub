@@ -10,7 +10,7 @@ from aiogram.types import InlineKeyboardButton
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.loggers import tg_ui_logger as logger
 from funpayhub.lib.properties import Parameter, ChoiceParameter, ToggleParameter
-from funpayhub.lib.telegram.utils import join_callbacks
+from funpayhub.lib.telegram.callbacks_parsing import join_callbacks
 from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext
 
@@ -38,7 +38,7 @@ async def build_toggle_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext
     translated_name = ui.translater.translate(ctx.entry.name, ctx.language)
 
     btn = InlineKeyboardButton(
-        callback_data=join_callbacks(*ctx.callbacks_history, ctx.current_callback, btn_callback),
+        callback_data=join_callbacks(ctx.callback.pack(), btn_callback),
         text=f'{"🟢" if ctx.entry.value else "🔴"} {translated_name}',
     )
 
@@ -73,7 +73,7 @@ async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
         val_str = '•' * 8
 
     btn = InlineKeyboardButton(
-        callback_data=join_callbacks(*ctx.callbacks_history, ctx.current_callback, btn_callback),
+        callback_data=join_callbacks(ctx.callback.pack(), btn_callback),
         text=f'{translated_name} 【 {val_str} 】',
     )
 
@@ -91,7 +91,7 @@ async def build_open_menu_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
     translated_name = ui.translater.translate(ctx.entry.name, ctx.language)
 
     btn = InlineKeyboardButton(
-        callback_data=join_callbacks(*ctx.callbacks_history, ctx.current_callback, btn_callback),
+        callback_data=join_callbacks(ctx.callback.pack(), btn_callback),
         text=translated_name,
     )
 
@@ -137,7 +137,7 @@ async def build_choice_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIConte
 
         btn = InlineKeyboardButton(
             text=f'【 {name} 】' if ctx.entry.value == index + first_element else name,
-            callback_data=join_callbacks(*ctx.callbacks_history, ctx.current_callback, cb),
+            callback_data=join_callbacks(ctx.callback.pack(), cb),
         )
         keyboard.append(
             [
@@ -165,7 +165,7 @@ async def build_parameter_change_menu(ui: UIRegistry, ctx: PropertiesUIContext) 
             id='clear_state',
             obj=InlineKeyboardButton(
                 text=ui.translater.translate('$clear_state', ctx.language),
-                callback_data=join_callbacks(*ctx.callbacks_history, cbs.Clear().pack()),
+                callback_data=join_callbacks(*ctx.callback.history, cbs.Clear().pack()),
             ),
         ),
     ]

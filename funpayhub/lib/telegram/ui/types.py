@@ -19,6 +19,7 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.telegram.callbacks import Hash
+from funpayhub.lib.telegram.callbacks_parsing import UnpackedCallback
 
 
 if TYPE_CHECKING:
@@ -112,9 +113,7 @@ class UIContext:
     language: str
     max_elements_on_page: int
     page: int
-    current_callback: str
-    callbacks_history: list[str]
-    args: dict[str, Any] = field(default_factory=dict)
+    callback: UnpackedCallback
 
 
 @dataclass(kw_only=True)

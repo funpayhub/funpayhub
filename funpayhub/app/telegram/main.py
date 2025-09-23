@@ -9,7 +9,7 @@ from aiogram.client.default import DefaultBotProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.app.telegram.middlewares.unhash import UnpackMiddleware
+from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
 

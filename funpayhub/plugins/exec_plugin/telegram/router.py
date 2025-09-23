@@ -9,7 +9,7 @@ from aiogram.filters import Command
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.telegram.ui import UIContext, UIRegistry
-from funpayhub.lib.telegram.utils import add_callback_params
+from funpayhub.lib.telegram.callbacks_parsing import add_callback_params, UnpackedCallback
 from funpayhub.plugins.exec_plugin.types import LockableBuffer, ExecutionResultsRegistry
 from .callbacks import SendExecFile
 import contextlib
@@ -29,12 +29,18 @@ async def exec_list_menu(
     properties: FunPayHubProperties,
     data: dict[str, Any],
 ):
+    callback_str = cbs.OpenMenu(menu_id='exec_list').pack()
+    unpacked = UnpackedCallback(
+        current_callback=callback_str,
+        history=[],
+        data={}
+    )
+
     context = UIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         page=0,
-        current_callback=cbs.OpenMenu(menu_id='exec_list').pack(),
-        callbacks_history=[],
+        callback=unpacked
     )
 
     menu = await tg_ui.build_menu('exec_list', context, data)
@@ -97,15 +103,18 @@ async def execute_python_code(
     )
 
     callback = cbs.OpenMenu(menu_id='exec_output').pack()
-    callback = add_callback_params(callback, exec_id=r.id)
+
+    unpacked_callback = UnpackedCallback(
+        current_callback=callback,
+        history=[cbs.OpenMenu(menu_id='exec_list').pack()],
+        data={'exec_id': r.id}
+    )
 
     context = UIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         page=0,
-        current_callback=callback,
-        callbacks_history=[cbs.OpenMenu(menu_id='exec_list').pack()],
-        args={'exec_id': r.id}
+        callback=unpacked_callback
     )
 
     menu = await tg_ui.build_menu('exec_output', context, data)

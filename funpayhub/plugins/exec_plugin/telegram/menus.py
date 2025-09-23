@@ -8,7 +8,7 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import UIRegistry
-from funpayhub.lib.telegram.utils import join_callbacks, add_callback_params
+from funpayhub.lib.telegram.callbacks_parsing import join_callbacks, add_callback_params
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
 from .callbacks import SendExecFile
 from funpayhub.app.telegram.ui import premade
@@ -40,11 +40,7 @@ async def build_executions_list_keyboard(
 
         btn = InlineKeyboardButton(
             text=f'{"❌" if result.error else "✅"} {exec_id}',
-            callback_data=join_callbacks(
-                *ctx.callbacks_history,
-                ctx.current_callback,
-                callback,
-            ),
+            callback_data=join_callbacks(ctx.callback.pack(), callback),
         )
         keyboard.append([Button(id=f'open_exec_output:{exec_id}', obj=btn)])
 
@@ -58,7 +54,7 @@ async def build_output_keyboard(
     ui: UIRegistry,
     ctx: UIContext,
 ):
-    exec_id = ctx.args['exec_id']
+    exec_id = ctx.callback.data['exec_id']
 
     callback = cbs.OpenMenu(menu_id='exec_code').pack()
     callback = add_callback_params(callback, exec_id=exec_id)
@@ -66,7 +62,7 @@ async def build_output_keyboard(
     btn = InlineKeyboardButton(
         text='🔲 Код',
         callback_data=join_callbacks(
-            *ctx.callbacks_history,
+            *ctx.callback.history,
             callback,
         ),
     )
@@ -86,7 +82,7 @@ async def build_code_keyboard(
     ui: UIRegistry,
     ctx: UIContext,
 ):
-    exec_id = ctx.args['exec_id']
+    exec_id = ctx.callback.data['exec_id']
 
     callback = cbs.OpenMenu(menu_id='exec_output').pack()
     callback = add_callback_params(callback, exec_id=exec_id)
@@ -94,7 +90,7 @@ async def build_code_keyboard(
     btn = InlineKeyboardButton(
         text='📄 Вывод',
         callback_data=join_callbacks(
-            *ctx.callbacks_history,
+            *ctx.callback.history,
             callback,
         ),
     )
@@ -139,7 +135,7 @@ async def exec_output_menu_builder(
     exec_registry: ExecutionResultsRegistry,
     data: dict[str, Any],
 ):
-    exec_id = ctx.args['exec_id']
+    exec_id = ctx.callback.data['exec_id']
     result = exec_registry.registry[exec_id]
 
     total_pages = math.ceil(result.buffer_len / MAX_TEXT_LEN)
@@ -172,7 +168,7 @@ async def exec_code_menu_builder(
     exec_registry: ExecutionResultsRegistry,
     data: dict[str, Any],
 ):
-    exec_id = ctx.args['exec_id']
+    exec_id = ctx.callback.data['exec_id']
     result = exec_registry.registry[exec_id]
 
     total_pages = math.ceil(result.code_len / MAX_TEXT_LEN)

@@ -1,23 +1,18 @@
 from __future__ import annotations
 
 import re
-import html
-import textwrap
-import contextlib
 from typing import TYPE_CHECKING, Any
-from io import StringIO
-from copy import copy
 from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
-from aiogram.types.input_file import BufferedInputFile
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.states import ChangingPage, ChangingParameterValueState
 from funpayhub.lib.telegram.ui.types import UIContext, PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
+from funpayhub.lib.telegram.callbacks_parsing import UnpackedCallback, join_callbacks
 
 from .router import router as r
 
@@ -45,11 +40,9 @@ def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery):
 async def open_custom_menu(
     query: CallbackQuery,
     tg_ui: UIRegistry,
-    callback_args: dict[str, Any],
     data: dict[str, Any],
     properties: FunPayHubProperties,
-    callbacks_history: list[str],
-    current_callback: str
+    unpacked_callback: UnpackedCallback,
 ):
     unpacked = cbs.OpenMenu.unpack(query.data)
 
@@ -57,9 +50,7 @@ async def open_custom_menu(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         page=unpacked.page,
-        current_callback=current_callback,
-        callbacks_history=callbacks_history,
-        args=callback_args,
+        callback=unpacked_callback,
     )
 
     menu = await tg_ui.build_menu(menu_id=unpacked.menu_id, ctx=context, data=data)
@@ -90,12 +81,17 @@ async def send_menu(
     tg_ui: UIRegistry,
     data: dict[str, Any],
 ) -> None:
+    callback_str = cbs.OpenEntryMenu(path=properties.path).pack()
+    unpacked = UnpackedCallback(
+        current_callback=callback_str,
+        history=[],
+        data={}
+    )
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         page=0,
-        current_callback=cbs.OpenEntryMenu(path=properties.path).pack(),
-        callbacks_history=[],
+        callback=unpacked,
         entry=properties,
     )
 
@@ -112,9 +108,8 @@ async def open_menu(
     query: CallbackQuery,
     properties: FunPayHubProperties,
     tg_ui: UIRegistry,
-    callbacks_history: list[str],
-    data: dict[str, Any],
-    current_callback: str
+    unpacked_callback: UnpackedCallback,
+    data: dict[str, Any]
 ):
     unpacked = cbs.OpenEntryMenu.unpack(query.data)
 
@@ -122,8 +117,7 @@ async def open_menu(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         page=unpacked.page,
-        current_callback=current_callback,
-        callbacks_history=callbacks_history,
+        callback=unpacked_callback,
         entry=properties.get_entry(unpacked.path),
     )
 
@@ -139,7 +133,7 @@ async def open_menu(
 async def next_param_value(
     query: CallbackQuery,
     properties: FunPayHubProperties,
-    callbacks_history: list[str],
+    unpacked_callback: UnpackedCallback,
     dispatcher: Dispatcher,
     bot,
 ):
@@ -152,8 +146,7 @@ async def next_param_value(
         await query.answer(text=str(e), show_alert=True)
         raise
 
-    new_query = '->'.join(callbacks_history)
-    new_event = query.model_copy(update={'data': new_query})
+    new_event = query.model_copy(update={'data': join_callbacks(*unpacked_callback.history)})
     update = Update(
         update_id=0,
         callback_query=new_event,
@@ -166,7 +159,7 @@ async def next_param_value(
 async def choose_param_value(
     query: CallbackQuery,
     properties: FunPayHubProperties,
-    callbacks_history: list[str],
+    unpacked_callback: UnpackedCallback,
     dispatcher: Dispatcher,
     bot,
 ):
@@ -175,7 +168,7 @@ async def choose_param_value(
 
     param.set_value(unpacked.choice_index)
 
-    new_query = '->'.join(callbacks_history)
+    new_query = join_callbacks(*unpacked_callback.history)
     new_event = query.model_copy(update={'data': new_query})
     update = Update(
         update_id=0,
@@ -188,7 +181,7 @@ async def choose_param_value(
 @r.callback_query(cbs.ChangePageTo.filter())
 async def change_page(
     query: CallbackQuery,
-    callbacks_history: list[str],
+    unpacked_callback: UnpackedCallback,
     dispatcher: Dispatcher,
     bot,
 ):
@@ -196,16 +189,16 @@ async def change_page(
     new_query = re.sub(
         r'page-\d+',
         f'page-{unpacked.page}',
-        callbacks_history[-1],
+        unpacked_callback.history[-1],
     )
-    callbacks_history[-1] = new_query
+    unpacked_callback.history[-1] = new_query
+    # todo: better parsing
 
-    new_event = query.model_copy(update={'data': '->'.join(callbacks_history)})
+    new_event = query.model_copy(update={'data': join_callbacks(*unpacked_callback.history)})
     update = Update(
         update_id=0,
         callback_query=new_event,
     )
-
     await dispatcher.feed_update(bot, update)
 
 
@@ -214,11 +207,10 @@ async def change_parameter_value(
     query: CallbackQuery,
     properties: FunPayHubProperties,
     tg_ui: UIRegistry,
-    callbacks_history: list[str],
     data: dict[str, Any],
     bot: Bot,
     dispatcher: Dispatcher,
-    current_callback: str,
+    unpacked_callback: UnpackedCallback,
 ) -> None:
     state = _get_context(dispatcher, bot, query)
     await state.clear()
@@ -230,8 +222,7 @@ async def change_parameter_value(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         page=0,
-        current_callback=current_callback,
-        callbacks_history=callbacks_history,
+        callback=unpacked_callback,
         entry=param,
     )
 
@@ -250,7 +241,7 @@ async def change_parameter_value(
             'data': ChangingParameterValueState(
                 parameter=param,
                 callback_query_obj=query,
-                callbacks_history=callbacks_history,
+                callbacks_history=unpacked_callback.history,
                 message=msg,
                 user_messages=[],
             ),
@@ -275,7 +266,6 @@ async def edit_parameter(
         data.parameter.set_value(message.text)
         await context.clear()
     except ValueError as e:
-        print('ERROR')
         await data.message.edit_text(
             text=data.message.html_text
             + f'\n\nНе удалось изменить значение параметра {data.parameter.name}:\n\n{str(e)}',
@@ -285,7 +275,7 @@ async def edit_parameter(
 
     await _delete_message(data.message)
 
-    data.callback_query_obj.__dict__['data'] = '->'.join(data.callbacks_history)
+    data.callback_query_obj.__dict__['data'] = join_callbacks(*data.callbacks_history)
     await dispatcher.feed_update(
         bot,
         Update(
@@ -300,7 +290,7 @@ async def manual_change_page_activate(
     query: CallbackQuery,
     bot: Bot,
     dispatcher: Dispatcher,
-    callbacks_history: list[str],
+    unpacked_callback: UnpackedCallback
 ):
     unpacked = cbs.ChangePageManually.unpack(query.data)
     state = _get_context(dispatcher, bot, query)
@@ -317,7 +307,7 @@ async def manual_change_page_activate(
         {
             'data': ChangingPage(
                 callback_query_obj=query,
-                callbacks_history=callbacks_history,
+                callbacks_history=unpacked_callback.history,
                 message=msg,
                 max_pages=unpacked.total_pages,
                 user_messages=[],
@@ -357,7 +347,7 @@ async def manual_page_change(
     data.callbacks_history[-1] = new_query
 
     new_event = data.callback_query_obj.model_copy(
-        update={'data': '->'.join(data.callbacks_history)},
+        update={'data': join_callbacks(*data.callbacks_history)},
     )
     update = Update(
         update_id=0,
