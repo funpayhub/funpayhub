@@ -10,8 +10,8 @@ __all__ = [
 ]
 
 
-from typing import TYPE_CHECKING, Literal, Optional, ParamSpec, Concatenate, overload
-from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal, Optional, ParamSpec, Concatenate, overload, Any
+from dataclasses import dataclass, field
 from collections.abc import Callable, Awaitable
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -107,15 +107,16 @@ class Menu:
         return total_keyboard
 
 
-@dataclass
+@dataclass(kw_only=True)
 class UIContext:
     language: str
     max_elements_on_page: int
     page: int
     current_callback: str
     callbacks_history: list[str]
+    args: dict[str, Any] = field(default_factory=dict)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PropertiesUIContext(UIContext):
     entry: Properties | MutableParameter
