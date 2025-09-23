@@ -15,10 +15,9 @@ from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.states import ChangingPage, ChangingParameterValueState
-from funpayhub.lib.telegram.ui.types import PropertiesUIContext
+from funpayhub.lib.telegram.ui.types import PropertiesUIContext, UIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from aiogram.types.input_file import BufferedInputFile
-from aiogram.exceptions import TelegramEntityTooLarge
 
 from .router import router as r
 
@@ -83,8 +82,36 @@ async def execute_python_code(message: Message, data):
                 document=BufferedInputFile(file=temp_buffer.getvalue().encode('utf-8'), filename='result.txt'),
                 caption='Текст вывода слишком большой. Присылаю файл.'
             )
-
 # TEMP _____
+
+# TEMP
+r.callback_query(cbs.OpenMenu.filter())
+async def open_custom_menu(
+    query: CallbackQuery,
+    tg_ui: UIRegistry,
+    callback_args: dict[str, Any],
+    data: dict[str, Any],
+    properties: FunPayHubProperties,
+    callbacks_history: list[str],
+):
+    unpacked = cbs.OpenMenu.unpack(query.data)
+
+    context = UIContext(
+        language=properties.general.language.real_value(),
+        max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
+        page=unpacked.page,
+        current_callback=query.data,
+        callbacks_history=callbacks_history,
+        args=callback_args
+    )
+
+    menu = await tg_ui.build_menu(menu_id=unpacked.menu_id, ctx=context, data=data)
+
+    await query.message.edit_text(
+        text=menu.text,
+        reply_markup=menu.total_keyboard(convert=True, hash=True)
+    )
+# TEMP
 
 
 @r.callback_query(cbs.Dummy.filter())
