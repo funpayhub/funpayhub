@@ -1,16 +1,18 @@
 from __future__ import annotations
 
+
+__all__ = ['UIRegistry']
+
+
 from typing import Any, Type, ParamSpec, Concatenate
 from collections.abc import Callable, Awaitable
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
-import funpayhub.lib.properties.parameter as param
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 
-from . import default_ui as default
 from .types import Menu, Button, PropertiesUIContext
 
 
@@ -45,26 +47,13 @@ class UIRegistry:
         self.default_entries_buttons: dict[
             type[MutableParameter | Properties],
             CallableWrapper[Button],
-        ] = {
-            param.ToggleParameter: default.TOGGLE_BTN,
-            param.IntParameter: default.INT_PARAM_BTN,
-            param.FloatParameter: default.FLOAT_PARAM_BTN,
-            param.StringParameter: default.STRING_PARAM_BTN,
-            param.ChoiceParameter: default.CHOICE_PARAM_BTN,
-            Properties: default.PROPERTIES_BTN,
-        }
+        ] = {}
         """Дефолтные фабрики кнопок параметров / категорий."""
 
         self.default_entry_menus: dict[
             type[MutableParameter | Properties],
             CallableWrapper[Menu],
-        ] = {
-            param.IntParameter: default.INT_PARAM_MENU,
-            param.FloatParameter: default.FLOAT_PARAM_MENU,
-            param.StringParameter: default.STRING_PARAM_MENU,
-            param.ChoiceParameter: default.CHOICE_PARAM_MENU,
-            Properties: default.PROPERTIES_MENU,
-        }
+        ] = {}
         """Дефолтные фабрики меню параметров / категорий."""
 
         self.entries_buttons_modifications: dict[str, CallableWrapper[Button]] = {}
