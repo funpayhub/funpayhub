@@ -18,6 +18,7 @@ from funpayhub.lib.telegram.states import ChangingPage, ChangingParameterValueSt
 from funpayhub.lib.telegram.ui.types import PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from aiogram.types.input_file import BufferedInputFile
+from aiogram.exceptions import TelegramEntityTooLarge
 
 from .router import router as r
 
@@ -72,10 +73,17 @@ async def execute_python_code(message: Message, data):
             text=html.escape(temp_buffer.getvalue()),
         )
     else:
-        await message.answer_document(
-            document=BufferedInputFile(file=temp_buffer.getvalue().encode('utf-8'), filename='result.txt'),
-            caption='Текст вывода слишком большой. Присылаю файл.'
-        )
+        if len(temp_buffer.getvalue().encode('utf-8')) > 52428800:
+            await message.reply(
+                text='Да пиздец, ты че там накодил на 20мб текста иди нахуй не буду я это присылать ок да?'
+            )
+        else:
+            print(f'uploading file')
+            await message.answer_document(
+                document=BufferedInputFile(file=temp_buffer.getvalue().encode('utf-8'), filename='result.txt'),
+                caption='Текст вывода слишком большой. Присылаю файл.'
+            )
+
 # TEMP _____
 
 
