@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 import re
+import html
+import textwrap
+import contextlib
 from typing import TYPE_CHECKING, Any
+from io import StringIO
+from copy import copy
 from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
@@ -9,15 +14,9 @@ from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.states import ChangingParameterValueState, ChangingPage
+from funpayhub.lib.telegram.states import ChangingPage, ChangingParameterValueState
 from funpayhub.lib.telegram.ui.types import PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
-import contextlib
-import html
-import textwrap
-from io import StringIO
-from copy import copy
-
 
 from .router import router as r
 
@@ -39,6 +38,7 @@ def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery):
         thread_id=msg.message_thread_id,
         user_id=obj.from_user.id,
     )
+
 
 # TEMP _____
 @r.message(Command('exec'))
@@ -64,10 +64,11 @@ async def execute_python_code(message: Message, data):
                 await fn()
             except:
                 import traceback
+
                 traceback.print_exc()
 
     await message.reply(
-        text=html.escape(temp_buffer.getvalue())
+        text=html.escape(temp_buffer.getvalue()),
     )
 
 
@@ -299,7 +300,7 @@ async def manual_change_page_activate(
     query: CallbackQuery,
     bot: Bot,
     dispatcher: Dispatcher,
-    callbacks_history: list[str]
+    callbacks_history: list[str],
 ):
     unpacked = cbs.ChangePageManually.unpack(query.data)
     state = _get_context(dispatcher, bot, query)
@@ -330,7 +331,7 @@ async def manual_change_page_activate(
 async def manual_page_change(
     message: Message,
     dispatcher: Dispatcher,
-    bot: Bot
+    bot: Bot,
 ):
     await _delete_message(message)
 
@@ -355,7 +356,9 @@ async def manual_page_change(
     )
     data.callbacks_history[-1] = new_query
 
-    new_event = data.callback_query_obj.model_copy(update={'data': '->'.join(data.callbacks_history)})
+    new_event = data.callback_query_obj.model_copy(
+        update={'data': '->'.join(data.callbacks_history)}
+    )
     update = Update(
         update_id=0,
         callback_query=new_event,

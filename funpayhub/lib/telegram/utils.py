@@ -1,6 +1,9 @@
+from __future__ import annotations
+
+
 __all__ = [
     'join_callbacks',
-    'split_callbacks'
+    'split_callbacks',
 ]
 
 

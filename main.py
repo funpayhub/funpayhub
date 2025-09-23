@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import sys
+import asyncio
 import logging
 from logging.config import dictConfig
+
 from load_dotenv import load_dotenv
+
 from funpayhub.app.main import FunPayHub
-import asyncio
 
 
 load_dotenv()

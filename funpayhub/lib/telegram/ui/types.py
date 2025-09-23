@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, ParamSpec, Concatenate, overload, Optional
-from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Literal, Optional, ParamSpec, Concatenate, overload
+from dataclasses import dataclass
 from collections.abc import Callable, Awaitable
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from eventry.asyncio.callable_wrappers import CallableWrapper
-from funpayhub.lib.telegram.callbacks import Hash
 
 from funpayhub.lib.properties import Properties, MutableParameter
+from funpayhub.lib.telegram.callbacks import Hash
 
 
 if TYPE_CHECKING:
@@ -45,6 +45,7 @@ class Menu:
     """
     Объект меню.
     """
+
     ui: UIRegistry
     context: UIContext
 
@@ -58,7 +59,7 @@ class Menu:
     def total_keyboard(
         self,
         convert: Literal[True],
-        hash: bool = True
+        hash: bool = True,
     ) -> InlineKeyboardMarkup | None:
         pass
 
@@ -66,14 +67,14 @@ class Menu:
     def total_keyboard(
         self,
         convert: Literal[False],
-        hash: bool = True
+        hash: bool = True,
     ) -> Keyboard | None:
         pass
 
     def total_keyboard(
         self,
         convert: bool = False,
-        hash: bool = True
+        hash: bool = True,
     ) -> Keyboard | InlineKeyboardMarkup | None:
         total_keyboard = []
         for kb in [self.upper_keyboard, self.keyboard, self.footer_keyboard]:
@@ -84,7 +85,7 @@ class Menu:
                 for button in line:
                     if button.obj.callback_data and hash:
                         button.obj.callback_data = Hash(
-                            hash=self.ui.hashinator.hash(button.obj.callback_data)
+                            hash=self.ui.hashinator.hash(button.obj.callback_data),
                         ).pack()
                     converted_line.append(button.obj if convert else button)
                 total_keyboard.append(converted_line)

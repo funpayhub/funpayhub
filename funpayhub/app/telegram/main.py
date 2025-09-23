@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
 from aiogram import Bot, Dispatcher
+from aiogram.enums import ParseMode
+from aiogram.client.default import DefaultBotProperties
 
-from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 from funpayhub.lib.translater import Translater
-from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
-
+from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.middlewares.unhash import UnpackMiddleware
+from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
+from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
 
 
 if TYPE_CHECKING:
@@ -25,14 +27,22 @@ class Telegram:
         hub: FunPayHub,
         bot_token: str,
         workflow_data: dict[str, Any],
-        translater: Translater
+        translater: Translater,
     ) -> None:
         self._hub = hub
         self._dispatcher = Dispatcher()
-        self._dispatcher.workflow_data=workflow_data
+        self._dispatcher.workflow_data = workflow_data
         self._setup_dispatcher()
 
-        self._bot = Bot(token=bot_token)
+        self._bot = Bot(
+            token=bot_token,
+            default=DefaultBotProperties(
+                parse_mode=ParseMode.HTML,
+                disable_notification=False,
+                allow_sending_without_reply=True,
+                link_preview_is_disabled=True,
+            ),
+        )
 
         self._hashinator = HashinatorT1000()
         self._ui_registry = UIRegistry(hashinator=self._hashinator, translater=translater)
@@ -59,7 +69,7 @@ class Telegram:
 
     def _setup_dispatcher(self):
         self._dispatcher.include_routers(
-            properties_menu_router
+            properties_menu_router,
         )
 
         middleware = AddDataMiddleware()

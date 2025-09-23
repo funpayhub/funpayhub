@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.properties.properties import FunPayHubProperties
+    pass
 
 
 class CheckPropertiesPathExists(BaseMiddleware):

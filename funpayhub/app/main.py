@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import os
+import asyncio
+
 from funpayhub.app.properties import FunPayHubProperties
+from funpayhub.lib.translater import Translater
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
-from funpayhub.lib.translater import Translater
-import asyncio
-import os
 
 
 class FunPayHub:
@@ -28,7 +29,7 @@ class FunPayHub:
             self,
             bot_token=os.environ.get('FPH_TELEGRAM_TOKEN'),  # todo: or from config
             workflow_data=workflow_data,
-            translater=self._translater
+            translater=self._translater,
         )
 
         workflow_data.update(
@@ -36,24 +37,22 @@ class FunPayHub:
                 'hub': self,
                 'properties': self.properties,
                 'translater': self.translater,
-
                 'fp': self.funpay,
                 'fp_bot': self.funpay.bot,
                 'fp_dp': self.funpay.dispatcher,
                 'fp_formatters': self.funpay.text_formatters,
-
                 'tg': self._telegram,
                 'tg_bot': self._telegram.bot,
                 'tg_dp': self.telegram.dispatcher,
                 'hashinator': self.telegram.hashinator,
                 'tg_ui': self.telegram.ui_registry,
-            }
+            },
         )
 
     async def start(self):
         await asyncio.gather(
             # self.funpay.start(),
-            self.telegram.start()
+            self.telegram.start(),
         )
 
     @property

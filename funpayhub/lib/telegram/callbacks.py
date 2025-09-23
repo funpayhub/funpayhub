@@ -42,6 +42,7 @@ class Hash(CallbackData, prefix='hash'):
     Одна из самых первых миддлварей бота должна перехватить данный callback, расшифровать и
     подменить.
     """
+
     hash: str
 
 
@@ -72,6 +73,7 @@ class OpenEntryMenu(CallbackData, Pageable, prefix='open_properties_menu'):
     """
     Обновляет привязанное сообщение и открывает меню параметра / категории по пути `path`.
     """
+
     path: str
     """Путь к параметру / категории."""
 
@@ -81,6 +83,7 @@ class ChangePageTo(CallbackData, prefix='change_page_to'):
     Обновляет привязанное сообщение, меня страницу последнего callback из callback_history,
     если в нем имеется паттерн page-\d+
     """
+
     page: int
     """Новый индекс страницы."""
 
@@ -89,6 +92,7 @@ class ChangePageManually(CallbackData, prefix='change_page_manually'):
     """
     Устанавливает состояние на `ChangingPage`.
     """
+
     total_pages: int
 
 

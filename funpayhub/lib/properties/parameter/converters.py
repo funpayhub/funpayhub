@@ -40,7 +40,7 @@ def bool_converter(value: Any) -> bool:
             value = str(value)
         except:
             raise ValueError(
-                'Unable to convert value to bool'
+                'Unable to convert value to bool',
             )  # todo: использовать строку из перевода.
 
     values = {
@@ -63,7 +63,7 @@ def int_converter(value: Any) -> int:
         return int(value)
     except ValueError:
         raise ValueError(
-            f'Unable to convert value {value} to integer.'
+            f'Unable to convert value {value} to integer.',
         )  # todo: использовать строку из перевода.
 
 
@@ -72,7 +72,7 @@ def float_converter(value: Any) -> float:
         return float(value)
     except ValueError:
         raise ValueError(
-            f'Unable to convert value {value} to float.'
+            f'Unable to convert value {value} to float.',
         )  # todo: использовать строку из перевода
 
 
@@ -81,7 +81,7 @@ def string_converter(value: Any) -> str:
         return str(value)
     except ValueError:
         raise ValueError(
-            f'Unable to convert value {value} to string.'
+            f'Unable to convert value {value} to string.',
         )  # todo: использовать строку из перевода
 
 
