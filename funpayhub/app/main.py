@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import os
 import asyncio
+from typing import Any
 
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
+
+# plugins
+from funpayhub.plugins.exec_plugin import Plugin
 
 
 class FunPayHub:
@@ -14,7 +18,7 @@ class FunPayHub:
         self,
         properties: FunPayHubProperties | None = None,
     ):
-        workflow_data = {}
+        self._workflow_data = {}
 
         if properties is None:
             properties = FunPayHubProperties()
@@ -24,15 +28,15 @@ class FunPayHub:
         self._translater = Translater()
         self._translater.add_translations('funpayhub/locales')
 
-        self._funpay = FunPay(self, workflow_data=workflow_data)
+        self._funpay = FunPay(self, workflow_data=self.workflow_data)
         self._telegram = Telegram(
             self,
             bot_token=os.environ.get('FPH_TELEGRAM_TOKEN'),  # todo: or from config
-            workflow_data=workflow_data,
+            workflow_data=self.workflow_data,
             translater=self._translater,
         )
 
-        workflow_data.update(
+        self.workflow_data.update(
             {
                 'hub': self,
                 'properties': self.properties,
@@ -55,6 +59,10 @@ class FunPayHub:
             self.telegram.start(),
         )
 
+    async def load_plugins(self):
+        pl = Plugin()
+        await pl.setup(self)
+
     @property
     def properties(self) -> FunPayHubProperties:
         return self._properties
@@ -70,3 +78,7 @@ class FunPayHub:
     @property
     def translater(self) -> Translater:
         return self._translater
+
+    @property
+    def workflow_data(self) -> dict[str, Any]:
+        return self._workflow_data

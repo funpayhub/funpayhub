@@ -70,6 +70,7 @@ dictConfig(
 
 async def main():
     app = FunPayHub()
+    await app.load_plugins()
     await app.start()
 
 

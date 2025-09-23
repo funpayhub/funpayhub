@@ -7,11 +7,11 @@ from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 
 from funpayhub.lib.translater import Translater
+from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.middlewares.unhash import UnpackMiddleware
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
-from funpayhub.app.telegram.ui import default as default_ui
 
 
 if TYPE_CHECKING:
@@ -20,7 +20,6 @@ if TYPE_CHECKING:
 
 # routers
 from funpayhub.app.telegram.routers.properties_menu import router as properties_menu_router
-
 
 
 class Telegram:
@@ -89,7 +88,6 @@ class Telegram:
 
         for t, m in default_ui.DEFAULT_ENTRIES_MENUS.items():
             self._ui_registry.set_default_entry_menu_builder(t, m)
-
 
     async def start(self) -> None:
         await self.dispatcher.start_polling(self.bot)

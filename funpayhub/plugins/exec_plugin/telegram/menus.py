@@ -1,20 +1,24 @@
-from typing import TYPE_CHECKING
+from __future__ import annotations
 
+import math
+from typing import TYPE_CHECKING, Any
+
+from aiogram.types import InlineKeyboardButton
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
-from funpayhub.lib.telegram.ui.types import Button, Menu, UIContext, Keyboard
-from funpayhub.lib.telegram.ui import UIRegistry
-from aiogram.types import InlineKeyboardButton
-from funpayhub.lib.telegram.utils import join_callbacks
-import funpayhub.plugins.exec_plugin.telegram.callbacks as ecbs
 import funpayhub.lib.telegram.callbacks as cbs
-import math
-from typing import Any
+from funpayhub.lib.telegram.ui import UIRegistry
+from funpayhub.lib.telegram.utils import join_callbacks, add_callback_params
+from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
+from .callbacks import SendExecFile
 import html
+
 
 if TYPE_CHECKING:
     from funpayhub.plugins.exec_plugin.types import ExecutionResultsRegistry
-    from funpayhub.app.properties import FunPayHubProperties
+
+
+MAX_TEXT_LEN = 3000
 
 
 # helpers
@@ -90,6 +94,8 @@ async def build_navigation(
         ],
     )
 
+    return kb
+
 
 # real keyboard
 async def build_executions_list_keyboard(
@@ -104,17 +110,21 @@ async def build_executions_list_keyboard(
     entries = list(exec_registry.registry.items())[first_element:last_element]
 
     for exec_id, result in entries:
+        callback = cbs.OpenMenu(menu_id='exec_output').pack()
+        callback = add_callback_params(callback, exec_id=exec_id)
+
         btn = InlineKeyboardButton(
             text=f'{"❌" if result.error else "✅"} {exec_id}',
             callback_data=join_callbacks(
                 *ctx.callbacks_history,
                 ctx.current_callback,
-                ecbs.OpenExecOutput(exec_id=exec_id, page=ctx.page).pack()
-            )
+                callback,
+            ),
         )
         keyboard.append([Button(id=f'open_exec_output:{exec_id}', obj=btn)])
 
     return keyboard
+
 
 build_executions_list_keyboard = CallableWrapper(build_executions_list_keyboard)
 
@@ -123,41 +133,63 @@ async def build_output_keyboard(
     ui: UIRegistry,
     ctx: UIContext,
 ):
-    unpacked = ecbs.OpenExecOutput.unpack(ctx.current_callback)
+    exec_id = ctx.args['exec_id']
+
+    callback = cbs.OpenMenu(menu_id='exec_code').pack()
+    callback = add_callback_params(callback, exec_id=exec_id)
+
     btn = InlineKeyboardButton(
-        text='Code',
+        text='🔲 Код',
         callback_data=join_callbacks(
-        *ctx.callbacks_history,
-        ecbs.OpenExecCode(exec_id=unpacked.exec_id).pack()
-        )
+            *ctx.callbacks_history,
+            callback,
+        ),
     )
 
-    return [[Button(id='exec_switch_code_output', obj=btn)]]
+    download_btn = InlineKeyboardButton(
+        text='💾 Скачать',
+        callback_data=SendExecFile(exec_id=exec_id).pack()
+    )
 
+    return [
+        [Button(id='download_exec_files', obj=download_btn)],
+        [Button(id='exec_switch_code_output', obj=btn)]
+    ]
+build_output_keyboard = CallableWrapper(build_output_keyboard)
 
 async def build_code_keyboard(
     ui: UIRegistry,
     ctx: UIContext,
 ):
-    exec_id = ctx.data['exec_id']
+    exec_id = ctx.args['exec_id']
+
+    callback = cbs.OpenMenu(menu_id='exec_output').pack()
+    callback = add_callback_params(callback, exec_id=exec_id)
 
     btn = InlineKeyboardButton(
-        text='Code',
+        text='📄 Вывод',
         callback_data=join_callbacks(
             *ctx.callbacks_history,
-            ecbs.OpenExecCode(exec_id=unpacked.exec_id).pack()
-        )
+            callback,
+        ),
+    )
+    download_btn = InlineKeyboardButton(
+        text='💾 Скачать',
+        callback_data=SendExecFile(exec_id=exec_id).pack()
     )
 
-    return [[Button(id='exec_switch_code_output', obj=btn)]]
-
+    return [
+        [Button(id='download_exec_files', obj=download_btn)],
+        [Button(id='exec_switch_code_output', obj=btn)]
+    ]
+build_code_keyboard = CallableWrapper(build_code_keyboard)
 
 # menus
-async def executions_list_menu(
+async def exec_list_menu_builder(
     ui: UIRegistry,
     ctx: UIContext,
     exec_registry: ExecutionResultsRegistry,
-    data: dict[str, Any]
+    data: dict[str, Any],
 ):
     total_pages = math.ceil(len(exec_registry.registry.items()) / ctx.max_elements_on_page)
 
@@ -172,18 +204,27 @@ async def executions_list_menu(
     )
 
 
-async def exec_output_menu(
+async def exec_output_menu_builder(
     ui: UIRegistry,
     ctx: UIContext,
     exec_registry: ExecutionResultsRegistry,
+    data: dict[str, Any],
 ):
-    unpacked = ecbs.OpenExecOutput.unpack(ctx.current_callback)
-    result = exec_registry.registry[unpacked.exec_id]
+    exec_id = ctx.args['exec_id']
+    result = exec_registry.registry[exec_id]
 
-    total_pages = math.ceil(result.buffer_len / 3000)
-    first = ctx.page * 3000
-    last = first + 3000
-    text = f'<code>' + result.buffer.getvalue()[first:last] + '</code>'
+    total_pages = math.ceil(result.buffer_len / MAX_TEXT_LEN)
+    first = ctx.page * MAX_TEXT_LEN
+    last = first + MAX_TEXT_LEN
+    text = '<pre>' + html.escape(result.buffer.getvalue()[first:last]) + '</pre>'
+    text = f'''<b><u>Исполнение {exec_id}</u></b>
+    
+{f'✅ Исполнение длилось {result.execution_time} секунд.' if not result.error 
+    else f'❌ Исполнение длилось {result.execution_time} секунд и завершилось ошибкой.'}
+
+<b><u>Вывод исполнения:</u></b>
+{text}
+'''
 
     return Menu(
         ui=ui,
@@ -191,23 +232,33 @@ async def exec_output_menu(
         text=text,
         image=None,
         upper_keyboard=None,
-        keyboard=None,
-        footer_keyboard = await build_navigation(ui, ctx, total_pages=total_pages),
+        keyboard=await build_output_keyboard((ui, ctx), data=data),
+        footer_keyboard=await build_navigation(ui, ctx, total_pages=total_pages),
     )
 
 
-async def exec_code_menu(
+async def exec_code_menu_builder(
     ui: UIRegistry,
     ctx: UIContext,
     exec_registry: ExecutionResultsRegistry,
+    data: dict[str, Any],
 ):
-    unpacked = ecbs.OpenExecCode.unpack(ctx.current_callback)
-    result = exec_registry.registry[unpacked.exec_id]
+    exec_id = ctx.args['exec_id']
+    result = exec_registry.registry[exec_id]
 
-    total_pages = math.ceil(result.code_len / 3000)
-    first = ctx.page * 3000
-    last = first + 3000
-    text = f'<code>' + result.code[first:last] + '</code>'
+    total_pages = math.ceil(result.code_len / MAX_TEXT_LEN)
+    first = ctx.page * MAX_TEXT_LEN
+    last = first + MAX_TEXT_LEN
+    text = '<pre>' + result.code[first:last] + '</pre>'
+
+    text = f'''<b><u>Исполнение {exec_id}</u></b>
+
+{f'✅ Исполнение длилось {result.execution_time} секунд.' if not result.error
+else f'❌ Исполнение длилось {result.execution_time} секунд и завершилось ошибкой.'}
+
+<b><u>Код исполнения:</u></b>
+{text}
+    '''
 
     return Menu(
         ui=ui,
@@ -215,6 +266,6 @@ async def exec_code_menu(
         text=text,
         image=None,
         upper_keyboard=None,
-        keyboard=None,
+        keyboard=await build_code_keyboard((ui, ctx), data=data),
         footer_keyboard=await build_navigation(ui, ctx, total_pages=total_pages),
     )

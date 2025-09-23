@@ -13,7 +13,7 @@ from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 
-from .types import Menu, Button, PropertiesUIContext, UIContext
+from .types import Menu, Button, UIContext, PropertiesUIContext
 
 
 type EntryBtnBuilder[**P] = Callable[
@@ -39,7 +39,7 @@ type EntryMenuModification[**P] = Callable[
 # Menus
 type MenuBtnBuilder[**P] = Callable[
     Concatenate[UIRegistry, UIContext, P],
-    Button | Awaitable[Button]
+    Button | Awaitable[Button],
 ]
 
 type MenuBuilder[**P] = Callable[
@@ -183,13 +183,13 @@ class UIRegistry:
     def add_menu_button(
         self,
         menu_id: str,
-        builder: MenuBtnBuilder
+        builder: MenuBtnBuilder,
     ):
         self.default_menu_buttons[menu_id] = CallableWrapper(builder)
 
     def add_menu(
         self,
         menu_id: str,
-        builder: MenuBuilder
+        builder: MenuBuilder,
     ):
         self.default_menus[menu_id] = CallableWrapper(builder)

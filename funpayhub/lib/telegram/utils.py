@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import json
 from typing import Any
 
@@ -53,4 +54,6 @@ def split_callbacks(callback_query: str) -> tuple[list[str], str]:
 
 
 def add_callback_params(callback_query: str, **kwargs: Any) -> str:
-    return callback_query + '~' + json.dumps(kwargs, ensure_ascii=False, indent=0)
+    if not kwargs:
+        return callback_query
+    return json.dumps(kwargs, ensure_ascii=False, indent=None, separators=(',', ':')) + '~' + callback_query

@@ -12,9 +12,9 @@ from funpayhub.loggers import tg_ui_logger as logger
 from funpayhub.lib.properties import Parameter, ChoiceParameter, ToggleParameter
 from funpayhub.lib.telegram.utils import join_callbacks
 from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
+from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext
 
 from . import button_ids as ids
-from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext
 
 
 if TYPE_CHECKING:
@@ -144,7 +144,7 @@ async def build_choice_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIConte
                     id=f'choice_param_value:{index + first_element}:{ctx.entry.path}',
                     obj=btn,
                 ),
-            ]
+            ],
         )
     return keyboard
 

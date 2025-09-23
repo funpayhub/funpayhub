@@ -6,12 +6,12 @@ __all__ = [
     'Button',
     'Menu',
     'UIContext',
-    'PropertiesUIContext'
+    'PropertiesUIContext',
 ]
 
 
-from typing import TYPE_CHECKING, Literal, Optional, ParamSpec, Concatenate, overload, Any
-from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Literal, Optional, ParamSpec, Concatenate, overload
+from dataclasses import field, dataclass
 from collections.abc import Callable, Awaitable
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup

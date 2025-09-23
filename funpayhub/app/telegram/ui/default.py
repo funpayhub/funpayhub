@@ -1,6 +1,9 @@
-from funpayhub.lib.properties import parameter as param
-from funpayhub.lib.properties import Properties
+from __future__ import annotations
+
 from typing import Final
+
+from funpayhub.lib.properties import Properties, parameter as param
+
 from . import default_builders as ui_builders
 
 
@@ -10,7 +13,7 @@ DEFAULT_ENTRIES_BUTTONS: Final = {
     param.FloatParameter: ui_builders.build_parameter_button,
     param.StringParameter: ui_builders.build_parameter_button,
     param.ChoiceParameter: ui_builders.build_open_menu_button,
-    Properties: ui_builders.build_open_menu_button
+    Properties: ui_builders.build_open_menu_button,
 }
 
 DEFAULT_ENTRIES_MENUS: Final = {

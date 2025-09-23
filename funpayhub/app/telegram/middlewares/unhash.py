@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery
 
 from funpayhub.lib.telegram.callbacks import Hash
-import json
 
 
 if TYPE_CHECKING:
@@ -23,6 +23,7 @@ class UnpackMiddleware(BaseMiddleware):
             if not callback_data:
                 await event.answer(text='Ваще не знаю че это за кнопка', show_alert=True)
                 return
+            print(f'Unhashed: {unpacked.hash} -> {callback_data}')
 
         split = callback_data.split('->')
         data['callbacks_history'] = split[:-1]
@@ -33,7 +34,10 @@ class UnpackMiddleware(BaseMiddleware):
             event.__dict__['data'] = current_callback
             data['callback_args'] = {}
         else:
-            event.__dict__['data'] = split[0]
-            data['callback_args'] = json.loads(split[2])
+            event.__dict__['data'] = split[1]
+            data['callback_args'] = json.loads(split[0])
+        data['current_callback'] = current_callback
+
+        print(f'Callback: {current_callback}\nHistory: {data["callbacks_history"]}\nArgs: {data["callback_args"]}')
 
         await handler(event, data)
