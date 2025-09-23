@@ -3,6 +3,11 @@ from __future__ import annotations
 import string
 
 
+def entries_validator(value: int) -> int:
+    if value <= 0 or value > 100:
+        raise ValueError(f'Значение должно быть числом от 1 до 100.')
+    return value
+
 def validate_password(text: str) -> str:
     rules: list[tuple[str, callable]] = []
 

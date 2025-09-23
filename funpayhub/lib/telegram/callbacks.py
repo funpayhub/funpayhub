@@ -68,7 +68,7 @@ class ManualParamValueInput(CallbackData, prefix='manual_value_input'):
     """Путь к параметру."""
 
 
-class OpenPropertiesMenu(CallbackData, Pageable, prefix='open_properties_menu'):
+class OpenEntryMenu(CallbackData, Pageable, prefix='open_properties_menu'):
     """
     Обновляет привязанное сообщение и открывает меню параметра / категории по пути `path`.
     """

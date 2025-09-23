@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, ParamSpec, Concatenate, overload
-from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Literal, ParamSpec, Concatenate, overload, Optional
+from dataclasses import dataclass, field
 from collections.abc import Callable, Awaitable
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.properties import Properties, MutableParameter
-from funpayhub.lib.translater import Translater
 
 
 if TYPE_CHECKING:
@@ -31,24 +30,30 @@ type CallableValue[R] = CallableSignatures[R] | CallableWrapper[R]
 @dataclass
 class Button:
     """
-    Готовый объект кнопки с уже переведенным именем, но не хэшированным callback.
+    Готовая кнопка пропущенная через переводчик, но не через хэшинатор.
     """
 
     id: str
+    """ID кнопки."""
+
     obj: InlineKeyboardButton
+    """Объект Aiogram кнопки."""
 
 
 @dataclass
 class Menu:
     """
     Объект меню.
+
+    После инициализации значения полей (если они - вызываемые объекты) оборачиваются в
+    `CallableWrapper`.
     """
 
-    text: CallableAndValue[str] | None = None
-    image: CallableAndValue[str] | None = None
-    upper_keyboard: CallableAndValue[Keyboard] | None = None
-    keyboard: CallableAndValue[Keyboard] | None = None
-    footer_keyboard: CallableAndValue[Keyboard] | None = None
+    text: Optional[CallableAndValue[str]] = None
+    image: Optional[CallableAndValue[str]] = None
+    upper_keyboard: Optional[CallableAndValue[Keyboard]] = None
+    keyboard: Optional[CallableAndValue[Keyboard]] = None
+    footer_keyboard: Optional[CallableAndValue[Keyboard]] = None
 
     def __post_init__(self):
         self.text = (
@@ -142,6 +147,27 @@ class Menu:
 
 
 @dataclass
+class RenderedMenu:
+    text: Optional[str]
+    image: Optional[str]
+    upper_keyboard: Keyboard = field(default_factory=list)
+    keyboard: Keyboard = field(default_factory=list)
+    footer_keyboard: Keyboard = field(default_factory=list)
+
+    def total_keyboard(self, transform: bool = False) -> TotalKeyboard:
+        total = []
+
+        for kb in [self.upper_keyboard, self.keyboard, self.footer_keyboard]:
+            for i in kb:
+                if isinstance(i, list):
+                    total.extend(i)
+                    break
+            else:
+                total.append(kb)
+
+
+
+@dataclass
 class Window:
     """
     Итоговый объект меню после всех модификаций.
@@ -164,20 +190,3 @@ class UIContext:
 @dataclass
 class PropertiesUIContext(UIContext):
     entry: Properties | MutableParameter
-
-
-@dataclass
-class OneStepPropertiesUIBuilder:
-    button_builder: CallableValue[Button]
-    def __post_init__(self) -> None:
-        if not isinstance(self.button_builder, CallableWrapper):
-            self.button_builder = CallableWrapper(self.button_builder)
-
-
-@dataclass
-class PropertiesUIBuilder(OneStepPropertiesUIBuilder):
-    next_menu: CallableValue[Menu]
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        if not isinstance(self.next_menu, CallableWrapper):
-            self.next_menu = CallableWrapper(self.next_menu)

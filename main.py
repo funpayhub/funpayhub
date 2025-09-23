@@ -15,7 +15,6 @@ from funpayhub.app.properties.properties import FunPayHubProperties
 from funpayhub.app.telegram.middlewares.unhash import UnpackMiddleware
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 from funpayhub.app.telegram.routers.properties_menu import router as properties_menu_r
-from funpayhub.lib.telegram.menu_constructor.renderer import TelegramPropertiesMenuRenderer
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
 
 
@@ -90,7 +89,6 @@ translater.add_translations('funpayhub/locales')
 print(translater._catalogs)
 
 keyboard_hashinator = HashinatorT1000()
-renderer = TelegramPropertiesMenuRenderer(translater=translater, hashinator=keyboard_hashinator)
 
 registry = UIRegistry(translater=translater, hashinator=keyboard_hashinator)
 
@@ -98,7 +96,6 @@ dp = Dispatcher(
     **{
         'properties': props,
         'translater': translater,
-        'menu_renderer': renderer,
         'hashinator': keyboard_hashinator,
         'tg_ui': registry,
     },

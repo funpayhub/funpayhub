@@ -7,7 +7,7 @@ __all__ = ['TelegramProperties']
 from funpayhub.lib.properties import Properties, IntParameter, StringParameter
 from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
 
-from .validators import validate_password
+from .validators import validate_password, entries_validator
 
 
 class TelegramProperties(Properties):
@@ -69,5 +69,6 @@ class TelegramAppearance(Properties):
                 name='$props.telegram.appearance.menu_entries_amount:name',
                 description='$props.telegram.appearance.menu_entries_amount:description',
                 default_value=6,
+                validator=entries_validator,
             ),
         )
