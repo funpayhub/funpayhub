@@ -6,6 +6,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery
 
 from funpayhub.lib.telegram.callbacks import Hash
+import json
 
 
 if TYPE_CHECKING:
@@ -25,5 +26,14 @@ class UnpackMiddleware(BaseMiddleware):
 
         split = callback_data.split('->')
         data['callbacks_history'] = split[:-1]
-        event.__dict__['data'] = split[-1]
+
+        current_callback = split[-1]
+        split = current_callback.split('~')
+        if len(split) < 2:
+            event.__dict__['data'] = current_callback
+            data['callback_args'] = {}
+        else:
+            event.__dict__['data'] = split[0]
+            data['callback_args'] = json.loads(split[2])
+
         await handler(event, data)

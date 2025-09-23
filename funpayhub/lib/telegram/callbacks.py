@@ -99,3 +99,7 @@ class ChangePageManually(CallbackData, prefix='change_page_manually'):
 class ChooseParamValue(CallbackData, prefix='choose_param_value'):
     path: str
     choice_index: int
+
+
+class OpenMenu(CallbackData, Pageable, prefix='open_menu'):
+    menu_id: str
