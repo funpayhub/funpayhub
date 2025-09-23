@@ -239,7 +239,12 @@ async def build_parameter_change_menu(ui: UIRegistry, ctx: PropertiesUIContext) 
         ),
     ]
 
-    return Menu(text=text, footer_keyboard=footer_keyboard)
+    return Menu(
+        ui=ui,
+        context=ctx,
+        text=text,
+        footer_keyboard=[footer_keyboard]
+    )
 
 
 async def build_properties_text(ui: UIRegistry, ctx: PropertiesUIContext) -> str:
@@ -249,21 +254,25 @@ async def build_properties_text(ui: UIRegistry, ctx: PropertiesUIContext) -> str
 """
 
 
-async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
+async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext, **data) -> Menu:
     return Menu(
-        text=build_properties_text,
+        ui=ui,
+        context=ctx,
+        text=await build_properties_text(ui, ctx),
         image=None,
         upper_keyboard=None,
-        keyboard=build_properties_keyboard,
-        footer_keyboard=build_entry_footer,
+        keyboard=await build_properties_keyboard(ui, ctx, **data),
+        footer_keyboard=await build_entry_footer(ui, ctx),
     )
 
 
 async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
     return Menu(
-        text=build_properties_text,
+        ui=ui,
+        context=ctx,
+        text=await build_properties_text(ui, ctx),
         image=None,
         upper_keyboard=None,
-        keyboard=build_choice_parameter_keyboard,
-        footer_keyboard=build_entry_footer,
+        keyboard=await build_choice_parameter_keyboard(ui, ctx),
+        footer_keyboard=await build_entry_footer(ui, ctx),
     )

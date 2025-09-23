@@ -6,6 +6,7 @@ from collections.abc import Callable, Awaitable
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from eventry.asyncio.callable_wrappers import CallableWrapper
+from funpayhub.lib.telegram.callbacks import Hash
 
 from funpayhub.lib.properties import Properties, MutableParameter
 
@@ -14,8 +15,7 @@ if TYPE_CHECKING:
     from .registry import UIRegistry
 
 
-type Keyboard = list[Button] | list[list[Button]]
-type TotalKeyboard = list[list[Button]]
+type Keyboard = list[list[Button]]
 type KeyboardOrButton = Button | Keyboard
 
 P = ParamSpec('P')
@@ -44,138 +44,56 @@ class Button:
 class Menu:
     """
     Объект меню.
-
-    После инициализации значения полей (если они - вызываемые объекты) оборачиваются в
-    `CallableWrapper`.
     """
+    ui: UIRegistry
+    context: UIContext
 
-    text: Optional[CallableAndValue[str]] = None
-    image: Optional[CallableAndValue[str]] = None
-    upper_keyboard: Optional[CallableAndValue[Keyboard]] = None
-    keyboard: Optional[CallableAndValue[Keyboard]] = None
-    footer_keyboard: Optional[CallableAndValue[Keyboard]] = None
-
-    def __post_init__(self):
-        self.text = (
-            self.text
-            if isinstance(self.text, str | None | CallableWrapper)
-            else CallableWrapper(self.text)
-        )
-        self.image = (
-            self.image
-            if isinstance(self.image, str | None | CallableWrapper)
-            else CallableWrapper(self.image)
-        )
-
-        u_k, k, f_k = [
-            CallableWrapper(i) if not isinstance(i, list | CallableWrapper | None) else i
-            for i in [self.upper_keyboard, self.keyboard, self.footer_keyboard]
-        ]
-        self.upper_keyboard, self.keyboard, self.footer_keyboard = u_k, k, f_k
-
-    async def menu_text(
-        self, ui: UIRegistry, ctx: UIContext | PropertiesUIContext, data: dict[str, Any]
-    ) -> str | None:
-        if isinstance(self.text, str | None):
-            return self.text
-        return await self.text((ui, ctx), data)
-
-    async def menu_image(
-        self, ui: UIRegistry, ctx: UIContext | PropertiesUIContext, data: dict[str, Any]
-    ) -> str | None:
-        if isinstance(self.image, str | None):
-            return self.image
-        return await self.image((ui, ctx), data)
+    text: Optional[str] = None
+    image: Optional[str] = None
+    upper_keyboard: Optional[Keyboard] = None
+    keyboard: Optional[Keyboard] = None
+    footer_keyboard: Optional[Keyboard] = None
 
     @overload
-    async def total_keyboard(
+    def total_keyboard(
         self,
-        ui: UIRegistry,
-        ctx: UIContext | PropertiesUIContext,
-        data: dict[str, Any],
         convert: Literal[True],
+        hash: bool = True
     ) -> InlineKeyboardMarkup | None:
         pass
 
     @overload
-    async def total_keyboard(
+    def total_keyboard(
         self,
-        ui: UIRegistry,
-        ctx: UIContext | PropertiesUIContext,
-        data: dict[str, Any],
         convert: Literal[False],
-    ) -> TotalKeyboard | None:
+        hash: bool = True
+    ) -> Keyboard | None:
         pass
 
-    async def total_keyboard(
+    def total_keyboard(
         self,
-        ui: UIRegistry,
-        ctx: UIContext | PropertiesUIContext,
-        data: dict[str, Any],
         convert: bool = False,
-    ) -> TotalKeyboard | InlineKeyboardMarkup | None:
+        hash: bool = True
+    ) -> Keyboard | InlineKeyboardMarkup | None:
         total_keyboard = []
         for kb in [self.upper_keyboard, self.keyboard, self.footer_keyboard]:
             if not kb:
                 continue
-            if not isinstance(kb, CallableWrapper):
-                self._append_keyboard(kb, total_keyboard)
-            else:
-                to_append = await kb((ui, ctx), data)
-                self._append_keyboard(to_append, total_keyboard)
+            for line in kb:
+                converted_line = []
+                for button in line:
+                    if button.obj.callback_data and hash:
+                        button.obj.callback_data = Hash(
+                            hash=self.ui.hashinator.hash(button.obj.callback_data)
+                        ).pack()
+                    converted_line.append(button.obj if convert else button)
+                total_keyboard.append(converted_line)
 
         if not total_keyboard:
             return None
-
-        return self.to_aiogram_keyboard(total_keyboard) if convert else total_keyboard
-
-    def to_aiogram_keyboard(self, keyboard: TotalKeyboard) -> InlineKeyboardMarkup:
-        aiogram_keyboard = InlineKeyboardMarkup(inline_keyboard=[])
-        for line in keyboard:
-            aiogram_keyboard.inline_keyboard.append([i.obj for i in line])
-        return aiogram_keyboard
-
-    def _append_keyboard(self, keyboard: Keyboard, total: TotalKeyboard) -> None:
-        if not keyboard:
-            return
-
-        for i in keyboard:
-            if isinstance(i, list):
-                total.extend(keyboard)
-                return
-        total.append(keyboard)
-
-
-@dataclass
-class RenderedMenu:
-    text: Optional[str]
-    image: Optional[str]
-    upper_keyboard: Keyboard = field(default_factory=list)
-    keyboard: Keyboard = field(default_factory=list)
-    footer_keyboard: Keyboard = field(default_factory=list)
-
-    def total_keyboard(self, transform: bool = False) -> TotalKeyboard:
-        total = []
-
-        for kb in [self.upper_keyboard, self.keyboard, self.footer_keyboard]:
-            for i in kb:
-                if isinstance(i, list):
-                    total.extend(i)
-                    break
-            else:
-                total.append(kb)
-
-
-
-@dataclass
-class Window:
-    """
-    Итоговый объект меню после всех модификаций.
-    """
-
-    text: str | None = None
-    image: str | None = None
-    keyboard: Keyboard | None = None
+        if convert:
+            return InlineKeyboardMarkup(inline_keyboard=total_keyboard)
+        return total_keyboard
 
 
 @dataclass

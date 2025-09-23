@@ -4,9 +4,6 @@ __all__ = [
 ]
 
 
-from collections.abc import Iterable
-
-
 def join_callbacks(*callbacks: str) -> str:
     """
     Объединяет последовательность предыдущих коллбэков с новым коллбэком в одну строку.

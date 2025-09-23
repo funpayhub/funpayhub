@@ -17,7 +17,7 @@ import html
 import textwrap
 from io import StringIO
 from copy import copy
-from types import FunctionType
+
 
 from .router import router as r
 
@@ -100,11 +100,11 @@ async def send_menu(
         entry=properties,
     )
 
-    window = await tg_ui.build_properties_menu(ctx, data)
+    menu = await tg_ui.build_properties_menu(ctx, data)
 
     await message.answer(
-        text=window.text,
-        reply_markup=window.keyboard,
+        text=menu.text,
+        reply_markup=menu.total_keyboard(convert=True, hash=True),
     )
 
 
@@ -127,11 +127,11 @@ async def open_menu(
         entry=properties.get_entry(unpacked.path),
     )
 
-    window = await tg_ui.build_properties_menu(ctx, data)
+    menu = await tg_ui.build_properties_menu(ctx, data)
 
     await query.message.edit_text(
-        text=window.text,
-        reply_markup=window.keyboard,
+        text=menu.text,
+        reply_markup=menu.total_keyboard(convert=True, hash=True),
     )
 
 
@@ -234,13 +234,13 @@ async def change_parameter_value(
         entry=param,
     )
 
-    window = await tg_ui.build_properties_menu(ctx=ctx, data=data)
+    menu = await tg_ui.build_properties_menu(ctx=ctx, data=data)
 
     msg = await bot.send_message(
         chat_id=query.message.chat.id,
         message_thread_id=query.message.message_thread_id,
-        text=window.text,
-        reply_markup=window.keyboard,
+        text=menu.text,
+        reply_markup=menu.total_keyboard(convert=True, hash=True),
     )
 
     await state.set_state(ChangingParameterValueState.name)
