@@ -15,6 +15,7 @@ from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext
 
 from . import button_ids as ids
+from . import premade
 
 
 if TYPE_CHECKING:
@@ -149,78 +150,6 @@ async def build_choice_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIConte
     return keyboard
 
 
-async def build_entry_footer(ui: UIRegistry, ctx: PropertiesUIContext) -> Keyboard:
-    total_pages = math.ceil(len(ctx.entry) / ctx.max_elements_on_page)
-
-    kb = []
-    if ctx.callbacks_history:
-        back_btn = InlineKeyboardButton(
-            text=ui.translater.translate('$back', ctx.language),
-            callback_data=join_callbacks(*ctx.callbacks_history),
-        )
-        kb = [[Button(id='back', obj=back_btn)]]
-
-    if total_pages < 2:
-        return kb
-
-    page_amount_cb = (
-        cbs.ChangePageManually(total_pages=total_pages).pack()
-        if total_pages > 1
-        else cbs.Dummy().pack()
-    )
-    page_amount_btn = InlineKeyboardButton(
-        text=f'{ctx.page + (1 if total_pages else 0)} / {total_pages}',
-        callback_data=join_callbacks(*ctx.callbacks_history, ctx.current_callback, page_amount_cb),
-    )
-
-    to_first_cb = cbs.ChangePageTo(page=0).pack() if ctx.page > 0 else cbs.Dummy().pack()
-    to_first_btn = InlineKeyboardButton(
-        text='⏪' if ctx.page > 0 else '❌',
-        callback_data=join_callbacks(*ctx.callbacks_history, ctx.current_callback, to_first_cb),
-    )
-
-    to_last_cb = (
-        cbs.ChangePageTo(page=total_pages - 1).pack()
-        if ctx.page < total_pages - 1
-        else cbs.Dummy().pack()
-    )
-    to_last_btn = InlineKeyboardButton(
-        text='⏩' if ctx.page < total_pages - 1 else '❌',
-        callback_data=join_callbacks(*ctx.callbacks_history, ctx.current_callback, to_last_cb),
-    )
-
-    to_previous_cb = (
-        cbs.ChangePageTo(page=ctx.page - 1).pack() if ctx.page > 0 else cbs.Dummy().pack()
-    )
-    to_previous_btn = InlineKeyboardButton(
-        text='◀️' if ctx.page > 0 else '❌',
-        callback_data=join_callbacks(*ctx.callbacks_history, ctx.current_callback, to_previous_cb),
-    )
-
-    to_next_cb = (
-        cbs.ChangePageTo(page=ctx.page + 1).pack()
-        if ctx.page < total_pages - 1
-        else cbs.Dummy().pack()
-    )
-    to_next_btn = InlineKeyboardButton(
-        text='▶️' if ctx.page < total_pages - 1 else '❌',
-        callback_data=join_callbacks(*ctx.callbacks_history, ctx.current_callback, to_next_cb),
-    )
-
-    kb.insert(
-        0,
-        [
-            Button(id='to_first_page', obj=to_first_btn),
-            Button(id='to_previous_page', obj=to_previous_btn),
-            Button(id='page_counter', obj=page_amount_btn),
-            Button(id='to_next_page', obj=to_next_btn),
-            Button(id='to_last_page', obj=to_last_btn),
-        ],
-    )
-
-    return kb
-
-
 async def build_parameter_change_menu(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
     if not isinstance(ctx.entry, Parameter):
         raise ValueError('')
@@ -257,6 +186,8 @@ async def build_properties_text(ui: UIRegistry, ctx: PropertiesUIContext) -> str
 
 
 async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext, **data) -> Menu:
+    total_pages = math.ceil(len(ctx.entry.entries) / ctx.max_elements_on_page)
+
     return Menu(
         ui=ui,
         context=ctx,
@@ -264,11 +195,13 @@ async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext, **da
         image=None,
         upper_keyboard=None,
         keyboard=await build_properties_keyboard(ui, ctx, **data),
-        footer_keyboard=await build_entry_footer(ui, ctx),
+        footer_keyboard=await premade.build_navigation_buttons(ui, ctx, total_pages),
     )
 
 
 async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
+    total_pages = math.ceil(len(ctx.entry.entries) / ctx.max_elements_on_page)
+
     return Menu(
         ui=ui,
         context=ctx,
@@ -276,5 +209,5 @@ async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext
         image=None,
         upper_keyboard=None,
         keyboard=await build_choice_parameter_keyboard(ui, ctx),
-        footer_keyboard=await build_entry_footer(ui, ctx),
+        footer_keyboard=await premade.build_navigation_buttons(ui, ctx, total_pages),
     )
