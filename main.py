@@ -1,21 +1,11 @@
 from __future__ import annotations
 
-import os
 import sys
 import logging
 from logging.config import dictConfig
-
-from aiogram import Bot, Dispatcher
 from load_dotenv import load_dotenv
-from aiogram.client.default import DefaultBotProperties
-
-from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.app.properties.properties import FunPayHubProperties
-from funpayhub.app.telegram.middlewares.unhash import UnpackMiddleware
-from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
-from funpayhub.app.telegram.routers.properties_menu import router as properties_menu_r
-from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
+from funpayhub.app.main import FunPayHub
+import asyncio
 
 
 load_dotenv()
@@ -76,41 +66,10 @@ dictConfig(
 )
 
 
-bot = Bot(
-    token=os.environ['FPH_TELEGRAM_TOKEN'],
-    default=DefaultBotProperties(parse_mode='HTML'),
-)
-
-props = FunPayHubProperties()
-props.load()
-
-translater = Translater()
-translater.add_translations('funpayhub/locales')
-print(translater._catalogs)
-
-keyboard_hashinator = HashinatorT1000()
-
-registry = UIRegistry(translater=translater, hashinator=keyboard_hashinator)
-
-dp = Dispatcher(
-    **{
-        'properties': props,
-        'translater': translater,
-        'hashinator': keyboard_hashinator,
-        'tg_ui': registry,
-    },
-)
-
-dp.include_router(properties_menu_r)
-
-middleware = AddDataMiddleware()
-for i, o in dp.observers.items():
-    if i == 'error':
-        continue
-    o.outer_middleware(middleware)
+async def main():
+    app = FunPayHub()
+    await app.start()
 
 
-dp.callback_query.outer_middleware(UnpackMiddleware())
-
-print('START')
-dp.run_polling(bot)
+if __name__ == '__main__':
+    asyncio.run(main())
