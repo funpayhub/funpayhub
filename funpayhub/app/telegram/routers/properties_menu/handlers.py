@@ -17,6 +17,7 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.states import ChangingPage, ChangingParameterValueState
 from funpayhub.lib.telegram.ui.types import PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
+from aiogram.types.input_file import BufferedInputFile
 
 from .router import router as r
 
@@ -46,8 +47,6 @@ async def execute_python_code(message: Message, data):
     if message.from_user.id != 5991368886:
         return
 
-    print('Executing Python code...')
-
     temp_buffer = StringIO()
 
     with contextlib.redirect_stdout(temp_buffer):
@@ -67,12 +66,19 @@ async def execute_python_code(message: Message, data):
 
                 traceback.print_exc()
 
-    await message.reply(
-        text=html.escape(temp_buffer.getvalue()),
-    )
-
-
+    text = html.escape(temp_buffer.getvalue())
+    if len(text) <= 4096:
+        await message.reply(
+            text=html.escape(temp_buffer.getvalue()),
+        )
+    else:
+        await message.answer_document(
+            document=BufferedInputFile(file=temp_buffer.getvalue().encode('utf-8'), filename='result.txt'),
+            caption='Текст вывода слишком большой. Присылаю файл.'
+        )
 # TEMP _____
+
+
 @r.callback_query(cbs.Dummy.filter())
 async def dummy(query: CallbackQuery) -> None:
     await query.answer()
