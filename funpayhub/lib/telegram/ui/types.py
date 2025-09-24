@@ -4,14 +4,14 @@ from __future__ import annotations
 __all__ = [
     'Keyboard',
     'Button',
-    'Menu',
+    'RenderedMenu',
     'UIContext',
     'PropertiesUIContext',
 ]
 
 
-from typing import TYPE_CHECKING, Any, Literal, Optional, ParamSpec, Concatenate, overload
-from dataclasses import field, dataclass
+from typing import TYPE_CHECKING, Any, Literal, Optional, Concatenate, overload
+from dataclasses import field, dataclass, fields
 from collections.abc import Callable, Awaitable
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -29,13 +29,15 @@ if TYPE_CHECKING:
 type Keyboard = list[list[Button]]
 type KeyboardOrButton = Button | Keyboard
 
-P = ParamSpec('P')
-type CallableSignatures[R] = Callable[
-    Concatenate[UIRegistry, UIContext, PropertiesUIContext],
+type BUILDER[**P, R] = Callable[
+    Concatenate[UIRegistry, UIContext | PropertiesUIContext, P],
     R | Awaitable[R],
 ]
-type CallableAndValue[R] = CallableSignatures[R] | CallableWrapper[R] | R
-type CallableValue[R] = CallableSignatures[R] | CallableWrapper[R]
+
+type MODIFICATION[**P, R] = Callable[
+    Concatenate[UIRegistry, UIContext | PropertiesUIContext, R, P],
+    R | Awaitable[R],
+]
 
 
 @dataclass
@@ -51,8 +53,27 @@ class Button:
     """Объект Aiogram кнопки."""
 
 
-@dataclass
+
+@dataclass(kw_only=True)
 class Menu:
+    text: BUILDER[str] | str | None = None
+    image: BUILDER[str] | str | None = None
+    upper_keyboard: MODIFICATION[Keyboard] | Keyboard | None = None
+    keyboard: BUILDER[Keyboard] | Keyboard | None = None
+    footer_keyboard: MODIFICATION[Keyboard] | Keyboard | None = None
+
+    def __post_init__(self):
+        for f in fields(self):
+            value = getattr(self, f.name)
+            if callable(value) and not isinstance(value, CallableWrapper):
+                setattr(self, f.name, CallableWrapper(value))
+
+    async def render(self, ui: UIRegistry, context: UIContext | PropertiesUIContext, data: dict[str, Any]):
+        ...
+
+
+@dataclass
+class RenderedMenu:
     """
     Объект меню.
     """

@@ -9,7 +9,7 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.lib.telegram.callbacks_parsing import join_callbacks, add_callback_params
-from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
+from funpayhub.lib.telegram.ui.types import RenderedMenu, Button, Keyboard, UIContext
 from .callbacks import SendExecFile
 from funpayhub.app.telegram.ui import premade
 import html
@@ -114,7 +114,7 @@ async def exec_list_menu_builder(
 ):
     total_pages = math.ceil(len(exec_registry.registry.items()) / ctx.max_elements_on_page)
 
-    return Menu(
+    return RenderedMenu(
         ui=ui,
         context=ctx,
         text='Exec registry',
@@ -151,7 +151,7 @@ async def exec_output_menu_builder(
 {text}
 '''
 
-    return Menu(
+    return RenderedMenu(
         ui=ui,
         context=ctx,
         text=text,
@@ -185,7 +185,7 @@ else f'❌ Исполнение длилось {result.execution_time} секу�
 {text}
     '''
 
-    return Menu(
+    return RenderedMenu(
         ui=ui,
         context=ctx,
         text=text,

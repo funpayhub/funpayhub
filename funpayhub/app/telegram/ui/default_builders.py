@@ -12,7 +12,7 @@ from funpayhub.loggers import tg_ui_logger as logger
 from funpayhub.lib.properties import Parameter, ChoiceParameter, ToggleParameter
 from funpayhub.lib.telegram.callbacks_parsing import join_callbacks, add_callback_params
 from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
-from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext, UIContext
+from funpayhub.lib.telegram.ui.types import RenderedMenu, Button, Keyboard, PropertiesUIContext, UIContext
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 from . import button_ids as ids
@@ -103,11 +103,7 @@ async def build_open_menu_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
 async def build_properties_keyboard(ui: UIRegistry, ctx: PropertiesUIContext, **data) -> Keyboard:
     keyboard = []
 
-    first_element = ctx.page * ctx.max_elements_on_page
-    last_element = first_element + ctx.max_elements_on_page
-    entries = list(ctx.entry.entries.items())[first_element:last_element]
-
-    for entry_id, entry in entries:
+    for entry_id, entry in ctx.entry.entries.items():
         builder = ui.find_properties_btn_builder(type(entry))
         if not builder:
             continue
@@ -128,22 +124,19 @@ async def build_choice_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIConte
         raise ValueError(f'{type(ctx.entry)} is not a `ChoiceParameter`.')
 
     keyboard = []
-    first_element = ctx.page * ctx.max_elements_on_page
-    last_element = first_element + ctx.max_elements_on_page
-    choices = list(ctx.entry.choices)[first_element:last_element]
 
-    for index, choice in enumerate(choices):
-        cb = cbs.ChooseParamValue(path=ctx.entry.path, choice_index=index + first_element).pack()
+    for index, choice in enumerate(ctx.entry.choices):
+        cb = cbs.ChooseParamValue(path=ctx.entry.path, choice_index=index).pack()
         name = ui.translater.translate(choice.name, ctx.language)
 
         btn = InlineKeyboardButton(
-            text=f'【 {name} 】' if ctx.entry.value == index + first_element else name,
+            text=f'【 {name} 】' if ctx.entry.value == index else name,
             callback_data=join_callbacks(ctx.callback.pack(), cb),
         )
         keyboard.append(
             [
                 Button(
-                    id=f'choice_param_value:{index + first_element}:{ctx.entry.path}',
+                    id=f'choice_param_value:{index}:{ctx.entry.path}',
                     obj=btn,
                 ),
             ],
@@ -151,7 +144,7 @@ async def build_choice_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIConte
     return keyboard
 
 
-async def build_parameter_change_menu(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
+async def build_parameter_change_menu(ui: UIRegistry, ctx: PropertiesUIContext) -> RenderedMenu:
     if not isinstance(ctx.entry, Parameter):
         raise ValueError('')
 
@@ -171,7 +164,7 @@ async def build_parameter_change_menu(ui: UIRegistry, ctx: PropertiesUIContext) 
         ),
     ]
 
-    return Menu(
+    return RenderedMenu(
         ui=ui,
         context=ctx,
         text=text,
@@ -188,11 +181,7 @@ async def build_properties_text(ui: UIRegistry, ctx: PropertiesUIContext) -> str
 # Formatters
 async def build_formatters_keyboard(ui: UIRegistry, ctx: UIContext, fp_formatters: FormattersRegistry) -> Keyboard:
     keyboard = []
-    first_element = ctx.page * ctx.max_elements_on_page
-    last_element = first_element + ctx.max_elements_on_page
-    formatters = fp_formatters[first_element:last_element]
-
-    for formatter in formatters:
+    for formatter in fp_formatters:
         cb = cbs.OpenMenu(menu_id='fph-formatter-info').pack()
         cb = add_callback_params(cb, formatter_id=formatter.key)
 
@@ -204,10 +193,10 @@ async def build_formatters_keyboard(ui: UIRegistry, ctx: UIContext, fp_formatter
     return keyboard
 
 
-async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext, **data) -> Menu:
+async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext, **data) -> RenderedMenu:
     total_pages = math.ceil(len(ctx.entry.entries) / ctx.max_elements_on_page)
 
-    return Menu(
+    return RenderedMenu(
         ui=ui,
         context=ctx,
         text=await build_properties_text(ui, ctx),
@@ -218,10 +207,10 @@ async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext, **da
     )
 
 
-async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
+async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> RenderedMenu:
     total_pages = math.ceil(len(ctx.entry.entries) / ctx.max_elements_on_page)
 
-    return Menu(
+    return RenderedMenu(
         ui=ui,
         context=ctx,
         text=await build_properties_text(ui, ctx),
@@ -236,10 +225,10 @@ async def formatters_list_menu_builder(
     ui: UIRegistry,
     ctx: PropertiesUIContext,
     fp_formatters: FormattersRegistry
-) -> Menu:
+) -> RenderedMenu:
     total_pages = math.ceil(len(fp_formatters) / ctx.max_elements_on_page)
 
-    return Menu(
+    return RenderedMenu(
         ui=ui,
         context=ctx,
         text='Форматтеры',
