@@ -92,7 +92,7 @@ class OpenEntryMenu(CallbackData, MenuPageable, prefix='open_properties_menu'):
     """Путь к параметру / категории."""
 
 
-class ChangeMenuPageTo(CallbackData, prefix='change_menu_page_to'):
+class ChangePageTo(CallbackData, prefix='change_page_to'):
     """
     Обновляет привязанное сообщение, меня страницу последнего callback из callback_history,
     если в нем имеется паттерн page-\d+
@@ -101,12 +101,10 @@ class ChangeMenuPageTo(CallbackData, prefix='change_menu_page_to'):
     page: int
     """Новый индекс страницы."""
 
-
-class ChangeViewPageTo(CallbackData, prefix='change_view_page_to'):
-    page: int
+    view_page: int = 0  # todo: доделать
 
 
-class ChangeMenuPageManually(CallbackData, prefix='change_menu_page_manually'):
+class ChangePageManually(CallbackData, prefix='change_page_manually'):
     """
     Устанавливает состояние на `ChangingPage`.
     """

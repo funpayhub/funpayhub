@@ -22,7 +22,7 @@ async def build_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pages: 
         return kb
 
     page_amount_cb = (
-        cbs.ChangeMenuPageManually(total_pages=total_pages).pack()
+        cbs.ChangePageManually(total_pages=total_pages).pack()
         if total_pages > 1
         else cbs.Dummy().pack()
     )
@@ -31,14 +31,14 @@ async def build_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pages: 
         callback_data=join_callbacks(ctx.callback.pack(), page_amount_cb),
     )
 
-    to_first_cb = cbs.ChangeMenuPageTo(page=0).pack() if ctx.menu_page > 0 else cbs.Dummy().pack()
+    to_first_cb = cbs.ChangePageTo(page=0).pack() if ctx.menu_page > 0 else cbs.Dummy().pack()
     to_first_btn = InlineKeyboardButton(
         text='⏪' if ctx.menu_page > 0 else '❌',
         callback_data=join_callbacks(ctx.callback.pack(), to_first_cb),
     )
 
     to_last_cb = (
-        cbs.ChangeMenuPageTo(page=total_pages - 1).pack()
+        cbs.ChangePageTo(page=total_pages - 1).pack()
         if ctx.menu_page < total_pages - 1
         else cbs.Dummy().pack()
     )
@@ -48,7 +48,7 @@ async def build_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pages: 
     )
 
     to_previous_cb = (
-        cbs.ChangeMenuPageTo(page=ctx.menu_page - 1).pack() if ctx.menu_page > 0 else cbs.Dummy().pack()
+        cbs.ChangePageTo(page=ctx.menu_page - 1).pack() if ctx.menu_page > 0 else cbs.Dummy().pack()
     )
     to_previous_btn = InlineKeyboardButton(
         text='◀️' if ctx.menu_page > 0 else '❌',
@@ -56,7 +56,7 @@ async def build_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pages: 
     )
 
     to_next_cb = (
-        cbs.ChangeMenuPageTo(page=ctx.menu_page + 1).pack()
+        cbs.ChangePageTo(page=ctx.menu_page + 1).pack()
         if ctx.menu_page < total_pages - 1
         else cbs.Dummy().pack()
     )

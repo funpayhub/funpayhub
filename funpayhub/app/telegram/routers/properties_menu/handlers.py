@@ -178,14 +178,14 @@ async def choose_param_value(
     await dispatcher.feed_update(bot, update)
 
 
-@r.callback_query(cbs.ChangeMenuPageTo.filter())
+@r.callback_query(cbs.ChangePageTo.filter())
 async def change_page(
     query: CallbackQuery,
     unpacked_callback: UnpackedCallback,
     dispatcher: Dispatcher,
     bot,
 ):
-    unpacked = cbs.ChangeMenuPageTo.unpack(query.data)
+    unpacked = cbs.ChangePageTo.unpack(query.data)
     old = unpack_callback(unpacked_callback.history[-1])
     old.current_callback = re.sub(
         r'page-\d+',
@@ -286,14 +286,14 @@ async def edit_parameter(
     )
 
 
-@r.callback_query(cbs.ChangeMenuPageManually.filter())
+@r.callback_query(cbs.ChangePageManually.filter())
 async def manual_change_page_activate(
     query: CallbackQuery,
     bot: Bot,
     dispatcher: Dispatcher,
     unpacked_callback: UnpackedCallback
 ):
-    unpacked = cbs.ChangeMenuPageManually.unpack(query.data)
+    unpacked = cbs.ChangePageManually.unpack(query.data)
     state = _get_context(dispatcher, bot, query)
     await state.clear()
 
