@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 from dataclasses import dataclass
 from collections.abc import Callable, Awaitable
 
@@ -95,8 +95,26 @@ class FormattersRegistry:
             return item.key in self._formatters
         return False
 
-    def __getitem__(self, item: Any) -> Formatter:
-        return self._formatters[item]
+    @overload
+    def __getitem__(self, key: str) -> Formatter: ...
+
+    @overload
+    def __getitem__(self, key: int) -> Formatter: ...
+
+    @overload
+    def __getitem__(self, key: slice) -> list[Formatter]: ...
+
+    def __getitem__(self, item: str | int | slice) -> Formatter:
+        if isinstance(item, str):
+            return self._formatters[item]
+
+        if isinstance(item, int):
+            for index, i in enumerate(self._formatters.values()):
+                if index != item:
+                    continue
+                return i
+
+        return list(self._formatters.values())[item]
 
     def __setitem__(self, key: str, value: Formatter) -> None:
         if not isinstance(key, str):
@@ -113,6 +131,9 @@ class FormattersRegistry:
             )
 
         self.add_formatter(formatter=value, raise_if_exists=False)
+
+    def __len__(self) -> int:
+        return len(self._formatters)
 
     async def format_text(
         self,

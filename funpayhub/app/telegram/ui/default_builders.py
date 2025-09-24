@@ -10,9 +10,10 @@ from aiogram.types import InlineKeyboardButton
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.loggers import tg_ui_logger as logger
 from funpayhub.lib.properties import Parameter, ChoiceParameter, ToggleParameter
-from funpayhub.lib.telegram.callbacks_parsing import join_callbacks
+from funpayhub.lib.telegram.callbacks_parsing import join_callbacks, add_callback_params
 from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
-from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext
+from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext, UIContext
+from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 from . import button_ids as ids
 from . import premade
@@ -184,6 +185,24 @@ async def build_properties_text(ui: UIRegistry, ctx: PropertiesUIContext) -> str
 <i>{ui.translater.translate(ctx.entry.description, ctx.language)}</i>
 """
 
+# Formatters
+async def build_formatters_keyboard(ui: UIRegistry, ctx: UIContext, fp_formatters: FormattersRegistry) -> Keyboard:
+    keyboard = []
+    first_element = ctx.page * ctx.max_elements_on_page
+    last_element = first_element + ctx.max_elements_on_page
+    formatters = fp_formatters[first_element:last_element]
+
+    for formatter in formatters:
+        cb = cbs.OpenMenu(menu_id='fph-formatter-info').pack()
+        cb = add_callback_params(cb, formatter_id=formatter.key)
+
+        btn = InlineKeyboardButton(
+            text=ui.translater.translate(formatter.name, ctx.language),
+            callback_data=join_callbacks(ctx.callback.pack(), cb),
+        )
+        keyboard.append([Button(id=f'open_formatter_info:{formatter.key}', obj=btn)])
+    return keyboard
+
 
 async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext, **data) -> Menu:
     total_pages = math.ceil(len(ctx.entry.entries) / ctx.max_elements_on_page)
@@ -209,5 +228,23 @@ async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext
         image=None,
         upper_keyboard=None,
         keyboard=await build_choice_parameter_keyboard(ui, ctx),
+        footer_keyboard=await premade.build_navigation_buttons(ui, ctx, total_pages),
+    )
+
+
+async def formatters_list_menu_builder(
+    ui: UIRegistry,
+    ctx: PropertiesUIContext,
+    fp_formatters: FormattersRegistry
+) -> Menu:
+    total_pages = math.ceil(len(fp_formatters) / ctx.max_elements_on_page)
+
+    return Menu(
+        ui=ui,
+        context=ctx,
+        text='Форматтеры',
+        image=None,
+        upper_keyboard=None,
+        keyboard=await build_formatters_keyboard(ui, ctx, fp_formatters=fp_formatters),
         footer_keyboard=await premade.build_navigation_buttons(ui, ctx, total_pages),
     )

@@ -23,3 +23,8 @@ DEFAULT_ENTRIES_MENUS: Final = {
     param.ChoiceParameter: ui_builders.choice_parameter_menu_builder,
     Properties: ui_builders.properties_menu_builder,
 }
+
+
+DEFAULT_MENUS = {
+    'fph-formatters-list': ui_builders.formatters_list_menu_builder
+}
