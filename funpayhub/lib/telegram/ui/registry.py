@@ -13,7 +13,7 @@ from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 
-from .types import RenderedMenu, Button, UIContext, PropertiesUIContext
+from .types import Menu, Button, UIContext, PropertiesUIContext
 
 
 type EntryBtnBuilder[**P] = Callable[
@@ -23,7 +23,7 @@ type EntryBtnBuilder[**P] = Callable[
 
 type EntryMenuBuilder[**P] = Callable[
     Concatenate[UIRegistry, PropertiesUIContext, P],
-    RenderedMenu | Awaitable[RenderedMenu],
+    Menu | Awaitable[Menu],
 ]
 
 type EntryBtnModification[**P] = Callable[
@@ -32,8 +32,8 @@ type EntryBtnModification[**P] = Callable[
 ]
 
 type EntryMenuModification[**P] = Callable[
-    Concatenate[UIRegistry, PropertiesUIContext, RenderedMenu, P],
-    RenderedMenu | Awaitable[RenderedMenu],
+    Concatenate[UIRegistry, PropertiesUIContext, Menu, P],
+    Menu | Awaitable[Menu],
 ]
 
 # Menus
@@ -44,7 +44,7 @@ type MenuBtnBuilder[**P] = Callable[
 
 type MenuBuilder[**P] = Callable[
     Concatenate[UIRegistry, UIContext, P],
-    RenderedMenu | Awaitable[RenderedMenu],
+    Menu | Awaitable[Menu],
 ]
 
 
@@ -61,21 +61,21 @@ class UIRegistry:
 
         self.default_entry_menus: dict[
             type[MutableParameter | Properties],
-            CallableWrapper[RenderedMenu],
+            CallableWrapper[Menu],
         ] = {}
         """Дефолтные фабрики меню параметров / категорий."""
 
         self.entries_buttons_modifications: dict[str, CallableWrapper[Button]] = {}
-        self.entries_menus_modifications: dict[str, CallableWrapper[RenderedMenu]] = {}
+        self.entries_menus_modifications: dict[str, CallableWrapper[Menu]] = {}
 
         self.default_menu_buttons: dict[str, CallableWrapper[Button]] = {}
-        self.default_menus: dict[str, CallableWrapper[RenderedMenu]] = {}
+        self.default_menus: dict[str, CallableWrapper[Menu]] = {}
 
     async def build_properties_menu(
         self,
         ctx: PropertiesUIContext,
         data: dict[str, Any],
-    ) -> RenderedMenu:
+    ) -> Menu:
         builder = self.find_properties_menu_builder(type(ctx.entry))
         if builder is None:
             raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
@@ -87,7 +87,13 @@ class UIRegistry:
             try:
                 result = await modification((self, ctx, result), data=data)
             except:
+                import traceback
+                print(traceback.format_exc())
                 continue
+
+        if result.finalizer:
+            finalizer = CallableWrapper(result.finalizer)
+            result = await finalizer((self, ctx, result), data=data)
 
         return result
 
@@ -126,11 +132,15 @@ class UIRegistry:
         menu_id: str,
         ctx: UIContext,
         data: dict[str, Any],
-    ) -> RenderedMenu:
+    ) -> Menu:
         if menu_id not in self.default_menus:
             raise ValueError(f'Unknown menu id {menu_id}.')
 
-        return await self.default_menus[menu_id]((self, ctx), data=data)
+        result = await self.default_menus[menu_id]((self, ctx), data=data)
+        if result.finalizer:
+            finalizer = CallableWrapper(result.finalizer)
+            result = await finalizer((self, ctx, result), data=data)
+        return result
 
     def find_properties_btn_builder(
         self,
@@ -145,7 +155,7 @@ class UIRegistry:
     def find_properties_menu_builder(
         self,
         entry_type: Type[MutableParameter | Properties],
-    ) -> CallableWrapper[RenderedMenu] | None:
+    ) -> CallableWrapper[Menu] | None:
         if entry_type in self.default_entry_menus:
             return self.default_entry_menus[entry_type]
         for t, u in self.default_entry_menus.items():

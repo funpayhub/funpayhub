@@ -12,7 +12,7 @@ from funpayhub.loggers import tg_ui_logger as logger
 from funpayhub.lib.properties import Parameter, ChoiceParameter, ToggleParameter
 from funpayhub.lib.telegram.callbacks_parsing import join_callbacks, add_callback_params
 from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
-from funpayhub.lib.telegram.ui.types import RenderedMenu, Button, Keyboard, PropertiesUIContext, UIContext
+from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext, UIContext
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 from . import button_ids as ids
@@ -22,6 +22,22 @@ from . import premade
 if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui import UIRegistry
 
+
+# Finalizer
+async def default_finalizer(ui: UIRegistry, ctx: PropertiesUIContext, menu: Menu) -> Menu:
+    if not menu.footer_keyboard:
+        menu.footer_keyboard = []
+
+    total_pages = math.ceil(len(menu.keyboard) / ctx.max_elements_on_page) if menu.keyboard else 0
+    navigation_buttons = await premade.build_navigation_buttons(ui, ctx, total_pages)
+    menu.footer_keyboard.extend(navigation_buttons)
+
+    if menu.keyboard:
+        first_index = ctx.page * ctx.max_elements_on_page
+        last_index = first_index + ctx.max_elements_on_page
+        menu.keyboard = menu.keyboard[first_index:last_index]
+
+    return menu
 
 # ToggleParameter
 async def build_toggle_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
@@ -144,7 +160,7 @@ async def build_choice_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIConte
     return keyboard
 
 
-async def build_parameter_change_menu(ui: UIRegistry, ctx: PropertiesUIContext) -> RenderedMenu:
+async def build_parameter_change_menu(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
     if not isinstance(ctx.entry, Parameter):
         raise ValueError('')
 
@@ -164,7 +180,7 @@ async def build_parameter_change_menu(ui: UIRegistry, ctx: PropertiesUIContext) 
         ),
     ]
 
-    return RenderedMenu(
+    return Menu(
         ui=ui,
         context=ctx,
         text=text,
@@ -193,31 +209,27 @@ async def build_formatters_keyboard(ui: UIRegistry, ctx: UIContext, fp_formatter
     return keyboard
 
 
-async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext, **data) -> RenderedMenu:
-    total_pages = math.ceil(len(ctx.entry.entries) / ctx.max_elements_on_page)
-
-    return RenderedMenu(
+async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext, **data) -> Menu:
+    return Menu(
         ui=ui,
         context=ctx,
         text=await build_properties_text(ui, ctx),
         image=None,
-        upper_keyboard=None,
+        header_keyboard=None,
         keyboard=await build_properties_keyboard(ui, ctx, **data),
-        footer_keyboard=await premade.build_navigation_buttons(ui, ctx, total_pages),
+        finalizer=default_finalizer,
     )
 
 
-async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> RenderedMenu:
-    total_pages = math.ceil(len(ctx.entry.entries) / ctx.max_elements_on_page)
-
-    return RenderedMenu(
+async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
+    return Menu(
         ui=ui,
         context=ctx,
         text=await build_properties_text(ui, ctx),
         image=None,
-        upper_keyboard=None,
+        header_keyboard=None,
         keyboard=await build_choice_parameter_keyboard(ui, ctx),
-        footer_keyboard=await premade.build_navigation_buttons(ui, ctx, total_pages),
+        finalizer=default_finalizer,
     )
 
 
@@ -225,15 +237,13 @@ async def formatters_list_menu_builder(
     ui: UIRegistry,
     ctx: PropertiesUIContext,
     fp_formatters: FormattersRegistry
-) -> RenderedMenu:
-    total_pages = math.ceil(len(fp_formatters) / ctx.max_elements_on_page)
-
-    return RenderedMenu(
+) -> Menu:
+    return Menu(
         ui=ui,
         context=ctx,
         text='Форматтеры',
         image=None,
-        upper_keyboard=None,
+        header_keyboard=None,
         keyboard=await build_formatters_keyboard(ui, ctx, fp_formatters=fp_formatters),
-        footer_keyboard=await premade.build_navigation_buttons(ui, ctx, total_pages),
+        finalizer=default_finalizer,
     )

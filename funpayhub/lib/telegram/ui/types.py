@@ -4,18 +4,16 @@ from __future__ import annotations
 __all__ = [
     'Keyboard',
     'Button',
-    'RenderedMenu',
+    'Menu',
     'UIContext',
     'PropertiesUIContext',
 ]
 
-
-from typing import TYPE_CHECKING, Any, Literal, Optional, Concatenate, overload
-from dataclasses import field, dataclass, fields
 from collections.abc import Callable, Awaitable
+from typing import TYPE_CHECKING, Literal, Optional, overload, Concatenate, ParamSpec
+from dataclasses import dataclass
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.telegram.callbacks import Hash
@@ -27,17 +25,10 @@ if TYPE_CHECKING:
 
 
 type Keyboard = list[list[Button]]
-type KeyboardOrButton = Button | Keyboard
-
-type BUILDER[**P, R] = Callable[
-    Concatenate[UIRegistry, UIContext | PropertiesUIContext, P],
-    R | Awaitable[R],
-]
-
-type MODIFICATION[**P, R] = Callable[
-    Concatenate[UIRegistry, UIContext | PropertiesUIContext, R, P],
-    R | Awaitable[R],
-]
+type Finalizer[**P] = Callable[
+    Concatenate[UIRegistry, UIContext | PropertiesUIContext, Menu, P],
+    Menu | Awaitable[Menu]
+] | None
 
 
 @dataclass
@@ -53,27 +44,8 @@ class Button:
     """Объект Aiogram кнопки."""
 
 
-
-@dataclass(kw_only=True)
-class Menu:
-    text: BUILDER[str] | str | None = None
-    image: BUILDER[str] | str | None = None
-    upper_keyboard: MODIFICATION[Keyboard] | Keyboard | None = None
-    keyboard: BUILDER[Keyboard] | Keyboard | None = None
-    footer_keyboard: MODIFICATION[Keyboard] | Keyboard | None = None
-
-    def __post_init__(self):
-        for f in fields(self):
-            value = getattr(self, f.name)
-            if callable(value) and not isinstance(value, CallableWrapper):
-                setattr(self, f.name, CallableWrapper(value))
-
-    async def render(self, ui: UIRegistry, context: UIContext | PropertiesUIContext, data: dict[str, Any]):
-        ...
-
-
 @dataclass
-class RenderedMenu:
+class Menu:
     """
     Объект меню.
     """
@@ -83,9 +55,10 @@ class RenderedMenu:
 
     text: Optional[str] = None
     image: Optional[str] = None
-    upper_keyboard: Optional[Keyboard] = None
+    header_keyboard: Optional[Keyboard] = None
     keyboard: Optional[Keyboard] = None
     footer_keyboard: Optional[Keyboard] = None
+    finalizer: Finalizer = None
 
     @overload
     def total_keyboard(
@@ -109,7 +82,7 @@ class RenderedMenu:
         hash: bool = True,
     ) -> Keyboard | InlineKeyboardMarkup | None:
         total_keyboard = []
-        for kb in [self.upper_keyboard, self.keyboard, self.footer_keyboard]:
+        for kb in [self.header_keyboard, self.keyboard, self.footer_keyboard]:
             if not kb:
                 continue
             for line in kb:

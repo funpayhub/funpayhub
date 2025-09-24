@@ -9,9 +9,9 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.lib.telegram.callbacks_parsing import join_callbacks, add_callback_params
-from funpayhub.lib.telegram.ui.types import RenderedMenu, Button, Keyboard, UIContext
+from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
 from .callbacks import SendExecFile
-from funpayhub.app.telegram.ui import premade
+from funpayhub.app.telegram.ui.default_builders import default_finalizer
 import html
 
 
@@ -112,20 +112,14 @@ async def exec_list_menu_builder(
     exec_registry: ExecutionResultsRegistry,
     data: dict[str, Any],
 ):
-    total_pages = math.ceil(len(exec_registry.registry.items()) / ctx.max_elements_on_page)
-
-    return RenderedMenu(
+    return Menu(
         ui=ui,
         context=ctx,
         text='Exec registry',
         image=None,
-        upper_keyboard=None,
-        keyboard=await build_executions_list_keyboard((ui, ctx), data=data),
-        footer_keyboard=await premade.build_navigation_buttons(
-            ui=ui,
-            ctx=ctx,
-            total_pages=total_pages
-        ),
+        header_keyboard=None,
+        footer_keyboard=await build_executions_list_keyboard((ui, ctx), data=data),
+        finalizer=default_finalizer
     )
 
 
@@ -137,8 +131,6 @@ async def exec_output_menu_builder(
 ):
     exec_id = ctx.callback.data['exec_id']
     result = exec_registry.registry[exec_id]
-
-    total_pages = math.ceil(result.buffer_len / MAX_TEXT_LEN)
     first = ctx.page * MAX_TEXT_LEN
     last = first + MAX_TEXT_LEN
     text = '<pre>' + html.escape(result.buffer.getvalue()[first:last]) + '</pre>'
@@ -151,14 +143,14 @@ async def exec_output_menu_builder(
 {text}
 '''
 
-    return RenderedMenu(
+    return Menu(
         ui=ui,
         context=ctx,
         text=text,
         image=None,
-        upper_keyboard=None,
-        keyboard=await build_output_keyboard((ui, ctx), data=data),
-        footer_keyboard=await premade.build_navigation_buttons(ui, ctx, total_pages=total_pages),
+        header_keyboard=None,
+        footer_keyboard=await build_output_keyboard((ui, ctx), data=data),
+        finalizer=default_finalizer,
     )
 
 
@@ -170,8 +162,6 @@ async def exec_code_menu_builder(
 ):
     exec_id = ctx.callback.data['exec_id']
     result = exec_registry.registry[exec_id]
-
-    total_pages = math.ceil(result.code_len / MAX_TEXT_LEN)
     first = ctx.page * MAX_TEXT_LEN
     last = first + MAX_TEXT_LEN
     text = '<pre>' + result.code[first:last] + '</pre>'
@@ -185,12 +175,12 @@ else f'❌ Исполнение длилось {result.execution_time} секу�
 {text}
     '''
 
-    return RenderedMenu(
+    return Menu(
         ui=ui,
         context=ctx,
         text=text,
         image=None,
-        upper_keyboard=None,
-        keyboard=await build_code_keyboard((ui, ctx), data=data),
-        footer_keyboard=await premade.build_navigation_buttons(ui, ctx, total_pages=total_pages),
+        header_keyboard=None,
+        footer_keyboard=await build_code_keyboard((ui, ctx), data=data),
+        finalizer=default_finalizer,
     )
