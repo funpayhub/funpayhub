@@ -12,7 +12,7 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.states import ChangingPage, ChangingParameterValueState
 from funpayhub.lib.telegram.ui.types import UIContext, PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.lib.telegram.callbacks_parsing import UnpackedCallback, join_callbacks
+from funpayhub.lib.telegram.callbacks_parsing import UnpackedCallback, join_callbacks, unpack_callback
 
 from .router import router as r
 
@@ -178,20 +178,21 @@ async def choose_param_value(
     await dispatcher.feed_update(bot, update)
 
 
-@r.callback_query(cbs.ChangePageTo.filter())
+@r.callback_query(cbs.ChangeMenuPageTo.filter())
 async def change_page(
     query: CallbackQuery,
     unpacked_callback: UnpackedCallback,
     dispatcher: Dispatcher,
     bot,
 ):
-    unpacked = cbs.ChangePageTo.unpack(query.data)
-    new_query = re.sub(
+    unpacked = cbs.ChangeMenuPageTo.unpack(query.data)
+    old = unpack_callback(unpacked_callback.history[-1])
+    old.current_callback = re.sub(
         r'page-\d+',
         f'page-{unpacked.page}',
-        unpacked_callback.history[-1],
+        old.current_callback
     )
-    unpacked_callback.history[-1] = new_query
+    unpacked_callback.history[-1] = old.pack()
     # todo: better parsing
 
     new_event = query.model_copy(update={'data': join_callbacks(*unpacked_callback.history)})
@@ -285,14 +286,14 @@ async def edit_parameter(
     )
 
 
-@r.callback_query(cbs.ChangePageManually.filter())
+@r.callback_query(cbs.ChangeMenuPageManually.filter())
 async def manual_change_page_activate(
     query: CallbackQuery,
     bot: Bot,
     dispatcher: Dispatcher,
     unpacked_callback: UnpackedCallback
 ):
-    unpacked = cbs.ChangePageManually.unpack(query.data)
+    unpacked = cbs.ChangeMenuPageManually.unpack(query.data)
     state = _get_context(dispatcher, bot, query)
     await state.clear()
 

@@ -152,3 +152,14 @@ msgstr ""
 "{parameter_description}\n\n"
 "Текущее значение:\n"
 "<b>{current_parameter_value}</b>"
+
+
+# ----------------------------------------------------
+# -------------------- Formatters --------------------
+# ----------------------------------------------------
+# Datetime
+msgid "$formatter:datetime:name"
+msgstr "📆 Дата и время"
+
+msgid "$formatter:datetime:description"
+msgstr ""

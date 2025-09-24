@@ -4,7 +4,7 @@ from pydantic import BaseModel, field_validator, field_serializer
 from aiogram.filters.callback_data import CallbackData
 
 
-class Pageable(BaseModel):
+class MenuPageable(BaseModel):
     page: int = 0
 
     @field_validator('page', mode='before')
@@ -16,6 +16,20 @@ class Pageable(BaseModel):
     @field_serializer('page')
     def serialize_page(self, v: int) -> str:
         return f'page-{v}'
+
+
+class ViewPageable(BaseModel):
+    view_page: int = 0
+
+    @field_validator('view_page', mode='before')
+    def parse_page(cls, v: str | int) -> int:
+        if isinstance(v, str) and v.startswith('view_page-'):
+            return int(v.split('-', 1)[1])
+        return int(v)
+
+    @field_serializer('view_page')
+    def serialize_page(self, v: int) -> str:
+        return f'view_page-{v}'
 
 
 class Dummy(CallbackData, prefix='dummy'):
@@ -69,7 +83,7 @@ class ManualParamValueInput(CallbackData, prefix='manual_value_input'):
     """Путь к параметру."""
 
 
-class OpenEntryMenu(CallbackData, Pageable, prefix='open_properties_menu'):
+class OpenEntryMenu(CallbackData, MenuPageable, prefix='open_properties_menu'):
     """
     Обновляет привязанное сообщение и открывает меню параметра / категории по пути `path`.
     """
@@ -78,7 +92,7 @@ class OpenEntryMenu(CallbackData, Pageable, prefix='open_properties_menu'):
     """Путь к параметру / категории."""
 
 
-class ChangePageTo(CallbackData, prefix='change_page_to'):
+class ChangeMenuPageTo(CallbackData, prefix='change_menu_page_to'):
     """
     Обновляет привязанное сообщение, меня страницу последнего callback из callback_history,
     если в нем имеется паттерн page-\d+
@@ -88,11 +102,19 @@ class ChangePageTo(CallbackData, prefix='change_page_to'):
     """Новый индекс страницы."""
 
 
-class ChangePageManually(CallbackData, prefix='change_page_manually'):
+class ChangeViewPageTo(CallbackData, prefix='change_view_page_to'):
+    page: int
+
+
+class ChangeMenuPageManually(CallbackData, prefix='change_menu_page_manually'):
     """
     Устанавливает состояние на `ChangingPage`.
     """
 
+    total_pages: int
+
+
+class ChangeViewPageManually(CallbackData, prefix='change_view_page_manually'):
     total_pages: int
 
 
@@ -101,5 +123,5 @@ class ChooseParamValue(CallbackData, prefix='choose_param_value'):
     choice_index: int
 
 
-class OpenMenu(CallbackData, Pageable, prefix='open_menu'):
+class OpenMenu(CallbackData, MenuPageable, prefix='open_menu'):
     menu_id: str
