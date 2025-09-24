@@ -10,7 +10,7 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.lib.telegram.callbacks_parsing import join_callbacks, add_callback_params
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
-from .callbacks import SendExecFile
+from .callbacks import SendExecFile, ChangeViewPage
 from funpayhub.app.telegram.ui.default_builders import default_finalizer
 import html
 
@@ -105,6 +105,68 @@ async def build_code_keyboard(
     ]
 build_code_keyboard = CallableWrapper(build_code_keyboard)
 
+
+# view navigation
+async def build_header(ui: UIRegistry, ctx: UIContext, total_pages: int) -> Keyboard:
+    kb = []
+    if total_pages < 2:
+        return kb
+
+    page = ctx.callback.data.get('show_page', 0)
+
+    page_amount_cb = cbs.Dummy().pack()
+    page_amount_btn = InlineKeyboardButton(
+        text=f'{page + (1 if total_pages else 0)} / {total_pages}',
+        callback_data=join_callbacks(ctx.callback.pack(), page_amount_cb),
+    )
+
+    to_first_cb = ChangeViewPage(page=0).pack() if page > 0 else cbs.Dummy().pack()
+    to_first_btn = InlineKeyboardButton(
+        text='⏪' if page > 0 else '❌',
+        callback_data=join_callbacks(ctx.callback.pack(), to_first_cb),
+    )
+
+    to_last_cb = (
+        ChangeViewPage(page=total_pages - 1).pack()
+        if page < total_pages - 1
+        else cbs.Dummy().pack()
+    )
+    to_last_btn = InlineKeyboardButton(
+        text='⏩' if page < total_pages - 1 else '❌',
+        callback_data=join_callbacks(ctx.callback.pack(), to_last_cb),
+    )
+
+    to_previous_cb = (
+        ChangeViewPage(page=page - 1).pack() if page > 0 else cbs.Dummy().pack()
+    )
+    to_previous_btn = InlineKeyboardButton(
+        text='◀️' if page > 0 else '❌',
+        callback_data=join_callbacks(ctx.callback.pack(), to_previous_cb),
+    )
+
+    to_next_cb = (
+        ChangeViewPage(page=page + 1).pack()
+        if page < total_pages - 1
+        else cbs.Dummy().pack()
+    )
+    to_next_btn = InlineKeyboardButton(
+        text='▶️' if page < total_pages - 1 else '❌',
+        callback_data=join_callbacks(ctx.callback.pack(), to_next_cb),
+    )
+
+    kb.insert(
+        0,
+        [
+            Button(id='to_first_page', obj=to_first_btn),
+            Button(id='to_previous_page', obj=to_previous_btn),
+            Button(id='page_counter', obj=page_amount_btn),
+            Button(id='to_next_page', obj=to_next_btn),
+            Button(id='to_last_page', obj=to_last_btn),
+        ],
+    )
+
+    return kb
+
 # menus
 async def exec_list_menu_builder(
     ui: UIRegistry,
@@ -130,8 +192,10 @@ async def exec_output_menu_builder(
     data: dict[str, Any],
 ):
     exec_id = ctx.callback.data['exec_id']
+    page = ctx.callback.data.get('show_page', 0)
     result = exec_registry.registry[exec_id]
-    first = ctx.page * MAX_TEXT_LEN
+    total_pages = math.ceil(result.buffer_len / MAX_TEXT_LEN)
+    first = page * MAX_TEXT_LEN
     last = first + MAX_TEXT_LEN
     text = '<pre>' + html.escape(result.buffer.getvalue()[first:last]) + '</pre>'
     text = f'''<b><u>Исполнение {exec_id}</u></b>
@@ -142,13 +206,12 @@ async def exec_output_menu_builder(
 <b><u>Вывод исполнения:</u></b>
 {text}
 '''
-
     return Menu(
         ui=ui,
         context=ctx,
         text=text,
         image=None,
-        header_keyboard=None,
+        header_keyboard=await build_header(ui, ctx, total_pages),
         footer_keyboard=await build_output_keyboard((ui, ctx), data=data),
         finalizer=default_finalizer,
     )
@@ -162,7 +225,9 @@ async def exec_code_menu_builder(
 ):
     exec_id = ctx.callback.data['exec_id']
     result = exec_registry.registry[exec_id]
-    first = ctx.page * MAX_TEXT_LEN
+    page = ctx.callback.data.get('show_page', 0)
+    total_pages = math.ceil(result.code_len / MAX_TEXT_LEN)
+    first = page * MAX_TEXT_LEN
     last = first + MAX_TEXT_LEN
     text = '<pre>' + result.code[first:last] + '</pre>'
 
@@ -174,13 +239,12 @@ else f'❌ Исполнение длилось {result.execution_time} секу�
 <b><u>Код исполнения:</u></b>
 {text}
     '''
-
     return Menu(
         ui=ui,
         context=ctx,
         text=text,
         image=None,
-        header_keyboard=None,
+        header_keyboard=await build_header(ui, ctx, total_pages),
         footer_keyboard=await build_code_keyboard((ui, ctx), data=data),
         finalizer=default_finalizer,
     )

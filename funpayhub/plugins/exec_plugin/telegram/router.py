@@ -9,14 +9,15 @@ from aiogram.filters import Command
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.telegram.ui import UIContext, UIRegistry
-from funpayhub.lib.telegram.callbacks_parsing import add_callback_params, UnpackedCallback
+from funpayhub.lib.telegram.callbacks_parsing import add_callback_params, UnpackedCallback, unpack_callback
 from funpayhub.plugins.exec_plugin.types import LockableBuffer, ExecutionResultsRegistry
-from .callbacks import SendExecFile
+from .callbacks import SendExecFile, ChangeViewPage
 import contextlib
 from copy import copy
 import textwrap
 import time
 from aiogram.types import BufferedInputFile, InputMediaDocument, Update
+from aiogram import Bot, Dispatcher
 
 
 r = Router(name='exec_plugin')
@@ -166,4 +167,27 @@ async def send_exec_file(
 
     await query.message.answer_media_group(
         media=files
+    )
+
+
+@r.callback_query(ChangeViewPage.filter())
+async def change_view_page(
+    query: CallbackQuery,
+    unpacked_callback: UnpackedCallback,
+    dispatcher: Dispatcher,
+    bot: Bot
+):
+    unpacked = ChangeViewPage.unpack(query.data)
+
+    previous = unpack_callback(unpacked_callback.history[-1])
+    previous.data['show_page'] = unpacked.page
+
+    new_query = query.model_copy(update={'data': previous.pack()})
+
+    await dispatcher.feed_update(
+        bot,
+        Update(
+            update_id=-1,
+            callback_query=new_query,
+        )
     )
