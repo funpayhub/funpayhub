@@ -49,7 +49,7 @@ async def open_custom_menu(
     context = UIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        page=unpacked.page,
+        menu_page=unpacked.page,
         callback=unpacked_callback,
     )
 
@@ -90,7 +90,7 @@ async def send_menu(
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        page=0,
+        menu_page=0,
         callback=unpacked,
         entry=properties,
     )
@@ -116,7 +116,7 @@ async def open_menu(
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        page=unpacked.page,
+        menu_page=unpacked.page,
         callback=unpacked_callback,
         entry=properties.get_entry(unpacked.path),
     )
@@ -222,7 +222,7 @@ async def change_parameter_value(
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        page=0,
+        menu_page=0,
         callback=unpacked_callback,
         entry=param,
     )

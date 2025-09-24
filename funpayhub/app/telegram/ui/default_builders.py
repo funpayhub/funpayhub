@@ -33,7 +33,7 @@ async def default_finalizer(ui: UIRegistry, ctx: PropertiesUIContext, menu: Menu
     menu.footer_keyboard.extend(navigation_buttons)
 
     if menu.keyboard:
-        first_index = ctx.page * ctx.max_elements_on_page
+        first_index = ctx.menu_page * ctx.max_elements_on_page
         last_index = first_index + ctx.max_elements_on_page
         menu.keyboard = menu.keyboard[first_index:last_index]
 

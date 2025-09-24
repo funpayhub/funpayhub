@@ -106,7 +106,8 @@ class Menu:
 class UIContext:
     language: str
     max_elements_on_page: int
-    page: int
+    menu_page: int = 0
+    view_page: int = 0
     callback: UnpackedCallback
 
 

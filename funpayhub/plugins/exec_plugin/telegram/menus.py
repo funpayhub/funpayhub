@@ -30,7 +30,7 @@ async def build_executions_list_keyboard(
 ) -> Keyboard:
     keyboard = []
 
-    first_element = ctx.page * ctx.max_elements_on_page
+    first_element = ctx.menu_page * ctx.max_elements_on_page
     last_element = first_element + ctx.max_elements_on_page
     entries = list(exec_registry.registry.items())[first_element:last_element]
 
