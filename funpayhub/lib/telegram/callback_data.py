@@ -36,6 +36,10 @@ class UnknownCallback:
     def pack_history(self) -> str:
         return join_callbacks(*self.history)
 
+    @classmethod
+    def from_string(cls, query: str) -> UnknownCallback:
+        return CallbackData.parse(query)
+
 
 class CallbackData(BaseModel):
     if TYPE_CHECKING:
@@ -54,34 +58,17 @@ class CallbackData(BaseModel):
 
         super().__init_subclass__(**kwargs)
 
-    def _encode_value(self, key: str, value: Any) -> str:
-        if value is None:
-            return ''
-        if isinstance(value, Enum):
-            return str(value.value)
-        if isinstance(value, UUID):
-            return value.hex
-        if isinstance(value, bool):
-            return str(int(value))
-        if isinstance(value, (int, str, float, Decimal, Fraction)):
-            return str(value)
-        raise ValueError(
-            f'Attribute {key}={value!r} of type {type(value).__name__!r}'
-            f' can not be packed to callback data',
-        )
-
-    def pack(self) -> str:
+    def pack(self, include_history: bool = True) -> str:
         """
         Generate callback data string
 
         :return: valid callback data for Telegram Bot API
         """
-        data = {**self.data}
-        for key, value in self.model_dump(mode='python').items():
-            encoded = self._encode_value(key, value)
-            data[key] = encoded
+        data = self.model_dump(mode='python')
         result = (repr(data) if data else '') + self.__identifier__
-        return join_callbacks(*self.history, result)
+        if include_history:
+            return join_callbacks(*self.history, result)
+        return result
 
     @staticmethod
     def parse(value: str) -> UnknownCallback:
@@ -125,11 +112,11 @@ class CallbackData(BaseModel):
             value = cls.parse(value)
 
         if value.identifier != cls.__identifier__:
-            raise ValueError(f'Bad prefix ({value.identifier!r} != {cls.__identifier__!r})')
+            raise ValueError(f'Bad identifier ({value.identifier!r} != {cls.__identifier__!r})')
         value.data.pop('data', None)
         value.data.pop('history', None)
 
-        required_fields = {name for name, field in cls.model_fields.items() if field.is_required}
+        required_fields = {name for name, field in cls.model_fields.items() if field.is_required()}
 
         if required_fields > value.data.keys():
             missing = required_fields - value.data.keys()
@@ -193,10 +180,10 @@ class CallbackQueryFilter(Filter):
                 if isinstance(query, CallbackQuery):
                     query.__dict__['__parsed__'] = unpacked
             callback_data = self.callback_data.unpack(unpacked)
+            print(f'!!!!{self.callback_data.__identifier__} == {unpacked.identifier}!!!!')
             return {'callback_data': callback_data}
         except (TypeError, ValueError):
             import traceback
-
             traceback.print_exc()
             return False
 

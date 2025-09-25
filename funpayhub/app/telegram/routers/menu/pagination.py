@@ -4,12 +4,12 @@ from aiogram import Bot, Router, Dispatcher
 from aiogram.types import Update, CallbackQuery, Message
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.callback_data import CallbackData
+from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
 from funpayhub.lib.telegram.states import ChangingMenuPage, ChangingViewPage
 from aiogram.filters import StateFilter
 from contextlib import suppress
+from typing import Any
 from typing import Literal
-
 
 
 router = Router(name='fph:pagination')
@@ -55,7 +55,7 @@ async def change_page_from_message(
     await context.clear()
     await _delete_message(data.message)
 
-    old = CallbackData.unpack(data.callback_data.history[-1])
+    old = UnknownCallback.from_string(data.callback_data.history[-1])
     old.data['view_page' if type_ == 'view' else 'menu_page'] = new_page_index
     data.callback_data.history[-1] = old.pack()
 
@@ -106,21 +106,24 @@ async def set_changing_page_state(
 async def change_page(
     query: CallbackQuery,
     callback_data: cbs.ChangePageTo,
+    unpacked_callback: UnknownCallback,
     dispatcher: Dispatcher,
     bot: Bot,
 ):
+    print('changing_page')
     old = CallbackData.parse(callback_data.history[-1])
     if callback_data.menu_page is not None:
+        print(f'changing menu page to {callback_data.menu_page}')
         old.data['menu_page'] = callback_data.menu_page
     if callback_data.view_page is not None:
+        print(f'changing view page to {callback_data.view_page}')
         old.data['view_page'] = callback_data.view_page
 
-    callback_data.history[-1] = old.pack()
+    unpacked_callback.history[-1] = old.pack()
 
-    new_event = query.model_copy(update={'data': callback_data.pack()})
     update = Update(
-        update_id=0,
-        callback_query=new_event,
+        update_id=-1,
+        callback_query=query.model_copy(update={'data': unpacked_callback.pack_history()}),
     )
     await dispatcher.feed_update(bot, update)
 

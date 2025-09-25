@@ -88,7 +88,7 @@ class UIRegistry:
                 result = await modification((self, ctx, result), data=data)
             except:
                 import traceback
-
+                print(f'An error occurred while modifying properties menu.')
                 print(traceback.format_exc())
                 continue
 

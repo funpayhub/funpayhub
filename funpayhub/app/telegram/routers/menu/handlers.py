@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING, Any
 from contextlib import suppress
 
@@ -9,13 +8,10 @@ from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.states import ChangingMenuPage, ChangingParameterValueState
+from funpayhub.lib.telegram.states import ChangingParameterValueState
 from funpayhub.lib.telegram.ui.types import UIContext, PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.lib.telegram.callbacks_parsing import (
-    UnpackedCallback,
-    join_callbacks,
-)
+from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 
 from .router import router as r
 
@@ -46,18 +42,18 @@ async def open_custom_menu(
     tg_ui: UIRegistry,
     data: dict[str, Any],
     properties: FunPayHubProperties,
-    unpacked_callback: UnpackedCallback,
+    callback_data: cbs.OpenMenu,
+    unpacked_callback: UnknownCallback
 ):
-    unpacked = cbs.OpenMenu.unpack(query.data)
-
     context = UIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        menu_page=unpacked.menu_page,
+        menu_page=callback_data.menu_page,
+        view_page=callback_data.view_page,
         callback=unpacked_callback,
     )
 
-    menu = await tg_ui.build_menu(menu_id=unpacked.menu_id, ctx=context, data=data)
+    menu = await tg_ui.build_menu(menu_id=callback_data.menu_id, ctx=context, data=data)
 
     await query.message.edit_text(
         text=menu.text,
@@ -88,15 +84,10 @@ async def send_menu(
     data: dict[str, Any],
 ) -> None:
     callback_str = cbs.OpenEntryMenu(path=properties.path).pack()
-    unpacked = UnpackedCallback(
-        current_callback=callback_str,
-        history=[],
-        data={},
-    )
+    unpacked = UnknownCallback.from_string(callback_str)
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        menu_page=0,
         callback=unpacked,
         entry=properties,
     )
@@ -114,17 +105,16 @@ async def open_menu(
     query: CallbackQuery,
     properties: FunPayHubProperties,
     tg_ui: UIRegistry,
-    unpacked_callback: UnpackedCallback,
+    unpacked_callback: UnknownCallback,
+    callback_data: cbs.OpenEntryMenu,
     data: dict[str, Any],
 ):
-    unpacked = cbs.OpenEntryMenu.unpack(query.data)
-
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        menu_page=unpacked.menu_page,
+        menu_page=callback_data.menu_page,
         callback=unpacked_callback,
-        entry=properties.get_entry(unpacked.path),
+        entry=properties.get_entry(callback_data.path),
     )
 
     menu = await tg_ui.build_properties_menu(ctx, data)
@@ -139,12 +129,11 @@ async def open_menu(
 async def next_param_value(
     query: CallbackQuery,
     properties: FunPayHubProperties,
-    unpacked_callback: UnpackedCallback,
+    callback_data: cbs.NextParamValue,
     dispatcher: Dispatcher,
     bot,
 ):
-    unpacked = cbs.NextParamValue.unpack(query.data)
-    param = properties.get_parameter(unpacked.path)
+    param = properties.get_parameter(callback_data.path)
 
     try:
         next(param)
@@ -152,7 +141,7 @@ async def next_param_value(
         await query.answer(text=str(e), show_alert=True)
         raise
 
-    new_event = query.model_copy(update={'data': join_callbacks(*unpacked_callback.history)})
+    new_event = query.model_copy(update={'data': join_callbacks(*callback_data.history)})
     update = Update(
         update_id=0,
         callback_query=new_event,
@@ -165,17 +154,14 @@ async def next_param_value(
 async def choose_param_value(
     query: CallbackQuery,
     properties: FunPayHubProperties,
-    unpacked_callback: UnpackedCallback,
+    callback_data: cbs.ChooseParamValue,
     dispatcher: Dispatcher,
     bot,
 ):
-    unpacked = cbs.ChooseParamValue.unpack(query.data)
-    param = properties.get_parameter(unpacked.path)
+    param = properties.get_parameter(callback_data.path)
+    param.set_value(callback_data.choice_index)
 
-    param.set_value(unpacked.choice_index)
-
-    new_query = join_callbacks(*unpacked_callback.history)
-    new_event = query.model_copy(update={'data': new_query})
+    new_event = query.model_copy(update={'data': join_callbacks(*callback_data.history)})
     update = Update(
         update_id=0,
         callback_query=new_event,
@@ -192,13 +178,13 @@ async def change_parameter_value(
     data: dict[str, Any],
     bot: Bot,
     dispatcher: Dispatcher,
-    unpacked_callback: UnpackedCallback,
+    unpacked_callback: UnknownCallback,
+    callback_data: cbs.ManualParamValueInput,
 ) -> None:
     state = _get_context(dispatcher, bot, query)
     await state.clear()
 
-    unpacked = cbs.ManualParamValueInput.unpack(query.data)
-    param = properties.get_parameter(unpacked.path)
+    param = properties.get_parameter(callback_data.path)
 
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
@@ -209,10 +195,7 @@ async def change_parameter_value(
     )
 
     menu = await tg_ui.build_properties_menu(ctx=ctx, data=data)
-
-    msg = await bot.send_message(
-        chat_id=query.message.chat.id,
-        message_thread_id=query.message.message_thread_id,
+    msg = await query.message.answer(
         text=menu.text,
         reply_markup=menu.total_keyboard(convert=True, hash=True),
     )

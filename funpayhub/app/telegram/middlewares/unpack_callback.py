@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class UnpackMiddleware(BaseMiddleware):
     async def __call__(self, handler, event: CallbackQuery, data):
         callback_data = event.data
-        if event.data.startswith(f'{Hash.__prefix__}{Hash.__separator__}'):
+        if event.data.endswith(f'}}{Hash.__identifier__}'):
             parsed = Hash.unpack(event.data)
             hashinator: HashinatorT1000 = data['hashinator']
             callback_data = hashinator.unhash(parsed.hash)
@@ -32,6 +32,6 @@ class UnpackMiddleware(BaseMiddleware):
         print(f'Data: {parsed.data}')
         print(f'History: {parsed.history}')
 
-        data['parse_callback'] = parsed
+        data['unpacked_callback'] = parsed
         event.__dict__.update({'__parsed__': parsed})
         await handler(event, data)
