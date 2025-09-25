@@ -82,15 +82,15 @@ class ChangePageTo(CallbackData, identifier='change_page_to'):
     если в нем имеется паттерн page-\d+
     """
 
-    page: int | None = None
+    menu_page: int | None = None
     """Новый индекс страницы."""
 
     view_page: int | None = None  # todo: доделать
 
 
-class ChangePageManually(CallbackData, identifier='change_page_manually'):
+class ChangeMenuPageManually(CallbackData, identifier='change_page_manually'):
     """
-    Устанавливает состояние на `ChangingPage`.
+    Устанавливает состояние на `ChangingMenuPage`.
     """
 
     total_pages: int

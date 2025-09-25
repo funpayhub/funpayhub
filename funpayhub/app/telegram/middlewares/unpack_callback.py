@@ -6,7 +6,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery
 
 from funpayhub.lib.telegram.callbacks import Hash
-from funpayhub.lib.telegram.callbacks_parsing import unpack_callback
+from funpayhub.lib.telegram.callback_data import CallbackData
 
 
 if TYPE_CHECKING:
@@ -17,21 +17,21 @@ class UnpackMiddleware(BaseMiddleware):
     async def __call__(self, handler, event: CallbackQuery, data):
         callback_data = event.data
         if event.data.startswith(f'{Hash.__prefix__}{Hash.__separator__}'):
-            unpacked = Hash.unpack(event.data)
+            parsed = Hash.unpack(event.data)
             hashinator: HashinatorT1000 = data['hashinator']
-            callback_data = hashinator.unhash(unpacked.hash)
+            callback_data = hashinator.unhash(parsed.hash)
             if not callback_data:
                 await event.answer(text='Ваще не знаю че это за кнопка', show_alert=True)
                 return
-            print(f'Unhashed: {unpacked.hash} -> {callback_data}')
+            print(f'Unhashed: {parsed.hash} -> {callback_data}')
 
-        unpacked = unpack_callback(callback_data)
+        parsed = CallbackData.parse(callback_data)
 
-        print(f'Unpacked: {callback_data}')
-        print(f'Current: {unpacked.current_callback}')
-        print(f'Data: {unpacked.data}')
-        print(f'History: {unpacked.history}')
+        print(f'Parsed: {callback_data}')
+        print(f'Identifier: {parsed.identifier}')
+        print(f'Data: {parsed.data}')
+        print(f'History: {parsed.history}')
 
-        data['unpacked_callback'] = unpacked
-        event.__dict__['data'] = unpacked.current_callback
+        data['parse_callback'] = parsed
+        event.__dict__.update({'__parsed__': parsed})
         await handler(event, data)

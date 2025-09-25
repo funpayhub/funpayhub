@@ -9,7 +9,7 @@ from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.states import ChangingPage, ChangingParameterValueState
+from funpayhub.lib.telegram.states import ChangingMenuPage, ChangingParameterValueState
 from funpayhub.lib.telegram.ui.types import UIContext, PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callbacks_parsing import (
@@ -265,75 +265,3 @@ async def edit_parameter(
             callback_query=data.callback_query_obj,
         ),
     )
-
-
-@r.callback_query(cbs.ChangePageManually.filter())
-async def manual_change_page_activate(
-    query: CallbackQuery,
-    bot: Bot,
-    dispatcher: Dispatcher,
-    unpacked_callback: UnpackedCallback,
-):
-    unpacked = cbs.ChangePageManually.unpack(query.data)
-    state = _get_context(dispatcher, bot, query)
-    await state.clear()
-
-    msg = await bot.send_message(
-        chat_id=query.message.chat.id,
-        message_thread_id=query.message.message_thread_id,
-        text='$enter_new_page_index_message',
-    )
-
-    await state.set_state(ChangingPage.name)
-    await state.set_data(
-        {
-            'data': ChangingPage(
-                callback_query_obj=query,
-                callbacks_history=unpacked_callback.history,
-                message=msg,
-                max_pages=unpacked.total_pages,
-                user_messages=[],
-            ),
-        },
-    )
-    await query.answer()
-
-
-@r.message(StateFilter(ChangingPage.name))
-async def manual_page_change(
-    message: Message,
-    dispatcher: Dispatcher,
-    bot: Bot,
-):
-    await _delete_message(message)
-
-    if not message.text.isnumeric():
-        return
-    new_page_index = int(message.text) - 1
-
-    context = _get_context(dispatcher, bot, message)
-    data: ChangingPage = (await context.get_data())['data']
-
-    if new_page_index > data.max_pages - 1 or new_page_index < 0:
-        return
-
-    await context.clear()
-
-    await _delete_message(data.message)
-
-    new_query = re.sub(
-        r'page-\d+',
-        f'page-{new_page_index}',
-        data.callbacks_history[-1],
-    )
-    data.callbacks_history[-1] = new_query
-
-    new_event = data.callback_query_obj.model_copy(
-        update={'data': join_callbacks(*data.callbacks_history)},
-    )
-    update = Update(
-        update_id=0,
-        callback_query=new_event,
-    )
-
-    await dispatcher.feed_update(bot, update)

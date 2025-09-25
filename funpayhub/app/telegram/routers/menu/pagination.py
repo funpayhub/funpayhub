@@ -1,41 +1,163 @@
 from __future__ import annotations
 
-import re
-
 from aiogram import Bot, Router, Dispatcher
-from aiogram.types import Update, CallbackQuery
+from aiogram.types import Update, CallbackQuery, Message
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.callbacks_parsing import (
-    UnpackedCallback,
-    join_callbacks,
-    unpack_callback,
-)
+from funpayhub.lib.telegram.callback_data import CallbackData
+from funpayhub.lib.telegram.states import ChangingMenuPage, ChangingViewPage
+from aiogram.filters import StateFilter
+from contextlib import suppress
+from typing import Literal
+
 
 
 router = Router(name='fph:pagination')
 
 
+# todo: вынести в utils
+def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery):
+    msg = obj if isinstance(obj, Message) else obj.message
+    return dp.fsm.get_context(
+        bot=bot,
+        chat_id=msg.chat.id,
+        thread_id=msg.message_thread_id,
+        user_id=obj.from_user.id,
+    )
+
+# todo: вынести в utils
+async def _delete_message(msg: Message):
+    with suppress(Exception):
+        await msg.delete()
+
+
+# Helpers
+async def change_page_from_message(
+    message: Message,
+    dp: Dispatcher,
+    bot: Bot, type_: Literal['view', 'menu']
+):
+    await _delete_message(message)
+
+    if not message.text.isnumeric():
+        return
+    new_page_index = int(message.text) - 1
+
+    context = _get_context(dp, bot, message)
+    if type_ == 'view':
+        data: ChangingViewPage = (await context.get_data())['data']
+    else:
+        data: ChangingMenuPage = (await context.get_data())['data']
+
+    if new_page_index > data.max_pages - 1 or new_page_index < 0:
+        return
+
+    await context.clear()
+    await _delete_message(data.message)
+
+    old = CallbackData.unpack(data.callback_data.history[-1])
+    old.data['view_page' if type_ == 'view' else 'menu_page'] = new_page_index
+    data.callback_data.history[-1] = old.pack()
+
+    new_event = data.callback_query_obj.model_copy(
+        update={'data': '>'.join(data.callback_data.history)},
+    )
+    update = Update(
+        update_id=0,
+        callback_query=new_event,
+    )
+
+    await dp.feed_update(bot, update)
+
+
+async def set_changing_page_state(
+    query: CallbackQuery,
+    callback_data: CallbackData,
+    dp: Dispatcher,
+    bot: Bot,
+    type_: Literal['view', 'menu']
+):
+    state = _get_context(dp, bot, query)
+    await state.clear()
+
+    msg = await bot.send_message(
+        chat_id=query.message.chat.id,
+        message_thread_id=query.message.message_thread_id,
+        text='$enter_new_page_index_message',
+    )
+
+    await state.set_state(ChangingMenuPage.name)
+    data = ChangingViewPage if type_ == 'view' else ChangingMenuPage
+    await state.set_data(
+        {
+            'data': data(
+                callback_query_obj=query,
+                callback_data=callback_data,
+                message=msg,
+                max_pages=callback_data.total_pages,
+                user_messages=[],
+            ),
+        },
+    )
+    await query.answer()
+
+
 @router.callback_query(cbs.ChangePageTo.filter())
 async def change_page(
     query: CallbackQuery,
-    unpacked_callback: UnpackedCallback,
+    callback_data: cbs.ChangePageTo,
     dispatcher: Dispatcher,
     bot: Bot,
 ):
-    unpacked = cbs.ChangePageTo.unpack(query.data)
-    old = unpack_callback(unpacked_callback.history[-1])
-    old.current_callback = re.sub(
-        r'page-\d+',
-        f'page-{unpacked.page}',
-        old.current_callback,
-    )
-    unpacked_callback.history[-1] = old.pack()
-    # todo: better parsing
+    old = CallbackData.parse(callback_data.history[-1])
+    if callback_data.menu_page is not None:
+        old.data['menu_page'] = callback_data.menu_page
+    if callback_data.view_page is not None:
+        old.data['view_page'] = callback_data.view_page
 
-    new_event = query.model_copy(update={'data': join_callbacks(*unpacked_callback.history)})
+    callback_data.history[-1] = old.pack()
+
+    new_event = query.model_copy(update={'data': callback_data.pack()})
     update = Update(
         update_id=0,
         callback_query=new_event,
     )
     await dispatcher.feed_update(bot, update)
+
+
+@router.callback_query(cbs.ChangeMenuPageManually.filter())
+async def manual_change_menu_page_activate(
+    query: CallbackQuery,
+    bot: Bot,
+    dispatcher: Dispatcher,
+    callback_data: cbs.ChangeMenuPageManually
+):
+    await set_changing_page_state(query, callback_data, dispatcher, bot, 'menu')
+
+
+@router.callback_query(cbs.ChangeViewPageManually.filter())
+async def manual_change_view_page_activate(
+    query: CallbackQuery,
+    bot: Bot,
+    dispatcher: Dispatcher,
+    callback_data: cbs.ChangeMenuPageManually
+):
+    await set_changing_page_state(query, callback_data, dispatcher, bot, 'view')
+
+
+@router.message(StateFilter(ChangingMenuPage.name))
+async def manual_menu_page_change(
+    message: Message,
+    dispatcher: Dispatcher,
+    bot: Bot,
+):
+    await change_page_from_message(message, dispatcher, bot, 'menu')
+
+
+@router.message(StateFilter(ChangingMenuPage.name))
+async def manual_view_page_change(
+    message: Message,
+    dispatcher: Dispatcher,
+    bot: Bot,
+):
+    await change_page_from_message(message, dispatcher, bot, 'view')

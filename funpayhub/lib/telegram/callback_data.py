@@ -162,7 +162,6 @@ class CallbackQueryFilter(Filter):
 
     __slots__ = (
         'callback_data',
-        'rule',
     )
 
     def __init__(
