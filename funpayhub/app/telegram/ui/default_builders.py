@@ -13,7 +13,6 @@ from funpayhub.lib.properties import Parameter, ChoiceParameter, ToggleParameter
 from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext, PropertiesUIContext
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
-from funpayhub.lib.telegram.callbacks_parsing import join_callbacks, add_callback_params
 
 from . import premade, button_ids as ids
 
@@ -51,11 +50,13 @@ async def build_toggle_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext
     if not isinstance(ctx.entry, ToggleParameter):
         raise ValueError(f'{type(ctx.entry)} is not a ToggleParameter.')
 
-    btn_callback = cbs.NextParamValue(path=ctx.entry.path).pack()
     translated_name = ui.translater.translate(ctx.entry.name, ctx.language)
 
     btn = InlineKeyboardButton(
-        callback_data=join_callbacks(ctx.callback.pack(), btn_callback),
+        callback_data=cbs.NextParamValue(
+            path=ctx.entry.path,
+            history=[ctx.callback.pack()]
+        ).pack(),
         text=f'{"🟢" if ctx.entry.value else "🔴"} {translated_name}',
     )
 
@@ -79,7 +80,6 @@ async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
     if not isinstance(ctx.entry, Parameter):
         raise ValueError(f'{type(ctx.entry)} is not a Parameter.')
 
-    btn_callback = cbs.ManualParamValueInput(path=ctx.entry.path).pack()
     translated_name = ui.translater.translate(ctx.entry.name, ctx.language)
 
     if Flags.PROTECT_VALUE not in ctx.entry._flags:
@@ -90,7 +90,10 @@ async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
         val_str = '•' * 8
 
     btn = InlineKeyboardButton(
-        callback_data=join_callbacks(ctx.callback.pack(), btn_callback),
+        callback_data=cbs.ManualParamValueInput(
+            path=ctx.entry.path,
+            history=[ctx.callback.pack()]
+        ).pack(),
         text=f'{translated_name} 【 {val_str} 】',
     )
 
@@ -104,11 +107,13 @@ async def build_open_menu_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
 
     Использует коллбэк `OpenEntryMenu`.
     """
-    btn_callback = cbs.OpenEntryMenu(path=ctx.entry.path).pack()
     translated_name = ui.translater.translate(ctx.entry.name, ctx.language)
 
     btn = InlineKeyboardButton(
-        callback_data=join_callbacks(ctx.callback.pack(), btn_callback),
+        callback_data=cbs.OpenEntryMenu(
+            path=ctx.entry.path,
+            history=[ctx.callback.pack()]
+        ).pack(),
         text=translated_name,
     )
 
@@ -126,7 +131,8 @@ async def build_properties_keyboard(ui: UIRegistry, ctx: PropertiesUIContext, **
 
         btn_ctx = replace(
             ctx,
-            page=0,
+            menu_page=0,
+            view_page=0,
             entry=entry,
         )
 
@@ -142,13 +148,17 @@ async def build_choice_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIConte
     keyboard = []
 
     for index, choice in enumerate(ctx.entry.choices):
-        cb = cbs.ChooseParamValue(path=ctx.entry.path, choice_index=index).pack()
         name = ui.translater.translate(choice.name, ctx.language)
 
         btn = InlineKeyboardButton(
             text=f'【 {name} 】' if ctx.entry.value == index else name,
-            callback_data=join_callbacks(ctx.callback.pack(), cb),
+            callback_data=cbs.ChooseParamValue(
+                path=ctx.entry.path,
+                choice_index=index,
+                history=[ctx.callback.pack()]
+            ).pack(),
         )
+
         keyboard.append(
             [
                 Button(
@@ -175,7 +185,7 @@ async def build_parameter_change_menu(ui: UIRegistry, ctx: PropertiesUIContext) 
             id='clear_state',
             obj=InlineKeyboardButton(
                 text=ui.translater.translate('$clear_state', ctx.language),
-                callback_data=join_callbacks(*ctx.callback.history, cbs.Clear().pack()),
+                callback_data=cbs.Clear(history=ctx.callback.history).pack()
             ),
         ),
     ]
@@ -201,12 +211,13 @@ async def build_formatters_keyboard(
 ) -> Keyboard:
     keyboard = []
     for formatter in fp_formatters:
-        cb = cbs.OpenMenu(menu_id='fph-formatter-info').pack()
-        cb = add_callback_params(cb, formatter_id=formatter.key)
-
         btn = InlineKeyboardButton(
             text=ui.translater.translate(formatter.name, ctx.language),
-            callback_data=join_callbacks(ctx.callback.pack(), cb),
+            callback_data=cbs.OpenMenu(
+                menu_id='fph-formatter-info',
+                data={'formatter_id':formatter.key},
+                history=[ctx.callback.pack()]
+            ).pack(),
         )
         keyboard.append([Button(id=f'open_formatter_info:{formatter.key}', obj=btn)])
     return keyboard
