@@ -1,23 +1,25 @@
 from __future__ import annotations
 
+import time
+import textwrap
+import contextlib
 from typing import Any
+from copy import copy
 
-from aiogram import Router
-from aiogram.types import Message, CallbackQuery
+from aiogram import Bot, Router, Dispatcher
+from aiogram.types import Update, Message, CallbackQuery, BufferedInputFile, InputMediaDocument
 from aiogram.filters import Command
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.telegram.ui import UIContext, UIRegistry
-from funpayhub.lib.telegram.callbacks_parsing import add_callback_params, UnpackedCallback, unpack_callback
 from funpayhub.plugins.exec_plugin.types import LockableBuffer, ExecutionResultsRegistry
+from funpayhub.lib.telegram.callbacks_parsing import (
+    UnpackedCallback,
+    unpack_callback,
+)
+
 from .callbacks import SendExecFile, ChangeViewPage
-import contextlib
-from copy import copy
-import textwrap
-import time
-from aiogram.types import BufferedInputFile, InputMediaDocument, Update
-from aiogram import Bot, Dispatcher
 
 
 r = Router(name='exec_plugin')
@@ -34,14 +36,14 @@ async def exec_list_menu(
     unpacked = UnpackedCallback(
         current_callback=callback_str,
         history=[],
-        data={}
+        data={},
     )
 
     context = UIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         menu_page=0,
-        callback=unpacked
+        callback=unpacked,
     )
 
     menu = await tg_ui.build_menu('exec_list', context, data)
@@ -92,6 +94,7 @@ async def execute_python_code(
             except:
                 error = True
                 import traceback
+
                 traceback.print_exc()
     execution_time = time.time() - a
 
@@ -100,7 +103,7 @@ async def execute_python_code(
         code=source,
         error=error,
         buffer=temp_buffer,
-        execution_time=execution_time
+        execution_time=execution_time,
     )
 
     callback = cbs.OpenMenu(menu_id='exec_output').pack()
@@ -108,14 +111,14 @@ async def execute_python_code(
     unpacked_callback = UnpackedCallback(
         current_callback=callback,
         history=[cbs.OpenMenu(menu_id='exec_list').pack()],
-        data={'exec_id': r.id}
+        data={'exec_id': r.id},
     )
 
     context = UIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         menu_page=0,
-        callback=unpacked_callback
+        callback=unpacked_callback,
     )
 
     menu = await tg_ui.build_menu('exec_output', context, data)
@@ -128,7 +131,7 @@ async def execute_python_code(
 @r.callback_query(SendExecFile.filter())
 async def send_exec_file(
     query: CallbackQuery,
-    exec_registry: ExecutionResultsRegistry
+    exec_registry: ExecutionResultsRegistry,
 ):
     unpacked = SendExecFile.unpack(query.data)
 
@@ -138,35 +141,37 @@ async def send_exec_file(
 
     if result.code_size <= 51380224:
         file = BufferedInputFile(
-                result.code.encode('utf-8'),
-                filename='code.txt'
-            )
+            result.code.encode('utf-8'),
+            filename='code.txt',
+        )
         files.append(
             InputMediaDocument(
                 media=file,
                 caption=f'Код выполнения {unpacked.exec_id}',
-            )
+            ),
         )
     if result.buffer_size <= 51380224:
         file = BufferedInputFile(
             result.buffer.getvalue().encode('utf-8'),
-            filename='output.txt'
+            filename='output.txt',
         )
         files.append(
             InputMediaDocument(
                 media=file,
                 caption=f'Вывод выполнения {unpacked.exec_id}',
-            )
+            ),
         )
 
     if not files:
         await query.answer(text='Размеры файлов слишком большие.', show_alert=True)
         return
 
-    await query.answer(text='Выгрузка файлов началась. Это может занять некоторое время.', show_alert=True)
+    await query.answer(
+        text='Выгрузка файлов началась. Это может занять некоторое время.', show_alert=True
+    )
 
     await query.message.answer_media_group(
-        media=files
+        media=files,
     )
 
 
@@ -175,7 +180,7 @@ async def change_view_page(
     query: CallbackQuery,
     unpacked_callback: UnpackedCallback,
     dispatcher: Dispatcher,
-    bot: Bot
+    bot: Bot,
 ):
     unpacked = ChangeViewPage.unpack(query.data)
 
@@ -189,5 +194,5 @@ async def change_view_page(
         Update(
             update_id=-1,
             callback_query=new_query,
-        )
+        ),
     )

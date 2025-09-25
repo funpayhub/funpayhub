@@ -12,7 +12,10 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.states import ChangingPage, ChangingParameterValueState
 from funpayhub.lib.telegram.ui.types import UIContext, PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.lib.telegram.callbacks_parsing import UnpackedCallback, join_callbacks, unpack_callback
+from funpayhub.lib.telegram.callbacks_parsing import (
+    UnpackedCallback,
+    join_callbacks,
+)
 
 from .router import router as r
 
@@ -34,6 +37,7 @@ def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery):
         thread_id=msg.message_thread_id,
         user_id=obj.from_user.id,
     )
+
 
 # TEMP
 @r.callback_query(cbs.OpenMenu.filter())
@@ -59,6 +63,8 @@ async def open_custom_menu(
         text=menu.text,
         reply_markup=menu.total_keyboard(convert=True, hash=True),
     )
+
+
 # TEMP
 
 
@@ -85,7 +91,7 @@ async def send_menu(
     unpacked = UnpackedCallback(
         current_callback=callback_str,
         history=[],
-        data={}
+        data={},
     )
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
@@ -109,7 +115,7 @@ async def open_menu(
     properties: FunPayHubProperties,
     tg_ui: UIRegistry,
     unpacked_callback: UnpackedCallback,
-    data: dict[str, Any]
+    data: dict[str, Any],
 ):
     unpacked = cbs.OpenEntryMenu.unpack(query.data)
 
@@ -266,7 +272,7 @@ async def manual_change_page_activate(
     query: CallbackQuery,
     bot: Bot,
     dispatcher: Dispatcher,
-    unpacked_callback: UnpackedCallback
+    unpacked_callback: UnpackedCallback,
 ):
     unpacked = cbs.ChangePageManually.unpack(query.data)
     state = _get_context(dispatcher, bot, query)

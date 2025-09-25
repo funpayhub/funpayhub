@@ -88,6 +88,7 @@ class UIRegistry:
                 result = await modification((self, ctx, result), data=data)
             except:
                 import traceback
+
                 print(traceback.format_exc())
                 continue
 

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from io import StringIO
 import random
 import string
+from dataclasses import dataclass
+from io import StringIO
 
 
 class LockableBuffer(StringIO):
@@ -71,7 +71,7 @@ class ExecutionResultsRegistry:
             buffer_size=len(buffer.getvalue().encode('utf-8')),
             buffer_len=len(buffer.getvalue()),
             buffer=buffer,
-            execution_time=execution_time
+            execution_time=execution_time,
         )
 
         self.registry[id] = result
@@ -79,16 +79,19 @@ class ExecutionResultsRegistry:
 
     def make_id(self, id: str | None) -> str:
         if not id:
-            result = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(10))
+            result = ''.join(
+                random.choice(string.ascii_lowercase + string.digits) for _ in range(10)
+            )
             while result in self.registry:
                 result = ''.join(
-                    random.choice(string.ascii_lowercase + string.digits) for _ in range(10))
+                    random.choice(string.ascii_lowercase + string.digits) for _ in range(10)
+                )
             return result
 
         if id not in self.registry:
             return id
 
         index = 1
-        while id+str(index) in self.registry:
+        while id + str(index) in self.registry:
             index += 1
-        return id+str(index)
+        return id + str(index)

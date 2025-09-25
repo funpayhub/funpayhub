@@ -1,8 +1,16 @@
-from aiogram import Router, Bot, Dispatcher
-from aiogram.types import CallbackQuery, Update
-import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.callbacks_parsing import UnpackedCallback, join_callbacks, unpack_callback
+from __future__ import annotations
+
 import re
+
+from aiogram import Bot, Router, Dispatcher
+from aiogram.types import Update, CallbackQuery
+
+import funpayhub.lib.telegram.callbacks as cbs
+from funpayhub.lib.telegram.callbacks_parsing import (
+    UnpackedCallback,
+    join_callbacks,
+    unpack_callback,
+)
 
 
 router = Router(name='fph:pagination')
@@ -20,7 +28,7 @@ async def change_page(
     old.current_callback = re.sub(
         r'page-\d+',
         f'page-{unpacked.page}',
-        old.current_callback
+        old.current_callback,
     )
     unpacked_callback.history[-1] = old.pack()
     # todo: better parsing

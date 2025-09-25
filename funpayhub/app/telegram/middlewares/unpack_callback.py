@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import json
 from typing import TYPE_CHECKING
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery
-from funpayhub.lib.telegram.callbacks_parsing import unpack_callback
+
 from funpayhub.lib.telegram.callbacks import Hash
+from funpayhub.lib.telegram.callbacks_parsing import unpack_callback
 
 
 if TYPE_CHECKING:

@@ -9,9 +9,9 @@ __all__ = [
     'PropertiesUIContext',
 ]
 
-from collections.abc import Callable, Awaitable
-from typing import TYPE_CHECKING, Literal, Optional, overload, Concatenate, ParamSpec
+from typing import TYPE_CHECKING, Literal, Optional, Concatenate, overload
 from dataclasses import dataclass
+from collections.abc import Callable, Awaitable
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -25,10 +25,13 @@ if TYPE_CHECKING:
 
 
 type Keyboard = list[list[Button]]
-type Finalizer[**P] = Callable[
-    Concatenate[UIRegistry, UIContext | PropertiesUIContext, Menu, P],
-    Menu | Awaitable[Menu]
-] | None
+type Finalizer[**P] = (
+    Callable[
+        Concatenate[UIRegistry, UIContext | PropertiesUIContext, Menu, P],
+        Menu | Awaitable[Menu],
+    ]
+    | None
+)
 
 
 @dataclass

@@ -10,13 +10,12 @@ from aiogram.types import InlineKeyboardButton
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.loggers import tg_ui_logger as logger
 from funpayhub.lib.properties import Parameter, ChoiceParameter, ToggleParameter
-from funpayhub.lib.telegram.callbacks_parsing import join_callbacks, add_callback_params
 from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
-from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext, UIContext
+from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext, PropertiesUIContext
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
+from funpayhub.lib.telegram.callbacks_parsing import join_callbacks, add_callback_params
 
-from . import button_ids as ids
-from . import premade
+from . import premade, button_ids as ids
 
 
 if TYPE_CHECKING:
@@ -38,6 +37,7 @@ async def default_finalizer(ui: UIRegistry, ctx: PropertiesUIContext, menu: Menu
         menu.keyboard = menu.keyboard[first_index:last_index]
 
     return menu
+
 
 # ToggleParameter
 async def build_toggle_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
@@ -194,8 +194,11 @@ async def build_properties_text(ui: UIRegistry, ctx: PropertiesUIContext) -> str
 <i>{ui.translater.translate(ctx.entry.description, ctx.language)}</i>
 """
 
+
 # Formatters
-async def build_formatters_keyboard(ui: UIRegistry, ctx: UIContext, fp_formatters: FormattersRegistry) -> Keyboard:
+async def build_formatters_keyboard(
+    ui: UIRegistry, ctx: UIContext, fp_formatters: FormattersRegistry
+) -> Keyboard:
     keyboard = []
     for formatter in fp_formatters:
         cb = cbs.OpenMenu(menu_id='fph-formatter-info').pack()
@@ -236,7 +239,7 @@ async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext
 async def formatters_list_menu_builder(
     ui: UIRegistry,
     ctx: PropertiesUIContext,
-    fp_formatters: FormattersRegistry
+    fp_formatters: FormattersRegistry,
 ) -> Menu:
     return Menu(
         ui=ui,

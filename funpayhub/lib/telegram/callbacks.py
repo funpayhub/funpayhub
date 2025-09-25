@@ -1,38 +1,22 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, field_validator, field_serializer
-from aiogram.filters.callback_data import CallbackData
+from pydantic import BaseModel
+from funpayhub.lib.telegram.callback_data import CallbackData
 
 
 class MenuPageable(BaseModel):
     menu_page: int = 0
 
-    @field_validator('menu_page', mode='before')
-    def parse_page(cls, v: str | int) -> int:
-        if isinstance(v, str) and v.startswith('[menu_page-') and v.endswith(']'):
-            return int(v.split('-', 1)[1][:-1])
-        return int(v)
-
-    @field_serializer('menu_page')
-    def serialize_page(self, v: int) -> str:
-        return f'[menu_page-{v}]'
-
 
 class ViewPageable(BaseModel):
     view_page: int = 0
 
-    @field_validator('view_page', mode='before')
-    def parse_page(cls, v: str | int) -> int:
-        if isinstance(v, str) and v.startswith('[view_page-') and v.endswith(']'):
-            return int(v.split('-', 1)[1][:-1])
-        return int(v)
 
-    @field_serializer('view_page')
-    def serialize_page(self, v: int) -> str:
-        return f'[view_page-{v}]'
+class Pageable(MenuPageable, ViewPageable):
+    ...
 
 
-class Dummy(CallbackData, prefix='dummy'):
+class Dummy(CallbackData, identifier='dummy'):
     """
     Callback-пустышка.
 
@@ -40,7 +24,7 @@ class Dummy(CallbackData, prefix='dummy'):
     """
 
 
-class Clear(CallbackData, prefix='clear'):
+class Clear(CallbackData, identifier='clear'):
     """
     Callback очитки текущего состояния.
 
@@ -49,7 +33,7 @@ class Clear(CallbackData, prefix='clear'):
     """
 
 
-class Hash(CallbackData, prefix='hash'):
+class Hash(CallbackData, identifier='hash'):
     """
     Хэшированный callback.
 
@@ -60,7 +44,7 @@ class Hash(CallbackData, prefix='hash'):
     hash: str
 
 
-class NextParamValue(CallbackData, prefix='next_param_value'):
+class NextParamValue(CallbackData, identifier='next_param_value'):
     """
     Вызывает __next__ у параметра по пути `path`, после чего вызывает последний callback из
     callback_history.
@@ -73,7 +57,7 @@ class NextParamValue(CallbackData, prefix='next_param_value'):
     """Путь к параметру."""
 
 
-class ManualParamValueInput(CallbackData, prefix='manual_value_input'):
+class ManualParamValueInput(CallbackData, identifier='manual_value_input'):
     """
     Устанавливает состояние на `ChangingParameterValueState`, отправляет меню параметра по пути
     `path`.
@@ -83,7 +67,7 @@ class ManualParamValueInput(CallbackData, prefix='manual_value_input'):
     """Путь к параметру."""
 
 
-class OpenEntryMenu(CallbackData, MenuPageable, prefix='open_properties_menu'):
+class OpenEntryMenu(CallbackData, MenuPageable, identifier='open_properties_menu'):
     """
     Обновляет привязанное сообщение и открывает меню параметра / категории по пути `path`.
     """
@@ -92,7 +76,7 @@ class OpenEntryMenu(CallbackData, MenuPageable, prefix='open_properties_menu'):
     """Путь к параметру / категории."""
 
 
-class ChangePageTo(CallbackData, prefix='change_page_to'):
+class ChangePageTo(CallbackData, identifier='change_page_to'):
     """
     Обновляет привязанное сообщение, меня страницу последнего callback из callback_history,
     если в нем имеется паттерн page-\d+
@@ -104,7 +88,7 @@ class ChangePageTo(CallbackData, prefix='change_page_to'):
     view_page: int | None = None  # todo: доделать
 
 
-class ChangePageManually(CallbackData, prefix='change_page_manually'):
+class ChangePageManually(CallbackData, identifier='change_page_manually'):
     """
     Устанавливает состояние на `ChangingPage`.
     """
@@ -112,14 +96,14 @@ class ChangePageManually(CallbackData, prefix='change_page_manually'):
     total_pages: int
 
 
-class ChangeViewPageManually(CallbackData, prefix='change_view_page_manually'):
+class ChangeViewPageManually(CallbackData, identifier='change_view_page_manually'):
     total_pages: int
 
 
-class ChooseParamValue(CallbackData, prefix='choose_param_value'):
+class ChooseParamValue(CallbackData, identifier='choose_param_value'):
     path: str
     choice_index: int
 
 
-class OpenMenu(CallbackData, MenuPageable, prefix='open_menu'):
+class OpenMenu(CallbackData, MenuPageable, identifier='open_menu'):
     menu_id: str

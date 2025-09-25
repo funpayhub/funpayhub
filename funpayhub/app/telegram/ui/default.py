@@ -26,5 +26,5 @@ DEFAULT_ENTRIES_MENUS: Final = {
 
 
 DEFAULT_MENUS = {
-    'fph-formatters-list': ui_builders.formatters_list_menu_builder
+    'fph-formatters-list': ui_builders.formatters_list_menu_builder,
 }

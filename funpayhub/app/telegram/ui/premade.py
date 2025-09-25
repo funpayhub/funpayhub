@@ -3,10 +3,11 @@ from __future__ import annotations
 
 __all__ = ['build_navigation_buttons']
 
-from funpayhub.lib.telegram.ui import UIRegistry, Keyboard, Button, UIContext
-from funpayhub.lib.telegram.callbacks_parsing import join_callbacks
 from aiogram.types import InlineKeyboardButton
+
 import funpayhub.lib.telegram.callbacks as cbs
+from funpayhub.lib.telegram.ui import Button, Keyboard, UIContext, UIRegistry
+from funpayhub.lib.telegram.callbacks_parsing import join_callbacks
 
 
 async def build_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pages: int) -> Keyboard:
@@ -48,7 +49,9 @@ async def build_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pages: 
     )
 
     to_previous_cb = (
-        cbs.ChangePageTo(page=ctx.menu_page - 1).pack() if ctx.menu_page > 0 else cbs.Dummy().pack()
+        cbs.ChangePageTo(page=ctx.menu_page - 1).pack()
+        if ctx.menu_page > 0
+        else cbs.Dummy().pack()
     )
     to_previous_btn = InlineKeyboardButton(
         text='◀️' if ctx.menu_page > 0 else '❌',
