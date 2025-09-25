@@ -17,7 +17,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.telegram.callbacks import Hash
-from funpayhub.lib.telegram.callbacks_parsing import UnpackedCallback
+from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
 if TYPE_CHECKING:
@@ -111,7 +111,7 @@ class UIContext:
     max_elements_on_page: int
     menu_page: int = 0
     view_page: int = 0
-    callback: UnpackedCallback
+    callback: UnknownCallback
 
 
 @dataclass(kw_only=True)

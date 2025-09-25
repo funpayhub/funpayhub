@@ -28,7 +28,7 @@ async def default_finalizer(ui: UIRegistry, ctx: PropertiesUIContext, menu: Menu
         menu.footer_keyboard = []
 
     total_pages = math.ceil(len(menu.keyboard) / ctx.max_elements_on_page) if menu.keyboard else 0
-    navigation_buttons = await premade.build_navigation_buttons(ui, ctx, total_pages)
+    navigation_buttons = await premade.build_menu_navigation_buttons(ui, ctx, total_pages)
     menu.footer_keyboard.extend(navigation_buttons)
 
     if menu.keyboard:

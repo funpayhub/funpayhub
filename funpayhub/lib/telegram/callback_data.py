@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-__all__ = ['CallbackData', 'CallbackQueryFilter']
+__all__ = ['CallbackData', 'CallbackQueryFilter', 'join_callbacks']
 
 
 import ast
@@ -27,9 +27,14 @@ class UnknownCallback:
     history: list[str]
     data: dict[str, Any]
 
-    def pack(self) -> str:
+    def pack(self, include_history: bool = True) -> str:
         result = (repr(self.data) if self.data else '') + self.identifier
-        return '>'.join(self.history + [result])
+        if include_history:
+            return join_callbacks(*self.history, result)
+        return result
+
+    def pack_history(self) -> str:
+        return join_callbacks(*self.history)
 
 
 class CallbackData(BaseModel):
@@ -76,7 +81,7 @@ class CallbackData(BaseModel):
             encoded = self._encode_value(key, value)
             data[key] = encoded
         result = (repr(data) if data else '') + self.__identifier__
-        return '>'.join(self.history + [result])
+        return join_callbacks(*self.history, result)
 
     @staticmethod
     def parse(value: str) -> UnknownCallback:
@@ -194,6 +199,27 @@ class CallbackQueryFilter(Filter):
 
             traceback.print_exc()
             return False
+
+
+def join_callbacks(*callbacks: str) -> str:
+    """
+    Объединяет последовательность предыдущих коллбэков с новым коллбэком в одну строку.
+
+    История коллбэков `callbacks_history` и новый коллбэк `callback_query`
+    соединяются с помощью разделителя `'>'`, чтобы образовать единый путь вызовов.
+
+    Пример:
+        >>> join_callbacks('start', 'menu', 'settings')
+        'start>menu>settings'
+
+        >>> join_callbacks('start>menu', 'settings')
+        'start>menu>settings'
+
+    :param callbacks: коллбэки.
+
+    :return: Строка, представляющая объединённую историю коллбэков.
+    """
+    return '>'.join(callbacks)
 
 
 def get_callback_params(
