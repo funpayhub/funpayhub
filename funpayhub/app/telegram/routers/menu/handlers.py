@@ -112,7 +112,8 @@ async def open_menu(
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        menu_page=callback_data.menu_page,
+        menu_page=callback_data.menu_page or 0,
+        view_page=callback_data.view_page or 0,
         callback=unpacked_callback,
         entry=properties.get_entry(callback_data.path),
     )

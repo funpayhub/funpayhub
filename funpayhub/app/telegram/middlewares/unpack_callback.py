@@ -24,7 +24,6 @@ class UnpackMiddleware(BaseMiddleware):
                 await event.answer(text='Ваще не знаю че это за кнопка', show_alert=True)
                 return
             print(f'Unhashed: {parsed.hash} -> {callback_data}')
-
         parsed = CallbackData.parse(callback_data)
 
         print(f'Parsed: {callback_data}')
@@ -33,5 +32,5 @@ class UnpackMiddleware(BaseMiddleware):
         print(f'History: {parsed.history}')
 
         data['unpacked_callback'] = parsed
-        event.__dict__.update({'__parsed__': parsed})
+        event.__dict__.update({'__parsed__': parsed, 'data': callback_data})
         await handler(event, data)

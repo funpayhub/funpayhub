@@ -6,16 +6,17 @@ import contextlib
 from typing import Any
 from copy import copy
 
-from aiogram import Bot, Router, Dispatcher
-from aiogram.types import Update, Message, CallbackQuery, BufferedInputFile, InputMediaDocument
+from aiogram import Router
+from aiogram.types import Message, CallbackQuery, BufferedInputFile, InputMediaDocument
 from aiogram.filters import Command
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.telegram.ui import UIContext, UIRegistry
 from funpayhub.plugins.exec_plugin.types import LockableBuffer, ExecutionResultsRegistry
+from funpayhub.lib.telegram.callback_data import UnknownCallback
 
-from .callbacks import SendExecFile, ChangeViewPage
+from .callbacks import SendExecFile
 
 
 r = Router(name='exec_plugin')
@@ -29,17 +30,12 @@ async def exec_list_menu(
     data: dict[str, Any],
 ):
     callback_str = cbs.OpenMenu(menu_id='exec_list').pack()
-    unpacked = UnpackedCallback(
-        current_callback=callback_str,
-        history=[],
-        data={},
-    )
 
     context = UIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         menu_page=0,
-        callback=unpacked,
+        callback=UnknownCallback.from_string(callback_str),
     )
 
     menu = await tg_ui.build_menu('exec_list', context, data)
@@ -90,7 +86,6 @@ async def execute_python_code(
             except:
                 error = True
                 import traceback
-
                 traceback.print_exc()
     execution_time = time.time() - a
 
@@ -102,19 +97,16 @@ async def execute_python_code(
         execution_time=execution_time,
     )
 
-    callback = cbs.OpenMenu(menu_id='exec_output').pack()
-
-    unpacked_callback = UnpackedCallback(
-        current_callback=callback,
+    callback = cbs.OpenMenu(
+        menu_id='exec_output',
         history=[cbs.OpenMenu(menu_id='exec_list').pack()],
-        data={'exec_id': r.id},
-    )
-
+        data={'exec_id': r.id}
+    ).pack()
     context = UIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         menu_page=0,
-        callback=unpacked_callback,
+        callback=UnknownCallback.from_string(callback),
     )
 
     menu = await tg_ui.build_menu('exec_output', context, data)
@@ -128,14 +120,13 @@ async def execute_python_code(
 async def send_exec_file(
     query: CallbackQuery,
     exec_registry: ExecutionResultsRegistry,
+    callback_data: SendExecFile,
 ):
-    unpacked = SendExecFile.unpack(query.data)
-
-    result = exec_registry.registry[unpacked.exec_id]
+    result = exec_registry.registry[callback_data.exec_id]
 
     files = []
 
-    if result.code_size <= 51380224:
+    if 0 <result.code_size <= 51380224:
         file = BufferedInputFile(
             result.code.encode('utf-8'),
             filename='code.txt',
@@ -143,10 +134,10 @@ async def send_exec_file(
         files.append(
             InputMediaDocument(
                 media=file,
-                caption=f'Код выполнения {unpacked.exec_id}',
+                caption=f'Код выполнения {callback_data.exec_id}',
             ),
         )
-    if result.buffer_size <= 51380224:
+    if 0 < result.buffer_size <= 51380224:
         file = BufferedInputFile(
             result.buffer.getvalue().encode('utf-8'),
             filename='output.txt',
@@ -154,7 +145,7 @@ async def send_exec_file(
         files.append(
             InputMediaDocument(
                 media=file,
-                caption=f'Вывод выполнения {unpacked.exec_id}',
+                caption=f'Вывод выполнения {callback_data.exec_id}',
             ),
         )
 
@@ -168,27 +159,4 @@ async def send_exec_file(
 
     await query.message.answer_media_group(
         media=files,
-    )
-
-
-@r.callback_query(ChangeViewPage.filter())
-async def change_view_page(
-    query: CallbackQuery,
-    unpacked_callback: UnpackedCallback,
-    dispatcher: Dispatcher,
-    bot: Bot,
-):
-    unpacked = ChangeViewPage.unpack(query.data)
-
-    previous = unpack_callback(unpacked_callback.history[-1])
-    previous.data['show_page'] = unpacked.page
-
-    new_query = query.model_copy(update={'data': previous.pack()})
-
-    await dispatcher.feed_update(
-        bot,
-        Update(
-            update_id=-1,
-            callback_query=new_query,
-        ),
     )

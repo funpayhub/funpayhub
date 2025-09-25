@@ -85,8 +85,8 @@ async def set_changing_page_state(
         text='$enter_new_page_index_message',
     )
 
-    await state.set_state(ChangingMenuPage.name)
     data = ChangingViewPage if type_ == 'view' else ChangingMenuPage
+    await state.set_state(data.name)
     await state.set_data(
         {
             'data': data(
@@ -109,13 +109,10 @@ async def change_page(
     dispatcher: Dispatcher,
     bot: Bot,
 ):
-    print('changing_page')
     old = CallbackData.parse(callback_data.history[-1])
     if callback_data.menu_page is not None:
-        print(f'changing menu page to {callback_data.menu_page}')
         old.data['menu_page'] = callback_data.menu_page
     if callback_data.view_page is not None:
-        print(f'changing view page to {callback_data.view_page}')
         old.data['view_page'] = callback_data.view_page
 
     unpacked_callback.history[-1] = old.pack()
@@ -156,7 +153,7 @@ async def manual_menu_page_change(
     await change_page_from_message(message, dispatcher, bot, 'menu')
 
 
-@router.message(StateFilter(ChangingMenuPage.name))
+@router.message(StateFilter(ChangingViewPage.name))
 async def manual_view_page_change(
     message: Message,
     dispatcher: Dispatcher,

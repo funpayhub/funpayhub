@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-from aiogram.utils.keyboard import CallbackData
+from funpayhub.lib.telegram.callback_data import CallbackData
 
 
-class SendExecFile(CallbackData, prefix='send_exec_file'):
+class SendExecFile(CallbackData, identifier='send_exec_file'):
     exec_id: str
-
-
-class ChangeViewPage(CallbackData, prefix='exec_change_view_page'):
-    page: int

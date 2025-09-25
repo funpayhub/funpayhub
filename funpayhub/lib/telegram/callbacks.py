@@ -105,5 +105,5 @@ class ChooseParamValue(CallbackData, identifier='choose_param_value'):
     choice_index: int
 
 
-class OpenMenu(CallbackData, MenuPageable, identifier='open_menu'):
+class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
     menu_id: str

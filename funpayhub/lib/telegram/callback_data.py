@@ -65,6 +65,7 @@ class CallbackData(BaseModel):
         :return: valid callback data for Telegram Bot API
         """
         data = self.model_dump(mode='python')
+        data = self.data | data
         result = (repr(data) if data else '') + self.__identifier__
         if include_history:
             return join_callbacks(*self.history, result)
@@ -180,11 +181,8 @@ class CallbackQueryFilter(Filter):
                 if isinstance(query, CallbackQuery):
                     query.__dict__['__parsed__'] = unpacked
             callback_data = self.callback_data.unpack(unpacked)
-            print(f'!!!!{self.callback_data.__identifier__} == {unpacked.identifier}!!!!')
             return {'callback_data': callback_data}
         except (TypeError, ValueError):
-            import traceback
-            traceback.print_exc()
             return False
 
 
