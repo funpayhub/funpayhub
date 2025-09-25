@@ -5,17 +5,17 @@ from aiogram.filters.callback_data import CallbackData
 
 
 class MenuPageable(BaseModel):
-    page: int = 0
+    menu_page: int = 0
 
-    @field_validator('page', mode='before')
+    @field_validator('menu_page', mode='before')
     def parse_page(cls, v: str | int) -> int:
-        if isinstance(v, str) and v.startswith('page-'):
-            return int(v.split('-', 1)[1])
+        if isinstance(v, str) and v.startswith('[menu_page-') and v.endswith(']'):
+            return int(v.split('-', 1)[1][:-1])
         return int(v)
 
-    @field_serializer('page')
+    @field_serializer('menu_page')
     def serialize_page(self, v: int) -> str:
-        return f'page-{v}'
+        return f'[menu_page-{v}]'
 
 
 class ViewPageable(BaseModel):
@@ -23,13 +23,13 @@ class ViewPageable(BaseModel):
 
     @field_validator('view_page', mode='before')
     def parse_page(cls, v: str | int) -> int:
-        if isinstance(v, str) and v.startswith('view_page-'):
-            return int(v.split('-', 1)[1])
+        if isinstance(v, str) and v.startswith('[view_page-') and v.endswith(']'):
+            return int(v.split('-', 1)[1][:-1])
         return int(v)
 
     @field_serializer('view_page')
     def serialize_page(self, v: int) -> str:
-        return f'view_page-{v}'
+        return f'[view_page-{v}]'
 
 
 class Dummy(CallbackData, prefix='dummy'):
@@ -98,10 +98,10 @@ class ChangePageTo(CallbackData, prefix='change_page_to'):
     если в нем имеется паттерн page-\d+
     """
 
-    page: int
+    page: int | None = None
     """Новый индекс страницы."""
 
-    view_page: int = 0  # todo: доделать
+    view_page: int | None = None  # todo: доделать
 
 
 class ChangePageManually(CallbackData, prefix='change_page_manually'):

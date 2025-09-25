@@ -49,7 +49,7 @@ async def open_custom_menu(
     context = UIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        menu_page=unpacked.page,
+        menu_page=unpacked.menu_page,
         callback=unpacked_callback,
     )
 
@@ -116,7 +116,7 @@ async def open_menu(
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        menu_page=unpacked.page,
+        menu_page=unpacked.menu_page,
         callback=unpacked_callback,
         entry=properties.get_entry(unpacked.path),
     )
@@ -175,31 +175,6 @@ async def choose_param_value(
         callback_query=new_event,
     )
 
-    await dispatcher.feed_update(bot, update)
-
-
-@r.callback_query(cbs.ChangePageTo.filter())
-async def change_page(
-    query: CallbackQuery,
-    unpacked_callback: UnpackedCallback,
-    dispatcher: Dispatcher,
-    bot,
-):
-    unpacked = cbs.ChangePageTo.unpack(query.data)
-    old = unpack_callback(unpacked_callback.history[-1])
-    old.current_callback = re.sub(
-        r'page-\d+',
-        f'page-{unpacked.page}',
-        old.current_callback
-    )
-    unpacked_callback.history[-1] = old.pack()
-    # todo: better parsing
-
-    new_event = query.model_copy(update={'data': join_callbacks(*unpacked_callback.history)})
-    update = Update(
-        update_id=0,
-        callback_query=new_event,
-    )
     await dispatcher.feed_update(bot, update)
 
 

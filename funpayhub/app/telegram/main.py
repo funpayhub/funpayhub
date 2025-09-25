@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 # routers
-from funpayhub.app.telegram.routers.properties_menu import router as properties_menu_router
+from funpayhub.app.telegram.routers.menu import router as properties_menu_router
 
 
 class Telegram:
