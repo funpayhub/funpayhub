@@ -8,7 +8,6 @@ from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
 from funpayhub.lib.telegram.states import ChangingMenuPage, ChangingViewPage
 from aiogram.filters import StateFilter
 from contextlib import suppress
-from typing import Any
 from typing import Literal
 
 
@@ -63,7 +62,7 @@ async def change_page_from_message(
         update={'data': '>'.join(data.callback_data.history)},
     )
     update = Update(
-        update_id=0,
+        update_id=-1,
         callback_query=new_event,
     )
 
