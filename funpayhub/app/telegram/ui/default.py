@@ -25,6 +25,12 @@ DEFAULT_ENTRIES_MENUS: Final = {
 }
 
 
-DEFAULT_MENUS = {
+DEFAULT_MENUS: Final = {
     'fph-formatters-list': ui_builders.formatters_list_menu_builder,
+    'fph-formatter-info': ui_builders.formatter_info_menu_builder,
+}
+
+
+DEFAULT_BUTTONS: Final = {
+    'fph-formatters-list': ui_builders.build_formatters_button
 }

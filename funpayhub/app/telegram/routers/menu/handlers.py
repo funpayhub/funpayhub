@@ -59,8 +59,6 @@ async def open_custom_menu(
         text=menu.text,
         reply_markup=menu.total_keyboard(convert=True, hash=True),
     )
-
-
 # TEMP
 
 
@@ -70,10 +68,16 @@ async def dummy(query: CallbackQuery) -> None:
 
 
 @r.callback_query(cbs.Clear.filter())
-async def clear(query: CallbackQuery, bot: Bot, dispatcher: Dispatcher) -> None:
+async def clear(
+    query: CallbackQuery,
+    bot: Bot,
+    dispatcher: Dispatcher,
+    callback_data: cbs.Clear,
+) -> None:
     context = _get_context(dispatcher, bot, query)
     await context.clear()
-    await query.message.delete()
+    if callback_data.delete_message:
+        await query.message.delete()
 
 
 @r.message(Command('start'))
@@ -83,25 +87,18 @@ async def send_menu(
     tg_ui: UIRegistry,
     data: dict[str, Any],
 ) -> None:
-    callback_str = cbs.OpenEntryMenu(path=properties.path).pack()
-    unpacked = UnknownCallback.from_string(callback_str)
+    callback_str = cbs.OpenEntryMenu(path=properties.path)
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        callback=unpacked,
+        callback=callback_str,
         entry=properties,
     )
-
-    menu = await tg_ui.build_properties_menu(ctx, data)
-
-    await message.answer(
-        text=menu.text,
-        reply_markup=menu.total_keyboard(convert=True, hash=True),
-    )
+    await (await tg_ui.build_properties_menu(ctx, data)).reply_to(message)
 
 
 @r.callback_query(cbs.OpenEntryMenu.filter())
-async def open_menu(
+async def open_entry_menu(
     query: CallbackQuery,
     properties: FunPayHubProperties,
     tg_ui: UIRegistry,
@@ -113,17 +110,10 @@ async def open_menu(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         menu_page=callback_data.menu_page or 0,
-        view_page=callback_data.view_page or 0,
         callback=unpacked_callback,
         entry=properties.get_entry(callback_data.path),
     )
-
-    menu = await tg_ui.build_properties_menu(ctx, data)
-
-    await query.message.edit_text(
-        text=menu.text,
-        reply_markup=menu.total_keyboard(convert=True, hash=True),
-    )
+    await (await tg_ui.build_properties_menu(ctx, data)).apply_to(query.message)
 
 
 @r.callback_query(cbs.NextParamValue.filter())
@@ -134,21 +124,19 @@ async def next_param_value(
     dispatcher: Dispatcher,
     bot,
 ):
-    param = properties.get_parameter(callback_data.path)
-
     try:
-        next(param)
+        next(properties.get_parameter(callback_data.path))
     except Exception as e:
         await query.answer(text=str(e), show_alert=True)
         raise
 
-    new_event = query.model_copy(update={'data': join_callbacks(*callback_data.history)})
-    update = Update(
-        update_id=0,
-        callback_query=new_event,
+    await dispatcher.feed_update(
+        bot,
+        Update(
+            update_id=0,
+            callback_query=query.model_copy(update={'data': callback_data.pack_history()}),
+        )
     )
-
-    await dispatcher.feed_update(bot, update)
 
 
 @r.callback_query(cbs.ChooseParamValue.filter())
@@ -159,13 +147,11 @@ async def choose_param_value(
     dispatcher: Dispatcher,
     bot,
 ):
-    param = properties.get_parameter(callback_data.path)
-    param.set_value(callback_data.choice_index)
+    properties.get_parameter(callback_data.path).set_value(callback_data.choice_index)
 
-    new_event = query.model_copy(update={'data': join_callbacks(*callback_data.history)})
     update = Update(
         update_id=0,
-        callback_query=new_event,
+        callback_query=query.model_copy(update={'data': callback_data.pack_history()}),
     )
 
     await dispatcher.feed_update(bot, update)
@@ -185,27 +171,21 @@ async def change_parameter_value(
     state = _get_context(dispatcher, bot, query)
     await state.clear()
 
-    param = properties.get_parameter(callback_data.path)
-
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         menu_page=0,
         callback=unpacked_callback,
-        entry=param,
+        entry=properties.get_parameter(callback_data.path),
     )
 
-    menu = await tg_ui.build_properties_menu(ctx=ctx, data=data)
-    msg = await query.message.answer(
-        text=menu.text,
-        reply_markup=menu.total_keyboard(convert=True, hash=True),
-    )
+    msg = await (await tg_ui.build_properties_menu(ctx=ctx, data=data)).reply_to(query.message)
 
     await state.set_state(ChangingParameterValueState.name)
     await state.set_data(
         {
             'data': ChangingParameterValueState(
-                parameter=param,
+                parameter=ctx.entry,
                 callback_query_obj=query,
                 callbacks_history=unpacked_callback.history,
                 message=msg,
@@ -241,11 +221,12 @@ async def edit_parameter(
 
     await _delete_message(data.message)
 
-    data.callback_query_obj.__dict__['data'] = join_callbacks(*data.callbacks_history)
     await dispatcher.feed_update(
         bot,
         Update(
             update_id=0,
-            callback_query=data.callback_query_obj,
+            callback_query=data.callback_query_obj.model_copy(
+                update={'data': join_callbacks(*data.callbacks_history)}
+            ),
         ),
     )

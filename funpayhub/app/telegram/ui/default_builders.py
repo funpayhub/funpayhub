@@ -15,7 +15,7 @@ from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext, P
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 from . import premade, button_ids as ids
-
+from ...properties import FunPayHubProperties
 
 if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui import UIRegistry
@@ -137,6 +137,11 @@ async def build_properties_keyboard(ui: UIRegistry, ctx: PropertiesUIContext, **
         )
 
         keyboard.append([await builder((ui, btn_ctx), data=data)])
+
+    if isinstance(ctx.entry, FunPayHubProperties):
+        keyboard.append([
+            await ui.build_menu_button('fph-formatters-list', ctx, data),
+        ])
     return keyboard
 
 
@@ -206,6 +211,15 @@ async def build_properties_text(ui: UIRegistry, ctx: PropertiesUIContext) -> str
 
 
 # Formatters
+async def build_formatters_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
+    return Button(
+        id=f'open_formatters_list',
+        obj=InlineKeyboardButton(
+            text=ui.translater.translate('$open_formatters_list', ctx.language),
+            callback_data=cbs.OpenMenu(history=[ctx.callback.pack()], menu_id='fph-formatters-list').pack()
+        )
+    )
+
 async def build_formatters_keyboard(
     ui: UIRegistry, ctx: UIContext, fp_formatters: FormattersRegistry
 ) -> Keyboard:
@@ -215,7 +229,7 @@ async def build_formatters_keyboard(
             text=ui.translater.translate(formatter.name, ctx.language),
             callback_data=cbs.OpenMenu(
                 menu_id='fph-formatter-info',
-                data={'formatter_id':formatter.key},
+                data={'formatter_id': formatter.key},
                 history=[ctx.callback.pack()]
             ).pack(),
         )
@@ -249,7 +263,7 @@ async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext
 
 async def formatters_list_menu_builder(
     ui: UIRegistry,
-    ctx: PropertiesUIContext,
+    ctx: UIContext,
     fp_formatters: FormattersRegistry,
 ) -> Menu:
     return Menu(
@@ -259,5 +273,24 @@ async def formatters_list_menu_builder(
         image=None,
         header_keyboard=None,
         keyboard=await build_formatters_keyboard(ui, ctx, fp_formatters=fp_formatters),
+        finalizer=default_finalizer,
+    )
+
+
+async def formatter_info_menu_builder(
+    ui: UIRegistry,
+    ctx: UIContext,
+    fp_formatters: FormattersRegistry,
+):
+    formatter = fp_formatters[ctx.callback.data['formatter_id']]
+    text = f"""{ui.translater.translate(formatter.name, ctx.language)}
+
+{ui.translater.translate(formatter.description, ctx.language)}
+"""
+    return Menu(
+        ui=ui,
+        context=ctx,
+        text=text,
+        image=None,
         finalizer=default_finalizer,
     )

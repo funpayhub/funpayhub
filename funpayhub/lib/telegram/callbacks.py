@@ -31,6 +31,7 @@ class Clear(CallbackData, identifier='clear'):
     При срабатывании бот очищает состояние пользователя в чате / теме, откуда пришел callback +
     удаляет привязанное сообщение.
     """
+    delete_message: bool = True
 
 
 class Hash(CallbackData, identifier='hash'):

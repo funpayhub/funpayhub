@@ -18,6 +18,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.telegram.callbacks import Hash
 from funpayhub.lib.telegram.callback_data import UnknownCallback
+from aiogram.types import Message
 
 
 if TYPE_CHECKING:
@@ -103,6 +104,18 @@ class Menu:
         if convert:
             return InlineKeyboardMarkup(inline_keyboard=total_keyboard)
         return total_keyboard
+
+    async def reply_to(self, message: Message, hash: bool = True) -> Message:
+        return await message.answer(
+            text=self.text,
+            reply_markup=self.total_keyboard(convert=True, hash=hash),
+        )
+
+    async def apply_to(self, message: Message, hash: bool = True):
+        return await message.edit_text(
+            text=self.text,
+            reply_markup=self.total_keyboard(convert=True, hash=hash),
+        )
 
 
 @dataclass(kw_only=True)

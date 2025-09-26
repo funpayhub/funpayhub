@@ -89,6 +89,8 @@ class Telegram:
         for t, m in default_ui.DEFAULT_ENTRIES_MENUS.items():
             self._ui_registry.set_default_entry_menu_builder(t, m)
 
+        for i, b in default_ui.DEFAULT_BUTTONS.items():
+            self._ui_registry.add_menu_button(i, b)
         for i, m in default_ui.DEFAULT_MENUS.items():
             self._ui_registry.add_menu(i, m)
 

@@ -1,19 +1,14 @@
 from __future__ import annotations
 
 
-__all__ = ['CallbackData', 'CallbackQueryFilter', 'join_callbacks']
+__all__ = ['CallbackData', 'UnknownCallback', 'CallbackQueryFilter', 'join_callbacks']
 
 
 import ast
 from typing import TYPE_CHECKING, Any, Type, Literal, TypeVar, ClassVar
-from dataclasses import dataclass
 from copy import copy
-from enum import Enum
-from uuid import UUID
-from decimal import Decimal
-from fractions import Fraction
 
-from pydantic import Field, BaseModel
+from pydantic import Field, BaseModel, field_validator
 from aiogram.types import CallbackQuery
 from aiogram.filters import Filter
 
@@ -21,11 +16,10 @@ from aiogram.filters import Filter
 T = TypeVar('T', bound='CallbackData')
 
 
-@dataclass
-class UnknownCallback:
-    identifier: str
-    history: list[str]
-    data: dict[str, Any]
+class UnknownCallback(BaseModel):
+    identifier: str = Field(frozen=True)
+    history: list[str] = Field(default_factory=list, exclude=True)
+    data: dict[str, Any] = Field(default_factory=dict, exclude=True)
 
     def pack(self, include_history: bool = True) -> str:
         result = (repr(self.data) if self.data else '') + self.identifier
@@ -39,37 +33,6 @@ class UnknownCallback:
     @classmethod
     def from_string(cls, query: str) -> UnknownCallback:
         return CallbackData.parse(query)
-
-
-class CallbackData(BaseModel):
-    if TYPE_CHECKING:
-        __identifier__: ClassVar[str]
-
-    data: dict[str, Any] = Field(default_factory=dict, exclude=True)
-    history: list[str] = Field(default_factory=list, exclude=True)
-
-    def __init_subclass__(cls, **kwargs: Any) -> None:
-        if 'identifier' not in kwargs:
-            raise ValueError(
-                f'identifier required, usage example: '
-                f"`class {cls.__name__}(CallbackData, identifier='my_callback'): ...`",
-            )
-        cls.__identifier__ = kwargs.pop('identifier')
-
-        super().__init_subclass__(**kwargs)
-
-    def pack(self, include_history: bool = True) -> str:
-        """
-        Generate callback data string
-
-        :return: valid callback data for Telegram Bot API
-        """
-        data = self.model_dump(mode='python')
-        data = self.data | data
-        result = (repr(data) if data else '') + self.__identifier__
-        if include_history:
-            return join_callbacks(*self.history, result)
-        return result
 
     @staticmethod
     def parse(value: str) -> UnknownCallback:
@@ -100,6 +63,38 @@ class CallbackData(BaseModel):
             history=callbacks[:-1],
             data=ast.literal_eval(last_callback_args) if last_callback_args else {},
         )
+
+
+class CallbackData(UnknownCallback):
+    if TYPE_CHECKING:
+        __identifier__: ClassVar[str]
+
+    identifier: str = Field(default='', frozen=True, validate_default=True)
+    data: dict[str, Any] = Field(default_factory=dict, exclude=True)
+    history: list[str] = Field(default_factory=list, exclude=True)
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        if 'identifier' not in kwargs:
+            raise ValueError(
+                f'identifier required, usage example: '
+                f"`class {cls.__name__}(CallbackData, identifier='my_callback'): ...`",
+            )
+        cls.__identifier__ = kwargs.pop('identifier')
+
+        super().__init_subclass__(**kwargs)
+
+    def pack(self, include_history: bool = True) -> str:
+        """
+        Generate callback data string
+
+        :return: valid callback data for Telegram Bot API
+        """
+        data = self.model_dump(mode='python', exclude={'identifier'})
+        data = self.data | data
+        result = (repr(data) if data else '') + self.__identifier__
+        if include_history:
+            return join_callbacks(*self.history, result)
+        return result
 
     @classmethod
     def unpack(cls: Type[T], value: str | UnknownCallback) -> T:
@@ -140,9 +135,10 @@ class CallbackData(BaseModel):
         """
         return CallbackQueryFilter(callback_data=cls)
 
-    @property
-    def identifier(self) -> str:
-        return self.__identifier__
+    @field_validator('identifier', mode='before')
+    @classmethod
+    def _real_identifier(cls, value: str) -> str:
+        return cls.__identifier__
 
 
 class CallbackQueryFilter(Filter):
