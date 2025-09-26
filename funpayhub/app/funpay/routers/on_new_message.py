@@ -46,13 +46,13 @@ def commands_filter(event: NewMessageEvent, properties: FunPayHubProperties, dat
     return False
 
 
-def command_has_reply_filter(_command: AutoResponseEntryProperties):
-    return _command.reply.value and _command.response_text.value
+def command_has_action(_command: AutoResponseEntryProperties):
+    return (_command.reply.value and _command.response_text.value) or _command.hooks.value
 
 
 @r.on_new_message(
     handler_id='fph:process_command',
-    filter=all_of(commands_filter, command_has_reply_filter),
+    filter=all_of(commands_filter, command_has_action),
 )
 async def process_command(
     event: NewMessageEvent,

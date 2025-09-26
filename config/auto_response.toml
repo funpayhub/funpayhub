@@ -5,5 +5,5 @@ abort_on_formatters_error = false
 abort_on_hooks_error = false
 react_on_me = true
 react_on_others = false
-response_text = "Текущее время: $time<%H:%M>"
+response_text = "Текущее время: $time<%a %A %w %d %b %B %m %y %Y %H %I %p %M %S %f %z %Z %j %U %W %c %x %X %% %G %u %V>"
 hooks = []

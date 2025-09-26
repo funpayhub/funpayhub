@@ -35,6 +35,10 @@ dictConfig(
                 'level': logging.INFO,
                 'handlers': ['console'],
             },
+            'funpaybotengine.runner_logger': {
+                'level': logging.DEBUG,
+                'handlers': ['console'],
+            },
             'eventry.dispatcher': {
                 'level': logging.DEBUG,
                 'handlers': ['console'],
