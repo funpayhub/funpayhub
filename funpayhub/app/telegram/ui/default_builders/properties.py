@@ -31,10 +31,6 @@ async def build_toggle_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext
     Использует коллбэк `NextParamValue`.
     """
     logger.debug(f'Building toggle parameter button for {ctx.entry.path}')
-
-    if not isinstance(ctx.entry, ToggleParameter):
-        raise ValueError(f'{type(ctx.entry)} is not a ToggleParameter.')
-
     translated_name = ui.translater.translate(ctx.entry.name, ctx.language)
 
     btn = InlineKeyboardButton(
@@ -62,11 +58,6 @@ async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
 
     logger.debug(f'Building default parameter button for {ctx.entry.path}')
 
-    if not isinstance(ctx.entry, Parameter):
-        raise ValueError(f'{type(ctx.entry)} is not a Parameter.')
-
-    translated_name = ui.translater.translate(ctx.entry.name, ctx.language)
-
     if Flags.PROTECT_VALUE not in ctx.entry._flags:
         val_str = (
             f'{str(ctx.entry.value)[:20] + ("..." if len(str(ctx.entry.value)) > 20 else "")}'
@@ -79,7 +70,7 @@ async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
             path=ctx.entry.path,
             history=[ctx.callback.pack()]
         ).pack(),
-        text=f'{translated_name} 【 {val_str} 】',
+        text=f'{ui.translater.translate(ctx.entry.name, ctx.language)} 【 {val_str} 】',
     )
 
     return Button(id=f'param_change:{ctx.entry.path}', obj=btn)
@@ -92,14 +83,12 @@ async def build_open_menu_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
 
     Использует коллбэк `OpenEntryMenu`.
     """
-    translated_name = ui.translater.translate(ctx.entry.name, ctx.language)
-
     btn = InlineKeyboardButton(
         callback_data=cbs.OpenEntryMenu(
             path=ctx.entry.path,
             history=[ctx.callback.pack()]
         ).pack(),
-        text=translated_name,
+        text=ui.translater.translate(ctx.entry.name, ctx.language),
     )
 
     return Button(id=f'param_change:{ctx.entry.path}', obj=btn)
@@ -112,6 +101,9 @@ async def build_properties_keyboard(ui: UIRegistry, ctx: PropertiesUIContext, **
     keyboard = []
 
     for entry_id, entry in ctx.entry.entries.items():
+        if not isinstance(entry, Properties | MutableParameter):  # skip immutable params
+            continue
+
         builder = ui.find_properties_btn_builder(type(entry))
         if not builder:
             continue
@@ -124,20 +116,6 @@ async def build_properties_keyboard(ui: UIRegistry, ctx: PropertiesUIContext, **
         )
 
         keyboard.append([await builder((ui, btn_ctx), data=data)])
-
-    if isinstance(ctx.entry, FunPayHubProperties):
-        keyboard.append([
-            Button(
-                id='open_formatters_list',
-                obj=InlineKeyboardButton(
-                    text=ui.translater.translate('$open_formatters_list', ctx.language),
-                    callback_data=cbs.OpenMenu(
-                        menu_id='fph-formatters-list',
-                        history=[ctx.callback.pack()],
-                    ).pack()
-                )
-            ),
-        ])
     return keyboard
 
 
@@ -232,6 +210,30 @@ async def parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> Me
 
 
 # Modifications
+async def funpayhub_properties_menu_modification(
+    ui: UIRegistry,
+    ctx: PropertiesUIContext,
+    menu: Menu
+) -> Menu:
+    if not isinstance(ctx.entry, FunPayHubProperties):
+        return menu
+
+    menu.keyboard.append([
+        Button(
+            id='open_formatters_list',
+            obj=InlineKeyboardButton(
+                text=ui.translater.translate('$open_formatters_list', ctx.language),
+                callback_data=cbs.OpenMenu(
+                    menu_id='fph-formatters-list',
+                    history=[ctx.callback.pack()],
+                ).pack()
+            )
+        ),
+    ])
+
+    return menu
+
+
 async def command_response_text_param_menu_modification(
     ui: UIRegistry,
     ctx: PropertiesUIContext,

@@ -7,6 +7,7 @@ from .properties import (
     parameter_menu_builder,
     choice_parameter_menu_builder,
 
+    funpayhub_properties_menu_modification,
     command_response_text_param_menu_modification
 )
 

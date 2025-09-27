@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 from typing import TYPE_CHECKING, Literal, Optional, Concatenate, overload
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from collections.abc import Callable, Awaitable
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -59,9 +59,9 @@ class Menu:
 
     text: Optional[str] = None
     image: Optional[str] = None
-    header_keyboard: Optional[Keyboard] = None
-    keyboard: Optional[Keyboard] = None
-    footer_keyboard: Optional[Keyboard] = None
+    header_keyboard: Optional[Keyboard] = field(default_factory=list)
+    keyboard: Optional[Keyboard] = field(default_factory=list)
+    footer_keyboard: Optional[Keyboard] = field(default_factory=list)
     finalizer: Finalizer = None
 
     @overload
