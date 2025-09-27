@@ -89,7 +89,7 @@ class Telegram:
 
     def _setup_ui_defaults(self):
         for t, b in default_ui.DEFAULT_ENTRIES_BUTTONS.items():
-            self._ui_registry.set_default_entry_button_builder(t, b)
+            self._ui_registry.add_default_entry_button_builder(t, b)
 
         for t, m in default_ui.DEFAULT_ENTRIES_MENUS.items():
             self._ui_registry.set_default_entry_menu_builder(t, m)

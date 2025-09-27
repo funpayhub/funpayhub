@@ -8,7 +8,7 @@ from aiogram.types import InlineKeyboardButton
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
-from funpayhub.loggers import tg_ui_logger as logger
+from funpayhub.loggers import telegram_ui as logger
 from funpayhub.lib.properties import Parameter, ChoiceParameter, ToggleParameter, Properties, MutableParameter
 from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext

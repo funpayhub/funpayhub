@@ -12,6 +12,7 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
+from funpayhub.loggers import telegram_ui as logger
 
 from .types import Menu, Button, UIContext, PropertiesUIContext
 
@@ -59,7 +60,7 @@ class UIRegistry:
         ] = {}
         """Дефолтные фабрики кнопок параметров / категорий."""
 
-        self.default_entry_menus: dict[
+        self.default_entries_menus: dict[
             type[MutableParameter | Properties],
             CallableWrapper[Menu],
         ] = {}
@@ -68,7 +69,6 @@ class UIRegistry:
         self.entries_buttons_modifications: dict[str, CallableWrapper[Button]] = {}
         self.entries_menus_modifications: dict[str, CallableWrapper[Menu]] = {}
 
-        self.default_menu_buttons: dict[str, CallableWrapper[Button]] = {}
         self.default_menus: dict[str, CallableWrapper[Menu]] = {}
 
     async def build_properties_menu(
@@ -76,6 +76,9 @@ class UIRegistry:
         ctx: PropertiesUIContext,
         data: dict[str, Any],
     ) -> Menu:
+        logger.debug(f'Properties menu builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
+                     f'has been requested.')
+
         builder = self.find_properties_menu_builder(type(ctx.entry))
         if builder is None:
             raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
@@ -103,6 +106,9 @@ class UIRegistry:
         ctx: PropertiesUIContext,
         data: dict[str, Any],
     ) -> Button:
+        logger.debug(f'Properties button builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
+                     f'has been requested.')
+
         builder = self.find_properties_btn_builder(type(ctx.entry))
         if builder is None:
             raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
@@ -117,23 +123,13 @@ class UIRegistry:
                 continue
         return result
 
-    async def build_menu_button(
-        self,
-        menu_id: str,
-        ctx: UIContext,
-        data: dict[str, Any],
-    ) -> Button:
-        if menu_id not in self.default_menu_buttons:
-            raise ValueError(f'Unknown menu id {menu_id}.')
-
-        return await self.default_menu_buttons[menu_id]((self, ctx), data=data)
-
     async def build_menu(
         self,
         menu_id: str,
         ctx: UIContext,
         data: dict[str, Any],
     ) -> Menu:
+        logger.debug(f'Properties menu builder {menu_id!r} has been requested.')
         if menu_id not in self.default_menus:
             raise ValueError(f'Unknown menu id {menu_id}.')
 
@@ -157,17 +153,19 @@ class UIRegistry:
         self,
         entry_type: Type[MutableParameter | Properties],
     ) -> CallableWrapper[Menu] | None:
-        if entry_type in self.default_entry_menus:
-            return self.default_entry_menus[entry_type]
-        for t, u in self.default_entry_menus.items():
+        if entry_type in self.default_entries_menus:
+            return self.default_entries_menus[entry_type]
+        for t, u in self.default_entries_menus.items():
             if issubclass(entry_type, t):
                 return u
 
-    def set_default_entry_button_builder(
+    def add_default_entry_button_builder(
         self,
         entry_type: Type[Properties | MutableParameter],
         builder: EntryBtnBuilder,
     ):
+        if entry_type in self.default_entries_buttons:
+            raise ValueError(f'Default button builder for {entry_type} is already added.')
         self.default_entries_buttons[entry_type] = CallableWrapper(builder)
 
     def set_default_entry_menu_builder(
@@ -175,7 +173,9 @@ class UIRegistry:
         entry_type: Type[Properties | MutableParameter],
         builder: EntryMenuBuilder,
     ):
-        self.default_entry_menus[entry_type] = CallableWrapper(builder)
+        if entry_type in self.default_entries_menus:
+            raise ValueError(f'Default menu builder for {entry_type} is already added.')
+        self.default_entries_menus[entry_type] = CallableWrapper(builder)
 
     def add_entry_button_modification(
         self,
@@ -191,16 +191,11 @@ class UIRegistry:
     ):
         self.entries_menus_modifications[modification_id] = CallableWrapper(modification)
 
-    def add_menu_button(
-        self,
-        menu_id: str,
-        builder: MenuBtnBuilder,
-    ):
-        self.default_menu_buttons[menu_id] = CallableWrapper(builder)
-
     def add_menu(
         self,
         menu_id: str,
         builder: MenuBuilder,
     ):
+        if menu_id in self.default_menus:
+            raise ValueError(f'Default menu with ID {menu_id!r} is already added.')
         self.default_menus[menu_id] = CallableWrapper(builder)
