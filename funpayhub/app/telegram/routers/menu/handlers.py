@@ -78,6 +78,14 @@ async def clear(
     await context.clear()
     if callback_data.delete_message:
         await query.message.delete()
+    elif callback_data.open_previous:
+        await dispatcher.feed_update(
+            bot,
+            Update(
+                update_id=-1,
+                callback_query=query.model_copy(update={'data': callback_data.pack_history()})
+            )
+        )
 
 
 @r.message(Command('start'))
@@ -179,7 +187,7 @@ async def change_parameter_value(
         entry=properties.get_parameter(callback_data.path),
     )
 
-    msg = await (await tg_ui.build_properties_menu(ctx=ctx, data=data)).reply_to(query.message)
+    msg = await (await tg_ui.build_properties_menu(ctx=ctx, data=data)).apply_to(query.message)
 
     await state.set_state(ChangingParameterValueState.name)
     await state.set_data(
@@ -218,8 +226,6 @@ async def edit_parameter(
             reply_markup=data.message.reply_markup,
         )
         return
-
-    await _delete_message(data.message)
 
     await dispatcher.feed_update(
         bot,

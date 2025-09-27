@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 
-__all__ = ['build_menu_navigation_buttons']
+__all__ = [
+    'build_menu_navigation_buttons',
+    'build_view_navigation_buttons',
+    'default_finalizer'
+]
+
 
 from aiogram.types import InlineKeyboardButton
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.ui import Button, Keyboard, UIContext, UIRegistry
+from funpayhub.lib.telegram.ui import Button, Keyboard, UIContext, UIRegistry, Menu
+import math
 
 
 async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pages: int) -> Keyboard:
@@ -133,3 +139,19 @@ async def build_view_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
     )
 
     return kb
+
+
+async def default_finalizer(ui: UIRegistry, ctx: UIContext, menu: Menu) -> Menu:
+    if not menu.footer_keyboard:
+        menu.footer_keyboard = []
+
+    total_pages = math.ceil(len(menu.keyboard) / ctx.max_elements_on_page) if menu.keyboard else 0
+    navigation_buttons = await build_menu_navigation_buttons(ui, ctx, total_pages)
+    menu.footer_keyboard.extend(navigation_buttons)
+
+    if menu.keyboard:
+        first_index = ctx.menu_page * ctx.max_elements_on_page
+        last_index = first_index + ctx.max_elements_on_page
+        menu.keyboard = menu.keyboard[first_index:last_index]
+
+    return menu

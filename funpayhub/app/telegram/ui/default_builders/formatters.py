@@ -1,0 +1,67 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from aiogram.types import InlineKeyboardButton
+
+import funpayhub.lib.telegram.callbacks as cbs
+from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext, PropertiesUIContext
+from funpayhub.lib.hub.text_formatters import FormattersRegistry
+
+from .. import premade
+
+if TYPE_CHECKING:
+    from funpayhub.lib.telegram.ui import UIRegistry
+
+
+# Formatters
+async def build_formatters_keyboard(
+    ui: UIRegistry, ctx: UIContext, fp_formatters: FormattersRegistry
+) -> Keyboard:
+    keyboard = []
+    for formatter in fp_formatters:
+        btn = InlineKeyboardButton(
+            text=ui.translater.translate(formatter.name, ctx.language),
+            callback_data=cbs.OpenMenu(
+                menu_id='fph-formatter-info',
+                data={'formatter_id': formatter.key},
+                history=[ctx.callback.pack()]
+            ).pack(),
+        )
+        keyboard.append([Button(id=f'open_formatter_info:{formatter.key}', obj=btn)])
+    return keyboard
+
+
+async def formatters_list_menu_builder(
+    ui: UIRegistry,
+    ctx: UIContext,
+    fp_formatters: FormattersRegistry,
+) -> Menu:
+    return Menu(
+        ui=ui,
+        context=ctx,
+        text='Форматтеры',
+        image=None,
+        header_keyboard=None,
+        keyboard=await build_formatters_keyboard(ui, ctx, fp_formatters=fp_formatters),
+        finalizer=premade.default_finalizer,
+    )
+
+
+async def formatter_info_menu_builder(
+    ui: UIRegistry,
+    ctx: UIContext,
+    fp_formatters: FormattersRegistry,
+):
+    formatter = fp_formatters[ctx.callback.data['formatter_id']]
+    text = f"""{ui.translater.translate(formatter.name, ctx.language)}
+
+{ui.translater.translate(formatter.description, ctx.language)}
+"""
+    return Menu(
+        ui=ui,
+        context=ctx,
+        text=text,
+        image=None,
+        finalizer=premade.default_finalizer,
+    )

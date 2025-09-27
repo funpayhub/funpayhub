@@ -32,6 +32,7 @@ class Clear(CallbackData, identifier='clear'):
     удаляет привязанное сообщение.
     """
     delete_message: bool = True
+    open_previous: bool = False
 
 
 class Hash(CallbackData, identifier='hash'):

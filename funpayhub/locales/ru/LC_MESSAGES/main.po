@@ -27,25 +27,25 @@ msgid "$props.toggles:description"
 msgstr "__empty__"
 
 msgid "$props.toggles.auto_delivery:name"
-msgstr "📦 Выдача товаров"
+msgstr "Выдача товаров"
 
 msgid "$props.toggles.auto_delivery:description"
 msgstr "__empty__"
 
 msgid "$props.toggles.auto_restock:name"
-msgstr "📤 Пополнение товаров"
+msgstr "Пополнение товаров"
 
 msgid "$props.toggles.auto_restock:description"
 msgstr "__empty__"
 
 msgid "$props.toggles.auto_response:name"
-msgstr "🤖 Автоответ"
+msgstr "Автоответ"
 
 msgid "$props.toggles.auto_response:description"
 msgstr "__empty__"
 
 msgid "$props.toggles.auto_raise:name"
-msgstr "⏫ Поднятие лотов"
+msgstr "Поднятие лотов"
 
 msgid "$props.toggles.auto_raise:description"
 msgstr "__empty__"
@@ -143,6 +143,71 @@ msgstr "Текст выдачи"
 
 msgid "$props.auto_delivery.*.delivery_text:description"
 msgstr "__empty__"
+
+# ----------------------------------------------------
+# ------------------- Autoresponse -------------------
+# ----------------------------------------------------
+msgid "$props.auto_response:name"
+msgstr "💬 Команды"
+
+msgid "$props.auto_response:description"
+msgstr "__empty__"
+
+
+msgid "$props.auto_response.*.case_sensitive:name"
+msgstr "Учитывать регистр"
+
+msgid "$props.auto_response.*.case_sensitive:description"
+msgstr ""
+"Вкл.: различает заглавные и строчные.\n"
+"Выкл.: регистр игнорируется."
+
+
+msgid "$props.auto_response.*.reply:name"
+msgstr "Отвечать"
+
+msgid "$props.auto_response.*.reply:description"
+msgstr ""
+"Вкл.: бот отвечает на команду (если указан текст ответа).\n"
+"Выкл.: бот не отвечает на команду."
+
+msgid "$props.auto_response.*.ignore_formatters_errors:name"
+msgstr "Игнорировать ошибки форматтеров"
+
+msgid "$props.auto_response.*.ignore_formatters_errors:description"
+msgstr ""
+"Вкл.: если произошла ошибка в каком-либо форматтере, бот подставляет вместо него пустоту.\n"
+"Выкл.: бот не отправляет сообщение, если произошла ошибка хотя бы в 1 из форматтеров."
+
+msgid "$props.auto_response.*.ignore_hooks_errors:name"
+msgstr "Игнорировать ошибки хуков"
+
+msgid "$props.auto_response.*.ignore_hooks_errors:description"
+msgstr ""
+"Вкл.: если произошла ошибка в каком-либо хуке, бот продолжает выполнять другие хуки.\n"
+"Выкл.: бот прерывает цепочку выполнения хуков, если хотя бы 1 из хуков завершился с ошибкой."
+
+msgid "$props.auto_response.*.react_on_me:name"
+msgstr "Реагировать, если отправитель - я"
+
+msgid "$props.auto_response.*.react_on_me:description"
+msgstr ""
+"Вкл.: бот обрабатывает команду, если ее отправили вы.\n"
+"Выкл.: бот не обрабатывает команду, если ее отправили вы."
+
+msgid "$props.auto_response.*.react_on_others:name"
+msgstr "Реагировать, если отправитель - не я"
+
+msgid "$props.auto_response.*.react_on_others:description"
+msgstr ""
+"Вкл.: бот обрабатывает команду, если ее отправили не вы.\n"
+"Выкл.: бот не обрабатывает команду, если ее отправили не вы."
+
+msgid "$props.auto_response.*.response_text:name"
+msgstr "Текст ответа"
+
+msgid "$props.auto_response.*.response_text:description"
+msgstr "Текст ответа на команду."
 
 
 # Messages

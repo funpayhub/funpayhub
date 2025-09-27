@@ -1,9 +1,9 @@
 ["/my_command"]
 case_sensitive = false
 reply = true
-abort_on_formatters_error = false
-abort_on_hooks_error = false
+ignore_formatters_errors = false
+ignore_hooks_errors = false
 react_on_me = true
 react_on_others = false
-response_text = "Текущее время: $time<%a %A %w %d %b %B %m %y %Y %H %I %p %M %S %f %z %Z %j %U %W %c %x %X %% %G %u %V>"
+response_text = "wefwef"
 hooks = []

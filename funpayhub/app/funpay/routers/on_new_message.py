@@ -69,7 +69,7 @@ async def process_command(
     if command.reply.value:
         text = await fp_formatters.format_text(
             text=command.response_text.value,
-            raise_on_error=command.abort_on_formatters_error.value,
+            raise_on_error=not command.ignore_hooks_errors.value,
             data=data,
         )
 

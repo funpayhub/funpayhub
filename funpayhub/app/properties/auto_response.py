@@ -38,22 +38,22 @@ class AutoResponseEntryProperties(Properties):
             ),
         )
 
-        self.abort_on_formatters_error = self.attach_parameter(
+        self.ignore_formatters_errors = self.attach_parameter(
             ToggleParameter(
                 properties=self,
-                id='abort_on_formatters_error',
-                name='$props.auto_response.*.abort_on_formatters_error:name',
-                description='$props.auto_response.*.abort_on_formatters_error:description',
+                id='ignore_formatters_errors',
+                name='$props.auto_response.*.ignore_formatters_errors:name',
+                description='$props.auto_response.*.ignore_formatters_errors:description',
                 default_value=False,
             ),
         )
 
-        self.abort_on_hooks_error = self.attach_parameter(
+        self.ignore_hooks_errors = self.attach_parameter(
             ToggleParameter(
                 properties=self,
-                id='abort_on_hooks_error',
-                name='$props.auto_response.*.abort_on_hooks_error:name',
-                description='$props.auto_response.*.abort_on_hooks_error:description',
+                id='ignore_hooks_errors',
+                name='$props.auto_response.*.ignore_hooks_errors:name',
+                description='$props.auto_response.*.ignore_hooks_errors:description',
                 default_value=False,
             ),
         )

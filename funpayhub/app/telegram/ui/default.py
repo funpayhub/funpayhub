@@ -17,9 +17,9 @@ DEFAULT_ENTRIES_BUTTONS: Final = {
 }
 
 DEFAULT_ENTRIES_MENUS: Final = {
-    param.IntParameter: ui_builders.build_parameter_change_menu,
-    param.FloatParameter: ui_builders.build_parameter_change_menu,
-    param.StringParameter: ui_builders.build_parameter_change_menu,
+    param.IntParameter: ui_builders.parameter_menu_builder,
+    param.FloatParameter: ui_builders.parameter_menu_builder,
+    param.StringParameter: ui_builders.parameter_menu_builder,
     param.ChoiceParameter: ui_builders.choice_parameter_menu_builder,
     Properties: ui_builders.properties_menu_builder,
 }
@@ -31,6 +31,12 @@ DEFAULT_MENUS: Final = {
 }
 
 
-DEFAULT_BUTTONS: Final = {
-    'fph-formatters-list': ui_builders.build_formatters_button
+ENTRIES_BUTTONS_MODIFICATIONS: Final = {}
+
+
+ENTRIES_MENUS_MODIFICATIONS: Final = {
+    'fph:command_response_text_param_menu_modification': ui_builders.command_response_text_param_menu_modification,
 }
+
+
+MENUS_MODIFICATIONS: Final = {}

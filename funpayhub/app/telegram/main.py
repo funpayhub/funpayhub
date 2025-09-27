@@ -82,6 +82,11 @@ class Telegram:
 
         self.dispatcher.callback_query.outer_middleware(UnpackMiddleware())
 
+        # todo
+        from funpayhub.app.telegram.routers.help.handlers import NeedHelpMiddleware, router
+        self.dispatcher.callback_query.outer_middleware(NeedHelpMiddleware())
+        self.dispatcher.include_routers(router)
+
     def _setup_ui_defaults(self):
         for t, b in default_ui.DEFAULT_ENTRIES_BUTTONS.items():
             self._ui_registry.set_default_entry_button_builder(t, b)
@@ -89,10 +94,16 @@ class Telegram:
         for t, m in default_ui.DEFAULT_ENTRIES_MENUS.items():
             self._ui_registry.set_default_entry_menu_builder(t, m)
 
-        for i, b in default_ui.DEFAULT_BUTTONS.items():
-            self._ui_registry.add_menu_button(i, b)
         for i, m in default_ui.DEFAULT_MENUS.items():
             self._ui_registry.add_menu(i, m)
+
+        for i, b in default_ui.ENTRIES_BUTTONS_MODIFICATIONS.items():
+            self._ui_registry.add_entry_button_modification(i, b)
+
+        for i, m in default_ui.ENTRIES_MENUS_MODIFICATIONS.items():
+            self._ui_registry.add_entry_menu_modification(i, m)
+
+        # todo: add menus modifications
 
     async def start(self) -> None:
         await self.dispatcher.start_polling(self.bot)

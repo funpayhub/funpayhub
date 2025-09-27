@@ -10,7 +10,7 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
-from funpayhub.app.telegram.ui.default_builders import default_finalizer
+from funpayhub.app.telegram.ui.premade import default_finalizer
 from funpayhub.app.telegram.ui.premade import build_view_navigation_buttons
 from .callbacks import SendExecFile
 
