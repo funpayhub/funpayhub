@@ -23,7 +23,7 @@ def resolve(value: CallableValue[ValueT]) -> ValueT:
     return value() if callable(value) else value
 
 
-class Parameter(Entry, ABC, Generic[ValueT, PropertiesT]):
+class Parameter(Entry, Generic[ValueT, PropertiesT]):
     def __init__(
         self,
         *,
@@ -32,6 +32,7 @@ class Parameter(Entry, ABC, Generic[ValueT, PropertiesT]):
         name: CallableValue[str],
         description: CallableValue[str],
         value: CallableValue[ValueT],
+        flags: set[Any] | None = None
     ) -> None:
         """
         Базовый класс неизменяемого параметра.
@@ -51,7 +52,7 @@ class Parameter(Entry, ABC, Generic[ValueT, PropertiesT]):
         :param value: Значение параметра. Может быть любым объектом или функцией,
             которая не принимает аргументов и возвращает значение параметра.
         """
-        super().__init__(id=id, name=name, description=description, parent=properties)
+        super().__init__(id=id, name=name, description=description, parent=properties, flags=flags)
         self._value = value
 
     @property
@@ -86,6 +87,7 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
         value: CallableValue[ValueT] | _UNSET_TYPE = _UNSET,
         validator: Callable[[ValueT], Any] | _UNSET_TYPE = _UNSET,
         converter: Callable[[Any], ValueT],
+        flags: set[Any] | None = None,
     ) -> None:
         """
         Базовый класс изменяемого параметра.
@@ -125,6 +127,7 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
             name=name,
             description=description,
             value=value if not isinstance(value, _UNSET_TYPE) else default_value,
+            flags=flags
         )
 
     @property

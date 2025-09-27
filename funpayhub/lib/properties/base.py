@@ -35,13 +35,13 @@ class Entry:
         """
         Базовый класс для параметров / категорий параметров.
 
-        :param parent: родительский объекта.
+        :param parent: Родительский объект.
         :param id: ID объекта.
-        :param name: название объекта. Может быть строкой или функцией,
+        :param name: Название объекта. Может быть строкой или функцией,
             которая не принимает аргументов и возвращает строку.
-        :param description: описание объекта. Может быть строкой или функцией,
+        :param description: Описание объекта. Может быть строкой или функцией,
             которая не принимает аргументов и возвращает строку.
-        :param flags: флаги объекта.
+        :param flags: Флаги объекта.
         """
         if '.' in id or id.isnumeric():
             raise ValueError("Entry id must not contain '.' and must not be a number.")
@@ -95,7 +95,7 @@ class Entry:
         Является ли данный объект корневым?
         (True, если нет родителя, иначе - False)
         """
-        return self.parent is not None
+        return self.parent is None
 
     @property
     def chain_to_root(self) -> Generator[Entry, None, None]:
@@ -105,3 +105,16 @@ class Entry:
         yield self
         if self.parent:
             yield from self.parent.chain_to_root
+
+    def has_flag(self, flag: Any) -> bool:
+        return flag in self._flags
+
+    def set_flag(self, flag: Any) -> None:
+        self._flags.add(flag)
+
+    def unset_flag(self, flag: Any) -> None:
+        self._flags.discard(flag)
+
+    @property
+    def flags(self) -> set[Any]:
+        return self._flags

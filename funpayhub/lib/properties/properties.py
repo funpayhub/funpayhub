@@ -23,7 +23,7 @@ InnerEntries: TypeAlias = Parameter[Any] | MutableParameter[Any] | 'Properties'
 
 
 class Properties(Entry):
-    _parent: Properties | None
+    _parent: Properties | None = None
 
     def __init__(
         self,
@@ -33,6 +33,7 @@ class Properties(Entry):
         description: CallableValue[str],
         parent: Properties | None = None,
         file: str | None = None,
+        flags: set[Any] | None = None,
     ) -> None:
         """
         Категория параметров.
@@ -50,9 +51,8 @@ class Properties(Entry):
         :param file: Путь к файлу для сохранения категории. Если `None` —
             используется файл родительской категории.
         """
-        if parent is not None and not isinstance(parent, Properties):
-            raise TypeError('Parent should be an instance of Properties.')
-
+        if parent is not None:
+            self.parent = parent
         self._file = file
         self._entries: dict[str, InnerEntries] = {}
 
@@ -61,6 +61,7 @@ class Properties(Entry):
             id=id,
             name=name,
             description=description,
+            flags=flags,
         )
 
     @property
@@ -70,8 +71,13 @@ class Properties(Entry):
 
     @parent.setter
     def parent(self, value: Properties) -> None:
+        if not isinstance(value, Properties):
+            raise TypeError('Parent should be an instance of Properties.')
         if self.parent is not None:
-            raise RuntimeError('Already has a parent')  # todo: error text
+            raise ValueError('Already has a parent')
+        if value is self:
+            raise ValueError('Cannot attach properties to itself.')
+        # todo: better checks
         self._parent = value
 
     @property
@@ -125,31 +131,21 @@ class Properties(Entry):
         return MappingProxyType(self._entries)
 
     def attach_parameter(self, param: T) -> T:
+        if not isinstance(param, Parameter):
+            raise ValueError('Parameter should be an instance of Parameter.')
         if param.id in self._entries:
-            raise RuntimeError('ID already exists')  # todo: error text
+            raise RuntimeError(f'Entry with ID {param.id!r} already exists.')
         self._entries[param.id] = param
         return param
 
-    def detach_parameter(self, id: str) -> Parameter[Any, Self] | None:
-        result = self._entries.get(id)
-        if result is not None and not isinstance(result, Parameter):
-            raise ValueError(f'{id} is not a Parameter, but {result.__class__.__name__}.')
-        self._entries.pop(id, None)
-        return result
-
     def attach_properties(self, properties: P) -> P:
+        if not isinstance(properties, Properties):
+            raise ValueError('Properties should be an instance of Properties.')
         if properties.id in self._entries:
-            raise RuntimeError('ID already exists')  # todo: error text
+            raise RuntimeError(f'Entry with ID {properties.id!r} already exists.')
         properties.parent = self
         self._entries[properties.id] = properties
         return properties
-
-    def detach_properties(self, id: str) -> Properties | None:
-        result = self._entries.get(id)
-        if result is not None and not isinstance(result, Properties):
-            raise ValueError(f'{id} is not a Properties, but {result.__class__.__name__}.')
-        self._entries.pop(id, None)
-        return result
 
     def as_dict(
         self,

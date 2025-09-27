@@ -41,6 +41,7 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
         default_value: CallableValue[int],
         value: CallableValue[int] | _UNSET_TYPE = _UNSET,
         validator: Callable[[int], Any] | _UNSET_TYPE = _UNSET,
+        flags: set[Any] | None = None,
     ) -> None:
         self._choices: tuple[Union[T, Item[T]], ...] = choices
 
@@ -53,6 +54,7 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
             value=value,
             validator=self._validator_factory(validator),
             converter=int_converter,
+            flags=flags
         )
 
     @property

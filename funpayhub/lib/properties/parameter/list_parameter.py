@@ -29,6 +29,7 @@ class ListParameter(MutableParameter[list[str]]):
         default_value: CallableValue[list[str]],
         value: CallableValue[list[str]] | _UNSET_TYPE = _UNSET,
         validator: Callable[[list[str]], Any] | _UNSET_TYPE = _UNSET,
+        flags: set[Any] | None = None,
     ) -> None:
         super().__init__(
             properties=properties,
@@ -39,6 +40,7 @@ class ListParameter(MutableParameter[list[str]]):
             value=value,
             validator=self._validator_factory(validator),
             converter=lambda _: _,
+            flags=flags
         )
 
     def add(self, value: str, check_exists: bool = True, save: bool = True) -> None:

@@ -15,7 +15,7 @@ class AutoResponseEntryProperties(Properties):
         super().__init__(
             id=command,
             name=command,
-            description='$props.auto_response.*',
+            description='$props.auto_response.*:description',
         )
 
         self.case_sensitive = self.attach_parameter(

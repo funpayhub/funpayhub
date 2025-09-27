@@ -9,8 +9,8 @@ from aiogram.types import InlineKeyboardButton
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
 from funpayhub.loggers import telegram_ui as logger
-from funpayhub.lib.properties import Parameter, ChoiceParameter, ToggleParameter, Properties, MutableParameter
-from funpayhub.lib.properties.flags import DefaultPropertiesFlags as Flags
+from funpayhub.lib.properties import ChoiceParameter, Properties, MutableParameter
+from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext
 from funpayhub.app.properties import FunPayHubProperties
 
@@ -58,7 +58,7 @@ async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
 
     logger.debug(f'Building default parameter button for {ctx.entry.path}')
 
-    if Flags.PROTECT_VALUE not in ctx.entry._flags:
+    if PropsFlags.PROTECT_VALUE not in ctx.entry._flags:
         val_str = (
             f'{str(ctx.entry.value)[:20] + ("..." if len(str(ctx.entry.value)) > 20 else "")}'
         )
