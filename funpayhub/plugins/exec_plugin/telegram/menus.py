@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING, Literal, Final
 from aiogram.types import InlineKeyboardButton
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.ui import UIRegistry
+from funpayhub.app.properties import FunPayHubProperties
+from funpayhub.lib.telegram.ui import UIRegistry, PropertiesUIContext
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
 from funpayhub.app.telegram.ui.premade import default_finalizer
 from funpayhub.app.telegram.ui.premade import build_view_navigation_buttons
@@ -25,7 +26,7 @@ MAX_TEXT_LEN: Final = 3000
 
 
 # real keyboard
-async def exec_list_kb(ui: UIRegistry, ctx: UIContext, exec_registry: ExecRReg) -> Keyboard:
+async def exec_list_kb(ctx: UIContext, exec_registry: ExecRReg) -> Keyboard:
     keyboard = []
 
     for exec_id, result in exec_registry.registry.items():
@@ -41,7 +42,7 @@ async def exec_list_kb(ui: UIRegistry, ctx: UIContext, exec_registry: ExecRReg) 
     return keyboard
 
 
-async def exec_view_kb(ui: UIRegistry, ctx: UIContext,mode: Literal['output', 'code']) -> Keyboard:
+async def exec_view_kb(ctx: UIContext, mode: Literal['output', 'code']) -> Keyboard:
     btn = InlineKeyboardButton(
         text='🔲 Код' if mode == 'output' else '📄 Вывод',
         callback_data=cbs.OpenMenu(
@@ -88,7 +89,7 @@ async def exec_list_menu_builder(ui: UIRegistry, ctx: UIContext, exec_registry: 
         text='Exec registry',
         image=None,
         header_keyboard=None,
-        keyboard=await exec_list_kb(ui, ctx, exec_registry),
+        keyboard=await exec_list_kb(ctx, exec_registry),
         finalizer=default_finalizer,
     )
 
@@ -103,7 +104,7 @@ async def exec_output_menu_builder(ui: UIRegistry, ctx: UIContext, exec_registry
         text=await exec_view_text(ctx, result, 'output'),
         image=None,
         header_keyboard=await build_view_navigation_buttons(ui, ctx, total_pages),
-        keyboard=await exec_view_kb(ui, ctx, 'output'),
+        keyboard=await exec_view_kb(ctx, 'output'),
         finalizer=default_finalizer,
     )
 
@@ -118,6 +119,29 @@ async def exec_code_menu_builder(ui: UIRegistry, ctx: UIContext, exec_registry: 
         text=await exec_view_text(ctx, result, 'code'),
         image=None,
         header_keyboard=await build_view_navigation_buttons(ui, ctx, total_pages),
-        keyboard=await exec_view_kb(ui, ctx, 'code'),
+        keyboard=await exec_view_kb(ctx, 'code'),
         finalizer=default_finalizer,
     )
+
+
+# Main Menu Modification
+async def main_props_menu_modification(
+    ui: UIRegistry,
+    ctx: PropertiesUIContext,
+    menu: Menu
+) -> Menu:
+    if not isinstance(ctx.entry, FunPayHubProperties):
+        return menu
+
+    btn = InlineKeyboardButton(
+        text='💻 Exec Registry',
+        callback_data=cbs.OpenMenu(menu_id='exec_list', history=[ctx.callback.pack()]).pack()
+    )
+
+    menu.keyboard.append([
+        Button(
+            id='open_exec_registry',
+            obj=btn
+        )
+    ])
+    return menu

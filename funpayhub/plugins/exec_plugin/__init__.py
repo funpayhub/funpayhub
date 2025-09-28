@@ -7,6 +7,7 @@ from .telegram.menus import (
     exec_code_menu_builder,
     exec_list_menu_builder,
     exec_output_menu_builder,
+    main_props_menu_modification,
 )
 from .telegram.router import r as router
 
@@ -23,5 +24,10 @@ class Plugin:
         hub.telegram.ui_registry.add_menu('exec_list', exec_list_menu_builder)
         hub.telegram.ui_registry.add_menu('exec_code', exec_code_menu_builder)
         hub.telegram.ui_registry.add_menu('exec_output', exec_output_menu_builder)
+
+        hub.telegram.ui_registry.add_entry_menu_modification(
+            'exec:main_props_menu_modification',
+            main_props_menu_modification,
+        )
 
         hub.telegram.dispatcher.include_router(router)
