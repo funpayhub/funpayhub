@@ -4,8 +4,6 @@ import html
 import math
 from typing import TYPE_CHECKING, Literal, Final
 
-from aiogram.types import InlineKeyboardButton
-
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.telegram.ui import UIRegistry, PropertiesUIContext
@@ -30,20 +28,23 @@ async def exec_list_kb(ctx: UIContext, exec_registry: ExecRReg) -> Keyboard:
     keyboard = []
 
     for exec_id, result in exec_registry.registry.items():
-        btn = InlineKeyboardButton(
-            text=f'{"❌" if result.error else "✅"} {exec_id}',
-            callback_data=cbs.OpenMenu(
-                menu_id='exec_output',
-                data={'exec_id': exec_id},
-                history=[ctx.callback.pack()]
-            ).pack(),
-        )
-        keyboard.append([Button(id=f'open_exec_output:{exec_id}', obj=btn)])
+        keyboard.append([
+            Button(
+                button_id=f'open_exec_output:{exec_id}',
+                text=f'{"❌" if result.error else "✅"} {exec_id}',
+                callback_data=cbs.OpenMenu(
+                    menu_id='exec_output',
+                    data={'exec_id': exec_id},
+                    history=[ctx.callback.pack()]
+                ).pack(),
+            )
+        ])
     return keyboard
 
 
 async def exec_view_kb(ctx: UIContext, mode: Literal['output', 'code']) -> Keyboard:
-    btn = InlineKeyboardButton(
+    btn = Button(
+        button_id='download_exec_files',
         text='🔲 Код' if mode == 'output' else '📄 Вывод',
         callback_data=cbs.OpenMenu(
             menu_id='exec_code' if mode =='output' else 'exec_output',
@@ -52,15 +53,13 @@ async def exec_view_kb(ctx: UIContext, mode: Literal['output', 'code']) -> Keybo
         ).pack()
     )
 
-    download_btn = InlineKeyboardButton(
+    download_btn = Button(
+        button_id='exec_switch_code_output',
         text='💾 Скачать',
         callback_data=SendExecFile(exec_id=ctx.callback.data['exec_id']).pack(),
     )
 
-    return [
-        [Button(id='download_exec_files', obj=download_btn)],
-        [Button(id='exec_switch_code_output', obj=btn)],
-    ]
+    return [[btn], [download_btn]]
 
 
 async def exec_view_text(ctx: UIContext, result: ExecR, mode: Literal['output', 'code']) -> str:
@@ -103,7 +102,7 @@ async def exec_output_menu_builder(ui: UIRegistry, ctx: UIContext, exec_registry
         context=ctx,
         text=await exec_view_text(ctx, result, 'output'),
         image=None,
-        header_keyboard=await build_view_navigation_buttons(ui, ctx, total_pages),
+        header_keyboard=await build_view_navigation_buttons(ctx, total_pages),
         keyboard=await exec_view_kb(ctx, 'output'),
         finalizer=default_finalizer,
     )
@@ -118,7 +117,7 @@ async def exec_code_menu_builder(ui: UIRegistry, ctx: UIContext, exec_registry: 
         context=ctx,
         text=await exec_view_text(ctx, result, 'code'),
         image=None,
-        header_keyboard=await build_view_navigation_buttons(ui, ctx, total_pages),
+        header_keyboard=await build_view_navigation_buttons(ctx, total_pages),
         keyboard=await exec_view_kb(ctx, 'code'),
         finalizer=default_finalizer,
     )
@@ -133,15 +132,12 @@ async def main_props_menu_modification(
     if not isinstance(ctx.entry, FunPayHubProperties):
         return menu
 
-    btn = InlineKeyboardButton(
-        text='💻 Exec Registry',
-        callback_data=cbs.OpenMenu(menu_id='exec_list', history=[ctx.callback.pack()]).pack()
-    )
-
     menu.keyboard.append([
         Button(
-            id='open_exec_registry',
-            obj=btn
+            button_id='open_exec_registry',
+            text='💻 Exec Registry',
+            callback_data=cbs.OpenMenu(menu_id='exec_list', history=[ctx.callback.pack()]).pack()
         )
     ])
+
     return menu

@@ -7,9 +7,6 @@ __all__ = [
     'default_finalizer'
 ]
 
-
-from aiogram.types import InlineKeyboardButton
-
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import Button, Keyboard, UIContext, UIRegistry, Menu
 import math
@@ -18,16 +15,19 @@ import math
 async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pages: int) -> Keyboard:
     kb = []
     if ctx.callback.history:
-        back_btn = InlineKeyboardButton(
-            text=ui.translater.translate('$back', ctx.language),
-            callback_data=ctx.callback.pack_history(),
-        )
-        kb = [[Button(id='back', obj=back_btn)]]
+        kb = [[
+            Button(
+                button_id='back',
+                text=ui.translater.translate('$back', ctx.language),
+                callback_data=ctx.callback.pack_history(),
+            )
+        ]]
 
     if total_pages < 2:
         return kb
 
-    page_amount_btn = InlineKeyboardButton(
+    page_amount_btn = Button(
+        button_id='menu_page_counter',
         text=f'{ctx.menu_page + (1 if total_pages else 0)} / {total_pages}',
         callback_data=cbs.ChangeMenuPageManually(
             total_pages=total_pages,
@@ -35,7 +35,8 @@ async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         ).pack() if total_pages > 1 else cbs.Dummy().pack()
     )
 
-    to_first_btn = InlineKeyboardButton(
+    to_first_btn = Button(
+        button_id='to_first_menu_page',
         text='⏪' if ctx.menu_page > 0 else '❌',
         callback_data=cbs.ChangePageTo(
             menu_page=0,
@@ -43,7 +44,8 @@ async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         ).pack() if ctx.menu_page > 0 else cbs.Dummy().pack(),
     )
 
-    to_last_btn = InlineKeyboardButton(
+    to_last_btn = Button(
+        button_id='to_last_menu_page',
         text='⏩' if ctx.menu_page < total_pages - 1 else '❌',
         callback_data=cbs.ChangePageTo(
             menu_page=total_pages - 1,
@@ -51,7 +53,8 @@ async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         ).pack() if ctx.menu_page < total_pages - 1 else cbs.Dummy().pack(),
     )
 
-    to_previous_btn = InlineKeyboardButton(
+    to_previous_btn = Button(
+        button_id='to_previous_menu_page',
         text='◀️' if ctx.menu_page > 0 else '❌',
         callback_data=cbs.ChangePageTo(
             menu_page=ctx.menu_page - 1,
@@ -59,7 +62,8 @@ async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         ).pack() if ctx.menu_page > 0 else cbs.Dummy().pack(),
     )
 
-    to_next_btn = InlineKeyboardButton(
+    to_next_btn = Button(
+        button_id='to_next_menu_page',
         text='▶️' if ctx.menu_page < total_pages - 1 else '❌',
         callback_data=cbs.ChangePageTo(
             menu_page=ctx.menu_page + 1,
@@ -67,27 +71,18 @@ async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         ).pack() if ctx.menu_page < total_pages - 1 else cbs.Dummy().pack(),
     )
 
-    kb.insert(
-        0,
-        [
-            Button(id='to_first_menu_page', obj=to_first_btn),
-            Button(id='to_previous_menu_page', obj=to_previous_btn),
-            Button(id='menu_page_counter', obj=page_amount_btn),
-            Button(id='to_next_menu_page', obj=to_next_btn),
-            Button(id='to_last_menu_page', obj=to_last_btn),
-        ],
-    )
-
+    kb.insert(0, [to_first_btn, to_previous_btn, page_amount_btn, to_next_btn, to_last_btn])
     return kb
 
 
-async def build_view_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pages: int) -> Keyboard:
+async def build_view_navigation_buttons(ctx: UIContext, total_pages: int) -> Keyboard:
     kb = []
 
     if total_pages < 2:
         return kb
 
-    page_amount_btn = InlineKeyboardButton(
+    page_amount_btn = Button(
+        button_id='menu_page_counter',
         text=f'{ctx.view_page + (1 if total_pages else 0)} / {total_pages}',
         callback_data=cbs.ChangeViewPageManually(
             total_pages=total_pages,
@@ -95,7 +90,8 @@ async def build_view_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         ).pack() if total_pages > 1 else cbs.Dummy().pack()
     )
 
-    to_first_btn = InlineKeyboardButton(
+    to_first_btn = Button(
+        button_id='to_first_menu_page',
         text='⏪' if ctx.view_page > 0 else '❌',
         callback_data=cbs.ChangePageTo(
             view_page=0,
@@ -103,7 +99,8 @@ async def build_view_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         ).pack() if ctx.view_page > 0 else cbs.Dummy().pack(),
     )
 
-    to_last_btn = InlineKeyboardButton(
+    to_last_btn = Button(
+        button_id='to_last_menu_page',
         text='⏩' if ctx.view_page < total_pages - 1 else '❌',
         callback_data=cbs.ChangePageTo(
             view_page=total_pages - 1,
@@ -111,7 +108,8 @@ async def build_view_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         ).pack() if ctx.view_page < total_pages - 1 else cbs.Dummy().pack(),
     )
 
-    to_previous_btn = InlineKeyboardButton(
+    to_previous_btn = Button(
+        button_id='to_previous_menu_page',
         text='◀️' if ctx.view_page > 0 else '❌',
         callback_data=cbs.ChangePageTo(
             view_page=ctx.view_page - 1,
@@ -119,7 +117,8 @@ async def build_view_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         ).pack() if ctx.view_page > 0 else cbs.Dummy().pack(),
     )
 
-    to_next_btn = InlineKeyboardButton(
+    to_next_btn = Button(
+        button_id='to_next_menu_page',
         text='▶️' if ctx.view_page < total_pages - 1 else '❌',
         callback_data=cbs.ChangePageTo(
             view_page=ctx.view_page + 1,
@@ -127,17 +126,7 @@ async def build_view_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         ).pack() if ctx.view_page < total_pages - 1 else cbs.Dummy().pack(),
     )
 
-    kb.insert(
-        0,
-        [
-            Button(id='to_first_view_page', obj=to_first_btn),
-            Button(id='to_previous_view_page', obj=to_previous_btn),
-            Button(id='view_page_counter', obj=page_amount_btn),
-            Button(id='to_next_view_page', obj=to_next_btn),
-            Button(id='to_last_view_page', obj=to_last_btn),
-        ],
-    )
-
+    kb.insert(0, [to_first_btn, to_previous_btn, page_amount_btn, to_next_btn, to_last_btn])
     return kb
 
 

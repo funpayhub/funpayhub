@@ -2,10 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from aiogram.types import InlineKeyboardButton
-
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext, PropertiesUIContext
+from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 from .. import premade
@@ -20,15 +18,17 @@ async def build_formatters_keyboard(
 ) -> Keyboard:
     keyboard = []
     for formatter in fp_formatters:
-        btn = InlineKeyboardButton(
-            text=ui.translater.translate(formatter.name, ctx.language),
-            callback_data=cbs.OpenMenu(
-                menu_id='fph-formatter-info',
-                data={'formatter_id': formatter.key},
-                history=[ctx.callback.pack()]
-            ).pack(),
-        )
-        keyboard.append([Button(id=f'open_formatter_info:{formatter.key}', obj=btn)])
+        keyboard.append([
+            Button(
+                button_id=f'open_formatter_info:{formatter.key}',
+                text=ui.translater.translate(formatter.name, ctx.language),
+                callback_data=cbs.OpenMenu(
+                    menu_id='fph-formatter-info',
+                    data={'formatter_id': formatter.key},
+                    history=[ctx.callback.pack()]
+                ).pack(),
+            )
+        ])
     return keyboard
 
 

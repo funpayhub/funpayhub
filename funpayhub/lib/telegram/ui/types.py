@@ -9,9 +9,10 @@ __all__ = [
     'PropertiesUIContext',
 ]
 
-from typing import TYPE_CHECKING, Literal, Optional, Concatenate, overload
+from typing import TYPE_CHECKING, Literal, Optional, Concatenate, overload, Any
 from dataclasses import dataclass, field
 from collections.abc import Callable, Awaitable
+from pydantic import Field
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -23,6 +24,13 @@ from aiogram.types import Message
 
 if TYPE_CHECKING:
     from .registry import UIRegistry
+    from aiogram.types import (
+        CallbackGame,
+        CopyTextButton,
+        LoginUrl,
+        SwitchInlineQueryChosenChat,
+        WebAppInfo
+    )
 
 
 type Keyboard = list[list[Button]]
@@ -35,17 +43,29 @@ type Finalizer[**P] = (
 )
 
 
-@dataclass
-class Button:
-    """
-    Готовая кнопка пропущенная через переводчик, но не через хэшинатор.
-    """
+class Button(InlineKeyboardButton):
+    button_id: str | None = Field(default=None, exclude=True)
 
-    id: str
-    """ID кнопки."""
-
-    obj: InlineKeyboardButton
-    """Объект Aiogram кнопки."""
+    if TYPE_CHECKING:
+        # aiogram sucks
+        # why tf should I do this
+        def __init__(
+            __pydantic__self__,
+            *,
+            button_id: str,
+            text: str,
+            url: Optional[str] = None,
+            callback_data: Optional[str] = None,
+            web_app: Optional[WebAppInfo] = None,
+            login_url: Optional[LoginUrl] = None,
+            switch_inline_query: Optional[str] = None,
+            switch_inline_query_current_chat: Optional[str] = None,
+            switch_inline_query_chosen_chat: Optional[SwitchInlineQueryChosenChat] = None,
+            copy_text: Optional[CopyTextButton] = None,
+            callback_game: Optional[CallbackGame] = None,
+            pay: Optional[bool] = None,
+            **__pydantic_kwargs: Any,
+        ) -> None: ...
 
 
 @dataclass
@@ -92,11 +112,11 @@ class Menu:
             for line in kb:
                 converted_line = []
                 for button in line:
-                    if button.obj.callback_data and hash:
-                        button.obj.callback_data = Hash(
-                            hash=self.ui.hashinator.hash(button.obj.callback_data),
+                    if button.callback_data and hash:
+                        button.callback_data = Hash(
+                            hash=self.ui.hashinator.hash(button.callback_data),
                         ).pack()
-                    converted_line.append(button.obj if convert else button)
+                    converted_line.append(button)
                 total_keyboard.append(converted_line)
 
         if not total_keyboard:
