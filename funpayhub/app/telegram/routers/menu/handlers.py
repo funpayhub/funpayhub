@@ -9,15 +9,15 @@ from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.states import ChangingParameterValueState
-from funpayhub.lib.telegram.ui.types import UIContext, PropertiesUIContext
+from funpayhub.lib.telegram.ui.types import PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 
 from .router import router as r
 
-
 if TYPE_CHECKING:
     from funpayhub.app.properties.properties import FunPayHubProperties
+    from funpayhub.app.telegram.main import Telegram
 
 
 async def _delete_message(msg: Message):
@@ -41,24 +41,12 @@ async def open_custom_menu(
     query: CallbackQuery,
     tg_ui: UIRegistry,
     data: dict[str, Any],
-    properties: FunPayHubProperties,
     callback_data: cbs.OpenMenu,
-    unpacked_callback: UnknownCallback
+    tg: Telegram,
 ):
-    context = UIContext(
-        language=properties.general.language.real_value(),
-        max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        menu_page=callback_data.menu_page,
-        view_page=callback_data.view_page,
-        callback=unpacked_callback,
-    )
-
-    menu = await tg_ui.build_menu(menu_id=callback_data.menu_id, ctx=context, data=data)
-
-    await query.message.edit_text(
-        text=menu.text,
-        reply_markup=menu.total_keyboard(convert=True, hash=True),
-    )
+    ctx = tg.make_ui_context(callback_data)
+    menu = await tg_ui.build_menu(menu_id=callback_data.menu_id, ctx=ctx, data=data)
+    await menu.apply_to(query.message)
 # TEMP
 
 

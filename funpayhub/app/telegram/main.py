@@ -7,6 +7,9 @@ from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.strategy import FSMStrategy
 
+from funpayhub.lib.telegram.callback_data import CallbackData
+from funpayhub.lib.telegram.callbacks import MenuPageable, ViewPageable
+from funpayhub.lib.telegram.ui import UIContext
 from funpayhub.lib.translater import Translater
 from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.lib.telegram.ui.registry import UIRegistry
@@ -108,3 +111,15 @@ class Telegram:
 
     async def start(self) -> None:
         await self.dispatcher.start_polling(self.bot)
+
+    def make_ui_context(self, callback_data: CallbackData) -> UIContext:
+        menu_page = callback_data.menu_page if isinstance(callback_data, MenuPageable) else 0
+        view_page = callback_data.view_page if isinstance(callback_data, ViewPageable) else 0
+
+        return UIContext(
+            language=self.hub.properties.general.language.real_value(),
+            max_elements_on_page=self.hub.properties.telegram.appearance.menu_entries_amount.value,
+            menu_page=menu_page,
+            view_page=view_page,
+            callback=callback_data
+        )
