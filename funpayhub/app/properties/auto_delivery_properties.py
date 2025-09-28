@@ -92,13 +92,7 @@ class AutoDeliveryProperties(Properties):
     def attach_parameter(self, parameter: Any) -> NoReturn:
         raise RuntimeError('AutoDeliveryProperties does not support parameters.')
 
-    def detach_parameter(self, id: str) -> NoReturn:
-        raise RuntimeError('AutoDeliveryProperties does not support this :(')
-
     def attach_properties(self, properties: Any) -> NoReturn:
-        raise RuntimeError('AutoDeliveryProperties does not support this :(')
-
-    def detach_properties(self, id: str) -> NoReturn:
         raise RuntimeError('AutoDeliveryProperties does not support this :(')
 
     def load(self):

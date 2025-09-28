@@ -67,6 +67,10 @@ dictConfig(
                 'level': logging.DEBUG,
                 'handlers': ['console'],
             },
+            'funpayhub.main': {
+                'level': logging.DEBUG,
+                'handlers': ['console'],
+            },
         },
     },
 )

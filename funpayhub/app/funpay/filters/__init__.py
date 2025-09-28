@@ -1,0 +1,1 @@
+from .is_command import is_fph_command

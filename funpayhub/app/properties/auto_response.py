@@ -133,14 +133,10 @@ class AutoResponseProperties(Properties):
     def attach_parameter(self, parameter: Any) -> NoReturn:
         raise RuntimeError('AutoDeliveryProperties does not support parameters.')
 
-    def detach_parameter(self, id: str) -> NoReturn:
-        raise RuntimeError('AutoDeliveryProperties does not support this :(')
-
-    def attach_properties(self, properties: Any) -> NoReturn:
-        raise RuntimeError('AutoDeliveryProperties does not support this :(')
-
-    def detach_properties(self, id: str) -> NoReturn:
-        raise RuntimeError('AutoDeliveryProperties does not support this :(')
+    def attach_properties(self, properties: AutoResponseEntryProperties) -> AutoResponseEntryProperties:
+        if not isinstance(properties, AutoResponseEntryProperties):
+            raise ValueError('...')  # todo: message
+        return super().attach_properties(properties)
 
     def load(self):
         if not os.path.exists(self.file):  # type: ignore #  always has file
@@ -174,9 +170,6 @@ class AutoResponseProperties(Properties):
             return self.entries[list(self.entries.keys())[index]].get_entry('.'.join(split[1:]))
         except IndexError:
             raise LookupError(f'No entry with name {path}')
-
-    def get_parameter(self, path: str) -> NoReturn:
-        raise RuntimeError('AutoDeliveryProperties does not support this :(')
 
     def get_index_by_id(self, id: str) -> int:
         if id not in self.entries:

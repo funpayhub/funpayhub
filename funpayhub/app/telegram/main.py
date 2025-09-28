@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
+from aiogram.fsm.strategy import FSMStrategy
 
 from funpayhub.lib.translater import Translater
 from funpayhub.app.telegram.ui import default as default_ui
@@ -31,7 +32,7 @@ class Telegram:
         translater: Translater,
     ) -> None:
         self._hub = hub
-        self._dispatcher = Dispatcher()
+        self._dispatcher = Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
         self._dispatcher.workflow_data = workflow_data
         self._setup_dispatcher()
 
