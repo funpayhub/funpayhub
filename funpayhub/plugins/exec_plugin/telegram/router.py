@@ -14,7 +14,6 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.telegram.ui import UIContext, UIRegistry
 from funpayhub.plugins.exec_plugin.types import LockableBuffer, ExecutionResultsRegistry
-from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 from .callbacks import SendExecFile
 
@@ -29,21 +28,12 @@ async def exec_list_menu(
     properties: FunPayHubProperties,
     data: dict[str, Any],
 ):
-    callback_str = cbs.OpenMenu(menu_id='exec_list').pack()
-
     context = UIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        menu_page=0,
-        callback=UnknownCallback.from_string(callback_str),
+        callback=cbs.OpenMenu(menu_id='exec_list'),
     )
-
-    menu = await tg_ui.build_menu('exec_list', context, data)
-
-    await message.answer(
-        text=menu.text,
-        reply_markup=menu.total_keyboard(convert=True, hash=True),
-    )
+    await (await tg_ui.build_menu('exec_list', context, data)).reply_to(message)
 
 
 @r.message(Command('exec'))
@@ -57,16 +47,12 @@ async def execute_python_code(
     if message.from_user.id != 5991368886:
         return
 
-    split = message.text.split()
+    split = message.text.split('\n', maxsplit=1)
     if len(split) < 2:
         return
-
-    if split[1].startswith('<') and split[1].endswith('>'):
-        exec_id = split[1][1:-1]
-        source = message.text.split(None, 2)[2]
-    else:
-        exec_id = None
-        source = message.text.split(None, 1)[1]
+    command = split[0].strip().split(maxsplit=1)
+    exec_id = command[1] if len(command) < 1 else None
+    source = split[1].strip()
 
     temp_buffer = LockableBuffer()
     error = False
@@ -97,23 +83,17 @@ async def execute_python_code(
         execution_time=execution_time,
     )
 
-    callback = cbs.OpenMenu(
-        menu_id='exec_output',
-        history=[cbs.OpenMenu(menu_id='exec_list').pack()],
-        data={'exec_id': r.id}
-    ).pack()
     context = UIContext(
         language=properties.general.language.real_value(),
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        menu_page=0,
-        callback=UnknownCallback.from_string(callback),
+        callback=cbs.OpenMenu(
+            menu_id='exec_output',
+            history=[cbs.OpenMenu(menu_id='exec_list').pack()],
+            data={'exec_id': r.id}
+        ),
     )
 
-    menu = await tg_ui.build_menu('exec_output', context, data)
-    await message.answer(
-        text=menu.text,
-        reply_markup=menu.total_keyboard(convert=True, hash=True),
-    )
+    await (await tg_ui.build_menu('exec_output', context, data)).reply_to(message)
 
 
 @r.callback_query(SendExecFile.filter())
@@ -123,28 +103,19 @@ async def send_exec_file(
     callback_data: SendExecFile,
 ):
     result = exec_registry.registry[callback_data.exec_id]
-
     files = []
 
-    if 0 <result.code_size <= 51380224:
-        file = BufferedInputFile(
-            result.code.encode('utf-8'),
-            filename='code.txt',
-        )
+    if 0 < result.code_size <= 51380224:
         files.append(
             InputMediaDocument(
-                media=file,
-                caption=f'Код выполнения {callback_data.exec_id}',
+                media=BufferedInputFile(result.code.encode(), filename='code.py'),
+                caption=f'Код исполнения {result.id}',
             ),
         )
     if 0 < result.buffer_size <= 51380224:
-        file = BufferedInputFile(
-            result.buffer.getvalue().encode('utf-8'),
-            filename='output.txt',
-        )
         files.append(
             InputMediaDocument(
-                media=file,
+                media=BufferedInputFile(result.buffer.getvalue().encode(), filename='output.txt'),
                 caption=f'Вывод выполнения {callback_data.exec_id}',
             ),
         )
@@ -157,6 +128,4 @@ async def send_exec_file(
         text='Выгрузка файлов началась. Это может занять некоторое время.', show_alert=True
     )
 
-    await query.message.answer_media_group(
-        media=files,
-    )
+    await query.message.answer_media_group(media=files)
