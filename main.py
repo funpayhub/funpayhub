@@ -77,9 +77,18 @@ dictConfig(
 
 
 async def main():
-    app = FunPayHub()
-    await app.load_plugins()
-    await app.start()
+    import tracemalloc
+    tracemalloc.start()
+    try:
+        app = FunPayHub()
+        await app.load_plugins()
+        await app.start()
+    except Exception:
+        snapshot = tracemalloc.take_snapshot()
+        top_stats = snapshot.statistics("lineno")
+
+        for stat in top_stats[:20]:
+            print(stat)
 
 
 if __name__ == '__main__':

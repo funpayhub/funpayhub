@@ -54,8 +54,8 @@ class FunPayHub:
         )
 
     async def start(self):
-        await asyncio.gather(
-            self.funpay.start(),
+        tasks = await asyncio.gather(
+            # self.funpay.start(),
             self.telegram.start(),
         )
 

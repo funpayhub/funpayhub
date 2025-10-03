@@ -14,13 +14,13 @@ if TYPE_CHECKING:
     from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
 
 
-on_new_message_router = r = Router(router_id='fph:on_new_message_router')
+on_new_message_router = r = Router(name='fph:on_new_message_router')
 
 
 
 @r.on_new_message(
+    is_fph_command,
     handler_id='fph:process_command',
-    filter=is_fph_command
 )
 async def process_command(
     event: NewMessageEvent,
