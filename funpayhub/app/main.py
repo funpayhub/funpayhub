@@ -5,9 +5,13 @@ import asyncio
 from typing import Any
 
 from funpayhub.app.properties import FunPayHubProperties
+from funpayhub.lib.properties import Parameter, MutableParameter, Properties
 from funpayhub.lib.translater import Translater
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
+
+from funpayhub.app.dispatching import Dispatcher as HubDispatcher, ParameterValueChangedEvent, \
+    PropertiesAttachedEvent, ParameterAttachedEvent
 
 # plugins
 from funpayhub.plugins.exec_plugin import Plugin
@@ -19,6 +23,7 @@ class FunPayHub:
         properties: FunPayHubProperties | None = None,
     ):
         self._workflow_data = {}
+        self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
 
         if properties is None:
             properties = FunPayHubProperties()
@@ -55,13 +60,34 @@ class FunPayHub:
 
     async def start(self):
         tasks = await asyncio.gather(
-            # self.funpay.start(),
+            self.funpay.start(),
             self.telegram.start(),
         )
 
     async def load_plugins(self):
         pl = Plugin()
         await pl.setup(self)
+
+    async def emit_parameter_changed_event(
+        self,
+        parameter: MutableParameter[Any]
+    ) -> None:
+        event = ParameterValueChangedEvent(param=parameter)
+        await self.dispatcher.propagate_event(event)
+
+    async def emit_properties_attached_event(
+        self,
+        properties: Properties,
+    ) -> None:
+        event = PropertiesAttachedEvent(props=properties)
+        await self.dispatcher.propagate_event(event)
+
+    async def emit_parameter_attached_event(
+        self,
+        parameter: Parameter[Any] | MutableParameter[Any],
+    ) -> None:
+        event = ParameterAttachedEvent(param=parameter)
+        await self.dispatcher.propagate_event(event)
 
     @property
     def properties(self) -> FunPayHubProperties:
@@ -82,3 +108,7 @@ class FunPayHub:
     @property
     def workflow_data(self) -> dict[str, Any]:
         return self._workflow_data
+
+    @property
+    def dispatcher(self) -> HubDispatcher:
+        return self._dispatcher

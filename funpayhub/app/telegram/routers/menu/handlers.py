@@ -12,12 +12,14 @@ from funpayhub.lib.telegram.states import ChangingParameterValueState
 from funpayhub.lib.telegram.ui.types import PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
+import asyncio
 
 from .router import router as r
 
 if TYPE_CHECKING:
     from funpayhub.app.properties.properties import FunPayHubProperties
     from funpayhub.app.telegram.main import Telegram
+    from funpayhub.app.main import FunPayHub
 
 
 async def _delete_message(msg: Message):
@@ -118,14 +120,17 @@ async def next_param_value(
     properties: FunPayHubProperties,
     callback_data: cbs.NextParamValue,
     dispatcher: Dispatcher,
+    hub: FunPayHub,
     bot,
 ):
     try:
-        next(properties.get_parameter(callback_data.path))
+        param = properties.get_parameter(callback_data.path)
+        next(param)
     except Exception as e:
         await query.answer(text=str(e), show_alert=True)
         raise
 
+    asyncio.create_task(hub.emit_parameter_changed_event(param))
     await dispatcher.feed_update(
         bot,
         Update(
@@ -141,9 +146,12 @@ async def choose_param_value(
     properties: FunPayHubProperties,
     callback_data: cbs.ChooseParamValue,
     dispatcher: Dispatcher,
+    hub: FunPayHub,
     bot,
 ):
-    properties.get_parameter(callback_data.path).set_value(callback_data.choice_index)
+    param = properties.get_parameter(callback_data.path)
+    param.set_value(callback_data.choice_index)
+    asyncio.create_task(hub.emit_parameter_changed_event(param))
 
     update = Update(
         update_id=0,
@@ -198,6 +206,7 @@ async def edit_parameter(
     message: Message,
     bot: Bot,
     dispatcher: Dispatcher,
+    hub: FunPayHub,
 ) -> None:
     await _delete_message(message)
 
@@ -215,6 +224,7 @@ async def edit_parameter(
         )
         return
 
+    asyncio.create_task(hub.emit_parameter_changed_event(data.parameter))
     await dispatcher.feed_update(
         bot,
         Update(
