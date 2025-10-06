@@ -8,7 +8,7 @@ from .properties import (
     choice_parameter_menu_builder,
 
     funpayhub_properties_menu_modification,
-    command_response_text_param_menu_modification
+    add_formatters_list_button_modification
 )
 
 from .formatters import (

@@ -106,6 +106,10 @@ class Entry:
         if self.parent:
             yield from self.parent.chain_to_root
 
+    @property
+    def flags(self) -> set[Any]:
+        return self._flags
+
     def has_flag(self, flag: Any) -> bool:
         return flag in self._flags
 
@@ -115,6 +119,17 @@ class Entry:
     def unset_flag(self, flag: Any) -> None:
         self._flags.discard(flag)
 
-    @property
-    def flags(self) -> set[Any]:
-        return self._flags
+    def matches_path(self, path: str) -> bool:
+        self_path = self.path.split('.')
+        matching_path = path.split('.')
+
+        if len(self_path) != len(matching_path):
+            return False
+
+        for index, i in enumerate(matching_path):
+            if i == '*':
+                continue
+            if self_path[index] != i:
+                return False
+
+        return True

@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 from dataclasses import replace
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
 from funpayhub.loggers import telegram_ui as logger
 from funpayhub.lib.properties import ChoiceParameter, Properties, MutableParameter
 from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
@@ -220,12 +219,16 @@ async def funpayhub_properties_menu_modification(
     return menu
 
 
-async def command_response_text_param_menu_modification(
+async def add_formatters_list_button_modification(
     ui: UIRegistry,
     ctx: PropertiesUIContext,
     menu: Menu
 ) -> Menu:
-    if not ctx.entry.parent or not isinstance(ctx.entry.parent, AutoResponseEntryProperties):
+    if not any([
+        ctx.entry.matches_path('auto_response.*.reply'),
+        ctx.entry.matches_path('review_reply.*.review_reply_text'),
+        ctx.entry.matches_path('review_reply.*.chat_reply_text'),
+    ]):
         return menu
 
     menu.keyboard.append([
