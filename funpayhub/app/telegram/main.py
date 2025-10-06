@@ -16,6 +16,7 @@ from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
+from funpayhub.app.telegram.middlewares.add_telegram_notifications import AddNotificationsSection
 
 
 if TYPE_CHECKING:
@@ -83,6 +84,8 @@ class Telegram:
             if i == 'error':
                 continue
             o.outer_middleware(middleware)
+
+        self.dispatcher.message.outer_middleware(AddNotificationsSection())
 
         self.dispatcher.callback_query.outer_middleware(UnpackMiddleware())
 
