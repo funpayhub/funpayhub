@@ -210,6 +210,70 @@ msgid "$props.auto_response.*.response_text:description"
 msgstr "Текст ответа на команду."
 
 
+# ----------------------------------------------------
+# ----------------- Reviews response -----------------
+# ----------------------------------------------------
+msgid "$props.review_reply:name"
+msgstr "⭐ Ответ на отзыв"
+
+msgid "$props.review_reply:description"
+msgstr "Настройки ответа на отзыв / ответного сообщения."
+
+msgid "$props.review_reply.five_stars:name"
+msgstr "⭐⭐⭐⭐⭐"
+
+msgid "$props.review_reply.five_stars:description"
+msgstr "Настройки ответа на отзыв / ответного сообщения на 5-зведночный отзыв."
+
+msgid "$props.review_reply.four_stars:name"
+msgstr "⭐⭐⭐⭐"
+
+msgid "$props.review_reply.four_stars:description"
+msgstr "Настройки ответа на отзыв / ответного сообщения на 4-зведночный отзыв."
+
+msgid "$props.review_reply.three_stars:name"
+msgstr "⭐⭐⭐"
+
+msgid "$props.review_reply.three_stars:description"
+msgstr "Настройки ответа на отзыв / ответного сообщения на 3-зведночный отзыв."
+
+msgid "$props.review_reply.two_stars:name"
+msgstr "⭐⭐"
+
+msgid "$props.review_reply.two_stars:description"
+msgstr "Настройки ответа на отзыв / ответного сообщения на 2-зведночный отзыв."
+
+msgid "$props.review_reply.one_stars:name"
+msgstr "⭐"
+
+msgid "$props.review_reply.one_stars:description"
+msgstr "Настройки ответа на отзыв / ответного сообщения на 1-зведночный отзыв."
+
+msgid "$props.review_reply.*.reply_in_review:name"
+msgstr "Отвечать на отзыв"
+
+msgid "$props.review_reply.*.reply_in_review:description"
+msgstr "Оставлять ли ответ на отзыв."
+
+msgid "$props.review_reply.*.reply_in_chat:name"
+msgstr "Отправлять ответное сообщение"
+
+msgid "$props.review_reply.*.reply_in_chat:description"
+msgstr "Отправлять ли ответное сообщение в чат."
+
+msgid "$props.review_reply.*.review_reply_text:name"
+msgstr "Текст ответа"
+
+msgid "$props.review_reply.*.review_reply_text:description"
+msgstr "Текст ответа на отзыв."
+
+msgid "$props.review_reply.*.chat_reply_text:name"
+msgstr "Текст ответного сообщения"
+
+msgid "$props.review_reply.*.chat_reply_text:description"
+msgstr "Текст ответного сообщения."
+
+
 # Messages
 msgid "$enter_new_value_message"
 msgstr ""
@@ -224,6 +288,9 @@ msgstr ""
 # ----------------------------------------------------
 msgid "$back"
 msgstr "◀️ Назад"
+
+msgid "$clear_state"
+msgstr "🔘 Отмена"
 
 # ----------------------------------------------------
 # -------------------- Formatters --------------------
