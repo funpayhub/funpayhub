@@ -8,7 +8,7 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.telegram.ui import UIRegistry, PropertiesUIContext
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
-from funpayhub.app.telegram.ui.premade import default_finalizer
+from funpayhub.app.telegram.ui.premade import default_finalizer_factory
 from funpayhub.app.telegram.ui.premade import build_view_navigation_buttons
 from .callbacks import SendExecFile
 
@@ -89,7 +89,7 @@ async def exec_list_menu_builder(ui: UIRegistry, ctx: UIContext, exec_registry: 
         image=None,
         header_keyboard=None,
         keyboard=await exec_list_kb(ctx, exec_registry),
-        finalizer=default_finalizer,
+        finalizer=default_finalizer_factory(),
     )
 
 
@@ -104,7 +104,7 @@ async def exec_output_menu_builder(ui: UIRegistry, ctx: UIContext, exec_registry
         image=None,
         header_keyboard=await build_view_navigation_buttons(ctx, total_pages),
         keyboard=await exec_view_kb(ctx, 'output'),
-        finalizer=default_finalizer,
+        finalizer=default_finalizer_factory(),
     )
 
 
@@ -119,7 +119,7 @@ async def exec_code_menu_builder(ui: UIRegistry, ctx: UIContext, exec_registry: 
         image=None,
         header_keyboard=await build_view_navigation_buttons(ctx, total_pages),
         keyboard=await exec_view_kb(ctx, 'code'),
-        finalizer=default_finalizer,
+        finalizer=default_finalizer_factory(),
     )
 
 

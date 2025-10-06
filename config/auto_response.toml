@@ -3,9 +3,7 @@ case_sensitive = false
 reply = true
 ignore_formatters_errors = true
 ignore_hooks_errors = true
-react_on_me = true
+react_on_me = false
 react_on_others = false
-response_text = """
-Привет, $message<username>!
-Текущее время: $time<%a %A %w %d %b %B %m %y %Y %H %I %p %M %S %f %z %Z %j %U %W %c %x %X %% %G %u %V>"""
+response_text = "ответ на команду"
 hooks = []

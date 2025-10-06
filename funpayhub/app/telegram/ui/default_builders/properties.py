@@ -151,7 +151,7 @@ async def properties_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext, **da
         image=None,
         header_keyboard=None,
         keyboard=await build_properties_keyboard(ui, ctx, **data),
-        finalizer=premade.default_finalizer,
+        finalizer=premade.default_finalizer_factory(),
     )
 
 
@@ -163,7 +163,7 @@ async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext
         image=None,
         header_keyboard=None,
         keyboard=await build_choice_parameter_keyboard(ui, ctx),
-        finalizer=premade.default_finalizer,
+        finalizer=premade.default_finalizer_factory(),
     )
 
 
@@ -193,7 +193,7 @@ async def parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> Me
         context=ctx,
         text=text,
         footer_keyboard=[footer_keyboard],
-        finalizer=premade.default_finalizer,
+        finalizer=premade.default_finalizer_factory(back_button=False),
     )
 
 
@@ -203,7 +203,7 @@ async def funpayhub_properties_menu_modification(
     ctx: PropertiesUIContext,
     menu: Menu
 ) -> Menu:
-    if not isinstance(ctx.entry, FunPayHubProperties):
+    if not ctx.entry.matches_path(''):
         return menu
 
     menu.keyboard.append([
@@ -225,7 +225,7 @@ async def add_formatters_list_button_modification(
     menu: Menu
 ) -> Menu:
     if not any([
-        ctx.entry.matches_path('auto_response.*.reply'),
+        ctx.entry.matches_path('auto_response.*.response_text'),
         ctx.entry.matches_path('review_reply.*.review_reply_text'),
         ctx.entry.matches_path('review_reply.*.chat_reply_text'),
     ]):

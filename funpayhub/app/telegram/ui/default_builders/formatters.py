@@ -44,7 +44,7 @@ async def formatters_list_menu_builder(
         image=None,
         header_keyboard=None,
         keyboard=await build_formatters_keyboard(ui, ctx, fp_formatters=fp_formatters),
-        finalizer=premade.default_finalizer,
+        finalizer=premade.default_finalizer_factory(),
     )
 
 
@@ -63,5 +63,5 @@ async def formatter_info_menu_builder(
         context=ctx,
         text=text,
         image=None,
-        finalizer=premade.default_finalizer,
+        finalizer=premade.default_finalizer_factory(),
     )
