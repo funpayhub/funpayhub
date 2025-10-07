@@ -113,12 +113,10 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
         self._convertor = converter
         self._validator = validator
 
-        # self.validate(default_value)
         self._default_value = default_value
 
         if not isinstance(value, _UNSET_TYPE):
             value = self.convert(value)
-            # self.validate(value)
 
         super().__init__(
             properties=properties,
