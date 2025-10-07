@@ -170,7 +170,7 @@ class Properties(Entry):
         if not self._file:
             if not self.parent:
                 raise RuntimeError('Unable to save')
-            self.parent.save(same_file_only=True)
+            self.parent.save(same_file_only=same_file_only)
             return
 
         if not os.path.exists(self._file):

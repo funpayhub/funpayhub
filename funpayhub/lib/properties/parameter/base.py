@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar
-from abc import ABC
 from collections.abc import Callable
 
 from typing_extensions import Self
@@ -23,7 +22,7 @@ def resolve(value: CallableValue[ValueT]) -> ValueT:
     return value() if callable(value) else value
 
 
-class Parameter(Entry, Generic[ValueT, PropertiesT]):
+class Parameter[ValueT, PropertiesT: 'Properties' = 'Properties'](Entry):
     def __init__(
         self,
         *,

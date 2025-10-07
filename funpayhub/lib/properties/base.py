@@ -50,6 +50,9 @@ class Entry:
             которая не принимает аргументов и возвращает строку.
         :param flags: Флаги объекта.
         """
+        if not id:
+            raise ValueError('Entry ID cannot be empty.')
+
         self._parent = parent
         self._id = id
         self._name = name
@@ -122,6 +125,9 @@ class Entry:
 
     def set_flag(self, flag: Any) -> None:
         self._flags.add(flag)
+
+    def del_flag(self, flag: Any) -> None:
+        self._flags.discard(flag)
 
     def matches_path(self, path: list[str]) -> bool:
         self_path = self.path
