@@ -7,7 +7,7 @@ __all__ = ['ListParameter']
 from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
 
-from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.base import UNSET, _UNSET_TYPE
 from funpayhub.lib.properties.parameter.base import (
     CallableValue,
     MutableParameter,
@@ -27,8 +27,8 @@ class ListParameter(MutableParameter[list[str]]):
         name: CallableValue[str],
         description: CallableValue[str],
         default_value: CallableValue[list[str]],
-        value: CallableValue[list[str]] | _UNSET_TYPE = _UNSET,
-        validator: Callable[[list[str]], Any] | _UNSET_TYPE = _UNSET,
+        value: CallableValue[list[str]] | _UNSET_TYPE = UNSET,
+        validator: Callable[[list[str]], Any] | _UNSET_TYPE = UNSET,
         flags: set[Any] | None = None,
     ) -> None:
         super().__init__(

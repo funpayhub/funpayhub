@@ -18,7 +18,6 @@ from .parameter.base import Parameter, MutableParameter
 
 
 T = TypeVar('T', bound='Parameter[Any, Any]')
-P = TypeVar('P', bound='Properties')
 InnerEntries: TypeAlias = Parameter[Any] | MutableParameter[Any] | 'Properties'
 
 
@@ -138,7 +137,7 @@ class Properties(Entry):
         self._entries[param.id] = param
         return param
 
-    def attach_properties(self, properties: P) -> P:
+    def attach_properties[P: Properties](self, properties: P) -> P:
         if not isinstance(properties, Properties):
             raise ValueError('Properties should be an instance of Properties.')
         if properties.id in self._entries:
@@ -205,29 +204,41 @@ class Properties(Entry):
             elif isinstance(v, Properties):
                 v._set_values(values[v.id])
 
-    def get_entry(self, path: str) -> InnerEntries:
+    def get_entry(self, path: list[str | int]) -> InnerEntries:
         if not path:
             return self
 
-        split = path.split('.')
-        next_entry = self.entries.get(split[0])
-        if isinstance(next_entry, Parameter):
-            return next_entry
-        if isinstance(next_entry, Properties):
+        segment = path[0]
+        if isinstance(segment, int):
             try:
-                return next_entry.get_entry('.'.join(split[1:]))
-            except LookupError as e:
-                raise LookupError(f'No entry with path {path}') from e
+                key = list(self.entries.keys())[segment]
+            except:
+                raise LookupError(f'{self.path!r} has no entry at index {segment}.')
+            next_entry = self.entries[key]
         else:
-            raise LookupError(f'No entry with path {path}') from None
+            next_entry = self.entries.get(segment)
+            if next_entry is None:
+                raise LookupError(f"{self.path!r} has no entry with id {segment!r}.")
 
-    def get_parameter(self, path: str) -> Parameter[Any, Self] | MutableParameter[Any, Self]:
+        if isinstance(next_entry, Parameter):
+            if len(path) > 1:
+                raise LookupError(f"No entry with path {path!r}.")
+            return next_entry
+
+        if isinstance(next_entry, Properties):
+            if len(path) > 1:
+                return next_entry.get_entry(path[1:])
+            return next_entry
+
+        raise LookupError(f"No entry with path {path!r}.")
+
+    def get_parameter(self, path: list[str | int]) -> Parameter[Any, Self] | MutableParameter[Any, Self]:
         result = self.get_entry(path)
         if not isinstance(result, Parameter):
             raise LookupError(f'No parameter with path {path}')
         return result
 
-    def get_properties(self, path: str) -> Properties:
+    def get_properties(self, path: list[str | int]) -> Properties:
         result = self.get_entry(path)
         if not isinstance(result, Properties):
             raise LookupError(f'No properties with path {path}')

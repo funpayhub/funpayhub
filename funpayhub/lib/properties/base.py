@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+
+__all__ = [
+    'UNSET',
+    'Entry'
+]
+
+
 from typing import Any, Union, TypeVar, Callable
 from collections.abc import Generator
 
@@ -15,7 +22,7 @@ class _UNSET_TYPE:
         return False
 
 
-_UNSET = _UNSET_TYPE()
+UNSET = _UNSET_TYPE()
 
 
 def resolve(value: CallableValue[ParamValueType]) -> ParamValueType:
@@ -43,8 +50,6 @@ class Entry:
             которая не принимает аргументов и возвращает строку.
         :param flags: Флаги объекта.
         """
-        if '.' in id or id.isnumeric():
-            raise ValueError("Entry id must not contain '.' and must not be a number.")
         self._parent = parent
         self._id = id
         self._name = name
@@ -72,15 +77,17 @@ class Entry:
         return self._parent
 
     @property
-    def path(self) -> str:
+    def path(self) -> list[str]:
         """
         Путь до объекта начиная с корневого объекта.
 
         Объединяет ID объектов от родительского до данного в одну строку, разделяя их точкой.
         """
-        if self._parent is None:
-            return ''
-        return self._parent.path + (f'.{self.id}' if self._parent.path else self.id)
+        if self.parent is None:
+            return []
+        path = self.parent.path
+        path.append(self.id)
+        return path
 
     @property
     def root(self) -> Entry:
@@ -116,20 +123,14 @@ class Entry:
     def set_flag(self, flag: Any) -> None:
         self._flags.add(flag)
 
-    def unset_flag(self, flag: Any) -> None:
-        self._flags.discard(flag)
-
-    def matches_path(self, path: str) -> bool:
-        self_path = self.path.split('.')
-        matching_path = path.split('.')
-
-        if len(self_path) != len(matching_path):
+    def matches_path(self, path: list[str]) -> bool:
+        self_path = self.path
+        if len(self_path) != len(path):
             return False
 
-        for index, i in enumerate(matching_path):
+        for index, i in enumerate(path):
             if i == '*':
                 continue
             if self_path[index] != i:
                 return False
-
         return True

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import os
 import tomllib
-from typing import Any, NoReturn
+from typing import Any, NoReturn, TYPE_CHECKING
 from types import MappingProxyType
 
 from funpayhub.lib.properties import Properties, StringParameter, ToggleParameter
-from funpayhub.lib.properties.base import Entry
+
 
 
 class AutoDeliveryEntryProperties(Properties):
@@ -57,23 +57,18 @@ class AutoDeliveryEntryProperties(Properties):
             ),
         )
 
-    @property
-    def parent(self) -> AutoDeliveryProperties | None:
-        return super().parent  # type: ignore
+    if TYPE_CHECKING:
+        @property
+        def parent(self) -> AutoDeliveryProperties | None: ...
 
-    @parent.setter
+    @Properties.parent.setter
     def parent(self, value: Properties) -> None:
         if not isinstance(value, AutoDeliveryProperties):
-            raise RuntimeError
-        Properties.parent.fset(self, value)
-
-    @property
-    def path(self) -> str:
-        if not self.parent:
-            return ''
-
-        id = self.parent.get_index_by_id(self.id)
-        return self.parent.path + (f'.{id}' if self.parent.path else str(id))
+            raise TypeError(
+                f'{self.__class__.__name__!r} must be attached only to '
+                f'{AutoDeliveryProperties.__name__!r}.'
+            )
+        Properties.parent.__set__(self, value)
 
 
 class AutoDeliveryProperties(Properties):
@@ -92,8 +87,13 @@ class AutoDeliveryProperties(Properties):
     def attach_parameter(self, parameter: Any) -> NoReturn:
         raise RuntimeError('AutoDeliveryProperties does not support parameters.')
 
-    def attach_properties(self, properties: Any) -> NoReturn:
-        raise RuntimeError('AutoDeliveryProperties does not support this :(')
+    def attach_properties[P: AutoDeliveryEntryProperties](self, properties: P) -> P:
+        if not isinstance(properties, AutoDeliveryEntryProperties):
+            raise ValueError(
+                f'{self.__class__.__name__!r} allows attaching only for '
+                f'{AutoDeliveryEntryProperties.__name__!r} instances.'
+            )
+        return super().attach_properties(properties)
 
     def load(self):
         if not os.path.exists(self.file):
@@ -108,30 +108,4 @@ class AutoDeliveryProperties(Properties):
             super().attach_properties(obj)
 
     def add_entry(self, offer_name: str) -> AutoDeliveryEntryProperties:
-        obj = AutoDeliveryEntryProperties(offer_name)
-        super().attach_properties(obj)
-        return obj
-
-    def get_entry(self, path: str) -> Entry:
-        if not path:
-            return self
-
-        split = path.split('.')
-        next_entry = split[0]
-
-        if not next_entry.isnumeric():
-            return super().get_entry(path)
-
-        index = int(next_entry)
-        try:
-            return self.entries[list(self.entries.keys())[index]].get_entry('.'.join(split[1:]))
-        except IndexError:
-            raise LookupError(f'No entry with name {path}')
-
-    def get_parameter(self, path: str) -> NoReturn:
-        raise RuntimeError('AutoDeliveryProperties does not support this :(')
-
-    def get_index_by_id(self, id: str) -> int:
-        if id not in self.entries:
-            raise LookupError(f'No entry with id {id}')
-        return list(self.entries.keys()).index(id)
+        return self.attach_properties(AutoDeliveryEntryProperties(offer_name))

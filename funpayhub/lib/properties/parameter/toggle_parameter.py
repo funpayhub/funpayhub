@@ -5,7 +5,7 @@ from collections.abc import Callable
 
 from typing_extensions import Self
 
-from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.base import UNSET, _UNSET_TYPE
 from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
 from funpayhub.lib.properties.parameter.converters import bool_converter
 
@@ -23,8 +23,8 @@ class ToggleParameter(MutableParameter[bool]):
         name: CallableValue[str],
         description: CallableValue[str],
         default_value: CallableValue[bool],
-        value: CallableValue[bool] | _UNSET_TYPE = _UNSET,
-        validator: Callable[[bool], Any] | _UNSET_TYPE = _UNSET,
+        value: CallableValue[bool] | _UNSET_TYPE = UNSET,
+        validator: Callable[[bool], Any] | _UNSET_TYPE = UNSET,
         flags: set[Any] | None = None,
     ) -> None:
         super().__init__(

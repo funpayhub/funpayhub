@@ -203,7 +203,7 @@ async def funpayhub_properties_menu_modification(
     ctx: PropertiesUIContext,
     menu: Menu
 ) -> Menu:
-    if not ctx.entry.matches_path(''):
+    if not ctx.entry.matches_path([]):
         return menu
 
     menu.keyboard.append([
@@ -225,9 +225,9 @@ async def add_formatters_list_button_modification(
     menu: Menu
 ) -> Menu:
     if not any([
-        ctx.entry.matches_path('auto_response.*.response_text'),
-        ctx.entry.matches_path('review_reply.*.review_reply_text'),
-        ctx.entry.matches_path('review_reply.*.chat_reply_text'),
+        ctx.entry.matches_path(['auto_response', '*', 'response_text']),
+        ctx.entry.matches_path(['review_reply', '*', 'review_reply_text']),
+        ctx.entry.matches_path(['review_reply', '*', 'chat_reply_text']),
     ]):
         return menu
 

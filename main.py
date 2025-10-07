@@ -83,7 +83,9 @@ async def main():
         app = FunPayHub()
         await app.load_plugins()
         await app.start()
-    except Exception:
+    except:
+        import traceback
+        print(traceback.format_exc())
         snapshot = tracemalloc.take_snapshot()
         top_stats = snapshot.statistics("lineno")
 

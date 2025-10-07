@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar
 from dataclasses import dataclass
 from collections.abc import Callable
 
-from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.base import UNSET, _UNSET_TYPE
 from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
 from funpayhub.lib.properties.parameter.converters import int_converter
 
@@ -39,8 +39,8 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
         description: CallableValue[str],
         choices: tuple[Union[T, Item[T]], ...],
         default_value: CallableValue[int],
-        value: CallableValue[int] | _UNSET_TYPE = _UNSET,
-        validator: Callable[[int], Any] | _UNSET_TYPE = _UNSET,
+        value: CallableValue[int] | _UNSET_TYPE = UNSET,
+        validator: Callable[[int], Any] | _UNSET_TYPE = UNSET,
         flags: set[Any] | None = None,
     ) -> None:
         self._choices: tuple[Union[T, Item[T]], ...] = choices

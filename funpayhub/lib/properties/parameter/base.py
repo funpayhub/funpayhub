@@ -6,7 +6,7 @@ from collections.abc import Callable
 
 from typing_extensions import Self
 
-from funpayhub.lib.properties.base import _UNSET, _UNSET_TYPE, Entry
+from funpayhub.lib.properties.base import UNSET, _UNSET_TYPE, Entry
 
 
 if TYPE_CHECKING:
@@ -84,8 +84,8 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
         name: CallableValue[str],
         description: CallableValue[str],
         default_value: CallableValue[ValueT],
-        value: CallableValue[ValueT] | _UNSET_TYPE = _UNSET,
-        validator: Callable[[ValueT], Any] | _UNSET_TYPE = _UNSET,
+        value: CallableValue[ValueT] | _UNSET_TYPE = UNSET,
+        validator: Callable[[ValueT], Any] | _UNSET_TYPE = UNSET,
         converter: Callable[[Any], ValueT],
         flags: set[Any] | None = None,
     ) -> None:
