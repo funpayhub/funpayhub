@@ -55,7 +55,7 @@ class NextParamValue(CallbackData, identifier='next_param_value'):
     `ToggleParameter`, `ChoiceParameter` и т.д.
     """
 
-    path: list[str]
+    path: list[str | int]
     """Путь к параметру."""
 
 
@@ -65,7 +65,7 @@ class ManualParamValueInput(CallbackData, identifier='manual_value_input'):
     `path`.
     """
 
-    path: list[str]
+    path: list[str | int]
     """Путь к параметру."""
 
 
@@ -74,7 +74,7 @@ class OpenEntryMenu(CallbackData, MenuPageable, identifier='open_properties_menu
     Обновляет привязанное сообщение и открывает меню параметра / категории по пути `path`.
     """
 
-    path: list[str]
+    path: list[str | int]
     """Путь к параметру / категории."""
 
 
@@ -103,7 +103,7 @@ class ChangeViewPageManually(CallbackData, identifier='change_view_page_manually
 
 
 class ChooseParamValue(CallbackData, identifier='choose_param_value'):
-    path: list[str]
+    path: list[str | int]
     choice_index: int
 
 
