@@ -9,20 +9,31 @@ __all__ = [
 
 from typing import Any, Union, TypeVar, Callable
 from collections.abc import Generator, Iterable
+import threading
 
 
 ParamValueType = TypeVar('ParamValueType')
 CallableValue = Union[ParamValueType, Callable[[], ParamValueType]]
 
 
-class _UNSET_TYPE:
+class _UNSET:
     __slots__ = ()
+
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls) -> _UNSET:
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+        return cls._instance
 
     def __bool__(self) -> bool:
         return False
 
 
-UNSET = _UNSET_TYPE()
+UNSET = _UNSET()
 
 
 def resolve(value: CallableValue[ParamValueType]) -> ParamValueType:

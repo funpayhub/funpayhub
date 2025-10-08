@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
 
-from funpayhub.lib.properties.base import UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.base import UNSET, _UNSET
 from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
 from funpayhub.lib.properties.parameter.converters import string_converter
 
@@ -21,8 +21,8 @@ class StringParameter(MutableParameter[str]):
         name: CallableValue[str],
         description: CallableValue[str],
         default_value: CallableValue[str],
-        value: CallableValue[str] | _UNSET_TYPE = UNSET,
-        validator: Callable[[str], str] | _UNSET_TYPE = UNSET,
+        value: CallableValue[str] | _UNSET = UNSET,
+        validator: Callable[[str], str] | _UNSET = UNSET,
         flags: set[Any] | None = None,
     ) -> None:
         super().__init__(

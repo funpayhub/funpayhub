@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar
 from dataclasses import dataclass
 from collections.abc import Callable
 
-from funpayhub.lib.properties.base import UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.base import UNSET, _UNSET
 from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
 from funpayhub.lib.properties.parameter.converters import int_converter
 
@@ -39,8 +39,8 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
         description: CallableValue[str],
         choices: tuple[Union[T, Item[T]], ...],
         default_value: CallableValue[int],
-        value: CallableValue[int] | _UNSET_TYPE = UNSET,
-        validator: Callable[[int], Any] | _UNSET_TYPE = UNSET,
+        value: CallableValue[int] | _UNSET = UNSET,
+        validator: Callable[[int], Any] | _UNSET = UNSET,
         flags: set[Any] | None = None,
     ) -> None:
         self._choices: tuple[Union[T, Item[T]], ...] = choices
@@ -69,12 +69,12 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
 
     def _validator_factory(
         self,
-        validator: Callable[[int], Any] | _UNSET_TYPE,
+        validator: Callable[[int], Any] | _UNSET,
     ) -> Callable[[int], None]:
         def real_validator(value: int) -> None:
             if value > len(self.choices) - 1:
                 raise ValueError('Index out of range!')  # todo: validation text
-            if not isinstance(validator, _UNSET_TYPE):
+            if not isinstance(validator, _UNSET):
                 validator(value)
 
         return real_validator

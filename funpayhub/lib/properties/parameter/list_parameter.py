@@ -7,7 +7,7 @@ __all__ = ['ListParameter']
 from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
 
-from funpayhub.lib.properties.base import UNSET, _UNSET_TYPE
+from funpayhub.lib.properties.base import UNSET, _UNSET
 from funpayhub.lib.properties.parameter.base import (
     CallableValue,
     MutableParameter,
@@ -27,8 +27,8 @@ class ListParameter(MutableParameter[list[str]]):
         name: CallableValue[str],
         description: CallableValue[str],
         default_value: CallableValue[list[str]],
-        value: CallableValue[list[str]] | _UNSET_TYPE = UNSET,
-        validator: Callable[[list[str]], Any] | _UNSET_TYPE = UNSET,
+        value: CallableValue[list[str]] | _UNSET = UNSET,
+        validator: Callable[[list[str]], Any] | _UNSET = UNSET,
         flags: set[Any] | None = None,
     ) -> None:
         super().__init__(
@@ -65,7 +65,7 @@ class ListParameter(MutableParameter[list[str]]):
 
     def _validator_factory(
         self,
-        validator: Callable[[list[str]], Any] | _UNSET_TYPE,
+        validator: Callable[[list[str]], Any] | _UNSET,
     ) -> Callable[[list[str]], None]:
         def real_validator(value: list[str]) -> None:
             if not isinstance(value, list):
@@ -74,7 +74,7 @@ class ListParameter(MutableParameter[list[str]]):
                 if not isinstance(i, str):
                     raise ValueError('Expected a string')
 
-            if not isinstance(validator, _UNSET_TYPE):
+            if not isinstance(validator, _UNSET):
                 validator(value)
 
         return real_validator

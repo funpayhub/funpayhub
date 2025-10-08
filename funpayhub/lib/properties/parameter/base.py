@@ -1,37 +1,24 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar
-from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
+from collections.abc import Callable, Awaitable, Iterable
 
-from typing_extensions import Self
-
-from funpayhub.lib.properties.base import UNSET, _UNSET_TYPE, Entry
+from funpayhub.lib.properties.base import UNSET, _UNSET, Entry
 
 
 if TYPE_CHECKING:
     from funpayhub.lib.properties import Properties
 
 
-ValueT = TypeVar('ValueT')
-PropertiesT = TypeVar('PropertiesT', bound='Properties', default='Properties')
-
-CallableValue = Union[ValueT, Callable[[], ValueT]]
-
-
-def resolve(value: CallableValue[ValueT]) -> ValueT:
-    return value() if callable(value) else value
-
-
-class Parameter[ValueT, PropertiesT: 'Properties' = 'Properties'](Entry):
+class Parameter[ValueT](Entry):
     def __init__(
         self,
         *,
-        properties: PropertiesT,
         id: str,
-        name: CallableValue[str],
-        description: CallableValue[str],
-        value: CallableValue[ValueT],
-        flags: set[Any] | None = None
+        name: str,
+        description: str,
+        value: ValueT,
+        flags: Iterable[Any] | None = None
     ) -> None:
         """
         Базовый класс неизменяемого параметра.
@@ -41,8 +28,6 @@ class Parameter[ValueT, PropertiesT: 'Properties' = 'Properties'](Entry):
 
         Т.к. параметр неизменяемый, он не может быть сохранен в файл.
 
-        :param properties: объект категории параметров, к которому принадлежит данный параметр.
-            (родительский объект).
         :param id: ID параметра.
         :param name: Название параметра. Может быть строкой или функцией,
             которая не принимает аргументов и возвращает строку.
@@ -51,16 +36,16 @@ class Parameter[ValueT, PropertiesT: 'Properties' = 'Properties'](Entry):
         :param value: Значение параметра. Может быть любым объектом или функцией,
             которая не принимает аргументов и возвращает значение параметра.
         """
-        super().__init__(id=id, name=name, description=description, parent=properties, flags=flags)
+        super().__init__(id=id, name=name, description=description, flags=flags)
         self._value = value
 
     @property
     def value(self) -> ValueT:
         """Значение параметра."""
-        return resolve(self._value)
+        return self._value
 
     @property
-    def parent(self) -> PropertiesT:
+    def parent(self) -> Properties | None:
         """
         Категория параметров, к которой принадлежит данный параметр.
 
@@ -69,30 +54,35 @@ class Parameter[ValueT, PropertiesT: 'Properties' = 'Properties'](Entry):
         """
         return super().parent  # type: ignore  # always has a parent
 
+    @parent.setter
+    def parent(self, value: Properties | None) -> None:
+        from ..properties import Properties
+        if value and self.parent:
+            raise RuntimeError('Already has a parent.')
+        if value is not None and not isinstance(value, Properties):
+            raise ValueError('Parent of parameter must be an instance of `Properties`.')
+        self._parent = value
+
     @property
     def serialized_value(self) -> Any:
         return self.value
 
 
-class MutableParameter(Parameter[ValueT, PropertiesT]):
+class MutableParameter[ValueT](Parameter[ValueT]):
     def __init__(
         self,
         *,
-        properties: PropertiesT,
         id: str,
-        name: CallableValue[str],
-        description: CallableValue[str],
-        default_value: CallableValue[ValueT],
-        value: CallableValue[ValueT] | _UNSET_TYPE = UNSET,
-        validator: Callable[[ValueT], Any] | _UNSET_TYPE = UNSET,
+        name: str,
+        description: str,
+        default_value: ValueT,
         converter: Callable[[Any], ValueT],
-        flags: set[Any] | None = None,
+        validator: Callable[[ValueT], Awaitable[Any]] | _UNSET = UNSET,
+        flags: Iterable[Any] | None = None,
     ) -> None:
         """
         Базовый класс изменяемого параметра.
 
-        :param properties: Объект категории параметров, к которому принадлежит данный параметр.
-            (родительский объект).
         :param id: ID параметра.
         :param name: Название параметра. Может быть строкой или функцией,
             которая не принимает аргументов и возвращает строку.
@@ -100,8 +90,6 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
             которая не принимает аргументов и возвращает строку.
         :param default_value: Значение параметра по умолчанию.  Может быть любым объектом или
             функцией, которая не принимает аргументов и возвращает значение параметра.
-        :param value: Значение параметра. Может быть любым объектом или функцией,
-            которая не принимает аргументов и возвращает значение параметра.
         :param converter: Функция-конвертер, которая в качестве единственного аргумента принимает
             любой тип данных и возвращает конвертированный в тип данных параметра объект.
             Если конвертация невозможна, функция должна бросать `ValueError` с текстом ошибки.
@@ -110,36 +98,31 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
             принимает уже конвертированный объект и проверяет его валидность.
             Если значение невалидно, должна бросать `ValueError` с текстом ошибки.
         """
-        self._convertor = converter
+        self._converter = converter
         self._validator = validator
-
         self._default_value = default_value
 
-        if not isinstance(value, _UNSET_TYPE):
-            value = self.convert(value)
-
         super().__init__(
-            properties=properties,
             id=id,
             name=name,
             description=description,
-            value=value if not isinstance(value, _UNSET_TYPE) else default_value,
+            value=default_value,
             flags=flags
         )
 
     @property
     def default_value(self) -> ValueT:
         """Значение параметра по умолчанию."""
-        return resolve(self._default_value)
+        return self._default_value
 
-    def set_value(
+    async def set_value(
         self,
         value: Any,
         *,
         skip_converter: bool = False,
         skip_validator: bool = False,
         save: bool = True,
-    ) -> Self:
+    ) -> None:
         """
         Конвертирует, валидирует и устанавливает значение параметра.
 
@@ -153,12 +136,17 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
         if not skip_converter:
             value = self.convert(value)
         if not skip_validator:
-            self.validate(value)
+            await self.validate(value)
 
         self._value = value
         if save:
-            self.save()
-        return self
+            await self.save()
+
+    async def next_value(self, save: bool = True) -> ValueT:
+        raise NotImplementedError(f'{self.__class__.__name__} does not support `.next_value`.')
+
+    async def to_default(self, save: bool = True) -> None:
+        await self.set_value(self.default_value, skip_converter=True, save=save)
 
     def convert(self, value: Any) -> ValueT:
         """
@@ -167,23 +155,24 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
         :param value: Объект, который необходимо конвертировать.
         :return: Конвертированный объект.
         """
-        return self._convertor(value)
+        return self._converter(value)
 
-    def validate(self, value: Any) -> None:
+    async def validate(self, value: Any) -> None:
         """
         Валидирует переданное значение.
 
         :param value: Значение, которое необходимо валидировать.
         """
-        if not isinstance(self._validator, _UNSET_TYPE):
-            self._validator(value)
+        if self._validator is not UNSET:
+            await self._validator(value)
 
-    def next_value(self, save: bool = True) -> ValueT:
-        raise NotImplementedError(f'{self.__class__.__name__} doest not support `.next_value`.')
-
-    def save(self) -> None:
+    async def save(self) -> None:
         """
         Сохраняет значение в файл.
         """
+        if self.parent is None:
+            raise RuntimeError(
+                'Cannot save parameter value because it is not attached to any '
+                '`Properties` instance.'
+            )
         self.parent.save()
-        # У параметров родитель - всегда категория параметров.
