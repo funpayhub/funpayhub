@@ -39,15 +39,20 @@ class ToggleParameter(MutableParameter[bool]):
             flags=flags,
         )
 
-    def on(self, *, save: bool = True) -> Self:
+    def on(self, save: bool = True) -> Self:
         return self.set_value(True, skip_converter=True, save=save)
 
-    def off(self, *, save: bool = True) -> Self:
+    def off(self, save: bool = True) -> Self:
         return self.set_value(False, skip_converter=True, save=save)
 
-    def toggle(self, *, save: bool = True) -> Self:
+    def toggle(self, save: bool = True) -> Self:
         return self.set_value(not self.value, skip_converter=True, save=save)
 
     def __next__(self) -> bool:
+        # todo: delete
         self.toggle(save=True)
+        return self.value
+
+    def next_value(self, save: bool = True) -> bool:
+        self.toggle(save=save)
         return self.value
