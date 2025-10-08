@@ -178,6 +178,9 @@ class MutableParameter(Parameter[ValueT, PropertiesT]):
         if not isinstance(self._validator, _UNSET_TYPE):
             self._validator(value)
 
+    def next_value(self) -> ValueT:
+        raise NotImplementedError(f'{self.__class__.__name__} doest not support `.next_value`.')
+
     def save(self) -> None:
         """
         Сохраняет значение в файл.
