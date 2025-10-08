@@ -4,80 +4,38 @@ from __future__ import annotations
 __all__ = ['ListParameter']
 
 
-from typing import TYPE_CHECKING, Any
-from collections.abc import Callable
+from typing import Any
+from collections.abc import Callable, Awaitable, Iterable
 
 from funpayhub.lib.properties.base import UNSET, _UNSET
-from funpayhub.lib.properties.parameter.base import (
-    CallableValue,
-    MutableParameter,
-)
+from funpayhub.lib.properties.parameter.base import MutableParameter
 
 
-if TYPE_CHECKING:
-    from ..properties import Properties
+SIMPLE_TYPES = int | float | bool | str
+ALLOWED_TYPES = SIMPLE_TYPES | list['ALLOWED_TYPES'] | dict[SIMPLE_TYPES, 'ALLOWED_TYPES']
 
 
-class ListParameter(MutableParameter[list[str]]):
+class ListParameter(MutableParameter[list[ALLOWED_TYPES]]):
     def __init__(
         self,
         *,
-        properties: Properties,
         id: str,
-        name: CallableValue[str],
-        description: CallableValue[str],
-        default_value: CallableValue[list[str]],
-        value: CallableValue[list[str]] | _UNSET = UNSET,
-        validator: Callable[[list[str]], Any] | _UNSET = UNSET,
-        flags: set[Any] | None = None,
+        name: str,
+        description: str,
+        default_value: list[ALLOWED_TYPES],
+        validator: Callable[[list[ALLOWED_TYPES]], Awaitable[None]] | _UNSET = UNSET,
+        flags: Iterable[Any] | None = None,
     ) -> None:
         super().__init__(
-            properties=properties,
             id=id,
             name=name,
             description=description,
             default_value=default_value,
-            value=value,
-            validator=self._validator_factory(validator),
+            validator=validator,
             converter=lambda _: _,
             flags=flags
         )
 
-    def add(self, value: str, check_exists: bool = True, save: bool = True) -> None:
-        if not isinstance(value, str):
-            raise ValueError('Should be string')  # todo: exception
+    async def add_item(self): ...
 
-        if check_exists and value in self.value:
-            return
-        self.value.append(value)
-
-        if save:
-            self.save()
-
-    def remove(self, value: str, save: bool = True) -> None:
-        try:
-            self.value.remove(value)
-        except ValueError:
-            return
-
-        if save:
-            self.save()
-
-    def _validator_factory(
-        self,
-        validator: Callable[[list[str]], Any] | _UNSET,
-    ) -> Callable[[list[str]], None]:
-        def real_validator(value: list[str]) -> None:
-            if not isinstance(value, list):
-                raise ValueError('Expected a list')
-            for i in value:
-                if not isinstance(i, str):
-                    raise ValueError('Expected a string')
-
-            if not isinstance(validator, _UNSET):
-                validator(value)
-
-        return real_validator
-
-    def __len__(self) -> int:
-        return len(self.value)
+    async def remove_item(self): ...
