@@ -22,15 +22,12 @@ InnerEntries: TypeAlias = Parameter[Any] | MutableParameter[Any] | 'Properties'
 
 
 class Properties(Entry):
-    _parent: Properties | None = None
-
     def __init__(
         self,
         *,
         id: str,
         name: CallableValue[str],
         description: CallableValue[str],
-        parent: Properties | None = None,
         file: str | None = None,
         flags: set[Any] | None = None,
     ) -> None:
@@ -46,17 +43,15 @@ class Properties(Entry):
             возвращающей строку.
         :param description: Описание категории. Может быть строкой или функцией без аргументов,
             возвращающей строку.
-        :param parent: Родительская категория. Если `None`, категория является корневой.
         :param file: Путь к файлу для сохранения категории. Если `None` —
             используется файл родительской категории.
         """
-        if parent is not None:
-            self.parent = parent
+        self._parent = None
         self._file = file
         self._entries: dict[str, InnerEntries] = {}
 
         super().__init__(
-            parent=parent,
+            parent=None,
             id=id,
             name=name,
             description=description,
@@ -246,3 +241,9 @@ class Properties(Entry):
 
     def __len__(self) -> int:
         return len(self.entries)
+
+    def __getitem__(self, item: str) -> Properties | Parameter[Any] | MutableParameter[Any]:
+        return self._entries[item]
+
+    def __contains__(self, item: str) -> bool:
+        return item in self._entries

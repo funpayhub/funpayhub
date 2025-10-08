@@ -8,7 +8,7 @@ __all__ = [
 
 
 from typing import Any, Union, TypeVar, Callable
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
 
 
 ParamValueType = TypeVar('ParamValueType')
@@ -37,7 +37,7 @@ class Entry:
         id: str,
         name: CallableValue[str],
         description: CallableValue[str],
-        flags: set[Any] | None = None,
+        flags: Iterable[Any] | None = None,
     ) -> None:
         """
         Базовый класс для параметров / категорий параметров.
@@ -57,7 +57,7 @@ class Entry:
         self._id = id
         self._name = name
         self._description = description
-        self._flags = flags or set()
+        self._flags = frozenset(flags) if flags else frozenset()
 
     @property
     def id(self) -> str:
@@ -89,8 +89,7 @@ class Entry:
         if self.parent is None:
             return []
         path = self.parent.path
-        path.append(self.id)
-        return path
+        return [*path, self.id]
 
     @property
     def root(self) -> Entry:
@@ -117,17 +116,11 @@ class Entry:
             yield from self.parent.chain_to_root
 
     @property
-    def flags(self) -> set[Any]:
+    def flags(self) -> frozenset[Any]:
         return self._flags
 
     def has_flag(self, flag: Any) -> bool:
         return flag in self._flags
-
-    def set_flag(self, flag: Any) -> None:
-        self._flags.add(flag)
-
-    def del_flag(self, flag: Any) -> None:
-        self._flags.discard(flag)
 
     def matches_path(self, path: list[str]) -> bool:
         self_path = self.path
