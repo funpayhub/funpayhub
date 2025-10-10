@@ -87,7 +87,7 @@ async def send_menu(
 ) -> None:
     callback_str = cbs.OpenEntryMenu(path=properties.path)
     ctx = PropertiesUIContext(
-        language=properties.general.language.real_value(),
+        language=properties.general.language.real_value,
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         callback=callback_str,
         entry=properties,
@@ -105,7 +105,7 @@ async def open_entry_menu(
     data: dict[str, Any],
 ):
     ctx = PropertiesUIContext(
-        language=properties.general.language.real_value(),
+        language=properties.general.language.real_value,
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         menu_page=callback_data.menu_page or 0,
         callback=unpacked_callback,
@@ -176,7 +176,7 @@ async def change_parameter_value(
     await state.clear()
 
     ctx = PropertiesUIContext(
-        language=properties.general.language.real_value(),
+        language=properties.general.language.real_value,
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         menu_page=0,
         callback=unpacked_callback,

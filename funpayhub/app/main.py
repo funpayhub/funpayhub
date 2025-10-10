@@ -20,14 +20,10 @@ from funpayhub.plugins.exec_plugin import Plugin
 class FunPayHub:
     def __init__(
         self,
-        properties: FunPayHubProperties | None = None,
+        properties: FunPayHubProperties,
     ):
         self._workflow_data = {}
         self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
-
-        if properties is None:
-            properties = FunPayHubProperties()
-            properties.load()
         self._properties = properties
 
         self._translater = Translater()

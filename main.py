@@ -8,7 +8,7 @@ from logging.config import dictConfig
 from load_dotenv import load_dotenv
 
 from funpayhub.app.main import FunPayHub
-
+from funpayhub.app.properties import FunPayHubProperties
 
 load_dotenv()
 
@@ -80,7 +80,9 @@ async def main():
     import tracemalloc
     tracemalloc.start()
     try:
-        app = FunPayHub()
+        props = FunPayHubProperties()
+        await props.load()
+        app = FunPayHub(properties=props)
         await app.load_plugins()
         await app.start()
     except:

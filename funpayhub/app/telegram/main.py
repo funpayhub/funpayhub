@@ -16,7 +16,6 @@ from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
-from funpayhub.app.telegram.middlewares.add_telegram_notifications import AddNotificationsSection
 
 
 if TYPE_CHECKING:
@@ -85,8 +84,6 @@ class Telegram:
                 continue
             o.outer_middleware(middleware)
 
-        self.dispatcher.message.outer_middleware(AddNotificationsSection())
-
         self.dispatcher.callback_query.outer_middleware(UnpackMiddleware())
 
         # todo
@@ -120,7 +117,7 @@ class Telegram:
         view_page = callback_data.view_page if isinstance(callback_data, ViewPageable) else 0
 
         return UIContext(
-            language=self.hub.properties.general.language.real_value(),
+            language=self.hub.properties.general.language.real_value,
             max_elements_on_page=self.hub.properties.telegram.appearance.menu_entries_amount.value,
             menu_page=menu_page,
             view_page=view_page,

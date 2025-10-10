@@ -29,7 +29,7 @@ async def exec_list_menu(
     data: dict[str, Any],
 ):
     context = UIContext(
-        language=properties.general.language.real_value(),
+        language=properties.general.language.real_value,
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         callback=cbs.OpenMenu(menu_id='exec_list'),
     )
@@ -84,7 +84,7 @@ async def execute_python_code(
     )
 
     context = UIContext(
-        language=properties.general.language.real_value(),
+        language=properties.general.language.real_value,
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         callback=cbs.OpenMenu(
             menu_id='exec_output',
