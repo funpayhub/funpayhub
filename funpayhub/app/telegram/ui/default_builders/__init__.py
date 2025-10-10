@@ -15,3 +15,8 @@ from .formatters import (
     formatters_list_menu_builder,
     formatter_info_menu_builder
 )
+
+
+from .notifications_menu import (
+    current_chat_notifications_menu_builder
+)

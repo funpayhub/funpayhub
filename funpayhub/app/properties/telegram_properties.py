@@ -6,6 +6,7 @@ __all__ = ['TelegramProperties']
 
 from funpayhub.lib.properties import Properties, IntParameter, StringParameter
 from funpayhub.app.properties.flags import ParameterFlags as ParamFlags
+from funpayhub.app.properties.telegram_notifications import TelegramNotificationsProperties
 
 from .validators import entries_validator
 
@@ -20,6 +21,7 @@ class TelegramProperties(Properties):
 
         self.general = self.attach_properties(TelegramGeneral())
         self.appearance = self.attach_properties(TelegramAppearance())
+        self.notifications = self.attach_properties(TelegramNotificationsProperties())
 
 
 class TelegramGeneral(Properties):

@@ -109,3 +109,7 @@ class ChooseParamValue(CallbackData, identifier='choose_param_value'):
 
 class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
     menu_id: str
+
+
+class ToggleNotificationChannel(CallbackData, identifier='toggle_notification_channel'):
+    channel: str

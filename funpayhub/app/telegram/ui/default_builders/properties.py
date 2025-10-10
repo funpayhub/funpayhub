@@ -215,6 +215,17 @@ async def funpayhub_properties_menu_modification(
             ).pack()
         )
     ])
+
+    menu.keyboard.insert(1, [
+        Button(
+            button_id='open_current_chat_notifications',
+            text=ui.translater.translate('$telegram_notifications', ctx.language),
+            callback_data=cbs.OpenMenu(
+                menu_id='fph-current-chat-notifications-menu',
+                history=[ctx.callback.pack()],
+            ).pack()
+        )
+    ])
     return menu
 
 

@@ -8,6 +8,7 @@ from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
+from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.telegram.states import ChangingParameterValueState
 from funpayhub.lib.telegram.ui.types import PropertiesUIContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
@@ -47,7 +48,11 @@ async def open_custom_menu(
     tg: Telegram,
 ):
     ctx = tg.make_ui_context(callback_data)
-    menu = await tg_ui.build_menu(menu_id=callback_data.menu_id, ctx=ctx, data=data)
+    menu = await tg_ui.build_menu(
+        menu_id=callback_data.menu_id,
+        ctx=ctx,
+        data=data | {'query': query}
+    )
     await menu.apply_to(query.message)
 # TEMP
 
@@ -199,6 +204,32 @@ async def change_parameter_value(
     )
 
     await query.answer()
+
+
+@r.callback_query(cbs.ToggleNotificationChannel.filter())
+async def toggle_notification_channel(
+    query: CallbackQuery,
+    properties: FunPayHubProperties,
+    callback_data: cbs.ToggleNotificationChannel,
+    dispatcher: Dispatcher,
+    bot: Bot
+):
+    chat_identifier = f'{query.message.chat.id}.{query.message.message_thread_id}'
+    param: ListParameter = properties.telegram.notifications[callback_data.channel]
+
+    if chat_identifier in param.value:
+        await param.remove_item(chat_identifier)
+    else:
+        await param.add_item(chat_identifier)
+    await param.save()
+
+    await dispatcher.feed_update(
+        bot,
+        Update(
+            update_id=-1,
+            callback_query=query.model_copy(update={'data': callback_data.pack_history()}),
+        )
+    )
 
 
 @r.message(StateFilter(ChangingParameterValueState.name))

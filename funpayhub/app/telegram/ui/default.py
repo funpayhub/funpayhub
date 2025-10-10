@@ -28,6 +28,7 @@ DEFAULT_ENTRIES_MENUS: Final = {
 DEFAULT_MENUS: Final = {
     'fph-formatters-list': ui_builders.formatters_list_menu_builder,
     'fph-formatter-info': ui_builders.formatter_info_menu_builder,
+    'fph-current-chat-notifications-menu': ui_builders.current_chat_notifications_menu_builder,
 }
 
 
