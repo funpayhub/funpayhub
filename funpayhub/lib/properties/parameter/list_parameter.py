@@ -11,8 +11,7 @@ from funpayhub.lib.properties.base import UNSET, _UNSET
 from funpayhub.lib.properties.parameter.base import MutableParameter
 
 
-SIMPLE_TYPES = int | float | bool | str
-ALLOWED_TYPES = SIMPLE_TYPES | list['ALLOWED_TYPES'] | dict[SIMPLE_TYPES, 'ALLOWED_TYPES']
+ALLOWED_TYPES = int | float | bool | str
 
 
 class ListParameter(MutableParameter[list[ALLOWED_TYPES]]):
@@ -36,6 +35,8 @@ class ListParameter(MutableParameter[list[ALLOWED_TYPES]]):
             flags=flags
         )
 
-    async def add_item(self): ...
+    async def add_item(self, item: ALLOWED_TYPES) -> None:
+        self.value.append(item)
 
-    async def remove_item(self): ...
+    async def remove_item(self, item: ALLOWED_TYPES) -> None:
+        self.value.remove(item)
