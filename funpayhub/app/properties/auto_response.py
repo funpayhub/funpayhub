@@ -19,7 +19,6 @@ class AutoResponseEntryProperties(Properties):
 
         self.case_sensitive = self.attach_parameter(
             ToggleParameter(
-                properties=self,
                 id='case_sensitive',
                 name='$props.auto_response.*.case_sensitive:name',
                 description='$props.auto_response.*.case_sensitive:description',
@@ -29,7 +28,6 @@ class AutoResponseEntryProperties(Properties):
 
         self.reply = self.attach_parameter(
             ToggleParameter(
-                properties=self,
                 id='reply',
                 name='$props.auto_response.*.reply:name',
                 description='$props.auto_response.*.reply:description',
@@ -39,7 +37,6 @@ class AutoResponseEntryProperties(Properties):
 
         self.ignore_formatters_errors = self.attach_parameter(
             ToggleParameter(
-                properties=self,
                 id='ignore_formatters_errors',
                 name='$props.auto_response.*.ignore_formatters_errors:name',
                 description='$props.auto_response.*.ignore_formatters_errors:description',
@@ -49,7 +46,6 @@ class AutoResponseEntryProperties(Properties):
 
         self.ignore_hooks_errors = self.attach_parameter(
             ToggleParameter(
-                properties=self,
                 id='ignore_hooks_errors',
                 name='$props.auto_response.*.ignore_hooks_errors:name',
                 description='$props.auto_response.*.ignore_hooks_errors:description',
@@ -59,7 +55,6 @@ class AutoResponseEntryProperties(Properties):
 
         self.react_on_me = self.attach_parameter(
             ToggleParameter(
-                properties=self,
                 id='react_on_me',
                 name='$props.auto_response.*.react_on_me:name',
                 description='$props.auto_response.*.react_on_me:description',
@@ -69,7 +64,6 @@ class AutoResponseEntryProperties(Properties):
 
         self.react_on_others = self.attach_parameter(
             ToggleParameter(
-                properties=self,
                 id='react_on_others',
                 name='$props.auto_response.*.react_on_others:name',
                 description='$props.auto_response.*.react_on_others:description',
@@ -79,7 +73,6 @@ class AutoResponseEntryProperties(Properties):
 
         self.response_text = self.attach_parameter(
             StringParameter(
-                properties=self,
                 id='response_text',
                 name='$props.auto_response.*.response_text:name',
                 description='$props.auto_response.*.response_text:description',
@@ -89,7 +82,6 @@ class AutoResponseEntryProperties(Properties):
 
         self.hooks = self.attach_parameter(
             ListParameter(
-                properties=self,
                 id='hooks',
                 name='$props.auto_response.*.hooks:name',
                 description='$props.auto_response.*.hooks:description',
@@ -135,7 +127,7 @@ class AutoResponseProperties(Properties):
             )
         return super().attach_properties(properties)
 
-    def load(self):
+    async def load(self) -> None:
         if not os.path.exists(self.file):  # type: ignore #  always has file
             return
         with open(self.file, 'r', encoding='utf-8') as f:  # type: ignore #  always has file
@@ -144,7 +136,7 @@ class AutoResponseProperties(Properties):
         self._entries = {}
         for i in data:
             obj = AutoResponseEntryProperties(command=i)
-            obj._set_values(data[i])
+            await obj._set_values(data[i])
             super().attach_properties(obj)
 
     def add_entry(self, command: str) -> AutoResponseEntryProperties:

@@ -19,7 +19,6 @@ class AutoDeliveryEntryProperties(Properties):
 
         self.auto_delivery = self.attach_parameter(
             ToggleParameter(
-                properties=self,
                 id='auto_delivery',
                 name='$props.auto_delivery.*.auto_delivery:name',
                 description='$props.auto_delivery.*.auto_delivery:description',
@@ -29,7 +28,6 @@ class AutoDeliveryEntryProperties(Properties):
 
         self.multi_delivery = self.attach_parameter(
             ToggleParameter(
-                properties=self,
                 id='multi_delivery',
                 name='$props.auto_delivery.*.multi_delivery:name',
                 description='$props.auto_delivery.*.multi_delivery:description',
@@ -39,7 +37,6 @@ class AutoDeliveryEntryProperties(Properties):
 
         self.products_file = self.attach_parameter(
             StringParameter(
-                properties=self,
                 id='products_file',
                 name='$props.auto_delivery.*.products_file:name',
                 description='$props.auto_delivery.*.products_file:description',
@@ -49,7 +46,6 @@ class AutoDeliveryEntryProperties(Properties):
 
         self.delivery_text = self.attach_parameter(
             StringParameter(
-                properties=self,
                 id='delivery_text',
                 name='$props.auto_delivery.*.delivery_text:name',
                 description='$props.auto_delivery.*.delivery_text:description',
@@ -95,7 +91,7 @@ class AutoDeliveryProperties(Properties):
             )
         return super().attach_properties(properties)
 
-    def load(self):
+    async def load(self) -> None:
         if not os.path.exists(self.file):
             return
         with open(self.file, 'r', encoding='utf-8') as f:
@@ -104,7 +100,7 @@ class AutoDeliveryProperties(Properties):
         self._entries = {}
         for i in data:
             obj = AutoDeliveryEntryProperties(offer_name=i)
-            obj._set_values(data[i])
+            await obj._set_values(data[i])
             super().attach_properties(obj)
 
     def add_entry(self, offer_name: str) -> AutoDeliveryEntryProperties:

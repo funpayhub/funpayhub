@@ -38,7 +38,7 @@ class ChoiceParameter[T: int | float | bool | str](MutableParameter[str]):
         id: str,
         name: str,
         description: str,
-        choices: tuple[Choice[T]],
+        choices: tuple[Choice[T], ...],
         default_value: str,
         validator: Callable[[str], Awaitable[None]] | _UNSET = UNSET,
         flags: Iterable[Any] | None = None,

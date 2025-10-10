@@ -6,9 +6,8 @@ __all__ = ['TelegramProperties']
 
 from funpayhub.lib.properties import Properties, IntParameter, StringParameter
 from funpayhub.app.properties.flags import ParameterFlags as ParamFlags
-from funpayhub.app.properties.notifications import NotificationProperties
 
-from .validators import entries_validator, validate_password
+from .validators import entries_validator
 
 
 class TelegramProperties(Properties):
@@ -21,7 +20,6 @@ class TelegramProperties(Properties):
 
         self.general = self.attach_properties(TelegramGeneral())
         self.appearance = self.attach_properties(TelegramAppearance())
-        self.notifications = self.attach_properties(NotificationProperties())
 
 
 class TelegramGeneral(Properties):
@@ -34,7 +32,6 @@ class TelegramGeneral(Properties):
 
         self.token = self.attach_parameter(
             StringParameter(
-                properties=self,
                 id='token',
                 name='$props.telegram.general.token:name',
                 description='$props.telegram.general.token:description',
@@ -44,12 +41,10 @@ class TelegramGeneral(Properties):
 
         self.password = self.attach_parameter(
             StringParameter(
-                properties=self,
                 id='password',
                 name='$props.telegram.general.password:name',
                 description='$props.telegram.general.password:description',
                 default_value='',
-                validator=validate_password,
             ),
         )
 
@@ -66,7 +61,6 @@ class TelegramAppearance(Properties):
 
         self.menu_entries_amount = self.attach_parameter(
             IntParameter(
-                properties=self,
                 id='menu_entries_amount',
                 name='$props.telegram.appearance.menu_entries_amount:name',
                 description='$props.telegram.appearance.menu_entries_amount:description',

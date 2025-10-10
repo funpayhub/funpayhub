@@ -5,7 +5,7 @@ __all__ = ['GeneralProperties']
 
 
 from funpayhub.lib.properties import Properties, FloatParameter, ChoiceParameter
-from funpayhub.lib.properties.parameter.choice_parameter import Item
+from funpayhub.lib.properties.parameter.choice_parameter import Choice
 
 
 class GeneralProperties(Properties):
@@ -18,23 +18,21 @@ class GeneralProperties(Properties):
 
         self.language = self.attach_parameter(
             ChoiceParameter(
-                properties=self,
                 id='language',
                 name='$props.general.language:name',
                 description='$props.general.language:description',
                 choices=(
-                    Item('🇷🇺 Русский', 'ru'),
-                    Item('🇬🇧 English', 'en'),
-                    Item('🇺🇦 Українська', 'uk'),
-                    Item('🍌 Bacunana', 'banana'),
+                    Choice('ru', '🇷🇺 Русский', 'ru'),
+                    Choice('en', '🇬🇧 English', 'en'),
+                    Choice('uk', '🇺🇦 Українська', 'uk'),
+                    Choice('banana', '🍌 Bacunana', 'banana'),
                 ),
-                default_value=0,
+                default_value='ru',
             ),
         )
 
         self.runner_request_interval = self.attach_parameter(
             FloatParameter(
-                properties=self,
                 id='runner_request_interval',
                 name='$props.general.runner_request_interval:name',
                 description='$props.general.runner_request_interval:description',
