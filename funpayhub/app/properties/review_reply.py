@@ -2,21 +2,11 @@ from funpayhub.lib.properties import Properties, ToggleParameter, StringParamete
 
 
 class ReviewReplyPropertiesEntry(Properties):
-    def __init__(
-        self,
-        id: str,
-        name: str,
-        description: str,
-    ):
-        super().__init__(
-            id=id,
-            name=name,
-            description=description
-        )
+    def __init__(self, id: str, name: str, description: str) -> None:
+        super().__init__(id=id, name=name, description=description)
 
         self.reply_in_review = self.attach_parameter(
             ToggleParameter(
-                properties=self,
                 id='reply_in_review',
                 name='$props.review_reply.*.reply_in_review:name',
                 description='$props.review_reply.*.reply_in_review:description',
@@ -26,7 +16,6 @@ class ReviewReplyPropertiesEntry(Properties):
 
         self.reply_in_chat = self.attach_parameter(
             ToggleParameter(
-                properties=self,
                 id='reply_in_chat',
                 name='$props.review_reply.*.reply_in_chat:name',
                 description='$props.review_reply.*.reply_in_chat:description',
@@ -36,7 +25,6 @@ class ReviewReplyPropertiesEntry(Properties):
 
         self.review_reply_text = self.attach_parameter(
             StringParameter(
-                properties=self,
                 id='review_reply_text',
                 name='$props.review_reply.*.review_reply_text:name',
                 description='$props.review_reply.*.review_reply_text:description',
@@ -46,7 +34,6 @@ class ReviewReplyPropertiesEntry(Properties):
 
         self.chat_reply_text = self.attach_parameter(
             StringParameter(
-                properties=self,
                 id='chat_reply_text',
                 name='$props.review_reply.*.chat_reply_text:name',
                 description='$props.review_reply.*.chat_reply_text:description',
