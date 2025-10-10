@@ -30,6 +30,9 @@ class UnknownCallback(BaseModel):
     def pack_history(self) -> str:
         return join_callbacks(*self.history)
 
+    def as_history(self) -> str:
+        return self.pack(include_history=True)
+
     @classmethod
     def from_string(cls, query: str) -> UnknownCallback:
         return CallbackData.parse(query)
