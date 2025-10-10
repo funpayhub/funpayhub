@@ -125,7 +125,7 @@ async def next_param_value(
 ):
     try:
         param = properties.get_parameter(callback_data.path)
-        next(param)
+        await param.next_value(save=True)
     except Exception as e:
         await query.answer(text=str(e), show_alert=True)
         raise
@@ -150,7 +150,7 @@ async def choose_param_value(
     bot,
 ):
     param = properties.get_parameter(callback_data.path)
-    param.set_value(callback_data.choice_index)
+    await param.set_value(callback_data.choice_id)
     asyncio.create_task(hub.emit_parameter_changed_event(param))
 
     update = Update(
@@ -214,7 +214,7 @@ async def edit_parameter(
     data: ChangingParameterValueState = (await context.get_data())['data']
 
     try:
-        data.parameter.set_value(message.text)
+        await data.parameter.set_value(message.text)
         await context.clear()
     except ValueError as e:
         await data.message.edit_text(

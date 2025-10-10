@@ -9,7 +9,6 @@ from funpayhub.loggers import telegram_ui as logger
 from funpayhub.lib.properties import ChoiceParameter, Properties, MutableParameter
 from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext
-from funpayhub.app.properties import FunPayHubProperties
 
 from .. import premade, button_ids as ids
 
@@ -118,15 +117,15 @@ async def build_choice_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIConte
     assert isinstance(ctx.entry, ChoiceParameter)
     keyboard = []
 
-    for index, choice in enumerate(ctx.entry.choices):
+    for choice in ctx.entry.choices.values():
         name = ui.translater.translate(choice.name, ctx.language)
         keyboard.append([
             Button(
-                button_id=f'choice_param_value:{index}:{ctx.entry.path}',
-                text=f'【 {name} 】' if ctx.entry.value == index else name,
+                button_id=f'choice_param_value:{choice.id}:{ctx.entry.path}',
+                text=f'【 {name} 】' if ctx.entry.value == choice.id else name,
                 callback_data=cbs.ChooseParamValue(
                     path=ctx.entry.path,
-                    choice_index=index,
+                    choice_id=choice.id,
                     history=[ctx.callback.pack()]
                 ).pack(),
             )

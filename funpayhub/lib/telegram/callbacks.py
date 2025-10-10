@@ -81,7 +81,7 @@ class OpenEntryMenu(CallbackData, MenuPageable, identifier='open_properties_menu
 class ChangePageTo(CallbackData, identifier='change_page_to'):
     """
     Обновляет привязанное сообщение, меня страницу последнего callback из callback_history,
-    если в нем имеется паттерн page-\d+
+    если в нем имеется паттерн page-\\d+
     """
 
     menu_page: int | None = None
@@ -104,7 +104,7 @@ class ChangeViewPageManually(CallbackData, identifier='change_view_page_manually
 
 class ChooseParamValue(CallbackData, identifier='choose_param_value'):
     path: list[str | int]
-    choice_index: int
+    choice_id: str
 
 
 class OpenMenu(CallbackData, Pageable, identifier='open_menu'):

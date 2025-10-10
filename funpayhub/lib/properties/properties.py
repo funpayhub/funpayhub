@@ -122,6 +122,7 @@ class Properties(Entry):
             raise ValueError('Parameter should be an instance of Parameter.')
         if param.id in self._entries:
             raise RuntimeError(f'Entry with ID {param.id!r} already exists.')
+        param.parent = self
         self._entries[param.id] = param
         return param
 
