@@ -6,19 +6,14 @@ __all__ = ['Properties']
 
 import os
 import tomllib
-from typing import Any, TypeVar, TypeAlias
+from typing import Any
 from types import MappingProxyType
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
 
 import tomli_w
-from typing_extensions import Self
 
-from .base import Entry, CallableValue
+from .base import Entry
 from .parameter.base import Parameter, MutableParameter
-
-
-T = TypeVar('T', bound='Parameter[Any, Any]')
-InnerEntries: TypeAlias = Parameter[Any] | MutableParameter[Any] | 'Properties'
 
 
 class Properties(Entry):
@@ -26,10 +21,10 @@ class Properties(Entry):
         self,
         *,
         id: str,
-        name: CallableValue[str],
-        description: CallableValue[str],
+        name: str,
+        description: str,
         file: str | None = None,
-        flags: set[Any] | None = None,
+        flags: Iterable[Any] | None = None,
     ) -> None:
         """
         Категория параметров.
@@ -46,12 +41,10 @@ class Properties(Entry):
         :param file: Путь к файлу для сохранения категории. Если `None` —
             используется файл родительской категории.
         """
-        self._parent = None
         self._file = file
-        self._entries: dict[str, InnerEntries] = {}
+        self._entries: dict[str, Properties | Parameter[Any] | MutableParameter[Any]] = {}
 
         super().__init__(
-            parent=None,
             id=id,
             name=name,
             description=description,
@@ -118,13 +111,13 @@ class Properties(Entry):
     @property
     def entries(
         self,
-    ) -> MappingProxyType[str, Parameter[Any, Self] | MutableParameter[Any, Self] | Properties]:
+    ) -> MappingProxyType[str, Parameter[Any] | MutableParameter[Any] | Properties]:
         """
         Неизменяемый словарь со всеми вложенными элементами (параметрами / подкатегориями).
         """
         return MappingProxyType(self._entries)
 
-    def attach_parameter(self, param: T) -> T:
+    def attach_parameter[T: Parameter[Any]](self, param: T) -> T:
         if not isinstance(param, Parameter):
             raise ValueError('Parameter should be an instance of Parameter.')
         if param.id in self._entries:
@@ -180,40 +173,45 @@ class Properties(Entry):
                 if props._file and props.file_to_save != self.file_to_save:
                     props.save()  # todo
 
-    def load(self) -> None:
+    async def load(self) -> None:
         data = {}
         if self.file and os.path.exists(self.file):
             with open(self.file, 'r', encoding='utf-8') as f:
                 data = tomllib.loads(f.read())
 
-        self._set_values(data)
+        await self._set_values(data)
 
-    def _set_values(self, values: dict[str, Any]) -> None:
+    async def _set_values(self, values: dict[str, Any]) -> None:
         for v in self._entries.values():
             if isinstance(v, Properties) and v.file:
-                v.load()
+                await v.load()
             elif v.id not in values:
                 continue
             elif isinstance(v, MutableParameter):
-                v.set_value(values[v.id], save=False, skip_validator=True)
+                await v.set_value(values[v.id], save=False)
             elif isinstance(v, Properties):
-                v._set_values(values[v.id])
+                await v._set_values(values[v.id])
 
-    def get_entry(self, path: list[str | int]) -> InnerEntries:
+    def get_entry(self, path: list[str | int]) -> Properties | Parameter[Any] | MutableParameter[Any]:
         if not path:
             return self
 
         segment = path[0]
-        if isinstance(segment, int):
+        if isinstance(segment, str):
+            next_entry = self.entries.get(segment)
+            if next_entry is None:
+                raise LookupError(f"{self.path!r} has no entry with id {segment!r}.")
+        elif isinstance(segment, int):
             try:
                 key = list(self.entries.keys())[segment]
             except:
                 raise LookupError(f'{self.path!r} has no entry at index {segment}.')
             next_entry = self.entries[key]
         else:
-            next_entry = self.entries.get(segment)
-            if next_entry is None:
-                raise LookupError(f"{self.path!r} has no entry with id {segment!r}.")
+            raise ValueError(
+                f'Segment of path must be an instance of \'str\' or \'int\', '
+                f'not {segment.__class__.__name__!r}'
+            )
 
         if isinstance(next_entry, Parameter):
             if len(path) > 1:
@@ -227,7 +225,7 @@ class Properties(Entry):
 
         raise LookupError(f"No entry with path {path!r}.")
 
-    def get_parameter(self, path: list[str | int]) -> Parameter[Any, Self] | MutableParameter[Any, Self]:
+    def get_parameter(self, path: list[str | int]) -> Parameter[Any] | MutableParameter[Any]:
         result = self.get_entry(path)
         if not isinstance(result, Parameter):
             raise LookupError(f'No parameter with path {path}')
