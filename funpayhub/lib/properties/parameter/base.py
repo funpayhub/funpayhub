@@ -77,7 +77,7 @@ class MutableParameter[ValueT](Parameter[ValueT]):
         description: str,
         default_value: ValueT,
         converter: Callable[[Any], ValueT],
-        validator: Callable[[ValueT], Awaitable[Any]] | _UNSET = UNSET,
+        validator: Callable[[ValueT], Awaitable[None]] | _UNSET = UNSET,
         flags: Iterable[Any] | None = None,
     ) -> None:
         """
@@ -157,13 +157,13 @@ class MutableParameter[ValueT](Parameter[ValueT]):
         """
         return self._converter(value)
 
-    async def validate(self, value: Any) -> None:
+    async def validate(self, value: ValueT) -> None:
         """
         Валидирует переданное значение.
 
         :param value: Значение, которое необходимо валидировать.
         """
-        if self._validator is not UNSET:
+        if not isinstance(self._validator, _UNSET):
             await self._validator(value)
 
     async def save(self) -> None:
