@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-__all__ = ['ChoiceParameter', 'Item']
+__all__ = ['ChoiceParameter', 'Choice']
 
 
 from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar
@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from collections.abc import Callable
 
 from funpayhub.lib.properties.base import UNSET, _UNSET
-from funpayhub.lib.properties.parameter.base import CallableValue, MutableParameter
+from funpayhub.lib.properties.parameter.base import MutableParameter
 from funpayhub.lib.properties.parameter.converters import int_converter
 
 
@@ -17,45 +17,68 @@ if TYPE_CHECKING:
     from ..properties import Properties
 
 
-T = TypeVar('T', bound=Any)
-
-
 @dataclass(frozen=True)
-class Item(Generic[T]):
+class Choice[T: int | float | bool | str]:
+    id: str
     name: str
     value: T
 
-    def __str__(self) -> str:
-        return self.name
+    def __post_init__(self):
+        if not self.id:
+            raise ValueError('Choice ID cannot be empty.')
+        if not isinstance(self.value, int | float | bool | str):
+            raise ValueError('Choice value must be of type int, float, bool or str.')
 
 
-class ChoiceParameter(MutableParameter[int], Generic[T]):
+class ChoiceParameter[T: int | float | bool | str](MutableParameter[str]):
     def __init__(
         self,
         *,
-        properties: Properties,
         id: str,
-        name: CallableValue[str],
-        description: CallableValue[str],
-        choices: tuple[Union[T, Item[T]], ...],
-        default_value: CallableValue[int],
-        value: CallableValue[int] | _UNSET = UNSET,
+        name: str,
+        description: str,
+        choices: tuple[Choice[T]],
+        default_value: str,
         validator: Callable[[int], Any] | _UNSET = UNSET,
         flags: set[Any] | None = None,
     ) -> None:
-        self._choices: tuple[Union[T, Item[T]], ...] = choices
+        if not choices:
+            raise ValueError("choices cannot be empty")  # todo
+
+        self._serialized_choices: dict[str, Any] = {}
+        self._choices: dict[str, Choice[Any]] = {}
+
+        for i in choices:
+            self.add_choice(i)
+
+        if default_value not in self._choices:
+            raise ValueError(f'`default_value` must be one of: {", ".join(self._choices.keys())}')
+
 
         super().__init__(
-            properties=properties,
             id=id,
             name=name,
             description=description,
             default_value=default_value,
-            value=value,
             validator=self._validator_factory(validator),
             converter=int_converter,
             flags=flags
         )
+
+    def add_choice(self, choice: Choice[T]) -> None:
+        if not isinstance(choice, Choice):
+            raise ValueError('Choice must be an instance of `Choice`.')
+        if choice.id in self._choices:
+            raise ValueError('Choice already defined.')
+        self._choices[choice.id] = choice
+
+    def delete_choice(self, choice: str) -> None:
+        if choice == self.default_value:
+            raise ValueError('Default choice cannot be deleted.')
+        if self.value == choice:
+            self.set_value(self.default_value, skip_converter=True)
+        self._choices.pop(choice, None)
+
 
     @property
     def choices(self) -> tuple[Union[T, Item[T]], ...]:
@@ -78,14 +101,6 @@ class ChoiceParameter(MutableParameter[int], Generic[T]):
                 validator(value)
 
         return real_validator
-
-    def __next__(self) -> T:
-        if len(self.choices) == self.value + 1:
-            self.set_value(0, save=True)
-            return self.real_value
-
-        self.set_value(self.value + 1, save=True)
-        return self.real_value
 
     def __len__(self) -> int:
         return len(self.choices)
