@@ -13,8 +13,9 @@ DEFAULT_ENTRIES_BUTTONS: Final = {
     param.IntParameter: ui_builders.build_parameter_button,
     param.FloatParameter: ui_builders.build_parameter_button,
     param.StringParameter: ui_builders.build_parameter_button,
-    param.ChoiceParameter: ui_builders.build_open_menu_button,
-    Properties: ui_builders.build_open_menu_button,
+    param.ChoiceParameter: ui_builders.build_open_entry_menu_button,
+    param.ListParameter: ui_builders.build_open_entry_menu_button,
+    Properties: ui_builders.build_open_entry_menu_button,
 }
 
 DEFAULT_ENTRIES_MENUS: Final = {

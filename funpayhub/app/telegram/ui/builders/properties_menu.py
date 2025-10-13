@@ -72,7 +72,7 @@ async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
 
 
 # List / Choice / Properties
-async def build_open_menu_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
+async def build_open_entry_menu_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
     """
     Дефолтный билдер для кнопки открытия меню параметра / категории параметров.
 

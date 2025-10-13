@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 from collections.abc import Callable, Awaitable, Iterable
 
 from funpayhub.lib.properties.base import UNSET, _UNSET, Entry
+from asyncio import Lock
 
 
 if TYPE_CHECKING:
@@ -101,6 +102,7 @@ class MutableParameter[ValueT](Parameter[ValueT]):
         self._converter = converter
         self._validator = validator
         self._default_value = default_value
+        self._changing_lock = Lock()
 
         super().__init__(
             id=id,
@@ -133,14 +135,15 @@ class MutableParameter[ValueT](Parameter[ValueT]):
             без проверки.
         :param save: Сохранить значение в файл.
         """
-        if not skip_converter:
-            value = self.convert(value)
-        if not skip_validator:
-            await self.validate(value)
+        async with self._changing_lock:
+            if not skip_converter:
+                value = self.convert(value)
+            if not skip_validator:
+                await self.validate(value)
 
-        self._value = value
-        if save:
-            await self.save()
+            self._value = value
+            if save:
+                await self.save()
 
     async def next_value(self, save: bool = True) -> ValueT:
         raise NotImplementedError(f'{self.__class__.__name__} does not support `.next_value`.')

@@ -1,7 +1,7 @@
 from .properties_menu import (
     build_toggle_parameter_button,
     build_parameter_button,
-    build_open_menu_button,
+    build_open_entry_menu_button,
 
     properties_menu_builder,
     parameter_menu_builder,
