@@ -39,7 +39,7 @@ async def build_current_chat_notifications_keyboard(
                 text=f'{indicator} {notifications_channel}',
                 callback_data=cbs.ToggleNotificationChannel(
                     channel=entry.id,
-                    history=[ctx.callback.pack()]
+                    history=ctx.callback.as_history()
                 ).pack()
             )
         ])

@@ -30,8 +30,11 @@ class UnknownCallback(BaseModel):
             result = HashinatorT1000.hash(result)
         return result
 
-    def pack_history(self) -> str:
-        return join_callbacks(*self.history)
+    def pack_history(self, hash: bool = True) -> str:
+        result = join_callbacks(*self.history)
+        if hash:
+            result = HashinatorT1000.hash(result)
+        return result
 
     def as_history(self) -> list[str]:
         return [self.pack(include_history=True, hash=False)]
@@ -101,7 +104,7 @@ class CallbackData(UnknownCallback):
         data = self.data | data
         result = (repr(data) if data else '') + self.__identifier__
         if include_history:
-            return join_callbacks(*self.history, result)
+            result = join_callbacks(*self.history, result)
         if hash:
             result = HashinatorT1000.hash(result)
         return result

@@ -35,7 +35,7 @@ async def exec_list_kb(ctx: UIContext, exec_registry: ExecRReg) -> Keyboard:
                 callback_data=cbs.OpenMenu(
                     menu_id='exec_output',
                     data={'exec_id': exec_id},
-                    history=[ctx.callback.pack()]
+                    history=ctx.callback.as_history()
                 ).pack(),
             )
         ])
@@ -49,7 +49,7 @@ async def exec_view_kb(ctx: UIContext, mode: Literal['output', 'code']) -> Keybo
         callback_data=cbs.OpenMenu(
             menu_id='exec_code' if mode =='output' else 'exec_output',
             data={'exec_id': ctx.callback.data['exec_id']},
-            history=[ctx.callback.pack_history()]
+            history=ctx.callback.history
         ).pack()
     )
 

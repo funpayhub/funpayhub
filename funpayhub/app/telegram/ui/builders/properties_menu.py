@@ -34,7 +34,7 @@ async def build_toggle_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext
         button_id=f'{ids.TOGGLE_PARAM_BTN}:{ctx.entry.path}',
         callback_data=cbs.NextParamValue(
             path=ctx.entry.path,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack(),
         text=f'{"🟢" if ctx.entry.value else "🔴"} {translated_name}',
     )
@@ -65,7 +65,7 @@ async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
         button_id=f'param_change:{ctx.entry.path}',
         callback_data=cbs.ManualParamValueInput(
             path=ctx.entry.path,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack(),
         text=f'{ui.translater.translate(ctx.entry.name, ctx.language)} 【 {val_str} 】',
     )
@@ -82,7 +82,7 @@ async def build_open_menu_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
         button_id=f'param_change:{ctx.entry.path}',
         callback_data=cbs.OpenEntryMenu(
             path=ctx.entry.path,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack(),
         text=ui.translater.translate(ctx.entry.name, ctx.language),
     )
@@ -127,7 +127,7 @@ async def build_choice_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIConte
                 callback_data=cbs.ChooseParamValue(
                     path=ctx.entry.path,
                     choice_id=choice.id,
-                    history=[ctx.callback.pack()]
+                    history=ctx.callback.as_history()
                 ).pack(),
             )
         ])
@@ -212,7 +212,7 @@ async def funpayhub_properties_menu_modification(
             text=ui.translater.translate('$open_formatters_list', ctx.language),
             callback_data=cbs.OpenMenu(
                 menu_id=MenuIds.FORMATTERS_LIST,
-                history=[ctx.callback.pack()],
+                history=ctx.callback.as_history(),
             ).pack()
         )
     ])
@@ -223,7 +223,7 @@ async def funpayhub_properties_menu_modification(
             text=ui.translater.translate('$telegram_notifications', ctx.language),
             callback_data=cbs.OpenMenu(
                 menu_id=MenuIds.TG_CHAT_NOTIFICATIONS,
-                history=[ctx.callback.pack()],
+                history=ctx.callback.as_history(),
             ).pack()
         )
     ])
@@ -248,7 +248,7 @@ async def add_formatters_list_button_modification(
             text=ui.translater.translate('$open_formatters_list', ctx.language),
             callback_data=cbs.OpenMenu(
                 menu_id='fph-formatters-list',
-                history=[ctx.callback.pack()]
+                history=ctx.callback.as_history()
             ).pack()
         )
     ])

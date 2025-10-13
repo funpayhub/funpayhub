@@ -31,7 +31,7 @@ async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         text=f'{ctx.menu_page + (1 if total_pages else 0)} / {total_pages}',
         callback_data=cbs.ChangeMenuPageManually(
             total_pages=total_pages,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack() if total_pages > 1 else cbs.Dummy().pack()
     )
 
@@ -40,7 +40,7 @@ async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         text='⏪' if ctx.menu_page > 0 else '❌',
         callback_data=cbs.ChangePageTo(
             menu_page=0,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack() if ctx.menu_page > 0 else cbs.Dummy().pack(),
     )
 
@@ -49,7 +49,7 @@ async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         text='⏩' if ctx.menu_page < total_pages - 1 else '❌',
         callback_data=cbs.ChangePageTo(
             menu_page=total_pages - 1,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack() if ctx.menu_page < total_pages - 1 else cbs.Dummy().pack(),
     )
 
@@ -58,7 +58,7 @@ async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         text='◀️' if ctx.menu_page > 0 else '❌',
         callback_data=cbs.ChangePageTo(
             menu_page=ctx.menu_page - 1,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack() if ctx.menu_page > 0 else cbs.Dummy().pack(),
     )
 
@@ -67,7 +67,7 @@ async def build_menu_navigation_buttons(ui: UIRegistry, ctx: UIContext, total_pa
         text='▶️' if ctx.menu_page < total_pages - 1 else '❌',
         callback_data=cbs.ChangePageTo(
             menu_page=ctx.menu_page + 1,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack() if ctx.menu_page < total_pages - 1 else cbs.Dummy().pack(),
     )
 
@@ -86,7 +86,7 @@ async def build_view_navigation_buttons(ctx: UIContext, total_pages: int) -> Key
         text=f'{ctx.view_page + (1 if total_pages else 0)} / {total_pages}',
         callback_data=cbs.ChangeViewPageManually(
             total_pages=total_pages,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack() if total_pages > 1 else cbs.Dummy().pack()
     )
 
@@ -95,7 +95,7 @@ async def build_view_navigation_buttons(ctx: UIContext, total_pages: int) -> Key
         text='⏪' if ctx.view_page > 0 else '❌',
         callback_data=cbs.ChangePageTo(
             view_page=0,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack() if ctx.view_page > 0 else cbs.Dummy().pack(),
     )
 
@@ -104,7 +104,7 @@ async def build_view_navigation_buttons(ctx: UIContext, total_pages: int) -> Key
         text='⏩' if ctx.view_page < total_pages - 1 else '❌',
         callback_data=cbs.ChangePageTo(
             view_page=total_pages - 1,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack() if ctx.view_page < total_pages - 1 else cbs.Dummy().pack(),
     )
 
@@ -113,7 +113,7 @@ async def build_view_navigation_buttons(ctx: UIContext, total_pages: int) -> Key
         text='◀️' if ctx.view_page > 0 else '❌',
         callback_data=cbs.ChangePageTo(
             view_page=ctx.view_page - 1,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack() if ctx.view_page > 0 else cbs.Dummy().pack(),
     )
 
@@ -122,7 +122,7 @@ async def build_view_navigation_buttons(ctx: UIContext, total_pages: int) -> Key
         text='▶️' if ctx.view_page < total_pages - 1 else '❌',
         callback_data=cbs.ChangePageTo(
             view_page=ctx.view_page + 1,
-            history=[ctx.callback.pack()]
+            history=ctx.callback.as_history()
         ).pack() if ctx.view_page < total_pages - 1 else cbs.Dummy().pack(),
     )
 

@@ -28,7 +28,7 @@ async def formatters_list_menu_builder(
                 callback_data=cbs.OpenMenu(
                     menu_id=MenuIds.FORMATTER_INFO,
                     data={'formatter_id': formatter.key},
-                    history=[ctx.callback.pack()]
+                    history=ctx.callback.as_history()
                 ).pack(),
             )
         ])

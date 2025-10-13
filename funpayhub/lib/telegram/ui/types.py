@@ -110,6 +110,9 @@ class Menu:
         return total_keyboard
 
     async def reply_to(self, message: Message) -> Message:
+        for line in self.keyboard:
+            for button in line:
+                print(button.callback_data)
         return await message.answer(
             text=self.text,
             reply_markup=self.total_keyboard(convert=True),

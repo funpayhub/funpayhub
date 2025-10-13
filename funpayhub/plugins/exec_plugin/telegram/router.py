@@ -88,7 +88,7 @@ async def execute_python_code(
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
         callback=cbs.OpenMenu(
             menu_id='exec_output',
-            history=[cbs.OpenMenu(menu_id='exec_list').pack()],
+            history=[cbs.OpenMenu(menu_id='exec_list').pack(hash=False)],
             data={'exec_id': r.id}
         ),
     )
