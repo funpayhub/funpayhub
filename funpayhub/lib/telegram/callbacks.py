@@ -114,3 +114,7 @@ class ListParamItemAction(CallbackData, identifier='list_item_action'):
 
 class ChangeListParamViewMode(CallbackData, identifier='change_list_view_mode'):
     mode: Literal['move_up', 'move_down', 'remove', None] = None
+
+
+class ListParamAddItem(CallbackData, identifier='list_param_add_item'):
+    path: list[str | int]

@@ -204,6 +204,14 @@ async def build_list_parameter_footer(ui: UIRegistry, ctx: PropertiesUIContext) 
                 mode='remove',
                 history=ctx.callback.as_history()
             ).pack()
+        ),
+        Button(
+            button_id='add_list_item',
+            text='➕',
+            callback_data=cbs.ListParamAddItem(
+                path=ctx.entry.path,
+                history=ctx.callback.as_history()
+            ).pack()
         )
     ])
     return keyboard
@@ -332,7 +340,7 @@ async def add_formatters_list_button_modification(
             button_id='open_formatters_list',
             text=ui.translater.translate('$open_formatters_list', ctx.language),
             callback_data=cbs.OpenMenu(
-                menu_id='fph-formatters-list',
+                menu_id=MenuIds.FORMATTERS_LIST,
                 history=ctx.callback.as_history()
             ).pack()
         )
