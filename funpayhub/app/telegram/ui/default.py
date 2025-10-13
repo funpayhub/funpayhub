@@ -41,6 +41,7 @@ ENTRIES_BUTTONS_MODIFICATIONS: Final = {}
 ENTRIES_MENUS_MODIFICATIONS: Final = {
     'fph:funpayhub_properties_menu_modification': ui_builders.funpayhub_properties_menu_modification,
     'fph:command_response_text_param_menu_modification': ui_builders.add_formatters_list_button_modification,
+    'fph:add_command': ui_builders.add_add_button_for_commands_list,
 }
 
 

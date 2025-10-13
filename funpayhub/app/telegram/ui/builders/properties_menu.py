@@ -248,6 +248,7 @@ async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext
         finalizer=premade.default_finalizer_factory(),
     )
 
+
 async def list_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
     return Menu(
         ui=ui,
@@ -345,4 +346,23 @@ async def add_formatters_list_button_modification(
             ).pack()
         )
     ])
+    return menu
+
+
+async def add_add_button_for_commands_list(
+    ui: UIRegistry,
+    ctx: PropertiesUIContext,
+    menu: Menu
+):
+    if not ctx.entry.matches_path(['auto_response']):
+        return menu
+
+    menu.footer_keyboard.append([
+        Button(
+            button_id='add_command',
+            text='$add_command',
+            callback_data=cbs.Dummy().pack()  # todo
+        )
+    ])
+
     return menu

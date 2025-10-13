@@ -9,7 +9,8 @@ from .properties_menu import (
     list_parameter_menu_builder,
 
     funpayhub_properties_menu_modification,
-    add_formatters_list_button_modification
+    add_formatters_list_button_modification,
+    add_add_button_for_commands_list
 )
 
 from .formatters_menu import (
