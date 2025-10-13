@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
+from typing import Literal
 from funpayhub.lib.telegram.callback_data import CallbackData
 
 
@@ -102,3 +103,14 @@ class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
 
 class ToggleNotificationChannel(CallbackData, identifier='toggle_notification_channel'):
     channel: str
+
+
+# list param
+class ListParamItemAction(CallbackData, identifier='list_item_action'):
+    path: list[str | int]
+    item_index: int
+    action: Literal['remove', 'move_up', 'move_down', None] = None
+
+
+class ChangeListParamViewMode(CallbackData, identifier='change_list_view_mode'):
+    mode: Literal['move_up', 'move_down', 'remove', None] = None

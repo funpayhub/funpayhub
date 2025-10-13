@@ -38,5 +38,5 @@ class ListParameter(MutableParameter[list[ALLOWED_TYPES]]):
     async def add_item(self, item: ALLOWED_TYPES) -> None:
         self.value.append(item)
 
-    async def remove_item(self, item: ALLOWED_TYPES) -> None:
-        self.value.remove(item)
+    async def remove_item(self, index: int) -> None:
+        self.value.pop(index)

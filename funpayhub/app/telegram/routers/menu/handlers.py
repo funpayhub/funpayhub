@@ -90,11 +90,10 @@ async def send_menu(
     tg_ui: UIRegistry,
     data: dict[str, Any],
 ) -> None:
-    callback_str = cbs.OpenEntryMenu(path=properties.path)
     ctx = PropertiesUIContext(
         language=properties.general.language.real_value,
         max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        callback=callback_str,
+        callback=cbs.OpenEntryMenu(path=properties.path),
         entry=properties,
     )
     await (await tg_ui.build_properties_menu(ctx, data)).reply_to(message)
@@ -263,5 +262,64 @@ async def edit_parameter(
             callback_query=data.callback_query_obj.model_copy(
                 update={'data': join_callbacks(*data.callbacks_history)}
             ),
+        ),
+    )
+
+
+# list param menu
+@r.callback_query(cbs.ChangeListParamViewMode.filter())
+async def clear_list_param_mode(
+    query: CallbackQuery,
+    callback_data: cbs.ChangeListParamViewMode,
+    bot: Bot,
+    dispatcher: Dispatcher
+):
+    new_callback = UnknownCallback.from_string(callback_data.pack_history(hash=False))
+    new_callback.data['mode'] = callback_data.mode
+
+    await dispatcher.feed_update(
+        bot,
+        Update(
+            update_id=0,
+            callback_query=query.model_copy(update={'data': new_callback.pack()})
+        ),
+    )
+
+
+@r.callback_query(cbs.ListParamItemAction.filter())
+async def make_list_item_action(
+    query: CallbackQuery,
+    callback_data: cbs.ListParamItemAction,
+    bot: Bot,
+    dispatcher: Dispatcher,
+    properties: FunPayHubProperties
+):
+    if callback_data.action is None:
+        await query.answer()
+        return
+
+    param: ListParameter = properties.get_parameter(callback_data.path)  # type: ignore
+    index = callback_data.item_index
+    if callback_data.action == 'remove':
+        await param.remove_item(index)
+    elif callback_data.action == 'move_up':
+        if index == 0:
+            await query.answer()
+            return
+        param.value[index], param.value[index-1] =  param.value[index-1], param.value[index]
+    elif callback_data.action == 'move_down':
+        if index == len(param.value) - 1:
+            await query.answer()
+            return
+        param.value[index], param.value[index+1] =  param.value[index+1], param.value[index]
+
+    await param.save()
+    new_callback = UnknownCallback.from_string(callback_data.pack_history(hash=False))
+    new_callback.data['mode'] = callback_data.action
+    await dispatcher.feed_update(
+        bot,
+        Update(
+            update_id=0,
+            callback_query=query.model_copy(update={'data': new_callback.pack()})
         ),
     )

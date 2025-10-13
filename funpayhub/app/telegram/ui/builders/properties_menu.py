@@ -142,23 +142,24 @@ async def build_list_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIContext
 
     for index, val in enumerate(ctx.entry.value):
         if mode == 'move_up':
-            callback_data = cbs.Dummy().pack()
             text = f'⬆️ {val}'
         elif mode == 'move_down':
-            callback_data = cbs.Dummy().pack()
             text = f'⬇️ {val}'
         elif mode == 'remove':
-            callback_data = cbs.Dummy().pack()
             text = f'🗑️ {val}'
         else:
-            callback_data = cbs.Dummy().pack()
             text = str(val)
 
         keyboard.append([
             Button(
                 button_id='temp',
                 text=text,
-                callback_data=callback_data
+                callback_data=cbs.ListParamItemAction(
+                    item_index=index,
+                    path=ctx.entry.path,
+                    action=mode,
+                    history=ctx.callback.as_history()
+                ).pack()
             )
         ])
     return keyboard
@@ -172,7 +173,10 @@ async def build_list_parameter_footer(ui: UIRegistry, ctx: PropertiesUIContext) 
             Button(
                 button_id='cancel',
                 text='❌',
-                callback_data=cbs.Dummy().pack()
+                callback_data=cbs.ChangeListParamViewMode(
+                    mode=None,
+                    history=ctx.callback.as_history()
+                ).pack()
             )
         )
 
@@ -180,17 +184,26 @@ async def build_list_parameter_footer(ui: UIRegistry, ctx: PropertiesUIContext) 
         Button(
             button_id='enable_move_up_mode',
             text='⬆️',
-            callback_data=cbs.Dummy().pack()
+            callback_data=cbs.ChangeListParamViewMode(
+                mode='move_up',
+                history=ctx.callback.as_history()
+            ).pack()
         ),
         Button(
             button_id='enable_move_down_mode',
             text='⬇️',
-            callback_data=cbs.Dummy().pack()
+            callback_data=cbs.ChangeListParamViewMode(
+                mode='move_down',
+                history=ctx.callback.as_history()
+            ).pack()
         ),
         Button(
             button_id='enable_remove_mode',
             text='🗑️',
-            callback_data=cbs.Dummy().pack()
+            callback_data=cbs.ChangeListParamViewMode(
+                mode='remove',
+                history=ctx.callback.as_history()
+            ).pack()
         )
     ])
     return keyboard
