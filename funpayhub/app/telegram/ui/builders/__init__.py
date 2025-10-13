@@ -1,4 +1,4 @@
-from .properties import (
+from .properties_menu import (
     build_toggle_parameter_button,
     build_parameter_button,
     build_open_menu_button,
@@ -11,7 +11,7 @@ from .properties import (
     add_formatters_list_button_modification
 )
 
-from .formatters import (
+from .formatters_menu import (
     formatters_list_menu_builder,
     formatter_info_menu_builder
 )

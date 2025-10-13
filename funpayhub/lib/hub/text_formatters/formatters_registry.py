@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from funpaybotengine.client.bot import Bot
 
 
-type FORMATTER_R = str | 'Image' | list[str | 'Image']
+type FORMATTER_R = str | Image | list[str | Image]
 
 
 @dataclass
@@ -104,30 +104,29 @@ class FormattersRegistry:
     @overload
     def __getitem__(self, key: slice) -> list[Formatter]: ...
 
-    def __getitem__(self, item: str | int | slice) -> Formatter:
+    def __getitem__(self, item: str | int | slice) -> Formatter | list[Formatter]:
         if isinstance(item, str):
             return self._formatters[item]
 
-        if isinstance(item, int):
-            for index, i in enumerate(self._formatters.values()):
-                if index != item:
-                    continue
-                return i
+        if isinstance(item, (int, slice)):
+            return list(self._formatters.values())[item]
 
-        return list(self._formatters.values())[item]
+        raise TypeError(
+            f'Invalid key type: expected str, int, or slice, got {type(item).__name__}.'
+        )
 
     def __setitem__(self, key: str, value: Formatter) -> None:
         if not isinstance(key, str):
-            raise ValueError(f'Key must be a {str!r}, not {type(key)!r}.')
+            raise ValueError(f'Invalid key type: expected str, got {type(key).__name__}.')
         if not isinstance(value, Formatter):
             raise ValueError(
-                f'Value must be an instance of `Formatter`, not {type(key)!r}.',
+                f'Invalid value type: expected Formatter, got {type(value).__name__}.',
             )
 
         if key != value.key:
             raise ValueError(
-                f'Passed key must be equal to formatters key '
-                f'(key: {key!r}, formatters key: {value.key!r}).',
+                f'Mismatched keys: provided mapping key {key!r} does not match '
+                f'Formatter.key {value.key!r}.',
             )
 
         self.add_formatter(formatter=value, raise_if_exists=False)
