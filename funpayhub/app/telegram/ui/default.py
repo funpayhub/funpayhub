@@ -23,6 +23,7 @@ DEFAULT_ENTRIES_MENUS: Final = {
     param.FloatParameter: ui_builders.parameter_menu_builder,
     param.StringParameter: ui_builders.parameter_menu_builder,
     param.ChoiceParameter: ui_builders.choice_parameter_menu_builder,
+    param.ListParameter: ui_builders.list_parameter_menu_builder,
     Properties: ui_builders.properties_menu_builder,
 }
 

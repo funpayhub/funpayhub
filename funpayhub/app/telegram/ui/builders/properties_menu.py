@@ -6,7 +6,7 @@ from dataclasses import replace
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.loggers import telegram_ui as logger
-from funpayhub.lib.properties import ChoiceParameter, Properties, MutableParameter
+from funpayhub.lib.properties import ChoiceParameter, Properties, MutableParameter, ListParameter
 from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext
 
@@ -135,6 +135,68 @@ async def build_choice_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIConte
     return keyboard
 
 
+async def build_list_parameter_keyboard(ui: UIRegistry, ctx: PropertiesUIContext) -> Keyboard:
+    assert isinstance(ctx.entry, ListParameter)
+    keyboard = []
+    mode = ctx.callback.data.get('mode')
+
+    for index, val in enumerate(ctx.entry.value):
+        if mode == 'move_up':
+            callback_data = cbs.Dummy().pack()
+            text = f'⬆️ {val}'
+        elif mode == 'move_down':
+            callback_data = cbs.Dummy().pack()
+            text = f'⬇️ {val}'
+        elif mode == 'remove':
+            callback_data = cbs.Dummy().pack()
+            text = f'🗑️ {val}'
+        else:
+            callback_data = cbs.Dummy().pack()
+            text = str(val)
+
+        keyboard.append([
+            Button(
+                button_id='temp',
+                text=text,
+                callback_data=callback_data
+            )
+        ])
+    return keyboard
+
+
+async def build_list_parameter_footer(ui: UIRegistry, ctx: PropertiesUIContext) -> Keyboard:
+    keyboard = [[]]
+    mode = ctx.callback.data.get('mode')
+    if mode:
+        keyboard[0].append(
+            Button(
+                button_id='cancel',
+                text='❌',
+                callback_data=cbs.Dummy().pack()
+            )
+        )
+
+    keyboard[0].extend([
+        Button(
+            button_id='enable_move_up_mode',
+            text='⬆️',
+            callback_data=cbs.Dummy().pack()
+        ),
+        Button(
+            button_id='enable_move_down_mode',
+            text='⬇️',
+            callback_data=cbs.Dummy().pack()
+        ),
+        Button(
+            button_id='enable_remove_mode',
+            text='🗑️',
+            callback_data=cbs.Dummy().pack()
+        )
+    ])
+    return keyboard
+
+
+
 async def build_properties_text(ui: UIRegistry, ctx: PropertiesUIContext) -> str:
     return f"""<u><b>{ui.translater.translate(ctx.entry.name, ctx.language)}</b></u>
 
@@ -161,8 +223,18 @@ async def choice_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext
         context=ctx,
         text=await build_properties_text(ui, ctx),
         image=None,
-        header_keyboard=None,
         keyboard=await build_choice_parameter_keyboard(ui, ctx),
+        finalizer=premade.default_finalizer_factory(),
+    )
+
+async def list_parameter_menu_builder(ui: UIRegistry, ctx: PropertiesUIContext) -> Menu:
+    return Menu(
+        ui=ui,
+        context=ctx,
+        text=await build_properties_text(ui, ctx),
+        image=None,
+        keyboard=await build_list_parameter_keyboard(ui, ctx),
+        footer_keyboard=await build_list_parameter_footer(ui, ctx),
         finalizer=premade.default_finalizer_factory(),
     )
 
