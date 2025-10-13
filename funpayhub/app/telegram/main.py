@@ -13,7 +13,7 @@ from funpayhub.lib.telegram.ui import UIContext
 from funpayhub.lib.translater import Translater
 from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
+from funpayhub.lib.telegram.keyboard_hashinator import HashinatorT1000
 from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
 
@@ -49,17 +49,12 @@ class Telegram:
             ),
         )
 
-        self._hashinator = HashinatorT1000()
-        self._ui_registry = UIRegistry(hashinator=self._hashinator, translater=translater)
+        self._ui_registry = UIRegistry(translater=translater)
         self._setup_ui_defaults()
 
     @property
     def dispatcher(self) -> Dispatcher:
         return self._dispatcher
-
-    @property
-    def hashinator(self) -> HashinatorT1000:
-        return self._hashinator
 
     @property
     def ui_registry(self) -> UIRegistry:

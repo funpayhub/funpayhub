@@ -49,7 +49,6 @@ class FunPayHub:
                 'tg': self._telegram,
                 'tg_bot': self._telegram.bot,
                 'tg_dp': self.telegram.dispatcher,
-                'hashinator': self.telegram.hashinator,
                 'tg_ui': self.telegram.ui_registry,
             },
         )

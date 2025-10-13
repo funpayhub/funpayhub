@@ -17,7 +17,6 @@ from pydantic import Field
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from funpayhub.lib.properties import Properties, MutableParameter
-from funpayhub.lib.telegram.callbacks import Hash
 from funpayhub.lib.telegram.callback_data import UnknownCallback
 from aiogram.types import Message
 
@@ -85,25 +84,14 @@ class Menu:
     finalizer: Finalizer = None
 
     @overload
-    def total_keyboard(
-        self,
-        convert: Literal[True],
-        hash: bool = True,
-    ) -> InlineKeyboardMarkup | None:
-        pass
+    def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None: pass
 
     @overload
-    def total_keyboard(
-        self,
-        convert: Literal[False],
-        hash: bool = True,
-    ) -> Keyboard | None:
-        pass
+    def total_keyboard(self, convert: Literal[False]) -> Keyboard | None: pass
 
     def total_keyboard(
         self,
         convert: bool = False,
-        hash: bool = True,
     ) -> Keyboard | InlineKeyboardMarkup | None:
         total_keyboard = []
         for kb in [self.header_keyboard, self.keyboard, self.footer_keyboard]:
@@ -112,10 +100,6 @@ class Menu:
             for line in kb:
                 converted_line = []
                 for button in line:
-                    if button.callback_data and hash:
-                        button.callback_data = Hash(
-                            hash=self.ui.hashinator.hash(button.callback_data),
-                        ).pack()
                     converted_line.append(button)
                 total_keyboard.append(converted_line)
 
@@ -125,16 +109,16 @@ class Menu:
             return InlineKeyboardMarkup(inline_keyboard=total_keyboard)
         return total_keyboard
 
-    async def reply_to(self, message: Message, hash: bool = True) -> Message:
+    async def reply_to(self, message: Message) -> Message:
         return await message.answer(
             text=self.text,
-            reply_markup=self.total_keyboard(convert=True, hash=hash),
+            reply_markup=self.total_keyboard(convert=True),
         )
 
-    async def apply_to(self, message: Message, hash: bool = True):
+    async def apply_to(self, message: Message):
         return await message.edit_text(
             text=self.text,
-            reply_markup=self.total_keyboard(convert=True, hash=hash),
+            reply_markup=self.total_keyboard(convert=True),
         )
 
 

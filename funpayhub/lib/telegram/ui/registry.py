@@ -11,7 +11,6 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.keyboard_hashinater import HashinatorT1000
 from funpayhub.loggers import telegram_ui as logger
 
 from .types import Menu, Button, UIContext, PropertiesUIContext
@@ -50,8 +49,7 @@ type MenuBuilder[**P] = Callable[
 
 
 class UIRegistry:
-    def __init__(self, hashinator: HashinatorT1000, translater: Translater) -> None:
-        self.hashinator = hashinator
+    def __init__(self, translater: Translater) -> None:
         self.translater = translater
 
         self.default_entries_buttons: dict[

@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Type, Literal, TypeVar, ClassVar
 from copy import copy
 
 from pydantic import Field, BaseModel, field_validator
+from funpayhub.lib.telegram.keyboard_hashinator import HashinatorT1000
 from aiogram.types import CallbackQuery
 from aiogram.filters import Filter
 
@@ -21,17 +22,19 @@ class UnknownCallback(BaseModel):
     history: list[str] = Field(default_factory=list, exclude=True)
     data: dict[str, Any] = Field(default_factory=dict, exclude=True)
 
-    def pack(self, include_history: bool = True) -> str:
+    def pack(self, include_history: bool = True, hash: bool = True) -> str:
         result = (repr(self.data) if self.data else '') + self.identifier
         if include_history:
             return join_callbacks(*self.history, result)
+        if hash:
+            result = HashinatorT1000.hash(result)
         return result
 
     def pack_history(self) -> str:
         return join_callbacks(*self.history)
 
-    def as_history(self) -> str:
-        return self.pack(include_history=True)
+    def as_history(self) -> list[str]:
+        return [self.pack(include_history=True, hash=False)]
 
     @classmethod
     def from_string(cls, query: str) -> UnknownCallback:
@@ -39,6 +42,8 @@ class UnknownCallback(BaseModel):
 
     @staticmethod
     def parse(value: str) -> UnknownCallback:
+        if HashinatorT1000.is_hash(value):
+            value = HashinatorT1000.unhash(value)
         callbacks = []
 
         current_index = 0
@@ -86,7 +91,7 @@ class CallbackData(UnknownCallback):
 
         super().__init_subclass__(**kwargs)
 
-    def pack(self, include_history: bool = True) -> str:
+    def pack(self, include_history: bool = True, hash: bool = True) -> str:
         """
         Generate callback data string
 
@@ -97,6 +102,8 @@ class CallbackData(UnknownCallback):
         result = (repr(data) if data else '') + self.__identifier__
         if include_history:
             return join_callbacks(*self.history, result)
+        if hash:
+            result = HashinatorT1000.hash(result)
         return result
 
     @classmethod

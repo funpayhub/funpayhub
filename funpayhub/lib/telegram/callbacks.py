@@ -35,17 +35,6 @@ class Clear(CallbackData, identifier='clear'):
     open_previous: bool = False
 
 
-class Hash(CallbackData, identifier='hash'):
-    """
-    Хэшированный callback.
-
-    Одна из самых первых миддлварей бота должна перехватить данный callback, расшифровать и
-    подменить.
-    """
-
-    hash: str
-
-
 class NextParamValue(CallbackData, identifier='next_param_value'):
     """
     Вызывает __next__ у параметра по пути `path`, после чего вызывает последний callback из
