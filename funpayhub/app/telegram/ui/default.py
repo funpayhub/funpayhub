@@ -4,7 +4,7 @@ from typing import Final
 
 from funpayhub.lib.properties import Properties, parameter as param
 
-from . import default_builders as ui_builders
+from . import builders as ui_builders
 
 
 DEFAULT_ENTRIES_BUTTONS: Final = {
