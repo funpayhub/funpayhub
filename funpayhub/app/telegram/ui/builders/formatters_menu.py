@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
+from ..ids import MenuIds
 
 from .. import premade
 
@@ -13,9 +14,11 @@ if TYPE_CHECKING:
 
 
 # Formatters
-async def build_formatters_keyboard(
-    ui: UIRegistry, ctx: UIContext, fp_formatters: FormattersRegistry
-) -> Keyboard:
+async def formatters_list_menu_builder(
+    ui: UIRegistry,
+    ctx: UIContext,
+    fp_formatters: FormattersRegistry,
+) -> Menu:
     keyboard = []
     for formatter in fp_formatters:
         keyboard.append([
@@ -23,27 +26,20 @@ async def build_formatters_keyboard(
                 button_id=f'open_formatter_info:{formatter.key}',
                 text=ui.translater.translate(formatter.name, ctx.language),
                 callback_data=cbs.OpenMenu(
-                    menu_id='fph-formatter-info',
+                    menu_id=MenuIds.FORMATTER_INFO,
                     data={'formatter_id': formatter.key},
                     history=[ctx.callback.pack()]
                 ).pack(),
             )
         ])
-    return keyboard
 
-
-async def formatters_list_menu_builder(
-    ui: UIRegistry,
-    ctx: UIContext,
-    fp_formatters: FormattersRegistry,
-) -> Menu:
     return Menu(
         ui=ui,
         context=ctx,
         text='Форматтеры',
         image=None,
         header_keyboard=None,
-        keyboard=await build_formatters_keyboard(ui, ctx, fp_formatters=fp_formatters),
+        keyboard=keyboard,
         finalizer=premade.default_finalizer_factory(),
     )
 

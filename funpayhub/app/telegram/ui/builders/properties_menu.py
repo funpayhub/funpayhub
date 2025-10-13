@@ -10,7 +10,8 @@ from funpayhub.lib.properties import ChoiceParameter, Properties, MutableParamet
 from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext
 
-from .. import premade, button_ids as ids
+from .. import premade, ids as ids
+from ..ids import MenuIds
 
 
 if TYPE_CHECKING:
@@ -210,7 +211,7 @@ async def funpayhub_properties_menu_modification(
             button_id='open_formatters_list',
             text=ui.translater.translate('$open_formatters_list', ctx.language),
             callback_data=cbs.OpenMenu(
-                menu_id='fph-formatters-list',
+                menu_id=MenuIds.FORMATTERS_LIST,
                 history=[ctx.callback.pack()],
             ).pack()
         )
@@ -221,7 +222,7 @@ async def funpayhub_properties_menu_modification(
             button_id='open_current_chat_notifications',
             text=ui.translater.translate('$telegram_notifications', ctx.language),
             callback_data=cbs.OpenMenu(
-                menu_id='fph-current-chat-notifications-menu',
+                menu_id=MenuIds.TG_CHAT_NOTIFICATIONS,
                 history=[ctx.callback.pack()],
             ).pack()
         )

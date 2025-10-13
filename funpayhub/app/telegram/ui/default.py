@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Final
 
 from funpayhub.lib.properties import Properties, parameter as param
+from .ids import MenuIds
 
 from . import builders as ui_builders
 
@@ -26,9 +27,9 @@ DEFAULT_ENTRIES_MENUS: Final = {
 
 
 DEFAULT_MENUS: Final = {
-    'fph-formatters-list': ui_builders.formatters_list_menu_builder,
-    'fph-formatter-info': ui_builders.formatter_info_menu_builder,
-    'fph-current-chat-notifications-menu': ui_builders.current_chat_notifications_menu_builder,
+    MenuIds.FORMATTERS_LIST: ui_builders.formatters_list_menu_builder,
+    MenuIds.FORMATTER_INFO: ui_builders.formatter_info_menu_builder,
+    MenuIds.TG_CHAT_NOTIFICATIONS: ui_builders.current_chat_notifications_menu_builder,
 }
 
 
