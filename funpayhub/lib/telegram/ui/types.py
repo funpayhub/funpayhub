@@ -6,65 +6,36 @@ __all__ = [
     'Button',
     'Menu',
     'UIContext',
-    'PropertiesUIContext',
 ]
 
 from typing import TYPE_CHECKING, Literal, Optional, Concatenate, overload, Any
 from dataclasses import dataclass, field
 from collections.abc import Callable, Awaitable
-from pydantic import Field
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.telegram.callback_data import UnknownCallback
 from aiogram.types import Message
 
 
 if TYPE_CHECKING:
     from .registry import UIRegistry
-    from aiogram.types import (
-        CallbackGame,
-        CopyTextButton,
-        LoginUrl,
-        SwitchInlineQueryChosenChat,
-        WebAppInfo
-    )
 
 
 type Keyboard = list[list[Button]]
 type Finalizer[**P] = (
     Callable[
-        Concatenate[UIRegistry, UIContext | PropertiesUIContext, Menu, P],
+        Concatenate[UIRegistry, UIContext, Menu, P],
         Menu | Awaitable[Menu],
     ]
     | None
 )
 
 
-class Button(InlineKeyboardButton):
-    button_id: str | None = Field(default=None, exclude=True)
-
-    if TYPE_CHECKING:
-        # aiogram sucks
-        # why tf should I do this
-        def __init__(
-            __pydantic__self__,
-            *,
-            button_id: str,
-            text: str,
-            url: Optional[str] = None,
-            callback_data: Optional[str] = None,
-            web_app: Optional[WebAppInfo] = None,
-            login_url: Optional[LoginUrl] = None,
-            switch_inline_query: Optional[str] = None,
-            switch_inline_query_current_chat: Optional[str] = None,
-            switch_inline_query_chosen_chat: Optional[SwitchInlineQueryChosenChat] = None,
-            copy_text: Optional[CopyTextButton] = None,
-            callback_game: Optional[CallbackGame] = None,
-            pay: Optional[bool] = None,
-            **__pydantic_kwargs: Any,
-        ) -> None: ...
+@dataclass
+class Button:
+    button_id: str
+    obj: InlineKeyboardButton
 
 
 @dataclass
@@ -76,11 +47,11 @@ class Menu:
     ui: UIRegistry
     context: UIContext
 
-    text: Optional[str] = None
+    text: str = None
     image: Optional[str] = None
-    header_keyboard: Optional[Keyboard] = field(default_factory=list)
-    keyboard: Optional[Keyboard] = field(default_factory=list)
-    footer_keyboard: Optional[Keyboard] = field(default_factory=list)
+    header_keyboard: Keyboard = field(default_factory=list)
+    keyboard: Keyboard = field(default_factory=list)
+    footer_keyboard: Keyboard = field(default_factory=list)
     finalizer: Finalizer = None
 
     @overload
@@ -93,26 +64,18 @@ class Menu:
         self,
         convert: bool = False,
     ) -> Keyboard | InlineKeyboardMarkup | None:
-        total_keyboard = []
-        for kb in [self.header_keyboard, self.keyboard, self.footer_keyboard]:
-            if not kb:
-                continue
-            for line in kb:
-                converted_line = []
-                for button in line:
-                    converted_line.append(button)
-                total_keyboard.append(converted_line)
-
+        total_keyboard = [*self.header_keyboard, *self.keyboard, *self.footer_keyboard]
         if not total_keyboard:
             return None
-        if convert:
-            return InlineKeyboardMarkup(inline_keyboard=total_keyboard)
+        if not convert:
+            return total_keyboard
+
+        for line_index, line in enumerate(total_keyboard):
+            for button_index, button in enumerate(line):
+                total_keyboard[line_index][button_index] = button.obj
         return total_keyboard
 
     async def reply_to(self, message: Message) -> Message:
-        for line in self.keyboard:
-            for button in line:
-                print(button.callback_data)
         return await message.answer(
             text=self.text,
             reply_markup=self.total_keyboard(convert=True),
@@ -132,8 +95,3 @@ class UIContext:
     menu_page: int = 0
     view_page: int = 0
     callback: UnknownCallback
-
-
-@dataclass(kw_only=True)
-class PropertiesUIContext(UIContext):
-    entry: Properties | MutableParameter
