@@ -10,7 +10,7 @@ from collections.abc import Callable, Awaitable
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.properties import Properties, MutableParameter
-from funpayhub.lib.translater import Translater
+from collections import defaultdict
 from funpayhub.loggers import telegram_ui as logger
 
 from .types import Menu, Button, UIContext, PropertiesUIContext
@@ -51,7 +51,7 @@ type MenuBuilder[**P] = Callable[
 class UIRegistry:
     def __init__(self) -> None:
         self.menus: dict[str, CallableWrapper[Menu]] = {}
-        self.modifications: dict[str, list[CallableWrapper[Menu]]] = {}
+        self.modifications: dict[str, dict[str, CallableWrapper[Menu]]] = defaultdict(dict)
         self.properties_ui_registry = PropertiesUIRegistry()
 
     async def build_menu(
@@ -80,17 +80,19 @@ class UIRegistry:
         self.menus[menu_id] = CallableWrapper(builder)
 
     def add_modification(self, menu_id: str, modification_id: str, builder: MenuBuilder) -> None:
-        ...
+        if modification_id in self.modifications[menu_id]:
+            raise ValueError(f'Modification {modification_id!r} already exists.')
+        self.modifications[menu_id][modification_id] = CallableWrapper(builder)
 
 
 class PropertiesUIRegistry:
     def __init__(self) -> None:
-        self.entries_buttons_builders: dict[
+        self.button_builders: dict[
             type[MutableParameter[Any] | Properties],
             CallableWrapper[Button],
         ] = {}
 
-        self.entries_menus_builders: dict[
+        self.menu_builders: dict[
             type[MutableParameter[Any] | Properties],
             CallableWrapper[Menu],
         ] = {}
@@ -99,9 +101,9 @@ class PropertiesUIRegistry:
         self,
         entry_type: Type[MutableParameter[Any] | Properties]
     ) -> CallableWrapper[Button] | None:
-        if entry_type in self.entries_buttons_builders:
-            return self.entries_buttons_builders[entry_type]
-        for t, u in self.entries_buttons_builders.items():
+        if entry_type in self.button_builders:
+            return self.button_builders[entry_type]
+        for t, u in self.button_builders.items():
             if issubclass(entry_type, t):
                 return u
         return None
@@ -110,9 +112,23 @@ class PropertiesUIRegistry:
         self,
         entry_type: Type[MutableParameter[Any] | Properties],
     ) -> CallableWrapper[Menu] | None:
-        if entry_type in self.entries_menus_builders:
-            return self.entries_menus_builders[entry_type]
-        for t, u in self.entries_menus_builders.items():
+        if entry_type in self.menu_builders:
+            return self.menu_builders[entry_type]
+        for t, u in self.menu_builders.items():
             if issubclass(entry_type, t):
                 return u
         return None
+
+    def set_button_builder(
+        self,
+        entry_type: Type[Properties | MutableParameter[Any]],
+        builder: Any,  # todo!!!
+    ) -> None:
+        self.button_builders[entry_type] = CallableWrapper(builder)
+
+    def set_menu_builder(
+        self,
+        entry_type: Type[Properties | MutableParameter[Any]],
+        builder: Any,  # todo!!!
+    ) -> None:
+        self.menu_builders[entry_type] = CallableWrapper(builder)
