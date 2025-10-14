@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import html
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from dataclasses import replace
+
+from aiogram.types import InlineKeyboardButton
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.loggers import telegram_ui as logger
 from funpayhub.lib.properties import ChoiceParameter, Properties, MutableParameter, ListParameter
 from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
-from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, PropertiesUIContext
+from funpayhub.app.properties import FunPayHubProperties
+from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
+from funpayhub.lib.translater import Translater
 
 from .. import premade, ids as ids
 from ..ids import MenuIds
@@ -18,30 +22,52 @@ if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui import UIRegistry
 
 
+# Main properties menu builder
+async def build_properties_entry_menu(ui: UIRegistry, ctx: UIContext, data) -> Menu:
+    properties = data.get('properties', None)
+    if not properties or not isinstance(properties, FunPayHubProperties):
+        raise RuntimeError('Not valid properties.')  # todo: error text
+
+    path = data.get('entry_path', None)
+    if path is None or not isinstance(path, list):
+        raise RuntimeError('Not valid path.')  # todo: error text
+
+    entry = properties.get_entry(path)
+    if not isinstance(entry, Properties | MutableParameter):
+        raise ValueError(f'No entry at path {path}.')  # todo: error text
+
+    menu = ui.properties_ui_registry.menu_builder(type(entry))
+    if not menu:
+        raise ValueError(f'No menu builder for entry with type {type(entry)!r}.')
+
+    return await menu((ui, ctx), data | {'entry_obj': entry})
+
 
 # ---------- PROPERTIES BUTTONS ----------
 # Toggle parameter
-async def build_toggle_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
+async def build_toggle_parameter_button(ui: UIRegistry, ctx: UIContext, translater: Translater, entry_obj: MutableParameter[Any]) -> Button:
     """
     Дефолтный билдер кнопки параметра-переключателя.
 
     Использует коллбэк `NextParamValue`.
     """
-    logger.debug(f'Building toggle parameter button for {ctx.entry.path}')
-    translated_name = ui.translater.translate(ctx.entry.name, ctx.language)
+    logger.debug(f'Building toggle parameter button for {entry_obj.path}')
+    translated_name = translater.translate(entry_obj.name, ctx.language)
 
     return Button(
-        button_id=f'{ids.TOGGLE_PARAM_BTN}:{ctx.entry.path}',
-        callback_data=cbs.NextParamValue(
-            path=ctx.entry.path,
-            history=ctx.callback.as_history()
-        ).pack(),
-        text=f'{"🟢" if ctx.entry.value else "🔴"} {translated_name}',
+        button_id=f'{ids.TOGGLE_PARAM_BTN}:{entry_obj.path}',
+        obj=InlineKeyboardButton(
+            callback_data=cbs.NextParamValue(
+                path=entry_obj.path,
+                history=ctx.callback.as_history()
+            ).pack(),
+            text=f'{"🟢" if entry_obj.value else "🔴"} {translated_name}',
+        )
     )
 
 
 # Int / Float / String parameter
-async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
+async def build_parameter_button(ui: UIRegistry, ctx: UIContext, translater: Translater, entry_obj: MutableParameter[Any]) -> Button:
     """
     Дефолтный билдер для кнопки параметра с ручным вводом значения (через сообщение).
 
@@ -52,22 +78,24 @@ async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Bu
     Использует коллбэк `ManualParamValueInput`.
     """
 
-    logger.debug(f'Building default parameter button for {ctx.entry.path}')
+    logger.debug(f'Building default parameter button for {entry_obj.path}')
 
-    if not ctx.entry.has_flag(PropsFlags.PROTECT_VALUE):
+    if not entry_obj.has_flag(PropsFlags.PROTECT_VALUE):
         val_str = (
-            f'{str(ctx.entry.value)[:20] + ("..." if len(str(ctx.entry.value)) > 20 else "")}'
+            f'{str(entry_obj.value)[:20] + ("..." if len(str(entry_obj.value)) > 20 else "")}'
         )
     else:
         val_str = '•' * 8
 
     return Button(
-        button_id=f'param_change:{ctx.entry.path}',
-        callback_data=cbs.ManualParamValueInput(
-            path=ctx.entry.path,
-            history=ctx.callback.as_history()
-        ).pack(),
-        text=f'{ui.translater.translate(ctx.entry.name, ctx.language)} 【 {val_str} 】',
+        button_id=f'param_change:{entry_obj.path}',
+        obj=InlineKeyboardButton(
+            callback_data=cbs.ManualParamValueInput(
+                path=entry_obj.path,
+                history=ctx.callback.as_history()
+            ).pack(),
+            text=f'{translater.translate(entry_obj.name, ctx.language)} 【 {val_str} 】',
+        )
     )
 
 
