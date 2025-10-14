@@ -118,3 +118,7 @@ class ChangeListParamViewMode(CallbackData, identifier='change_list_view_mode'):
 
 class ListParamAddItem(CallbackData, identifier='list_param_add_item'):
     path: list[str | int]
+
+
+class AddListItem(CallbackData, identifier='add_list_item'):
+    path: list[str | int]

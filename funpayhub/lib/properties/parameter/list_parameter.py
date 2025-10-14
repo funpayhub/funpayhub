@@ -14,15 +14,15 @@ from funpayhub.lib.properties.parameter.base import MutableParameter
 ALLOWED_TYPES = int | float | bool | str
 
 
-class ListParameter(MutableParameter[list[ALLOWED_TYPES]]):
+class ListParameter[ItemType: ALLOWED_TYPES](MutableParameter[list[ItemType]]):
     def __init__(
         self,
         *,
         id: str,
         name: str,
         description: str,
-        default_value: list[ALLOWED_TYPES],
-        validator: Callable[[list[ALLOWED_TYPES]], Awaitable[None]] | _UNSET = UNSET,
+        default_value: list[ItemType],
+        validator: Callable[[list[ItemType]], Awaitable[None]] | _UNSET = UNSET,
         flags: Iterable[Any] | None = None,
     ) -> None:
         super().__init__(
@@ -35,7 +35,7 @@ class ListParameter(MutableParameter[list[ALLOWED_TYPES]]):
             flags=flags
         )
 
-    async def add_item(self, item: ALLOWED_TYPES) -> None:
+    async def add_item(self, item: ItemType) -> None:
         self.value.append(item)
 
     async def remove_item(self, index: int) -> None:
