@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, Chat, ChatFullInfo, User, \
     CallbackQuery
-from typing import Literal, overload, Any
+from typing import Literal, overload, Any, Protocol
 
 
 type Keyboard = list[list[Button]]
@@ -58,11 +58,10 @@ class Menu:
 
 @dataclass(kw_only=True, frozen=True)
 class UIRenderContext:
-    language: str
-    max_lines: int
+    menu_id: str
     menu_page: int = 0
     view_page: int = 0
-    chat: Chat | ChatFullInfo
+    chat_id: int
     thread_id: int | None = None
     message_id: int | None = None
     trigger: Message | CallbackQuery | None = None
@@ -71,16 +70,29 @@ class UIRenderContext:
     @classmethod
     def create(
         cls,
-        language: str,
-        max_lines: int,
+        menu_id: str,
         menu_page: int,
         view_page: int,
+        chat_id: int | None = None,
+        thread_id: int | None = None,
+        message_id: int | None = None,
+        trigger: Message | CallbackQuery | None = None,
         **kwargs: Any
     ) -> UIRenderContext:
+        if trigger is not None:
+            msg = trigger if isinstance(trigger, Message) else trigger.message
+            message_id, chat_id, thread_id = msg.message_id, msg.chat.id, msg.message_thread_id
+
+        if chat_id is None:
+            raise ValueError('Chat ID or trigger must be provided.')
+
         return UIRenderContext(
-            language=language,
-            max_lines=max_lines,
+            menu_id=menu_id,
             menu_page=menu_page,
             view_page=view_page,
+            chat_id=chat_id,
+            thread_id=thread_id,
+            message_id=message_id,
+            trigger=trigger,
             data=kwargs
         )
