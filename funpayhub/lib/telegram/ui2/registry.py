@@ -27,7 +27,7 @@ from .types import (
 class UIRegistry:
     def __init__(self, workflow_data: dict[str, Any] | None = None) -> None:
         self._menus: dict[str, MenuBuilder] = {}
-        self._buttons: dict[str, ButtonBuilder] = {}  # todo
+        self._buttons: dict[str, ButtonBuilder] = {}
 
         self._workflow_data: dict[str, Any] = workflow_data if workflow_data is not None else {}
 
@@ -39,7 +39,7 @@ class UIRegistry:
     ) -> None:
         mods = {}
         if menu_id in self._menus:
-            if overwrite:
+            if not overwrite:
                 raise KeyError(f'Menu {menu_id!r} already exists.')
             mods = self._menus[menu_id].modifications
 
@@ -93,7 +93,7 @@ class UIRegistry:
     ) -> None:
         mods = {}
         if button_id in self._buttons:
-            if overwrite:
+            if not overwrite:
                 raise KeyError(f'Button {button_id!r} already exists.')
             mods = self._buttons[button_id].modifications
 
