@@ -104,7 +104,7 @@ class MenuRenderContext:
 
 @dataclass(kw_only=True, frozen=True)
 class ButtonRenderContext:
-    ui_render_context: MenuRenderContext
+    menu_render_context: MenuRenderContext
     button_id: str
     data: dict[str, Any] = field(default_factory=dict)
 
@@ -175,7 +175,6 @@ class ButtonModProto(Protocol):
 
 @dataclass
 class MenuModification:
-    id: str
     modification: CallableWrapper[Menu]
     filter: CallableWrapper[bool] | None = None
 
@@ -220,12 +219,40 @@ class MenuBuilder:
 
 @dataclass
 class ButtonModification:
-    id: str
     modification: CallableWrapper[Button]
     filter: CallableWrapper[bool] | None = None
 
+    async def __call__(
+        self,
+        registry: UIRegistry,
+        context: ButtonRenderContext,
+        button: Button,
+        data: dict[str, Any]
+    ) -> Button:
+        if self.filter is not None:
+            result = await self.filter((registry, context, button), data)
+            if not result:
+                return button
+        return await self.modification((registry, context, button), data)
 
+
+@dataclass
 class ButtonBuilder:
-    button_id: str
     builder: CallableWrapper[Button]
     modifications: dict[str, ButtonModification] = field(default_factory=dict)
+
+    async def build(
+        self,
+        registry: UIRegistry,
+        context: ButtonRenderContext,
+        data: dict[str, Any]
+    ) -> Button:
+        result = await self.builder((registry, context), data)
+        if not self.modifications:
+            return result
+        for i in self.modifications.values():
+            try:
+                result = await i(registry, context, result, data)
+            except:
+                continue  # todo: logging
+        return result
