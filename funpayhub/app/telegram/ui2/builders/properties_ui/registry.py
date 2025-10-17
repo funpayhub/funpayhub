@@ -6,6 +6,8 @@ __all__ = ['PropertiesUIRegistry']
 
 from typing import Any, Type, TYPE_CHECKING
 from eventry.asyncio.callable_wrappers import CallableWrapper
+
+from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties.base import Entry
 from funpayhub.loggers import telegram_ui as logger
 
@@ -107,23 +109,34 @@ class _PropertiesUIRegistry:
         self,
         registry: UIRegistry,
         ctx: MenuRenderContext,
-        **data: Any
+        properties: FunPayHubProperties,
+        data: dict[str, Any]
     ) -> Menu:
-        if 'entry' not in ctx.data:
-            raise RuntimeError('Unable to build properties menu: \'entry\' is missing.')
-        entry = data['entry']
+        if 'path' not in ctx.data:
+            raise RuntimeError('Unable to build properties entry menu: \'path\' is missing.')
+        entry = properties.get_entry(ctx.data['path'])
+        if entry is None:
+            raise RuntimeError(
+                f'Unable to build properties entry menu: '
+                f'no entry with path {ctx.data['path']}.'
+            )
         return await self.build_menu(registry, ctx, entry, data)
 
     async def entry_button_builder(
         self,
         registry: UIRegistry,
         ctx: ButtonRenderContext,
+        properties: FunPayHubProperties,
         **data: Any
     ) -> Button:
-        if 'entry' not in ctx.data:
-            raise RuntimeError('Unable to build properties button: \'entry\' is missing.')
-
-        entry = data['entry']
+        if 'path' not in ctx.data:
+            raise RuntimeError('Unable to build properties entry button: \'path\' is missing.')
+        entry = properties.get_entry(ctx.data['path'])
+        if entry is None:
+            raise RuntimeError(
+                f'Unable to build properties entry button: '
+                f'no entry with path {ctx.data['path']}.'
+            )
         return await self.build_button(registry, ctx, entry, data)
 
 

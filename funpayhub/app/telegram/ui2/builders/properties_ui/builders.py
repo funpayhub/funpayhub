@@ -29,7 +29,7 @@ async def toggle_param_button_builder(
     translater: Translater,
     properties: FunPayHubProperties
 ) -> Button:
-    entry = ctx.data['entry']
+    entry = properties.get_parameter(ctx.data['path'])
     callback_data = ctx.menu_render_context.callback_data
     translated_name = translater.translate(entry.name, properties.general.language.real_value)
 
@@ -52,7 +52,7 @@ async def parameter_button_builder(
     translater: Translater,
     properties: FunPayHubProperties
 ) -> Button:
-    entry = ctx.data['entry']
+    entry = properties.get_parameter(ctx.data['path'])
     callback_data = ctx.menu_render_context.callback_data
 
     if not entry.has_flag(PropsFlags.PROTECT_VALUE):
@@ -87,8 +87,10 @@ async def build_open_entry_menu_button(
 
     Использует коллбэк `OpenEntryMenu`.
     """
+    entry = properties.get_parameter(ctx.data['path'])
+
     return Button(
-        button_id=f'param_change:{ctx.entry.path}',
+        button_id=f'param_change:{entry.path}',
         obj=InlineKeyboardButton(
             callback_data=cbs.OpenMenu(
                 menu_id=MenuIds.properties_entry,
