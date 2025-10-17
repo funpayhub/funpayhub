@@ -47,18 +47,6 @@ async def toggle_param_button_builder(
 
 # Int / Float / String parameter
 async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
-    """
-    Дефолтный билдер для кнопки параметра с ручным вводом значения (через сообщение).
-
-    Отображает значение параметра (первые 20 символов) в 【 скобках 】.
-
-    Если у параметра есть флаг `PROTECT_VALUE`, отображает значение в виде `••••••••`.
-
-    Использует коллбэк `ManualParamValueInput`.
-    """
-
-    logger.debug(f'Building default parameter button for {ctx.entry.path}')
-
     if not ctx.entry.has_flag(PropsFlags.PROTECT_VALUE):
         val_str = (
             f'{str(ctx.entry.value)[:20] + ("..." if len(str(ctx.entry.value)) > 20 else "")}'
