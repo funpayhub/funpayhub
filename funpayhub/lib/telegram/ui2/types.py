@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, Chat, ChatFullInfo, User, \
-    CallbackQuery
-from typing import Literal, overload, Any, Protocol
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
+from typing import Literal, overload, Any, Protocol, TYPE_CHECKING
+from eventry.asyncio.callable_wrappers import CallableWrapper
+
+if TYPE_CHECKING:
+    from .registry import UIRegistry
 
 
 type Keyboard = list[list[Button]]
@@ -22,6 +25,7 @@ class Menu:
     header_keyboard: Keyboard = field(default_factory=list)
     main_keyboard: Keyboard = field(default_factory=list)
     footer_keyboard: Keyboard = field(default_factory=list)
+    finalizer: MenuModFilterProto | None = None
 
     @overload
     def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None:
@@ -96,3 +100,126 @@ class UIRenderContext:
             trigger=trigger,
             data=kwargs
         )
+
+
+class MenuBuilderProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: UIRenderContext,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> Menu: ...
+
+
+class MenuModFilterProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: UIRenderContext,
+        __menu: Menu,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> bool: ...
+
+
+class MenuModProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: UIRenderContext,
+        __menu: Menu,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> Menu: ...
+
+
+class ButtonBuilderProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: UIRenderContext,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> Button: ...
+
+
+class ButtonModFilterProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: UIRenderContext,
+        __button: Button,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> bool: ...
+
+
+class ButtonModProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: UIRenderContext,
+        __button: Button,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> Button: ...
+
+
+@dataclass
+class MenuMod:
+    mod_id: str
+    mod: CallableWrapper[Menu]
+    filter: CallableWrapper[bool] | None = None
+
+    async def __call__(
+        self,
+        registry: UIRegistry,
+        context: UIRenderContext,
+        menu: Menu,
+        data: dict[str, Any]
+    ) -> Menu:
+        if self.filter is not None:
+            result = await self.filter((registry, context, menu), data)
+            if not result:
+                return menu
+        return await self.mod((registry, context, menu), data)
+
+
+@dataclass
+class MenuBuilder:
+    builder: CallableWrapper[Menu]
+    modifications: dict[str, MenuMod] = field(default_factory=dict)
+
+    async def build(self, registry: UIRegistry, context: UIRenderContext, data: dict[str, Any]) -> Menu:
+        result = await self.builder((registry, context), data)
+        if not self.modifications:
+            return result
+        for i in self.modifications.values():
+            try:
+                result = await i(registry, context, result, data)
+            except:
+                continue  # todo: logging
+
+        if result.finalizer:
+            try:
+                wrapped = CallableWrapper(result.finalizer)
+                await wrapped((registry, context, result), data)
+            except:
+                pass  # todo: logging
+            result.finalizer = None
+        return result
+
+
+@dataclass
+class ButtonMod:
+    button_id: str
+    mod_id: str
+    mod: CallableWrapper[Button]
+    filter: CallableWrapper[bool] | None = None
+
+
+class ButtonBuilder:
+    button_id: str
+    builder: CallableWrapper[Button]
+    modifications: dict[str, ButtonMod] = field(default_factory=dict)
