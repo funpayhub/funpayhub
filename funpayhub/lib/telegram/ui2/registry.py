@@ -44,6 +44,7 @@ class UIRegistry:
             mods = self._menus[menu_id].modifications
 
         self._menus[menu_id] = MenuBuilder(CallableWrapper(builder), mods)
+        logger.info(f'Menu builder {menu_id!r} has been added to registry.')
 
     def add_menu_modification(
         self,
@@ -62,6 +63,10 @@ class UIRegistry:
             CallableWrapper(filter) if filter is not None else None
         )
         self._menus[menu_id].modifications[modification_id] = modification_obj
+        logger.info(
+            f'Modification {modification_id!r} for menu {menu_id!r} '
+            f'has been added to registry.'
+        )
 
     def get_menu_builder(self, menu_id: str) -> MenuBuilder:
         return self._menus[menu_id]
@@ -93,6 +98,7 @@ class UIRegistry:
             mods = self._buttons[button_id].modifications
 
         self._buttons[button_id] = ButtonBuilder(CallableWrapper(builder), mods)
+        logger.info(f'Button builder {button_id!r} has been added to registry.')
 
     def add_button_modification(
         self,
@@ -111,6 +117,10 @@ class UIRegistry:
             CallableWrapper(filter) if filter is not None else None
         )
         self._buttons[button_id].modifications[modification_id] = modification_obj
+        logger.info(
+            f'Modification {modification_id!r} for button {button_id!r} '
+            f'has been added to registry.'
+        )
 
     def get_button_builder(self, button_id: str) -> ButtonBuilder:
         return self._buttons[button_id]
