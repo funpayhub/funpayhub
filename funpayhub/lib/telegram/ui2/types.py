@@ -5,6 +5,8 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, C
 from typing import Literal, overload, Any, Protocol, TYPE_CHECKING
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
+from ..callback_data import UnknownCallback
+
 if TYPE_CHECKING:
     from .registry import UIRegistry
 
@@ -100,6 +102,16 @@ class MenuRenderContext:
             trigger=trigger,
             data=kwargs
         )
+
+    @property
+    def callback_data(self) -> UnknownCallback | None:
+        if 'callback_data' in self.data and isinstance(self.data['callback_data'], UnknownCallback):
+            return self.data['callback_data']
+        if isinstance(self.trigger, CallbackQuery):
+            if hasattr(self.trigger, '__parsed__'):
+                return getattr(self.trigger, '__parsed__')
+            return UnknownCallback.parse(self.trigger.data)
+        return None
 
 
 @dataclass(kw_only=True, frozen=True)

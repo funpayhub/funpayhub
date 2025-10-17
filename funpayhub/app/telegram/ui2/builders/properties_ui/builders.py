@@ -30,7 +30,7 @@ async def toggle_param_button_builder(
     properties: FunPayHubProperties
 ) -> Button:
     entry = ctx.data['entry']
-    callback_data: UnknownCallback | None = ctx.data.get('callback_data', None)
+    callback_data = ctx.menu_render_context.callback_data
     translated_name = translater.translate(entry.name, properties.general.language.real_value)
 
     return Button(
@@ -38,7 +38,7 @@ async def toggle_param_button_builder(
         obj=InlineKeyboardButton(
             callback_data=cbs.NextParamValue(
                 path=entry.path,
-                history=callback_data.as_history() if callback_data is not None else []
+                history=callback_data.as_history() if callback_data is not None else None
             ).pack(),
             text=f'{"🟢" if entry.value else "🔴"} {translated_name}',
         )
@@ -46,26 +46,42 @@ async def toggle_param_button_builder(
 
 
 # Int / Float / String parameter
-async def build_parameter_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
-    if not ctx.entry.has_flag(PropsFlags.PROTECT_VALUE):
+async def parameter_button_builder(
+    ui: UIRegistry,
+    ctx: ButtonRenderContext,
+    translater: Translater,
+    properties: FunPayHubProperties
+) -> Button:
+    entry = ctx.data['entry']
+    callback_data = ctx.menu_render_context.callback_data
+
+    if not entry.has_flag(PropsFlags.PROTECT_VALUE):
         val_str = (
-            f'{str(ctx.entry.value)[:20] + ("..." if len(str(ctx.entry.value)) > 20 else "")}'
+            f'{str(entry.value)[:20] + ('...' if len(str(entry.value)) > 20 else '')}'
         )
     else:
         val_str = '•' * 8
 
     return Button(
-        button_id=f'param_change:{ctx.entry.path}',
-        callback_data=cbs.ManualParamValueInput(
-            path=ctx.entry.path,
-            history=ctx.callback.as_history()
-        ).pack(),
-        text=f'{ui.translater.translate(ctx.entry.name, ctx.language)} 【 {val_str} 】',
+        button_id=f'param_change:{entry.path}',
+        obj=InlineKeyboardButton(
+            callback_data=cbs.ManualParamValueInput(
+                path=entry.path,
+                history=callback_data.as_history() if callback_data is not None else None
+            ).pack(),
+            text=f'{translater.translate(entry.name, properties.general.language.real_value)} '
+                 f'【 {val_str} 】',
+        )
     )
 
 
 # List / Choice / Properties
-async def build_open_entry_menu_button(ui: UIRegistry, ctx: PropertiesUIContext) -> Button:
+async def build_open_entry_menu_button(
+    ui: UIRegistry,
+    ctx: ButtonRenderContext,
+    translater: Translater,
+    properties: FunPayHubProperties
+) -> Button:
     """
     Дефолтный билдер для кнопки открытия меню параметра / категории параметров.
 
@@ -73,11 +89,13 @@ async def build_open_entry_menu_button(ui: UIRegistry, ctx: PropertiesUIContext)
     """
     return Button(
         button_id=f'param_change:{ctx.entry.path}',
-        callback_data=cbs.OpenEntryMenu(
-            path=ctx.entry.path,
-            history=ctx.callback.as_history()
-        ).pack(),
-        text=ui.translater.translate(ctx.entry.name, ctx.language),
+        obj=InlineKeyboardButton(
+            callback_data=cbs.OpenMenu(
+                menu_id=MenuIds.properties_entry,
+                history=ctx.callback.as_history()
+            ).pack(),
+            text=ui.translater.translate(ctx.entry.name, ctx.language),
+        )
     )
 
 
