@@ -61,7 +61,7 @@ class Menu:
 
 
 @dataclass(kw_only=True, frozen=True)
-class UIRenderContext:
+class MenuRenderContext:
     menu_id: str
     menu_page: int = 0
     view_page: int = 0
@@ -82,7 +82,7 @@ class UIRenderContext:
         message_id: int | None = None,
         trigger: Message | CallbackQuery | None = None,
         **kwargs: Any
-    ) -> UIRenderContext:
+    ) -> MenuRenderContext:
         if trigger is not None:
             msg = trigger if isinstance(trigger, Message) else trigger.message
             message_id, chat_id, thread_id = msg.message_id, msg.chat.id, msg.message_thread_id
@@ -90,7 +90,7 @@ class UIRenderContext:
         if chat_id is None:
             raise ValueError('Chat ID or trigger must be provided.')
 
-        return UIRenderContext(
+        return MenuRenderContext(
             menu_id=menu_id,
             menu_page=menu_page,
             view_page=view_page,
@@ -102,11 +102,18 @@ class UIRenderContext:
         )
 
 
+@dataclass(kw_only=True, frozen=True)
+class ButtonRenderContext:
+    ui_render_context: MenuRenderContext
+    button_id: str
+    data: dict[str, Any] = field(default_factory=dict)
+
+
 class MenuBuilderProto(Protocol):
     async def __call__(
         self,
         __registry: UIRegistry,
-        __ctx: UIRenderContext,
+        __ctx: MenuRenderContext,
         *__args: Any,
         **__kwargs: Any
     ) -> Menu: ...
@@ -116,7 +123,7 @@ class MenuModFilterProto(Protocol):
     async def __call__(
         self,
         __registry: UIRegistry,
-        __ctx: UIRenderContext,
+        __ctx: MenuRenderContext,
         __menu: Menu,
         *__args: Any,
         **__kwargs: Any
@@ -127,7 +134,7 @@ class MenuModProto(Protocol):
     async def __call__(
         self,
         __registry: UIRegistry,
-        __ctx: UIRenderContext,
+        __ctx: MenuRenderContext,
         __menu: Menu,
         *__args: Any,
         **__kwargs: Any
@@ -138,7 +145,7 @@ class ButtonBuilderProto(Protocol):
     async def __call__(
         self,
         __registry: UIRegistry,
-        __ctx: UIRenderContext,
+        __ctx: ButtonRenderContext,
         *__args: Any,
         **__kwargs: Any
     ) -> Button: ...
@@ -148,7 +155,7 @@ class ButtonModFilterProto(Protocol):
     async def __call__(
         self,
         __registry: UIRegistry,
-        __ctx: UIRenderContext,
+        __ctx: ButtonRenderContext,
         __button: Button,
         *__args: Any,
         **__kwargs: Any
@@ -159,7 +166,7 @@ class ButtonModProto(Protocol):
     async def __call__(
         self,
         __registry: UIRegistry,
-        __ctx: UIRenderContext,
+        __ctx: ButtonRenderContext,
         __button: Button,
         *__args: Any,
         **__kwargs: Any
@@ -167,15 +174,15 @@ class ButtonModProto(Protocol):
 
 
 @dataclass
-class MenuMod:
-    mod_id: str
-    mod: CallableWrapper[Menu]
+class MenuModification:
+    id: str
+    modification: CallableWrapper[Menu]
     filter: CallableWrapper[bool] | None = None
 
     async def __call__(
         self,
         registry: UIRegistry,
-        context: UIRenderContext,
+        context: MenuRenderContext,
         menu: Menu,
         data: dict[str, Any]
     ) -> Menu:
@@ -183,15 +190,15 @@ class MenuMod:
             result = await self.filter((registry, context, menu), data)
             if not result:
                 return menu
-        return await self.mod((registry, context, menu), data)
+        return await self.modification((registry, context, menu), data)
 
 
 @dataclass
 class MenuBuilder:
     builder: CallableWrapper[Menu]
-    modifications: dict[str, MenuMod] = field(default_factory=dict)
+    modifications: dict[str, MenuModification] = field(default_factory=dict)
 
-    async def build(self, registry: UIRegistry, context: UIRenderContext, data: dict[str, Any]) -> Menu:
+    async def build(self, registry: UIRegistry, context: MenuRenderContext, data: dict[str, Any]) -> Menu:
         result = await self.builder((registry, context), data)
         if not self.modifications:
             return result
@@ -212,14 +219,13 @@ class MenuBuilder:
 
 
 @dataclass
-class ButtonMod:
-    button_id: str
-    mod_id: str
-    mod: CallableWrapper[Button]
+class ButtonModification:
+    id: str
+    modification: CallableWrapper[Button]
     filter: CallableWrapper[bool] | None = None
 
 
 class ButtonBuilder:
     button_id: str
     builder: CallableWrapper[Button]
-    modifications: dict[str, ButtonMod] = field(default_factory=dict)
+    modifications: dict[str, ButtonModification] = field(default_factory=dict)

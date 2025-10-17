@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = ['PropertiesUIRegistry']
 
 
-from typing import Any, Type, Concatenate
+from typing import Any, Type, Concatenate, TYPE_CHECKING
 from collections.abc import Callable, Awaitable
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
@@ -12,25 +12,26 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.loggers import telegram_ui as logger
 
-from funpayhub.lib.telegram.ui2.types import Menu, Button, UIRenderContext
+from funpayhub.lib.telegram.ui2.types import Menu, Button, MenuRenderContext
+if TYPE_CHECKING:
+    from funpayhub.lib.telegram.ui2.registry import UIRegistry
 
 
 class PropertiesUIRegistry:
-    def __init__(self, properties: Properties) -> None:
+    def __init__(self) -> None:
         self.buttons: dict[type[MutableParameter[Any] | Properties], CallableWrapper[Button]] = {}
         """Дефолтные фабрики кнопок параметров / категорий."""
 
         self.menus: dict[type[MutableParameter[Any] | Properties], CallableWrapper[Menu]] = {}
         """Дефолтные фабрики меню просмотра параметров / категорий."""
 
-        self._properties = properties
-
-    async def build_menu(self, ctx: UIRenderContext, data: dict[str, Any]) -> Menu:
-        if 'entry_path' not in ctx.data:
-            raise RuntimeError('Unable to build properties menu: \'entry_path\' is missing.')
-
-        entry = self._properties.get_entry(ctx.data['entry_path'])
-
+    async def build_menu(
+        self,
+        registry: UIRegistry,
+        ctx: MenuRenderContext,
+        entry: Properties | MutableParameter[Any],
+        data: dict[str, Any]
+    ) -> Menu:
         logger.debug(f'Properties menu builder for {entry.path} ({type(entry).__name__}) '
                      f'has been requested.')
 
@@ -38,10 +39,11 @@ class PropertiesUIRegistry:
         if builder is None:
             raise ValueError(f'Unknown entry type {type(entry)}.')
 
-        result = await builder((self, ctx), data=data)
+        result = await builder((registry, ctx), data=data)
         return result
 
-    async def build_button(self, ctx: UIRenderContext, data: dict[str, Any]) -> Button:
+    async def build_button(self, ctx: MenuRenderContext, data: dict[str, Any]) -> Button:
+
         logger.debug(f'Properties button builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
                      f'has been requested.')
 
@@ -89,3 +91,21 @@ class PropertiesUIRegistry:
         if entry_type in self.menus:
             raise ValueError(f'Default menu builder for {entry_type} is already added.')
         self.menus[entry_type] = CallableWrapper(builder)
+
+    async def entry_menu_builder(
+        self,
+        registry: UIRegistry,
+        ctx: MenuRenderContext,
+        **data: Any
+    ) -> Menu:
+        if 'entry' not in ctx.data:
+            raise RuntimeError('Unable to build properties menu: \'entry\' is missing.')
+        entry = data['entry']
+        return await self.build_menu(registry, ctx, entry, data)
+
+    async def entry_button_builder(
+        self,
+        registry: UIRegistry,
+        ctx: MenuRenderContext,
+        **data: Any
+    ) -> Button: ...

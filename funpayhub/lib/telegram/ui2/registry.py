@@ -9,7 +9,7 @@ from typing import Any, Protocol
 from eventry.asyncio.callable_wrappers import CallableWrapper
 from funpayhub.loggers import telegram_ui as logger
 
-from .types import Menu, Button, UIRenderContext
+from .types import Menu, Button, MenuRenderContext
 from .types import (
     MenuBuilderProto,
     MenuModFilterProto,
@@ -18,9 +18,9 @@ from .types import (
     ButtonModFilterProto,
     ButtonModProto,
     MenuBuilder,
-    MenuMod,
+    MenuModification,
     ButtonBuilder,
-    ButtonMod,
+    ButtonModification,
 )
 
 
@@ -57,7 +57,7 @@ class UIRegistry:
         if modification_id in self._menus[menu_id].modifications:
             raise KeyError(f'Menu {menu_id!r} already has a modification {modification_id!r}.')
 
-        modification = MenuMod(
+        modification = MenuModification(
             modification_id,
             CallableWrapper(modification),
             CallableWrapper(filter) if filter is not None else None
@@ -67,7 +67,7 @@ class UIRegistry:
     def get_menu_builder(self, menu_id: str) -> MenuBuilder:
         return self._menus[menu_id]
 
-    async def build_menu(self, context: UIRenderContext, data: dict[str, Any]) -> Menu:
+    async def build_menu(self, context: MenuRenderContext, data: dict[str, Any]) -> Menu:
         try:
             builder = self.get_menu_builder(context.menu_id)
         except KeyError:
