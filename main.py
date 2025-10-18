@@ -71,6 +71,10 @@ dictConfig(
                 'level': logging.DEBUG,
                 'handlers': ['console'],
             },
+            'funpayhub.telegram_ui': {
+                'level': logging.DEBUG,
+                'handlers': ['console'],
+            },
         },
     },
 )

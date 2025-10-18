@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING, Literal, Final
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.lib.telegram.ui import UIRegistry, PropertiesUIContext
-from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, UIContext
+from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, MenuRenderContext
 from funpayhub.app.telegram.ui.premade import default_finalizer_factory
 from funpayhub.app.telegram.ui.premade import build_view_navigation_buttons
 from .callbacks import SendExecFile

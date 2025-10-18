@@ -11,11 +11,11 @@ from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties.base import Entry
 from funpayhub.loggers import telegram_ui as logger
 
-from funpayhub.lib.telegram.ui2.types import Menu, Button, MenuRenderContext, ButtonRenderContext, \
+from funpayhub.lib.telegram.ui.types import Menu, Button, MenuRenderContext, ButtonRenderContext, \
     ButtonBuilderProto, MenuBuilderProto
 
 if TYPE_CHECKING:
-    from funpayhub.lib.telegram.ui2.registry import UIRegistry
+    from funpayhub.lib.telegram.ui.registry import UIRegistry
 
 
 class _PropertiesUIRegistry:
@@ -115,29 +115,35 @@ class _PropertiesUIRegistry:
         if 'path' not in ctx.data:
             raise RuntimeError('Unable to build properties entry menu: \'path\' is missing.')
         entry = properties.get_entry(ctx.data['path'])
+
         if entry is None:
             raise RuntimeError(
                 f'Unable to build properties entry menu: '
                 f'no entry with path {ctx.data['path']}.'
             )
-        return await self.build_menu(registry, ctx, entry, data)
+
+        ctx.data['entry'] = entry
+        return await self.build_menu(registry, ctx, entry, {**data})
 
     async def entry_button_builder(
         self,
         registry: UIRegistry,
         ctx: ButtonRenderContext,
         properties: FunPayHubProperties,
-        **data: Any
+        data: dict[str, Any]
     ) -> Button:
         if 'path' not in ctx.data:
             raise RuntimeError('Unable to build properties entry button: \'path\' is missing.')
         entry = properties.get_entry(ctx.data['path'])
+
         if entry is None:
             raise RuntimeError(
                 f'Unable to build properties entry button: '
                 f'no entry with path {ctx.data['path']}.'
             )
-        return await self.build_button(registry, ctx, entry, data)
+
+        ctx.data['entry'] = entry
+        return await self.build_button(registry, ctx, entry, {**data})
 
 
 PropertiesUIRegistry = _PropertiesUIRegistry()

@@ -33,8 +33,7 @@ class FunPayHub:
         self._telegram = Telegram(
             self,
             bot_token=os.environ.get('FPH_TELEGRAM_TOKEN'),  # todo: or from config
-            workflow_data=self.workflow_data,
-            translater=self._translater,
+            workflow_data=self.workflow_data
         )
 
         self.workflow_data.update(
@@ -60,8 +59,9 @@ class FunPayHub:
         )
 
     async def load_plugins(self):
-        pl = Plugin()
-        await pl.setup(self)
+        # pl = Plugin()
+        # await pl.setup(self)
+        pass
 
     async def emit_parameter_changed_event(
         self,

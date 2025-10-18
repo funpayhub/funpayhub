@@ -1,139 +1,271 @@
 from __future__ import annotations
 
-
-__all__ = [
-    'Keyboard',
-    'Button',
-    'Menu',
-    'UIContext',
-    'PropertiesUIContext',
-]
-
-from typing import TYPE_CHECKING, Literal, Optional, Concatenate, overload, Any
 from dataclasses import dataclass, field
-from collections.abc import Callable, Awaitable
-from pydantic import Field
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
+from typing import Literal, overload, Any, Protocol, TYPE_CHECKING
+from eventry.asyncio.callable_wrappers import CallableWrapper
 
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-
-from funpayhub.lib.properties import Properties, MutableParameter
-from funpayhub.lib.telegram.callback_data import UnknownCallback
-from aiogram.types import Message
-
+from ..callback_data import UnknownCallback
 
 if TYPE_CHECKING:
     from .registry import UIRegistry
-    from aiogram.types import (
-        CallbackGame,
-        CopyTextButton,
-        LoginUrl,
-        SwitchInlineQueryChosenChat,
-        WebAppInfo
-    )
 
 
 type Keyboard = list[list[Button]]
-type Finalizer[**P] = (
-    Callable[
-        Concatenate[UIRegistry, UIContext | PropertiesUIContext, Menu, P],
-        Menu | Awaitable[Menu],
-    ]
-    | None
-)
 
 
-class Button(InlineKeyboardButton):
-    button_id: str | None = Field(default=None, exclude=True)
-
-    if TYPE_CHECKING:
-        # aiogram sucks
-        # why tf should I do this
-        def __init__(
-            __pydantic__self__,
-            *,
-            button_id: str,
-            text: str,
-            url: Optional[str] = None,
-            callback_data: Optional[str] = None,
-            web_app: Optional[WebAppInfo] = None,
-            login_url: Optional[LoginUrl] = None,
-            switch_inline_query: Optional[str] = None,
-            switch_inline_query_current_chat: Optional[str] = None,
-            switch_inline_query_chosen_chat: Optional[SwitchInlineQueryChosenChat] = None,
-            copy_text: Optional[CopyTextButton] = None,
-            callback_game: Optional[CallbackGame] = None,
-            pay: Optional[bool] = None,
-            **__pydantic_kwargs: Any,
-        ) -> None: ...
+@dataclass
+class Button:
+    button_id: str
+    obj: InlineKeyboardButton
 
 
 @dataclass
 class Menu:
-    """
-    Объект меню.
-    """
-
-    ui: UIRegistry
-    context: UIContext
-
-    text: Optional[str] = None
-    image: Optional[str] = None
-    header_keyboard: Optional[Keyboard] = field(default_factory=list)
-    keyboard: Optional[Keyboard] = field(default_factory=list)
-    footer_keyboard: Optional[Keyboard] = field(default_factory=list)
-    finalizer: Finalizer = None
+    text: str = ''
+    image: str | None = None
+    header_keyboard: Keyboard = field(default_factory=list)
+    main_keyboard: Keyboard = field(default_factory=list)
+    footer_keyboard: Keyboard = field(default_factory=list)
+    finalizer: MenuModFilterProto | None = None
 
     @overload
-    def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None: pass
+    def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None:
+        pass
 
     @overload
-    def total_keyboard(self, convert: Literal[False]) -> Keyboard | None: pass
+    def total_keyboard(self, convert: Literal[False]) -> Keyboard | None:
+        pass
 
-    def total_keyboard(
-        self,
-        convert: bool = False,
-    ) -> Keyboard | InlineKeyboardMarkup | None:
-        total_keyboard = []
-        for kb in [self.header_keyboard, self.keyboard, self.footer_keyboard]:
-            if not kb:
-                continue
-            for line in kb:
-                converted_line = []
-                for button in line:
-                    converted_line.append(button)
-                total_keyboard.append(converted_line)
-
+    def total_keyboard(self, convert: bool = False) -> Keyboard | InlineKeyboardMarkup | None:
+        total_keyboard = [*self.header_keyboard, *self.main_keyboard, *self.footer_keyboard]
         if not total_keyboard:
             return None
-        if convert:
-            return InlineKeyboardMarkup(inline_keyboard=total_keyboard)
-        return total_keyboard
+        if not convert:
+            return total_keyboard
+
+        for line_index, line in enumerate(total_keyboard):
+            for button_index, button in enumerate(line):
+                total_keyboard[line_index][button_index] = button.obj
+        return InlineKeyboardMarkup(inline_keyboard=total_keyboard)
 
     async def reply_to(self, message: Message) -> Message:
-        for line in self.keyboard:
-            for button in line:
-                print(button.callback_data)
         return await message.answer(
             text=self.text,
             reply_markup=self.total_keyboard(convert=True),
         )
 
-    async def apply_to(self, message: Message):
+    async def apply_to(self, message: Message) -> Message | bool:
         return await message.edit_text(
             text=self.text,
             reply_markup=self.total_keyboard(convert=True),
         )
 
 
-@dataclass(kw_only=True)
-class UIContext:
-    language: str
-    max_elements_on_page: int
+@dataclass(kw_only=True, frozen=True)
+class MenuRenderContext:
+    menu_id: str
     menu_page: int = 0
     view_page: int = 0
-    callback: UnknownCallback
+    chat_id: int
+    thread_id: int | None = None
+    message_id: int | None = None
+    trigger: Message | CallbackQuery | None = None
+    data: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def create(
+        cls,
+        menu_id: str,
+        menu_page: int,
+        view_page: int,
+        chat_id: int | None = None,
+        thread_id: int | None = None,
+        message_id: int | None = None,
+        trigger: Message | CallbackQuery | None = None,
+        data: dict[str, Any] | None = None,
+    ) -> MenuRenderContext:
+        if trigger is not None:
+            msg = trigger if isinstance(trigger, Message) else trigger.message
+            message_id, chat_id, thread_id = msg.message_id, msg.chat.id, msg.message_thread_id
+
+        if chat_id is None:
+            raise ValueError('Chat ID or trigger must be provided.')
+
+        return MenuRenderContext(
+            menu_id=menu_id,
+            menu_page=menu_page,
+            view_page=view_page,
+            chat_id=chat_id,
+            thread_id=thread_id,
+            message_id=message_id,
+            trigger=trigger,
+            data=data or {}
+        )
+
+    @property
+    def callback_data(self) -> UnknownCallback | None:
+        if 'callback_data' in self.data and isinstance(self.data['callback_data'], UnknownCallback):
+            return self.data['callback_data']
+        if isinstance(self.trigger, CallbackQuery):
+            if hasattr(self.trigger, '__parsed__'):
+                return getattr(self.trigger, '__parsed__')
+            return UnknownCallback.parse(self.trigger.data)
+        return None
 
 
-@dataclass(kw_only=True)
-class PropertiesUIContext(UIContext):
-    entry: Properties | MutableParameter
+@dataclass(kw_only=True, frozen=True)
+class ButtonRenderContext:
+    menu_render_context: MenuRenderContext
+    button_id: str
+    data: dict[str, Any] = field(default_factory=dict)
+
+
+class MenuBuilderProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: MenuRenderContext,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> Menu: ...
+
+
+class MenuModFilterProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: MenuRenderContext,
+        __menu: Menu,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> bool: ...
+
+
+class MenuModProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: MenuRenderContext,
+        __menu: Menu,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> Menu: ...
+
+
+class ButtonBuilderProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: ButtonRenderContext,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> Button: ...
+
+
+class ButtonModFilterProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: ButtonRenderContext,
+        __button: Button,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> bool: ...
+
+
+class ButtonModProto(Protocol):
+    async def __call__(
+        self,
+        __registry: UIRegistry,
+        __ctx: ButtonRenderContext,
+        __button: Button,
+        *__args: Any,
+        **__kwargs: Any
+    ) -> Button: ...
+
+
+@dataclass
+class MenuModification:
+    modification: CallableWrapper[Menu]
+    filter: CallableWrapper[bool] | None = None
+
+    async def __call__(
+        self,
+        registry: UIRegistry,
+        context: MenuRenderContext,
+        menu: Menu,
+        data: dict[str, Any]
+    ) -> Menu:
+        if self.filter is not None:
+            result = await self.filter((registry, context, menu), data)
+            if not result:
+                return menu
+        return await self.modification((registry, context, menu), data)
+
+
+@dataclass
+class MenuBuilder:
+    builder: CallableWrapper[Menu]
+    modifications: dict[str, MenuModification] = field(default_factory=dict)
+
+    async def build(self, registry: UIRegistry, context: MenuRenderContext, data: dict[str, Any]) -> Menu:
+        result = await self.builder((registry, context), data)
+
+        for i in self.modifications.values():
+            try:
+                result = await i(registry, context, result, data)
+            except:
+                continue  # todo: logging
+
+        if result.finalizer:
+            try:
+                wrapped = CallableWrapper(result.finalizer)
+                result = await wrapped((registry, context, result), data)
+            except:
+                import traceback
+                print(traceback.format_exc())
+                pass  # todo: logging
+            result.finalizer = None
+        return result
+
+
+@dataclass
+class ButtonModification:
+    modification: CallableWrapper[Button]
+    filter: CallableWrapper[bool] | None = None
+
+    async def __call__(
+        self,
+        registry: UIRegistry,
+        context: ButtonRenderContext,
+        button: Button,
+        data: dict[str, Any]
+    ) -> Button:
+        if self.filter is not None:
+            result = await self.filter((registry, context, button), data)
+            if not result:
+                return button
+        return await self.modification((registry, context, button), data)
+
+
+@dataclass
+class ButtonBuilder:
+    builder: CallableWrapper[Button]
+    modifications: dict[str, ButtonModification] = field(default_factory=dict)
+
+    async def build(
+        self,
+        registry: UIRegistry,
+        context: ButtonRenderContext,
+        data: dict[str, Any]
+    ) -> Button:
+        result = await self.builder((registry, context), data)
+        if not self.modifications:
+            return result
+        for i in self.modifications.values():
+            try:
+                result = await i(registry, context, result, data)
+            except:
+                continue  # todo: logging
+        return result

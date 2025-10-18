@@ -4,22 +4,23 @@ from typing import TYPE_CHECKING, Any
 from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.telegram.states import ChangingParameterValueState
-from funpayhub.lib.telegram.ui.types import PropertiesUIContext
+from funpayhub.lib.telegram.ui import MenuRenderContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 import asyncio
 
 from .router import router as r
+from ...ui.ids import MenuIds
 
 if TYPE_CHECKING:
     from funpayhub.app.properties.properties import FunPayHubProperties
-    from funpayhub.app.telegram.main import Telegram
     from funpayhub.app.main import FunPayHub
 
 
@@ -28,7 +29,7 @@ async def _delete_message(msg: Message):
         await msg.delete()
 
 
-def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery):
+def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery) -> FSMContext:
     msg = obj if isinstance(obj, Message) else obj.message
     return dp.fsm.get_context(
         bot=bot,
@@ -45,14 +46,16 @@ async def open_custom_menu(
     tg_ui: UIRegistry,
     data: dict[str, Any],
     callback_data: cbs.OpenMenu,
-    tg: Telegram,
 ):
-    ctx = tg.make_ui_context(callback_data)
-    menu = await tg_ui.build_menu(
+    ctx = MenuRenderContext.create(
         menu_id=callback_data.menu_id,
-        ctx=ctx,
-        data=data | {'query': query}
+        menu_page=callback_data.menu_page,
+        view_page=callback_data.view_page,
+        trigger=query,
+        data=callback_data.model_dump(mode='python', exclude={'identifier'}) | callback_data.data
     )
+
+    menu = await tg_ui.build_menu(ctx, data | {'query': query})
     await menu.apply_to(query.message)
 # TEMP
 
@@ -90,32 +93,23 @@ async def send_menu(
     tg_ui: UIRegistry,
     data: dict[str, Any],
 ) -> None:
-    ctx = PropertiesUIContext(
-        language=properties.general.language.real_value,
-        max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        callback=cbs.OpenEntryMenu(path=properties.path),
-        entry=properties,
+    ctx = MenuRenderContext.create(
+        menu_id=MenuIds.properties_entry,
+        menu_page=0,
+        view_page=0,
+        trigger=message,
+        data={
+            'path': properties.path,
+            'callback_data': cbs.OpenMenu(
+                menu_id=MenuIds.properties_entry,
+                menu_page=0,
+                view_page=0,
+                data={'path': properties.path}
+            )
+        }
     )
-    await (await tg_ui.build_properties_menu(ctx, data)).reply_to(message)
 
-
-@r.callback_query(cbs.OpenEntryMenu.filter())
-async def open_entry_menu(
-    query: CallbackQuery,
-    properties: FunPayHubProperties,
-    tg_ui: UIRegistry,
-    unpacked_callback: UnknownCallback,
-    callback_data: cbs.OpenEntryMenu,
-    data: dict[str, Any],
-):
-    ctx = PropertiesUIContext(
-        language=properties.general.language.real_value,
-        max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        menu_page=callback_data.menu_page or 0,
-        callback=unpacked_callback,
-        entry=properties.get_entry(callback_data.path),
-    )
-    await (await tg_ui.build_properties_menu(ctx, data)).apply_to(query.message)
+    await (await tg_ui.build_menu(ctx, data)).reply_to(message)
 
 
 @r.callback_query(cbs.NextParamValue.filter())
@@ -262,26 +256,6 @@ async def edit_parameter(
             callback_query=data.callback_query_obj.model_copy(
                 update={'data': join_callbacks(*data.callbacks_history)}
             ),
-        ),
-    )
-
-
-# list param menu
-@r.callback_query(cbs.ChangeListParamViewMode.filter())
-async def clear_list_param_mode(
-    query: CallbackQuery,
-    callback_data: cbs.ChangeListParamViewMode,
-    bot: Bot,
-    dispatcher: Dispatcher
-):
-    new_callback = UnknownCallback.from_string(callback_data.pack_history(hash=False))
-    new_callback.data['mode'] = callback_data.mode
-
-    await dispatcher.feed_update(
-        bot,
-        Update(
-            update_id=0,
-            callback_query=query.model_copy(update={'data': new_callback.pack()})
         ),
     )
 

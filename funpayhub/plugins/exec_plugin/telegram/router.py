@@ -12,7 +12,7 @@ from aiogram.filters import Command
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.lib.telegram.ui import UIContext, UIRegistry
+from funpayhub.lib.telegram.ui import MenuRenderContext, UIRegistry
 from funpayhub.plugins.exec_plugin.types import LockableBuffer, ExecutionResultsRegistry
 
 from .callbacks import SendExecFile

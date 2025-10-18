@@ -1,16 +1,22 @@
-from __future__ import annotations
 from enum import StrEnum, UNIQUE, verify
-
-
-TOGGLE_PARAM_BTN = 'toggle_parameter'
-"""
-Данным ID обозначаются кнопки параметров-переключателей.
-Формат: `toggle_parameter:path.to.parameter`
-"""
 
 
 @verify(UNIQUE)
 class MenuIds(StrEnum):
-    FORMATTERS_LIST = 'fph:formatters_list'
-    FORMATTER_INFO = 'fph:formatter_info'
-    TG_CHAT_NOTIFICATIONS = 'fph:current-chat-notifications'
+    properties_entry = 'properties_entry'
+    formatters_list = 'formatters_list'
+    formatter_info = 'formatter_info'
+    hooks_list = 'hooks_list'
+    hook_info = 'hook_info'
+    tg_chat_notifications = 'tg_chat_notifications'
+
+
+@verify(UNIQUE)
+class ButtonIds(StrEnum):
+    properties_entry = 'properties_entry'
+    formatters_list = 'formatters_list'
+    formatter_info = 'formatter_info'
+    hooks_list = 'hooks_list'
+    hook_info = 'hook_info'
+    tg_chat_notifications = 'tg_chat_notifications'
+    tg_chat_notification_info = 'tg_chat_notification_info'

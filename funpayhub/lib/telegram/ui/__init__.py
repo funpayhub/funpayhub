@@ -1,4 +1,2 @@
-from __future__ import annotations
-
-from .types import *
-from .registry import *
+from .registry import UIRegistry
+from .types import Button, Keyboard, Menu, MenuRenderContext, ButtonRenderContext

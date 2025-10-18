@@ -9,11 +9,8 @@ from aiogram.fsm.strategy import FSMStrategy
 
 from funpayhub.lib.telegram.callback_data import CallbackData
 from funpayhub.lib.telegram.callbacks import MenuPageable, ViewPageable
-from funpayhub.lib.telegram.ui import UIContext
-from funpayhub.lib.translater import Translater
 from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.lib.telegram.keyboard_hashinator import HashinatorT1000
 from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
 
@@ -32,7 +29,6 @@ class Telegram:
         hub: FunPayHub,
         bot_token: str,
         workflow_data: dict[str, Any],
-        translater: Translater,
     ) -> None:
         self._hub = hub
         self._dispatcher = Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
@@ -49,7 +45,7 @@ class Telegram:
             ),
         )
 
-        self._ui_registry = UIRegistry(translater=translater)
+        self._ui_registry = UIRegistry()
         self._setup_ui_defaults()
 
     @property
@@ -87,34 +83,11 @@ class Telegram:
         self.dispatcher.include_routers(router)
 
     def _setup_ui_defaults(self):
-        for t, b in default_ui.DEFAULT_ENTRIES_BUTTONS.items():
-            self._ui_registry.add_default_entry_button_builder(t, b)
+        for menu_id, menu_builder in default_ui.MENU_BUILDERS.items():
+            self.ui_registry.add_menu_builder(menu_id, menu_builder)
 
-        for t, m in default_ui.DEFAULT_ENTRIES_MENUS.items():
-            self._ui_registry.set_default_entry_menu_builder(t, m)
-
-        for i, m in default_ui.DEFAULT_MENUS.items():
-            self._ui_registry.add_menu(i, m)
-
-        for i, b in default_ui.ENTRIES_BUTTONS_MODIFICATIONS.items():
-            self._ui_registry.add_entry_button_modification(i, b)
-
-        for i, m in default_ui.ENTRIES_MENUS_MODIFICATIONS.items():
-            self._ui_registry.add_entry_menu_modification(i, m)
-
-        # todo: add menus modifications
+        for button_id, button_builder in default_ui.BUTTON_BUILDERS.items():
+            self.ui_registry.add_button_builder(button_id, button_builder)
 
     async def start(self) -> None:
         await self.dispatcher.start_polling(self.bot)
-
-    def make_ui_context(self, callback_data: CallbackData) -> UIContext:
-        menu_page = callback_data.menu_page if isinstance(callback_data, MenuPageable) else 0
-        view_page = callback_data.view_page if isinstance(callback_data, ViewPageable) else 0
-
-        return UIContext(
-            language=self.hub.properties.general.language.real_value,
-            max_elements_on_page=self.hub.properties.telegram.appearance.menu_entries_amount.value,
-            menu_page=menu_page,
-            view_page=view_page,
-            callback=callback_data
-        )

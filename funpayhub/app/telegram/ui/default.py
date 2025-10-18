@@ -1,48 +1,12 @@
-from __future__ import annotations
-
-from typing import Final
-
-from funpayhub.lib.properties import Properties, parameter as param
-from .ids import MenuIds
-
-from . import builders as ui_builders
+from .builders.properties_ui import entry_menu_builder, entry_button_builder
+from .ids import MenuIds, ButtonIds
 
 
-DEFAULT_ENTRIES_BUTTONS: Final = {
-    param.ToggleParameter: ui_builders.build_toggle_parameter_button,
-    param.IntParameter: ui_builders.build_parameter_button,
-    param.FloatParameter: ui_builders.build_parameter_button,
-    param.StringParameter: ui_builders.build_parameter_button,
-    param.ChoiceParameter: ui_builders.build_open_entry_menu_button,
-    param.ListParameter: ui_builders.build_open_entry_menu_button,
-    Properties: ui_builders.build_open_entry_menu_button,
-}
-
-DEFAULT_ENTRIES_MENUS: Final = {
-    param.IntParameter: ui_builders.parameter_menu_builder,
-    param.FloatParameter: ui_builders.parameter_menu_builder,
-    param.StringParameter: ui_builders.parameter_menu_builder,
-    param.ChoiceParameter: ui_builders.choice_parameter_menu_builder,
-    param.ListParameter: ui_builders.list_parameter_menu_builder,
-    Properties: ui_builders.properties_menu_builder,
+MENU_BUILDERS = {
+    MenuIds.properties_entry: entry_menu_builder
 }
 
 
-DEFAULT_MENUS: Final = {
-    MenuIds.FORMATTERS_LIST: ui_builders.formatters_list_menu_builder,
-    MenuIds.FORMATTER_INFO: ui_builders.formatter_info_menu_builder,
-    MenuIds.TG_CHAT_NOTIFICATIONS: ui_builders.current_chat_notifications_menu_builder,
+BUTTON_BUILDERS = {
+    ButtonIds.properties_entry: entry_button_builder,
 }
-
-
-ENTRIES_BUTTONS_MODIFICATIONS: Final = {}
-
-
-ENTRIES_MENUS_MODIFICATIONS: Final = {
-    'fph:funpayhub_properties_menu_modification': ui_builders.funpayhub_properties_menu_modification,
-    'fph:command_response_text_param_menu_modification': ui_builders.add_formatters_list_button_modification,
-    'fph:add_command': ui_builders.add_add_button_for_commands_list,
-}
-
-
-MENUS_MODIFICATIONS: Final = {}

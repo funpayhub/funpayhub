@@ -4,196 +4,150 @@ from __future__ import annotations
 __all__ = ['UIRegistry']
 
 
-from typing import Any, Type, Concatenate
-from collections.abc import Callable, Awaitable
+from typing import Any
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
-
-from funpayhub.lib.properties import Properties, MutableParameter
-from funpayhub.lib.translater import Translater
 from funpayhub.loggers import telegram_ui as logger
 
-from .types import Menu, Button, UIContext, PropertiesUIContext
-
-
-type EntryBtnBuilder[**P] = Callable[
-    Concatenate[UIRegistry, PropertiesUIContext, P],
-    Button | Awaitable[Button],
-]
-
-type EntryMenuBuilder[**P] = Callable[
-    Concatenate[UIRegistry, PropertiesUIContext, P],
-    Menu | Awaitable[Menu],
-]
-
-type EntryBtnModification[**P] = Callable[
-    Concatenate[UIRegistry, PropertiesUIContext, Button, P],
-    Button | Awaitable[Button],
-]
-
-type EntryMenuModification[**P] = Callable[
-    Concatenate[UIRegistry, PropertiesUIContext, Menu, P],
-    Menu | Awaitable[Menu],
-]
-
-# Menus
-type MenuBtnBuilder[**P] = Callable[
-    Concatenate[UIRegistry, UIContext, P],
-    Button | Awaitable[Button],
-]
-
-type MenuBuilder[**P] = Callable[
-    Concatenate[UIRegistry, UIContext, P],
-    Menu | Awaitable[Menu],
-]
+from .types import Menu, Button, MenuRenderContext, ButtonRenderContext
+from .types import (
+    MenuBuilderProto,
+    MenuModFilterProto,
+    MenuModProto,
+    ButtonBuilderProto,
+    ButtonModFilterProto,
+    ButtonModProto,
+    MenuBuilder,
+    MenuModification,
+    ButtonBuilder,
+    ButtonModification,
+)
 
 
 class UIRegistry:
-    def __init__(self, translater: Translater) -> None:
-        self.translater = translater
+    def __init__(self, workflow_data: dict[str, Any] | None = None) -> None:
+        self._menus: dict[str, MenuBuilder] = {}
+        self._buttons: dict[str, ButtonBuilder] = {}
 
-        self.default_entries_buttons: dict[
-            type[MutableParameter | Properties],
-            CallableWrapper[Button],
-        ] = {}
-        """Дефолтные фабрики кнопок параметров / категорий."""
+        self._workflow_data: dict[str, Any] = workflow_data if workflow_data is not None else {}
 
-        self.default_entries_menus: dict[
-            type[MutableParameter | Properties],
-            CallableWrapper[Menu],
-        ] = {}
-        """Дефолтные фабрики меню параметров / категорий."""
-
-        self.entries_buttons_modifications: dict[str, CallableWrapper[Button]] = {}
-        self.entries_menus_modifications: dict[str, CallableWrapper[Menu]] = {}
-
-        self.default_menus: dict[str, CallableWrapper[Menu]] = {}
-
-    async def build_properties_menu(
+    def add_menu_builder(
         self,
-        ctx: PropertiesUIContext,
-        data: dict[str, Any],
-    ) -> Menu:
-        logger.debug(f'Properties menu builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
-                     f'has been requested.')
+        menu_id: str,
+        builder: MenuBuilderProto,
+        overwrite: bool = False
+    ) -> None:
+        mods = {}
+        if menu_id in self._menus:
+            if not overwrite:
+                raise KeyError(f'Menu {menu_id!r} already exists.')
+            mods = self._menus[menu_id].modifications
 
-        builder = self.find_properties_menu_builder(type(ctx.entry))
-        if builder is None:
-            raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
+        self._menus[menu_id] = MenuBuilder(CallableWrapper(builder), mods)
+        logger.info(f'Menu builder {menu_id!r} has been added to registry.')
 
-        result = await builder((self, ctx), data=data)
-
-        # todo: add logging for modifications
-        for modification_id, modification in self.entries_menus_modifications.items():
-            try:
-                result = await modification((self, ctx, result), data=data)
-            except:
-                import traceback
-                print(f'An error occurred while modifying properties menu.')
-                print(traceback.format_exc())
-                continue
-
-        if result.finalizer:
-            finalizer = CallableWrapper(result.finalizer)
-            result = await finalizer((self, ctx, result), data=data)
-
-        return result
-
-    async def build_properties_button(
+    def add_menu_modification(
         self,
-        ctx: PropertiesUIContext,
-        data: dict[str, Any],
+        menu_id: str,
+        modification_id: str,
+        modification: MenuModProto,
+        filter: MenuModFilterProto | None = None,
+    ) -> None:
+        if menu_id not in self._menus:
+            raise KeyError(f'Menu {menu_id!r} does not exist.')
+        if modification_id in self._menus[menu_id].modifications:
+            raise KeyError(f'Menu {menu_id!r} already has a modification {modification_id!r}.')
+
+        modification_obj = MenuModification(
+            CallableWrapper(modification),
+            CallableWrapper(filter) if filter is not None else None
+        )
+        self._menus[menu_id].modifications[modification_id] = modification_obj
+        logger.info(
+            f'Modification {modification_id!r} for menu {menu_id!r} '
+            f'has been added to registry.'
+        )
+
+    def get_menu_builder(self, menu_id: str) -> MenuBuilder:
+        return self._menus[menu_id]
+
+    async def build_menu(self, context: MenuRenderContext, data: dict[str, Any]) -> Menu:
+        try:
+            builder = self.get_menu_builder(context.menu_id)
+        except KeyError:
+            logger.error(f'Menu {context.menu_id!r} not found.')
+            raise
+
+        logger.info(f'Building menu {context.menu_id!r}.')
+
+        # create new workflow data object and replace 'data' key
+        data = self._workflow_data | data
+        data['data'] = data
+
+        return await builder.build(self, context, data)
+
+    def add_button_builder(
+        self,
+        button_id: str,
+        builder: ButtonBuilderProto,
+        overwrite: bool = False
+    ) -> None:
+        mods = {}
+        if button_id in self._buttons:
+            if not overwrite:
+                raise KeyError(f'Button {button_id!r} already exists.')
+            mods = self._buttons[button_id].modifications
+
+        self._buttons[button_id] = ButtonBuilder(CallableWrapper(builder), mods)
+        logger.info(f'Button builder {button_id!r} has been added to registry.')
+
+    def add_button_modification(
+        self,
+        button_id: str,
+        modification_id: str,
+        modification: ButtonModProto,
+        filter: ButtonModFilterProto | None = None,
+    ) -> None:
+        if button_id not in self._buttons:
+            raise KeyError(f'Button {button_id!r} does not exist.')
+        if modification_id in self._buttons[button_id].modifications:
+            raise KeyError(f'Button {button_id!r} already has a modification {modification_id!r}.')
+
+        modification_obj = ButtonModification(
+            CallableWrapper(modification),
+            CallableWrapper(filter) if filter is not None else None
+        )
+        self._buttons[button_id].modifications[modification_id] = modification_obj
+        logger.info(
+            f'Modification {modification_id!r} for button {button_id!r} '
+            f'has been added to registry.'
+        )
+
+    def get_button_builder(self, button_id: str) -> ButtonBuilder:
+        return self._buttons[button_id]
+
+    async def build_button(
+        self,
+        button_id: str,
+        context: MenuRenderContext,
+        context_data: dict[str, Any],
+        data: dict[str, Any]
     ) -> Button:
-        logger.debug(f'Properties button builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
-                     f'has been requested.')
+        try:
+            builder = self.get_button_builder(button_id)
+        except KeyError:
+            logger.error(f'Button {button_id!r} not found.')
+            raise
 
-        builder = self.find_properties_btn_builder(type(ctx.entry))
-        if builder is None:
-            raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
+        logger.info(f'Building button {button_id!r}.')
 
-        result = await builder((self, ctx), data=data)
+        data = self._workflow_data | data
+        data['data'] = data
 
-        # todo: add logging for modifications
-        for modification_id, modification in self.entries_buttons_modifications.items():
-            try:
-                result = await modification((self, ctx, result), data=data)
-            except:
-                continue
-        return result
+        button_context = ButtonRenderContext(
+            button_id=button_id,
+            menu_render_context=context,
+            data=context_data
+        )
 
-    async def build_menu(
-        self,
-        menu_id: str,
-        ctx: UIContext,
-        data: dict[str, Any],
-    ) -> Menu:
-        logger.debug(f'Properties menu builder {menu_id!r} has been requested.')
-        if menu_id not in self.default_menus:
-            raise ValueError(f'Unknown menu id {menu_id}.')
-
-        result = await self.default_menus[menu_id]((self, ctx), data=data)
-        if result.finalizer:
-            finalizer = CallableWrapper(result.finalizer)
-            result = await finalizer((self, ctx, result), data=data)
-        return result
-
-    def find_properties_btn_builder(
-        self,
-        entry_type: Type[MutableParameter | Properties],
-    ) -> CallableWrapper[Button] | None:
-        if entry_type in self.default_entries_buttons:
-            return self.default_entries_buttons[entry_type]
-        for t, u in self.default_entries_buttons.items():
-            if issubclass(entry_type, t):
-                return u
-
-    def find_properties_menu_builder(
-        self,
-        entry_type: Type[MutableParameter | Properties],
-    ) -> CallableWrapper[Menu] | None:
-        if entry_type in self.default_entries_menus:
-            return self.default_entries_menus[entry_type]
-        for t, u in self.default_entries_menus.items():
-            if issubclass(entry_type, t):
-                return u
-
-    def add_default_entry_button_builder(
-        self,
-        entry_type: Type[Properties | MutableParameter],
-        builder: EntryBtnBuilder,
-    ):
-        if entry_type in self.default_entries_buttons:
-            raise ValueError(f'Default button builder for {entry_type} is already added.')
-        self.default_entries_buttons[entry_type] = CallableWrapper(builder)
-
-    def set_default_entry_menu_builder(
-        self,
-        entry_type: Type[Properties | MutableParameter],
-        builder: EntryMenuBuilder,
-    ):
-        if entry_type in self.default_entries_menus:
-            raise ValueError(f'Default menu builder for {entry_type} is already added.')
-        self.default_entries_menus[entry_type] = CallableWrapper(builder)
-
-    def add_entry_button_modification(
-        self,
-        modification_id: str,
-        modification: EntryBtnModification,
-    ):
-        self.entries_buttons_modifications[modification_id] = CallableWrapper(modification)
-
-    def add_entry_menu_modification(
-        self,
-        modification_id: str,
-        modification: EntryMenuModification,
-    ):
-        self.entries_menus_modifications[modification_id] = CallableWrapper(modification)
-
-    def add_menu(
-        self,
-        menu_id: str,
-        builder: MenuBuilder,
-    ):
-        if menu_id in self.default_menus:
-            raise ValueError(f'Default menu with ID {menu_id!r} is already added.')
-        self.default_menus[menu_id] = CallableWrapper(builder)
+        return await builder.build(self, button_context, data)
