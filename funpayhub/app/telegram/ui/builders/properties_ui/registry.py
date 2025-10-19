@@ -112,6 +112,10 @@ class _PropertiesUIRegistry:
         properties: FunPayHubProperties,
         data: dict[str, Any]
     ) -> Menu:
+        """
+        Реальный menu builder, который необходимо зарегистрировать в UIRegistry с ID
+        `MenuIds.properties_entry`.
+        """
         if 'path' not in ctx.data:
             raise RuntimeError('Unable to build properties entry menu: \'path\' is missing.')
         entry = properties.get_entry(ctx.data['path'])

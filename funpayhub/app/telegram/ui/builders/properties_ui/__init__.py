@@ -20,3 +20,4 @@ Registry.add_button_builder(Properties, builders.build_open_entry_menu_button)
 
 entry_button_builder = Registry.entry_button_builder
 entry_menu_builder = Registry.entry_menu_builder
+

@@ -332,36 +332,48 @@ async def parameter_menu_builder(
 
 
 # Modifications
-# async def funpayhub_properties_menu_modification(
-#     ui: UIRegistry,
-#     ctx: PropertiesUIContext,
-#     menu: Menu
-# ) -> Menu:
-#     if not ctx.entry.matches_path([]):
-#         return menu
-#
-#     menu.keyboard.append([
-#         Button(
-#             button_id='open_formatters_list',
-#             text=ui.translater.translate('$open_formatters_list', ctx.language),
-#             callback_data=cbs.OpenMenu(
-#                 menu_id=MenuIds.FORMATTERS_LIST,
-#                 history=ctx.callback.as_history(),
-#             ).pack()
-#         )
-#     ])
-#
-#     menu.keyboard.insert(1, [
-#         Button(
-#             button_id='open_current_chat_notifications',
-#             text=ui.translater.translate('$telegram_notifications', ctx.language),
-#             callback_data=cbs.OpenMenu(
-#                 menu_id=MenuIds.TG_CHAT_NOTIFICATIONS,
-#                 history=ctx.callback.as_history(),
-#             ).pack()
-#         )
-#     ])
-#     return menu
+class PropertiesMenuModification:
+    @staticmethod
+    async def filter(ui: UIRegistry, ctx: MenuRenderContext, menu: Menu) -> bool:
+        return ctx.menu_id == MenuIds.properties_entry and ctx.data.get('path') == []
+
+    @staticmethod
+    async def modification(
+        ui: UIRegistry,
+        ctx: MenuRenderContext,
+        menu: Menu,
+        translater: Translater,
+        properties: FunPayHubProperties,
+    ) -> Menu:
+        language = properties.general.language.real_value
+        callback_data = ctx.callback_data
+
+        menu.main_keyboard.append([
+            Button(
+                button_id='open_formatters_list',
+                obj=InlineKeyboardButton(
+                    text=translater.translate('$open_formatters_list', language),
+                    callback_data=cbs.OpenMenu(
+                        menu_id=MenuIds.formatters_list,
+                        history=callback_data.as_history() if callback_data is not None else [],
+                    ).pack()
+                )
+            )
+        ])
+
+        menu.main_keyboard.insert(1, [
+            Button(
+                button_id='open_current_chat_notifications',
+                obj=InlineKeyboardButton(
+                    text=translater.translate('$telegram_notifications', language),
+                    callback_data=cbs.OpenMenu(
+                        menu_id=MenuIds.tg_chat_notifications,
+                        history=callback_data.as_history() if callback_data is not None else [],
+                    ).pack()
+                )
+            )
+        ])
+        return menu
 #
 #
 # async def add_formatters_list_button_modification(

@@ -7,8 +7,6 @@ from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.strategy import FSMStrategy
 
-from funpayhub.lib.telegram.callback_data import CallbackData
-from funpayhub.lib.telegram.callbacks import MenuPageable, ViewPageable
 from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
@@ -88,6 +86,10 @@ class Telegram:
 
         for button_id, button_builder in default_ui.BUTTON_BUILDERS.items():
             self.ui_registry.add_button_builder(button_id, button_builder)
+
+        for menu_id, data in default_ui.MENU_MODIFICATIONS.items():
+            for mod_id, (filter, modification) in data.items():
+                self.ui_registry.add_menu_modification(menu_id, mod_id, modification, filter)
 
     async def start(self) -> None:
         await self.dispatcher.start_polling(self.bot)
