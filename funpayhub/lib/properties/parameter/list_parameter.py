@@ -38,5 +38,8 @@ class ListParameter[ItemType: ALLOWED_TYPES](MutableParameter[list[ItemType]]):
     async def add_item(self, item: ItemType) -> None:
         self.value.append(item)
 
-    async def remove_item(self, index: int) -> None:
-        self.value.pop(index)
+    async def pop_item(self, index: int) -> ItemType:
+        return self.value.pop(index)
+
+    async def remove_item(self, item: ItemType) -> None:
+        return self.value.remove(item)

@@ -208,7 +208,7 @@ async def toggle_notification_channel(
     bot: Bot
 ):
     chat_identifier = f'{query.message.chat.id}.{query.message.message_thread_id}'
-    param: ListParameter = properties.telegram.notifications[callback_data.channel]
+    param: ListParameter[Any] = properties.telegram.notifications[callback_data.channel]
 
     if chat_identifier in param.value:
         await param.remove_item(chat_identifier)
@@ -275,7 +275,7 @@ async def make_list_item_action(
     param: ListParameter = properties.get_parameter(callback_data.path)  # type: ignore
     index = callback_data.item_index
     if callback_data.action == 'remove':
-        await param.remove_item(index)
+        await param.pop_item(index)
     elif callback_data.action == 'move_up':
         if index == 0:
             await query.answer()

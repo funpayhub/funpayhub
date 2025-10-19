@@ -77,8 +77,8 @@ class MenuRenderContext:
     def create(
         cls,
         menu_id: str,
-        menu_page: int,
-        view_page: int,
+        menu_page: int = 0,
+        view_page: int = 0,
         chat_id: int | None = None,
         thread_id: int | None = None,
         message_id: int | None = None,

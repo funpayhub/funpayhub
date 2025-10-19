@@ -22,18 +22,13 @@ r = Router(name='exec_plugin')
 
 
 @r.message(Command('execlist'))
-async def exec_list_menu(
-    message: Message,
-    tg_ui: UIRegistry,
-    properties: FunPayHubProperties,
-    data: dict[str, Any],
-):
-    context = UIContext(
-        language=properties.general.language.real_value,
-        max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        callback=cbs.OpenMenu(menu_id='exec_list'),
+async def exec_list_menu(message: Message, tg_ui: UIRegistry, data: dict[str, Any]):
+    context = MenuRenderContext.create(
+        menu_id='exec_list',
+        trigger=message,
+        data={'callback_data': cbs.OpenMenu(menu_id='exec_list')}
     )
-    await (await tg_ui.build_menu('exec_list', context, data)).reply_to(message)
+    await (await tg_ui.build_menu(context, data)).reply_to(message)
 
 
 @r.message(Command('exec'))
@@ -42,7 +37,6 @@ async def execute_python_code(
     data: dict[str, Any],
     exec_registry: ExecutionResultsRegistry,
     tg_ui: UIRegistry,
-    properties: FunPayHubProperties,
 ):
     if message.from_user.id != 5991368886:
         return
@@ -83,17 +77,19 @@ async def execute_python_code(
         execution_time=execution_time,
     )
 
-    context = UIContext(
-        language=properties.general.language.real_value,
-        max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        callback=cbs.OpenMenu(
-            menu_id='exec_output',
-            history=[cbs.OpenMenu(menu_id='exec_list').pack(hash=False)],
-            data={'exec_id': r.id}
-        ),
+    context = MenuRenderContext.create(
+        menu_id='exec_output',
+        trigger=message,
+        data={
+            'callback_data': cbs.OpenMenu(
+                menu_id='exec_output',
+                history=[cbs.OpenMenu(menu_id='exec_list').pack(hash=False)]
+            ),
+            'exec_id': r.id
+        }
     )
 
-    await (await tg_ui.build_menu('exec_output', context, data)).reply_to(message)
+    await (await tg_ui.build_menu(context, data)).reply_to(message)
 
 
 @r.callback_query(SendExecFile.filter())

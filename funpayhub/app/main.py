@@ -59,8 +59,8 @@ class FunPayHub:
         )
 
     async def load_plugins(self):
-        # pl = Plugin()
-        # await pl.setup(self)
+        pl = Plugin()
+        await pl.setup(self)
         pass
 
     async def emit_parameter_changed_event(

@@ -21,13 +21,13 @@ class Plugin:
         registry = ExecutionResultsRegistry()
         hub.workflow_data['exec_registry'] = registry
 
-        hub.telegram.ui_registry.add_menu('exec_list', exec_list_menu_builder)
-        hub.telegram.ui_registry.add_menu('exec_code', exec_code_menu_builder)
-        hub.telegram.ui_registry.add_menu('exec_output', exec_output_menu_builder)
+        hub.telegram.ui_registry.add_menu_builder('exec_list', exec_list_menu_builder)
+        hub.telegram.ui_registry.add_menu_builder('exec_code', exec_code_menu_builder)
+        hub.telegram.ui_registry.add_menu_builder('exec_output', exec_output_menu_builder)
 
-        hub.telegram.ui_registry.add_entry_menu_modification(
-            'exec:main_props_menu_modification',
-            main_props_menu_modification,
-        )
+        # hub.telegram.ui_registry.add_entry_menu_modification(
+        #     'exec:main_props_menu_modification',
+        #     main_props_menu_modification,
+        # )
 
         hub.telegram.dispatcher.include_router(router)
