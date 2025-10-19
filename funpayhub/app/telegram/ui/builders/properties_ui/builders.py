@@ -295,7 +295,7 @@ async def list_parameter_menu_builder(
     )
 
 
-async def parameter_menu_builder(
+async def param_value_manual_input_menu_builder(
     ui: UIRegistry,
     ctx: MenuRenderContext,
     translater: Translater,

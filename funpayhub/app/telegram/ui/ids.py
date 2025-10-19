@@ -4,6 +4,7 @@ from enum import StrEnum, UNIQUE, verify
 @verify(UNIQUE)
 class MenuIds(StrEnum):
     properties_entry = 'properties_entry'
+    param_value_manual_input = 'param_value_manual_input'
     formatters_list = 'formatters_list'
     formatter_info = 'formatter_info'
     hooks_list = 'hooks_list'

@@ -173,21 +173,20 @@ async def change_parameter_value(
     state = _get_context(dispatcher, bot, query)
     await state.clear()
 
-    ctx = PropertiesUIContext(
-        language=properties.general.language.real_value,
-        max_elements_on_page=properties.telegram.appearance.menu_entries_amount.value,
-        menu_page=0,
-        callback=unpacked_callback,
-        entry=properties.get_parameter(callback_data.path),
+    entry = properties.get_parameter(callback_data.path)
+    ctx = MenuRenderContext.create(
+        menu_id=MenuIds.param_value_manual_input,
+        trigger=query,
+        data={'path': callback_data.path, 'entry': entry}
     )
 
-    msg = await (await tg_ui.build_properties_menu(ctx=ctx, data=data)).apply_to(query.message)
+    msg = await (await tg_ui.build_menu(ctx, data)).apply_to(query.message)
 
     await state.set_state(ChangingParameterValueState.name)
     await state.set_data(
         {
             'data': ChangingParameterValueState(
-                parameter=ctx.entry,
+                parameter=entry,
                 callback_query_obj=query,
                 callbacks_history=unpacked_callback.history,
                 message=msg,
