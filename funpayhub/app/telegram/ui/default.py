@@ -22,6 +22,14 @@ MENU_MODIFICATIONS = {
         'fph:main_properties_menu_modification': (
             builders.PropertiesMenuModification.filter,
             builders.PropertiesMenuModification.modification
+        ),
+        'fph:add_formatters_list_button_modification': (
+            builders.AddFormattersListButtonModification.filter,
+            builders.AddFormattersListButtonModification.modification
+        ),
+        'fph:add_command_button_modification': (
+            builders.AddCommandButtonModification.filter,
+            builders.AddCommandButtonModification.modification
         )
-    }
+    },
 }

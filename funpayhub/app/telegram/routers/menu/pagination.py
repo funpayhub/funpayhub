@@ -9,6 +9,7 @@ from funpayhub.lib.telegram.states import ChangingMenuPage, ChangingViewPage
 from aiogram.filters import StateFilter
 from contextlib import suppress
 from typing import Literal
+import asyncio
 
 
 router = Router(name='fph:pagination')
@@ -80,7 +81,7 @@ async def change_page_from_message(
         return
 
     await context.clear()
-    await _delete_message(data.message)
+    asyncio.create_task(_delete_message(data.message))
 
     old = UnknownCallback.from_string(data.callback_data.history[-1])
     old.data['view_page' if type_ == 'view' else 'menu_page'] = new_page_index

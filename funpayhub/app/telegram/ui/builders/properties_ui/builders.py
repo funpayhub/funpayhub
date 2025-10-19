@@ -374,47 +374,60 @@ class PropertiesMenuModification:
             )
         ])
         return menu
-#
-#
-# async def add_formatters_list_button_modification(
-#     ui: UIRegistry,
-#     ctx: PropertiesUIContext,
-#     menu: Menu
-# ) -> Menu:
-#     if not any([
-#         ctx.entry.matches_path(['auto_response', '*', 'response_text']),
-#         ctx.entry.matches_path(['review_reply', '*', 'review_reply_text']),
-#         ctx.entry.matches_path(['review_reply', '*', 'chat_reply_text']),
-#     ]):
-#         return menu
-#
-#     menu.keyboard.append([
-#         Button(
-#             button_id='open_formatters_list',
-#             text=ui.translater.translate('$open_formatters_list', ctx.language),
-#             callback_data=cbs.OpenMenu(
-#                 menu_id=MenuIds.FORMATTERS_LIST,
-#                 history=ctx.callback.as_history()
-#             ).pack()
-#         )
-#     ])
-#     return menu
-#
-#
-# async def add_add_button_for_commands_list(
-#     ui: UIRegistry,
-#     ctx: PropertiesUIContext,
-#     menu: Menu
-# ):
-#     if not ctx.entry.matches_path(['auto_response']):
-#         return menu
-#
-#     menu.footer_keyboard.append([
-#         Button(
-#             button_id='add_command',
-#             text='$add_command',
-#             callback_data=cbs.Dummy().pack()  # todo
-#         )
-#     ])
-#
-#     return menu
+
+
+class AddFormattersListButtonModification:
+    @staticmethod
+    async def filter(ui: UIRegistry, ctx: MenuRenderContext, menu: Menu) -> bool:
+        entry = ctx.data['entry']
+        return (
+            entry.matches_path(['auto_response', '*', 'response_text']) or
+            entry.matches_path(['review_reply', '*', 'review_reply_text']) or
+            entry.matches_path(['review_reply', '*', 'chat_reply_text'])
+        )
+
+    @staticmethod
+    async def modification(
+        ui: UIRegistry,
+        ctx: MenuRenderContext,
+        menu: Menu,
+        translater: Translater,
+        properties: FunPayHubProperties
+    ) -> Menu:
+        language = properties.general.language.real_value
+        callback_data = ctx.callback_data
+
+        menu.main_keyboard.append([
+            Button(
+                button_id='open_formatters_list',
+                obj=InlineKeyboardButton(
+                    text=translater.translate('$open_formatters_list', language),
+                    callback_data=cbs.OpenMenu(
+                        menu_id=MenuIds.formatters_list,
+                        history=callback_data.as_history() if callback_data is not None else [],
+                    ).pack()
+                )
+            )
+        ])
+        return menu
+
+
+class AddCommandButtonModification:
+    @staticmethod
+    async def filter(ui: UIRegistry, ctx: MenuRenderContext, menu: Menu) -> bool:
+        entry = ctx.data['entry']
+        return entry.matches_path(['auto_response'])
+
+    @staticmethod
+    async def modification(ui: UIRegistry, ctx: MenuRenderContext, menu: Menu) -> Menu:
+        menu.footer_keyboard.append([
+            Button(
+                button_id='add_command',
+                obj=InlineKeyboardButton(
+                    text='$add_command',
+                    callback_data=cbs.Dummy().pack()  # todo
+                )
+            )
+        ])
+
+        return menu

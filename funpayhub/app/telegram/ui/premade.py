@@ -24,15 +24,12 @@ async def build_menu_navigation_buttons(
     total_pages: int,
     back_button: bool = True
 ) -> Keyboard:
-    print(f'BUILDING MENU NAVIGATION BUTTONS')
     kb: Keyboard = []
     callback_data = ctx.callback_data
     if callback_data is None:
-        print(f'NO CALLBACK DATA')
         return kb
 
     if callback_data.history and back_button:
-        print(f'CALLBACK HISTORY EXISTS AND BACK BUTTON')
         kb = [[
             Button(
                 button_id='back',
@@ -52,7 +49,7 @@ async def build_menu_navigation_buttons(
             text=f'{ctx.menu_page + (1 if total_pages else 0)} / {total_pages}',
             callback_data=cbs.ChangeMenuPageManually(
                 total_pages=total_pages,
-                history=callback_data.as_history() if callback_data.history else None
+                history=callback_data.as_history()
             ).pack() if total_pages > 1 else cbs.Dummy().pack()
         )
     )
@@ -63,7 +60,7 @@ async def build_menu_navigation_buttons(
             text='⏪' if ctx.menu_page > 0 else '❌',
             callback_data=cbs.ChangePageTo(
                 menu_page=0,
-                history=callback_data.as_history() if callback_data.history else None
+                history=callback_data.as_history()
             ).pack() if ctx.menu_page > 0 else cbs.Dummy().pack(),
         )
     )
@@ -74,7 +71,7 @@ async def build_menu_navigation_buttons(
             text='⏩' if ctx.menu_page < total_pages - 1 else '❌',
             callback_data=cbs.ChangePageTo(
                 menu_page=total_pages - 1,
-                history=callback_data.as_history() if callback_data.history else None
+                history=callback_data.as_history()
             ).pack() if ctx.menu_page < total_pages - 1 else cbs.Dummy().pack(),
         )
     )
@@ -85,7 +82,7 @@ async def build_menu_navigation_buttons(
             text='◀️' if ctx.menu_page > 0 else '❌',
             callback_data=cbs.ChangePageTo(
                 menu_page=ctx.menu_page - 1,
-                history=callback_data.as_history() if callback_data.history else None
+                history=callback_data.as_history()
             ).pack() if ctx.menu_page > 0 else cbs.Dummy().pack(),
         )
     )
@@ -96,7 +93,7 @@ async def build_menu_navigation_buttons(
             text='▶️' if ctx.menu_page < total_pages - 1 else '❌',
             callback_data=cbs.ChangePageTo(
                 menu_page=ctx.menu_page + 1,
-                history=callback_data.as_history() if callback_data.history else None
+                history=callback_data.as_history()
             ).pack() if ctx.menu_page < total_pages - 1 else cbs.Dummy().pack(),
         )
     )
