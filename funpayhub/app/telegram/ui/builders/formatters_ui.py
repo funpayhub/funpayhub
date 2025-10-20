@@ -8,7 +8,7 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.app.telegram.ui import premade
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuRenderContext
+from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 from ..ids import MenuIds
@@ -20,8 +20,7 @@ if TYPE_CHECKING:
 
 # Formatters
 async def formatters_list_menu_builder(
-    ui: UIRegistry,
-    ctx: MenuRenderContext,
+    ctx: MenuContext,
     fp_formatters: FormattersRegistry,
     translater: Translater,
     properties: FunPayHubProperties,
@@ -57,8 +56,7 @@ async def formatters_list_menu_builder(
 
 
 async def formatter_info_menu_builder(
-    ui: UIRegistry,
-    ctx: MenuRenderContext,
+    ctx: MenuContext,
     fp_formatters: FormattersRegistry,
     translater: Translater,
     properties: FunPayHubProperties,

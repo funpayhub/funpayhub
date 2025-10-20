@@ -11,7 +11,7 @@ from aiogram.types import Message, CallbackQuery, BufferedInputFile, InputMediaD
 from aiogram.filters import Command
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.ui import UIRegistry, MenuRenderContext
+from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
 from funpayhub.plugins.exec_plugin.types import LockableBuffer, ExecutionResultsRegistry
 
 from .callbacks import SendExecFile
@@ -22,7 +22,7 @@ r = Router(name='exec_plugin')
 
 @r.message(Command('execlist'))
 async def exec_list_menu(message: Message, tg_ui: UIRegistry, data: dict[str, Any]):
-    context = MenuRenderContext(
+    context = MenuContext(
         menu_id='exec_list',
         trigger=message,
         data={'callback_data': cbs.OpenMenu(menu_id='exec_list')},
@@ -77,7 +77,7 @@ async def execute_python_code(
         execution_time=execution_time,
     )
 
-    context = MenuRenderContext(
+    context = MenuContext(
         menu_id='exec_output',
         trigger=message,
         data={

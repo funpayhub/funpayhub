@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Type, Literal, Protocol, overload
+from typing import Any, Type, Literal, Protocol, overload
 from dataclasses import field, dataclass
 
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.telegram.callback_data import UnknownCallback
-
-
-if TYPE_CHECKING:
-    from .registry import UIRegistry
 
 
 type Keyboard = list[list[Button]]
@@ -32,12 +28,10 @@ class Menu:
     finalizer: MenuModFilterProto | None = None
 
     @overload
-    def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None:
-        pass
+    def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None: pass
 
     @overload
-    def total_keyboard(self, convert: Literal[False]) -> Keyboard | None:
-        pass
+    def total_keyboard(self, convert: Literal[False]) -> Keyboard | None: pass
 
     def total_keyboard(self, convert: bool = False) -> Keyboard | InlineKeyboardMarkup | None:
         total_keyboard = [*self.header_keyboard, *self.main_keyboard, *self.footer_keyboard]
@@ -46,26 +40,19 @@ class Menu:
         if not convert:
             return total_keyboard
 
-        for line_index, line in enumerate(total_keyboard):
-            for button_index, button in enumerate(line):
-                total_keyboard[line_index][button_index] = button.obj
-        return InlineKeyboardMarkup(inline_keyboard=total_keyboard)
-
-    async def reply_to(self, message: Message) -> Message:
-        return await message.answer(
-            text=self.text,
-            reply_markup=self.total_keyboard(convert=True),
+        return InlineKeyboardMarkup(inline_keyboard=[
+            [button.obj for button in line] for line in total_keyboard]
         )
 
-    async def apply_to(self, message: Message) -> Message | bool:
-        return await message.edit_text(
-            text=self.text,
-            reply_markup=self.total_keyboard(convert=True),
-        )
+    async def reply_to(self, msg: Message, /) -> Message:
+        return await msg.answer(text=self.text, reply_markup=self.total_keyboard(convert=True))
+
+    async def apply_to(self, msg: Message, /) -> Message | bool:
+        return await msg.edit_text(text=self.text, reply_markup=self.total_keyboard(convert=True))
 
 
 @dataclass(kw_only=True)
-class MenuRenderContext:
+class MenuContext:
     menu_id: str
     menu_page: int = 0
     view_page: int = 0
@@ -99,71 +86,34 @@ class MenuRenderContext:
 
 
 @dataclass(kw_only=True)
-class ButtonRenderContext:
-    menu_render_context: MenuRenderContext
+class ButtonContext:
+    menu_render_context: MenuContext
     button_id: str
     data: dict[str, Any] = field(default_factory=dict)
 
 
 class MenuBuilderProto(Protocol):
-    async def __call__(
-        self, __u: UIRegistry, __c: MenuRenderContext, *__a: Any, **__k: Any
-    ) -> Menu:
-        pass
+    async def __call__(self, __c: MenuContext, *__a: Any, **__k: Any) -> Menu: pass
 
 
 class MenuModFilterProto(Protocol):
-    async def __call__(
-        self,
-        __registry: UIRegistry,
-        __ctx: MenuRenderContext,
-        __menu: Menu,
-        *__args: Any,
-        **__kwargs: Any,
-    ) -> bool: ...
+    async def __call__(self, __c: MenuContext, __m: Menu, *__a: Any, **__k: Any) -> bool: pass
 
 
 class MenuModProto(Protocol):
-    async def __call__(
-        self,
-        __registry: UIRegistry,
-        __ctx: MenuRenderContext,
-        __menu: Menu,
-        *__args: Any,
-        **__kwargs: Any,
-    ) -> Menu: ...
+    async def __call__(self, __c: MenuContext, __m: Menu, *__a: Any, **__k: Any) -> Menu: pass
 
 
 class ButtonBuilderProto(Protocol):
-    async def __call__(
-        self,
-        __registry: UIRegistry,
-        __ctx: ButtonRenderContext,
-        *__args: Any,
-        **__kwargs: Any,
-    ) -> Button: ...
+    async def __call__(self, __c: ButtonContext, *__a: Any, **__k: Any) -> Button: pass
 
 
 class ButtonModFilterProto(Protocol):
-    async def __call__(
-        self,
-        __registry: UIRegistry,
-        __ctx: ButtonRenderContext,
-        __button: Button,
-        *__args: Any,
-        **__kwargs: Any,
-    ) -> bool: ...
+    async def __call__(self, __c: ButtonContext, __b: Button, *__a: Any, **__k: Any) -> bool: pass
 
 
 class ButtonModProto(Protocol):
-    async def __call__(
-        self,
-        __registry: UIRegistry,
-        __ctx: ButtonRenderContext,
-        __button: Button,
-        *__args: Any,
-        **__kwargs: Any,
-    ) -> Button: ...
+    async def __call__(self, __c: ButtonContext, __b: Button, *__a: Any, **__k: Any) -> Button: pass
 
 
 @dataclass
@@ -171,52 +121,41 @@ class MenuModification:
     modification: CallableWrapper[Menu]
     filter: CallableWrapper[bool] | None = None
 
-    async def __call__(
-        self,
-        registry: UIRegistry,
-        context: MenuRenderContext,
-        menu: Menu,
-        data: dict[str, Any],
-    ) -> Menu:
+    async def __call__(self, context: MenuContext, menu: Menu, data: dict[str, Any]) -> Menu:
         if self.filter is not None:
-            result = await self.filter((registry, context, menu), data)
+            result = await self.filter((context, menu), data)
             if not result:
                 return menu
-        return await self.modification((registry, context, menu), data)
+        return await self.modification((context, menu), data)
 
 
 @dataclass
 class MenuBuilder:
     builder: MenuBuilderProto
-    context_type: Type[MenuRenderContext]
+    context_type: Type[MenuContext]
     modifications: dict[str, MenuModification] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        if not issubclass(self.context_type, MenuRenderContext):
+        if not issubclass(self.context_type, MenuContext):
             raise ValueError(
-                'Invalid context type. Context type must be a subtype of `MenuRenderContext`.',
+                'Invalid context type. Context type must be a subtype of `MenuContext`.',
             )
 
         self._wrapped_builder: CallableWrapper[Menu] = CallableWrapper(self.builder)
 
-    async def build(
-        self,
-        registry: UIRegistry,
-        context: MenuRenderContext,
-        data: dict[str, Any],
-    ) -> Menu:
-        result = await self.wrapped_builder((registry, context), data)
+    async def build(self, context: MenuContext, data: dict[str, Any]) -> Menu:
+        result = await self.wrapped_builder((context, ), data)
 
         for i in self.modifications.values():
             try:
-                result = await i(registry, context, result, data)
+                result = await i(context, result, data)
             except:
                 continue  # todo: logging
 
         if result.finalizer:
             try:
                 wrapped = CallableWrapper(result.finalizer)
-                result = await wrapped((registry, context, result), data)
+                result = await wrapped((context, result), data)
             except:
                 import traceback
 
@@ -235,46 +174,35 @@ class ButtonModification:
     modification: CallableWrapper[Button]
     filter: CallableWrapper[bool] | None = None
 
-    async def __call__(
-        self,
-        registry: UIRegistry,
-        context: ButtonRenderContext,
-        button: Button,
-        data: dict[str, Any],
-    ) -> Button:
+    async def __call__(self, context: ButtonContext, button: Button, data: dict[str, Any]) -> Button:
         if self.filter is not None:
-            result = await self.filter((registry, context, button), data)
+            result = await self.filter((context, button), data)
             if not result:
                 return button
-        return await self.modification((registry, context, button), data)
+        return await self.modification((context, button), data)
 
 
 @dataclass
 class ButtonBuilder:
     builder: ButtonBuilderProto
-    context_type: Type[ButtonRenderContext]
+    context_type: Type[ButtonContext]
     modifications: dict[str, ButtonModification] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        if not issubclass(self.context_type, ButtonRenderContext):
+        if not issubclass(self.context_type, ButtonContext):
             raise ValueError(
-                'Invalid context type. Context type must be a subtype of `ButtonRenderContext`.',
+                'Invalid context type. Context type must be a subtype of `ButtonContext`.',
             )
 
         self._wrapped_builder: CallableWrapper[Button] = CallableWrapper(self.builder)
 
-    async def build(
-        self,
-        registry: UIRegistry,
-        context: ButtonRenderContext,
-        data: dict[str, Any],
-    ) -> Button:
-        result = await self.wrapped_builder((registry, context), data)
+    async def build(self, context: ButtonContext, data: dict[str, Any]) -> Button:
+        result = await self.wrapped_builder((context, ), data)
         if not self.modifications:
             return result
         for i in self.modifications.values():
             try:
-                result = await i(registry, context, result, data)
+                result = await i(context, result, data)
             except:
                 continue  # todo: logging
         return result

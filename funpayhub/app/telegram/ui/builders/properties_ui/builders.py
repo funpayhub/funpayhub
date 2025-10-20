@@ -13,8 +13,8 @@ from funpayhub.lib.properties.base import Entry
 from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
 from funpayhub.lib.telegram.ui.types import Menu, Button
 from funpayhub.app.telegram.ui.builders.properties_ui.context import (
-    PropertiesMenuRenderContext,
-    PropertiesButtonRenderContext,
+    PropertiesMenuContext,
+    PropertiesButtonContext,
 )
 
 
@@ -25,8 +25,7 @@ if TYPE_CHECKING:
 
 
 async def toggle_param_button_builder(
-    ui: UIRegistry,
-    ctx: PropertiesButtonRenderContext,
+    ctx: PropertiesButtonContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Button:
@@ -47,8 +46,7 @@ async def toggle_param_button_builder(
 
 # Int / Float / String parameter
 async def parameter_button_builder(
-    ui: UIRegistry,
-    ctx: PropertiesButtonRenderContext,
+    ctx: PropertiesButtonContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Button:
@@ -76,8 +74,7 @@ async def parameter_button_builder(
 
 # List / Choice / Properties
 async def open_entry_menu_button_builder(
-    ui: UIRegistry,
-    ctx: PropertiesButtonRenderContext,
+    ctx: PropertiesButtonContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Button:
@@ -104,10 +101,10 @@ def _entry_text(entry: Entry, translater: Translater, language: str) -> str:
 
 # Menus
 async def properties_menu_builder(
-    ui: UIRegistry,
-    ctx: PropertiesMenuRenderContext,
+    ctx: PropertiesMenuContext,
     translater: Translater,
     properties: FunPayHubProperties,
+    tg_ui: UIRegistry,
     data: dict[str, Any],
 ) -> Menu:
     keyboard = []
@@ -117,12 +114,12 @@ async def properties_menu_builder(
             continue
 
         try:
-            button_ctx = PropertiesButtonRenderContext(
+            button_ctx = PropertiesButtonContext(
                 button_id=ButtonIds.properties_entry,
                 menu_render_context=ctx,
                 entry=sub_entry,
             )
-            button = await ui.build_button(
+            button = await tg_ui.build_button(
                 button_id=ButtonIds.properties_entry,
                 context=button_ctx,
                 data={**data},
@@ -143,8 +140,7 @@ async def properties_menu_builder(
 
 
 async def choice_parameter_menu_builder(
-    ui: UIRegistry,
-    ctx: PropertiesMenuRenderContext,
+    ctx: PropertiesMenuContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Menu:
@@ -179,8 +175,7 @@ async def choice_parameter_menu_builder(
 
 
 async def list_parameter_menu_builder(
-    ui: UIRegistry,
-    ctx: PropertiesMenuRenderContext,
+    ctx: PropertiesMenuContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Menu:
@@ -235,58 +230,41 @@ async def list_parameter_menu_builder(
             ),
         )
 
-    footer[0].extend(
-        [
+    mode_data = {
+        'enable_move_up_mode': ('⬆️', 'move_up'),
+        'enable_move_down_mode': ('⬇️', 'move_down'),
+        'enable_remove_mode': ('🗑️', 'remove'),
+    }
+    buttons = []
+    for button_id, (text, mode) in mode_data.items():
+        buttons.append(
             Button(
-                button_id='enable_move_up_mode',
+                button_id=button_id,
                 obj=InlineKeyboardButton(
-                    text='⬆️',
+                    text=text,
                     callback_data=cbs.OpenMenu(
                         menu_id=MenuIds.properties_entry,
                         menu_page=ctx.menu_page,
                         view_page=ctx.view_page,
                         history=callback_data.history if callback_data is not None else [],
-                        data={'path': ctx.entry.path, 'mode': 'move_up'},
+                        data={'path': ctx.entry.path, 'mode': mode},
                     ).pack(),
                 ),
             ),
-            Button(
-                button_id='enable_move_down_mode',
-                obj=InlineKeyboardButton(
-                    text='⬇️',
-                    callback_data=cbs.OpenMenu(
-                        menu_id=MenuIds.properties_entry,
-                        menu_page=ctx.menu_page,
-                        view_page=ctx.view_page,
-                        history=callback_data.history if callback_data is not None else [],
-                        data={'path': ctx.entry.path, 'mode': 'move_down'},
-                    ).pack(),
-                ),
+        )
+    footer[0].extend(buttons)
+
+    footer[0].append(
+        Button(
+            button_id='add_list_item',
+            obj=InlineKeyboardButton(
+                text='➕',
+                callback_data=cbs.ListParamAddItem(
+                    path=ctx.entry.path,
+                    history=callback_data.as_history() if callback_data is not None else [],
+                ).pack(),
             ),
-            Button(
-                button_id='enable_remove_mode',
-                obj=InlineKeyboardButton(
-                    text='🗑️',
-                    callback_data=cbs.OpenMenu(
-                        menu_id=MenuIds.properties_entry,
-                        menu_page=ctx.menu_page,
-                        view_page=ctx.view_page,
-                        history=callback_data.history if callback_data is not None else [],
-                        data={'path': ctx.entry.path, 'mode': 'remove'},
-                    ).pack(),
-                ),
-            ),
-            Button(
-                button_id='add_list_item',
-                obj=InlineKeyboardButton(
-                    text='➕',
-                    callback_data=cbs.ListParamAddItem(
-                        path=ctx.entry.path,
-                        history=callback_data.as_history() if callback_data is not None else [],
-                    ).pack(),
-                ),
-            ),
-        ]
+        ),
     )
 
     return Menu(
@@ -298,8 +276,7 @@ async def list_parameter_menu_builder(
 
 
 async def param_value_manual_input_menu_builder(
-    ui: UIRegistry,
-    ctx: PropertiesMenuRenderContext,
+    ctx: PropertiesMenuContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Menu:
@@ -337,13 +314,12 @@ async def param_value_manual_input_menu_builder(
 # Modifications
 class PropertiesMenuModification:
     @staticmethod
-    async def filter(ui: UIRegistry, ctx: PropertiesMenuRenderContext, menu: Menu) -> bool:
+    async def filter(ctx: PropertiesMenuContext, menu: Menu) -> bool:
         return ctx.menu_id == MenuIds.properties_entry and ctx.entry.matches_path([])
 
     @staticmethod
     async def modification(
-        ui: UIRegistry,
-        ctx: PropertiesMenuRenderContext,
+        ctx: PropertiesMenuContext,
         menu: Menu,
         translater: Translater,
         properties: FunPayHubProperties,
@@ -390,7 +366,7 @@ class PropertiesMenuModification:
 
 class AddFormattersListButtonModification:
     @staticmethod
-    async def filter(ui: UIRegistry, ctx: PropertiesMenuRenderContext, menu: Menu) -> bool:
+    async def filter(ctx: PropertiesMenuContext, menu: Menu) -> bool:
         return (
             ctx.entry.matches_path(['auto_response', '*', 'response_text'])
             or ctx.entry.matches_path(['review_reply', '*', 'review_reply_text'])
@@ -399,8 +375,7 @@ class AddFormattersListButtonModification:
 
     @staticmethod
     async def modification(
-        ui: UIRegistry,
-        ctx: PropertiesMenuRenderContext,
+        ctx: PropertiesMenuContext,
         menu: Menu,
         translater: Translater,
         properties: FunPayHubProperties,
@@ -429,11 +404,11 @@ class AddFormattersListButtonModification:
 
 class AddCommandButtonModification:
     @staticmethod
-    async def filter(ui: UIRegistry, ctx: PropertiesMenuRenderContext, menu: Menu) -> bool:
+    async def filter(ctx: PropertiesMenuContext, menu: Menu) -> bool:
         return ctx.entry.matches_path(['auto_response'])
 
     @staticmethod
-    async def modification(ui: UIRegistry, ctx: PropertiesMenuRenderContext, menu: Menu) -> Menu:
+    async def modification(ctx: PropertiesMenuContext, menu: Menu) -> Menu:
         menu.footer_keyboard.append(
             [
                 Button(

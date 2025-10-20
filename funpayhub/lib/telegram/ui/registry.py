@@ -19,11 +19,11 @@ from .types import (
     ButtonModProto,
     MenuBuilderProto,
     MenuModification,
-    MenuRenderContext,
+    MenuContext,
     ButtonBuilderProto,
     ButtonModification,
     MenuModFilterProto,
-    ButtonRenderContext,
+    ButtonContext,
     ButtonModFilterProto,
 )
 
@@ -35,11 +35,10 @@ class UIRegistry:
 
         self._workflow_data: dict[str, Any] = workflow_data if workflow_data is not None else {}
 
-    def add_menu_builder(
-        self,
+    def add_menu_builder(self,
         menu_id: str,
         builder: MenuBuilderProto,
-        context_type: Type[MenuRenderContext] = MenuRenderContext,
+        context_type: Type[MenuContext] = MenuContext,
         overwrite: bool = False,
     ) -> None:
         mods = {}
@@ -75,7 +74,7 @@ class UIRegistry:
     def get_menu_builder(self, menu_id: str) -> MenuBuilder:
         return self._menus[menu_id]
 
-    async def build_menu(self, context: MenuRenderContext, data: dict[str, Any]) -> Menu:
+    async def build_menu(self, context: MenuContext, data: dict[str, Any]) -> Menu:
         try:
             builder = self.get_menu_builder(context.menu_id)
         except KeyError:
@@ -94,13 +93,13 @@ class UIRegistry:
         data = self._workflow_data | data
         data['data'] = data
 
-        return await builder.build(self, context, data)
+        return await builder.build(context, data)
 
     def add_button_builder(
         self,
         button_id: str,
         builder: ButtonBuilderProto,
-        context_type: Type[ButtonRenderContext] = ButtonRenderContext,
+        context_type: Type[ButtonContext] = ButtonContext,
         overwrite: bool = False,
     ) -> None:
         mods = {}
@@ -140,7 +139,7 @@ class UIRegistry:
     async def build_button(
         self,
         button_id: str,
-        context: ButtonRenderContext,
+        context: ButtonContext,
         data: dict[str, Any],
     ) -> Button:
         try:
@@ -160,4 +159,4 @@ class UIRegistry:
         data = self._workflow_data | data
         data['data'] = data
 
-        return await builder.build(self, context, data)
+        return await builder.build(context, data)

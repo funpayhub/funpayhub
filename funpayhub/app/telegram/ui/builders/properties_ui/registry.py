@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = ['PropertiesUIRegistry']
 
 
-from typing import TYPE_CHECKING, Any, Type
+from typing import Any, Type
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
@@ -12,13 +12,9 @@ from funpayhub.loggers import telegram_ui as logger
 from funpayhub.lib.properties.base import Entry
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilderProto, ButtonBuilderProto
 from funpayhub.app.telegram.ui.builders.properties_ui.context import (
-    PropertiesMenuRenderContext,
-    PropertiesButtonRenderContext,
+    PropertiesMenuContext,
+    PropertiesButtonContext,
 )
-
-
-if TYPE_CHECKING:
-    from funpayhub.lib.telegram.ui.registry import UIRegistry
 
 
 class _PropertiesUIRegistry:
@@ -29,12 +25,7 @@ class _PropertiesUIRegistry:
         self._menus: dict[type[Entry], CallableWrapper[Menu]] = {}
         """Дефолтные фабрики меню просмотра параметров / категорий."""
 
-    async def build_menu(
-        self,
-        registry: UIRegistry,
-        ctx: PropertiesMenuRenderContext,
-        data: dict[str, Any],
-    ) -> Menu:
+    async def build_menu(self, ctx: PropertiesMenuContext, data: dict[str, Any]) -> Menu:
         logger.debug(
             f'Properties menu builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
             f'has been requested.'
@@ -44,12 +35,10 @@ class _PropertiesUIRegistry:
         if builder is None:
             raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
 
-        result = await builder((registry, ctx), data=data)
+        result = await builder((ctx, ), data=data)
         return result
 
-    async def build_button(
-        self, registry: UIRegistry, ctx: PropertiesButtonRenderContext, data: dict[str, Any]
-    ) -> Button:
+    async def build_button(self, ctx: PropertiesButtonContext, data: dict[str, Any]) -> Button:
         logger.debug(
             f'Properties button builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
             f'has been requested.'
@@ -59,7 +48,7 @@ class _PropertiesUIRegistry:
         if builder is None:
             raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
 
-        result = await builder((registry, ctx), data=data)
+        result = await builder((ctx, ), data=data)
         return result
 
     def get_button_builder(self, entry_type: Type[Entry]) -> CallableWrapper[Button] | None:

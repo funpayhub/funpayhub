@@ -8,7 +8,7 @@ from aiogram.types import InlineKeyboardButton
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuRenderContext
+from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext
 
 
 if TYPE_CHECKING:
@@ -16,8 +16,7 @@ if TYPE_CHECKING:
 
 
 async def message_menu_builder(
-    ui: UIRegistry,
-    ctx: MenuRenderContext,
+    ctx: MenuContext,
     properties: FunPayHubProperties,
     translater: Translater,
 ) -> Menu:

@@ -8,7 +8,7 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuRenderContext
+from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext
 
 from .. import premade
 
@@ -18,8 +18,7 @@ if TYPE_CHECKING:
 
 
 async def current_chat_notifications_menu_builder(
-    ui: UIRegistry,
-    ctx: MenuRenderContext,
+    ctx: MenuContext,
     properties: FunPayHubProperties,
     translater: Translater,
 ) -> Menu:

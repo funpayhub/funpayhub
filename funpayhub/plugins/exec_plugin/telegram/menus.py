@@ -8,7 +8,7 @@ from aiogram.types import InlineKeyboardButton
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.lib.telegram.ui import Menu, Button, Keyboard, UIRegistry, MenuRenderContext
+from funpayhub.lib.telegram.ui import Menu, Button, Keyboard, UIRegistry, MenuContext
 from funpayhub.app.telegram.ui.premade import (
     default_finalizer_factory,
     build_view_navigation_buttons,
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 MAX_TEXT_LEN: Final = 3000
 
 
-async def exec_view_kb(ctx: MenuRenderContext, mode: Literal['output', 'code']) -> Keyboard:
+async def exec_view_kb(ctx: MenuContext, mode: Literal['output', 'code']) -> Keyboard:
     callback_data = ctx.callback_data
     btn = Button(
         button_id='download_exec_files',
@@ -53,7 +53,7 @@ async def exec_view_kb(ctx: MenuRenderContext, mode: Literal['output', 'code']) 
 
 
 async def exec_view_text(
-    ctx: MenuRenderContext,
+    ctx: MenuContext,
     result: ExecR,
     mode: Literal['output', 'code'],
 ) -> str:
@@ -76,7 +76,7 @@ async def exec_view_text(
 # menus
 async def exec_list_menu_builder(
     ui: UIRegistry,
-    ctx: MenuRenderContext,
+    ctx: MenuContext,
     exec_registry: ExecRReg,
 ) -> Menu:
     keyboard = []
@@ -110,7 +110,7 @@ async def exec_list_menu_builder(
 
 async def exec_output_menu_builder(
     ui: UIRegistry,
-    ctx: MenuRenderContext,
+    ctx: MenuContext,
     exec_registry: ExecRReg,
 ) -> Menu:
     result = exec_registry.registry[ctx.data['exec_id']]
@@ -125,7 +125,7 @@ async def exec_output_menu_builder(
 
 
 async def exec_code_menu_builder(
-    ui: UIRegistry, ctx: MenuRenderContext, exec_registry: ExecRReg
+    ui: UIRegistry, ctx: MenuContext, exec_registry: ExecRReg
 ) -> Menu:
     result = exec_registry.registry[ctx.data['exec_id']]
     total_pages = math.ceil(result.code_len / MAX_TEXT_LEN)

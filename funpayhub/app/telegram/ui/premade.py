@@ -14,12 +14,11 @@ from aiogram.types import InlineKeyboardButton
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, MenuRenderContext
-from funpayhub.lib.telegram.ui.registry import UIRegistry
+from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, MenuContext
 
 
 async def build_menu_navigation_buttons(
-    ctx: MenuRenderContext,
+    ctx: MenuContext,
     translater: Translater,
     language: str,
     total_pages: int,
@@ -115,7 +114,7 @@ async def build_menu_navigation_buttons(
     return kb
 
 
-async def build_view_navigation_buttons(ctx: MenuRenderContext, total_pages: int) -> Keyboard:
+async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> Keyboard:
     kb: Keyboard = []
     callback_data = ctx.callback_data
     if callback_data is None or total_pages < 2:
@@ -192,8 +191,7 @@ async def build_view_navigation_buttons(ctx: MenuRenderContext, total_pages: int
 
 def default_finalizer_factory(back_button: bool = True):
     async def _default_finalizer(
-        ui: UIRegistry,
-        ctx: MenuRenderContext,
+        ctx: MenuContext,
         menu: Menu,
         properties: FunPayHubProperties,
         translater: Translater,

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from funpayhub.lib.telegram.ui.types import MenuRenderContext
+from funpayhub.lib.telegram.ui.types import MenuContext
 
 from .ids import MenuIds, ButtonIds
 from .builders import formatters_ui, notifications_ui
 from .builders.properties_ui import builders
 from .builders.properties_ui.context import (
-    PropertiesMenuRenderContext,
-    PropertiesButtonRenderContext,
+    PropertiesMenuContext,
+    PropertiesButtonContext,
 )
 from .builders.properties_ui.registry import PropertiesUIRegistry
 
@@ -15,23 +15,23 @@ from .builders.properties_ui.registry import PropertiesUIRegistry
 MENU_BUILDERS = {
     MenuIds.properties_entry: (
         PropertiesUIRegistry.build_menu,
-        PropertiesMenuRenderContext,
+        PropertiesMenuContext,
     ),
     MenuIds.param_value_manual_input: (
         builders.param_value_manual_input_menu_builder,
-        PropertiesMenuRenderContext,
+        PropertiesMenuContext,
     ),
     MenuIds.formatters_list: (
         formatters_ui.formatters_list_menu_builder,
-        MenuRenderContext,
+        MenuContext,
     ),
     MenuIds.formatter_info: (
         formatters_ui.formatter_info_menu_builder,
-        MenuRenderContext,
+        MenuContext,
     ),
     MenuIds.tg_chat_notifications: (
         notifications_ui.current_chat_notifications_menu_builder,
-        MenuRenderContext,
+        MenuContext,
     ),
 }
 
@@ -39,7 +39,7 @@ MENU_BUILDERS = {
 BUTTON_BUILDERS = {
     ButtonIds.properties_entry: (
         PropertiesUIRegistry.build_button,
-        PropertiesButtonRenderContext,
+        PropertiesButtonContext,
     ),
 }
 
