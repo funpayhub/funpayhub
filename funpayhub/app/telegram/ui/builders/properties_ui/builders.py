@@ -119,11 +119,7 @@ async def properties_menu_builder(
                 menu_render_context=ctx,
                 entry=sub_entry,
             )
-            button = await tg_ui.build_button(
-                button_id=ButtonIds.properties_entry,
-                context=button_ctx,
-                data={**data},
-            )
+            button = await tg_ui.build_button(context=button_ctx, data=data)
         except:
             import traceback
 

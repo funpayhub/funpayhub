@@ -25,7 +25,7 @@ class Menu:
     header_keyboard: Keyboard = field(default_factory=list)
     main_keyboard: Keyboard = field(default_factory=list)
     footer_keyboard: Keyboard = field(default_factory=list)
-    finalizer: MenuModFilterProto | None = None
+    finalizer: MenuModProto | None = None
 
     @overload
     def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None: pass
@@ -74,10 +74,8 @@ class MenuContext:
 
     @property
     def callback_data(self) -> UnknownCallback | None:
-        if 'callback_data' in self.data and isinstance(
-            self.data['callback_data'], UnknownCallback
-        ):
-            return self.data['callback_data']
+        if isinstance(self.data.get('callback_data', None), UnknownCallback):
+            return self.data.get('callback_data')
         if isinstance(self.trigger, CallbackQuery):
             if hasattr(self.trigger, '__parsed__'):
                 return getattr(self.trigger, '__parsed__')
@@ -118,15 +116,27 @@ class ButtonModProto(Protocol):
 
 @dataclass
 class MenuModification:
-    modification: CallableWrapper[Menu]
-    filter: CallableWrapper[bool] | None = None
+    modification: MenuModProto
+    filter: MenuModFilterProto | None = None
+
+    def __post_init__(self) -> None:
+        self._wrapped_modification = CallableWrapper(self.modification)
+        self._wrapped_filter = CallableWrapper(self.filter) if self.filter is not None else None
 
     async def __call__(self, context: MenuContext, menu: Menu, data: dict[str, Any]) -> Menu:
-        if self.filter is not None:
-            result = await self.filter((context, menu), data)
+        if self.wrapped_filter is not None:
+            result = await self.wrapped_filter((context, menu), data)
             if not result:
                 return menu
-        return await self.modification((context, menu), data)
+        return await self.wrapped_modification((context, menu), data)
+
+    @property
+    def wrapped_modification(self) -> CallableWrapper[Menu]:
+        return self._wrapped_modification
+
+    @property
+    def wrapped_filter(self) -> CallableWrapper[bool] | None:
+        return self._wrapped_filter
 
 
 @dataclass
@@ -137,10 +147,7 @@ class MenuBuilder:
 
     def __post_init__(self) -> None:
         if not issubclass(self.context_type, MenuContext):
-            raise ValueError(
-                'Invalid context type. Context type must be a subtype of `MenuContext`.',
-            )
-
+            raise ValueError(f'Invalid context type. Must be a subtype of `MenuContext`.')
         self._wrapped_builder: CallableWrapper[Menu] = CallableWrapper(self.builder)
 
     async def build(self, context: MenuContext, data: dict[str, Any]) -> Menu:
@@ -158,7 +165,6 @@ class MenuBuilder:
                 result = await wrapped((context, result), data)
             except:
                 import traceback
-
                 print(traceback.format_exc())
                 pass  # todo: logging
             result.finalizer = None
@@ -171,15 +177,27 @@ class MenuBuilder:
 
 @dataclass
 class ButtonModification:
-    modification: CallableWrapper[Button]
-    filter: CallableWrapper[bool] | None = None
+    modification: ButtonModProto
+    filter: ButtonModFilterProto | None = None
+
+    def __post_init__(self) -> None:
+        self._wrapped_modification = CallableWrapper(self.modification)
+        self._wrapped_filter = CallableWrapper(self.filter) if self.filter is not None else None
 
     async def __call__(self, context: ButtonContext, button: Button, data: dict[str, Any]) -> Button:
-        if self.filter is not None:
-            result = await self.filter((context, button), data)
+        if self.wrapped_filter is not None:
+            result = await self.wrapped_filter((context, button), data)
             if not result:
                 return button
-        return await self.modification((context, button), data)
+        return await self.wrapped_modification((context, button), data)
+
+    @property
+    def wrapped_modification(self) -> CallableWrapper[Button]:
+        return self._wrapped_modification
+
+    @property
+    def wrapped_filter(self) -> CallableWrapper[bool] | None:
+        return self._wrapped_filter
 
 
 @dataclass
@@ -190,16 +208,11 @@ class ButtonBuilder:
 
     def __post_init__(self) -> None:
         if not issubclass(self.context_type, ButtonContext):
-            raise ValueError(
-                'Invalid context type. Context type must be a subtype of `ButtonContext`.',
-            )
-
+            raise ValueError(f'Invalid context type. Must be a subtype of `ButtonContext`.')
         self._wrapped_builder: CallableWrapper[Button] = CallableWrapper(self.builder)
 
     async def build(self, context: ButtonContext, data: dict[str, Any]) -> Button:
         result = await self.wrapped_builder((context, ), data)
-        if not self.modifications:
-            return result
         for i in self.modifications.values():
             try:
                 result = await i(context, result, data)
