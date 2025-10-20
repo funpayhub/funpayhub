@@ -80,6 +80,12 @@ class UIRegistry:
             logger.error(f'Menu {context.menu_id!r} not found.')
             raise
 
+        if not isinstance(context, builder.context_type):
+            raise TypeError(
+                f'Menu {context.menu_id!r} requires context of type {builder.context_type!r}, '
+                f'not {type(context)!r}.'
+            )
+
         logger.info(f'Building menu {context.menu_id!r}.')
 
         # create new workflow data object and replace 'data' key
@@ -92,6 +98,7 @@ class UIRegistry:
         self,
         button_id: str,
         builder: ButtonBuilderProto,
+        context_type: Type[ButtonRenderContext] = ButtonRenderContext,
         overwrite: bool = False
     ) -> None:
         mods = {}
@@ -100,7 +107,7 @@ class UIRegistry:
                 raise KeyError(f'Button {button_id!r} already exists.')
             mods = self._buttons[button_id].modifications
 
-        self._buttons[button_id] = ButtonBuilder(CallableWrapper(builder), mods)
+        self._buttons[button_id] = ButtonBuilder(builder, context_type, mods)
         logger.info(f'Button builder {button_id!r} has been added to registry.')
 
     def add_button_modification(
@@ -131,8 +138,7 @@ class UIRegistry:
     async def build_button(
         self,
         button_id: str,
-        context: MenuRenderContext,
-        context_data: dict[str, Any],
+        context: ButtonRenderContext,
         data: dict[str, Any]
     ) -> Button:
         try:
@@ -141,15 +147,15 @@ class UIRegistry:
             logger.error(f'Button {button_id!r} not found.')
             raise
 
+        if not isinstance(context, builder.context_type):
+            raise TypeError(
+                f'Menu {context.button_id!r} requires context of type {builder.context_type!r}, '
+                f'not {type(context)!r}.'
+            )
+
         logger.info(f'Building button {button_id!r}.')
 
         data = self._workflow_data | data
         data['data'] = data
 
-        button_context = ButtonRenderContext(
-            button_id=button_id,
-            menu_render_context=context,
-            data=context_data
-        )
-
-        return await builder.build(self, button_context, data)
+        return await builder.build(self, context, data)

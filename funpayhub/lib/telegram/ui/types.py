@@ -63,46 +63,26 @@ class Menu:
         )
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True)
 class MenuRenderContext:
     menu_id: str
     menu_page: int = 0
     view_page: int = 0
-    chat_id: int
+    chat_id: int | None = None
     thread_id: int | None = None
     message_id: int | None = None
     trigger: Message | CallbackQuery | None = None
     data: dict[str, Any] = field(default_factory=dict)
 
-    @classmethod
-    def create(
-        cls,
-        menu_id: str,
-        menu_page: int = 0,
-        view_page: int = 0,
-        chat_id: int | None = None,
-        thread_id: int | None = None,
-        message_id: int | None = None,
-        trigger: Message | CallbackQuery | None = None,
-        data: dict[str, Any] | None = None,
-    ) -> MenuRenderContext:
-        if trigger is not None:
-            msg = trigger if isinstance(trigger, Message) else trigger.message
-            message_id, chat_id, thread_id = msg.message_id, msg.chat.id, msg.message_thread_id
+    def __post_init__(self) -> None:
+        if self.trigger is not None:
+            msg = self.trigger if isinstance(self.trigger, Message) else self.trigger.message
+            self.message_id = msg.message_id
+            self.chat_id = msg.chat.id
+            self.thread_id = msg.message_thread_id
 
-        if chat_id is None:
+        if self.chat_id is None:
             raise ValueError('Chat ID or trigger must be provided.')
-
-        return MenuRenderContext(
-            menu_id=menu_id,
-            menu_page=menu_page,
-            view_page=view_page,
-            chat_id=chat_id,
-            thread_id=thread_id,
-            message_id=message_id,
-            trigger=trigger,
-            data=data or {}
-        )
 
     @property
     def callback_data(self) -> UnknownCallback | None:
@@ -115,7 +95,7 @@ class MenuRenderContext:
         return None
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True)
 class ButtonRenderContext:
     menu_render_context: MenuRenderContext
     button_id: str
@@ -271,8 +251,18 @@ class ButtonModification:
 
 @dataclass
 class ButtonBuilder:
-    builder: CallableWrapper[Button]
+    builder: ButtonBuilderProto
+    context_type: Type[ButtonRenderContext]
     modifications: dict[str, ButtonModification] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if not issubclass(self.context_type, ButtonRenderContext):
+            raise ValueError(
+                'Invalid context type. '
+                'Context type must be a subtype of `ButtonRenderContext`.'
+            )
+
+        self._wrapped_builder: CallableWrapper[Button] = CallableWrapper(self.builder)
 
     async def build(
         self,
@@ -280,7 +270,7 @@ class ButtonBuilder:
         context: ButtonRenderContext,
         data: dict[str, Any]
     ) -> Button:
-        result = await self.builder((registry, context), data)
+        result = await self.wrapped_builder((registry, context), data)
         if not self.modifications:
             return result
         for i in self.modifications.values():
@@ -289,3 +279,7 @@ class ButtonBuilder:
             except:
                 continue  # todo: logging
         return result
+
+    @property
+    def wrapped_builder(self) -> CallableWrapper[Button]:
+        return self._wrapped_builder

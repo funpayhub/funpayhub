@@ -14,6 +14,7 @@ from funpayhub.lib.telegram.states import ChangingParameterValueState
 from funpayhub.lib.telegram.ui import MenuRenderContext
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
+from funpayhub.app.telegram.ui.builders.properties_ui.context import PropertiesMenuRenderContext
 import asyncio
 
 from .router import router as r
@@ -47,7 +48,7 @@ async def open_custom_menu(
     data: dict[str, Any],
     callback_data: cbs.OpenMenu,
 ):
-    ctx = MenuRenderContext.create(
+    ctx = MenuRenderContext(
         menu_id=callback_data.menu_id,
         menu_page=callback_data.menu_page,
         view_page=callback_data.view_page,
@@ -55,6 +56,23 @@ async def open_custom_menu(
         data=callback_data.model_dump(mode='python', exclude={'identifier'}) | callback_data.data
     )
 
+    menu = await tg_ui.build_menu(ctx, data | {'query': query})
+    await menu.apply_to(query.message)
+
+@r.callback_query(cbs.OpenEntryMenu.filter())
+async def open_entry_menu(
+    query: CallbackQuery,
+    tg_ui: UIRegistry,
+    data: dict[str, Any],
+    properties: FunPayHubProperties,
+    callback_data: cbs.OpenEntryMenu,
+):
+    entry = properties.get_entry(callback_data.path)
+    ctx = PropertiesMenuRenderContext(
+        menu_id=MenuIds.properties_entry,
+        trigger=query,
+        entry=entry
+    )
     menu = await tg_ui.build_menu(ctx, data | {'query': query})
     await menu.apply_to(query.message)
 # TEMP
@@ -76,7 +94,7 @@ async def clear(
     await context.clear()
     if callback_data.delete_message:
         await query.message.delete()
-    elif callback_data.open_previous:
+    elif callback_data.open_previous and callback_data.history:
         await dispatcher.feed_update(
             bot,
             Update(
@@ -93,20 +111,11 @@ async def send_menu(
     tg_ui: UIRegistry,
     data: dict[str, Any],
 ) -> None:
-    ctx = MenuRenderContext.create(
+    ctx = PropertiesMenuRenderContext(
         menu_id=MenuIds.properties_entry,
-        menu_page=0,
-        view_page=0,
         trigger=message,
-        data={
-            'path': properties.path,
-            'callback_data': cbs.OpenMenu(
-                menu_id=MenuIds.properties_entry,
-                menu_page=0,
-                view_page=0,
-                data={'path': properties.path}
-            )
-        }
+        entry=properties,
+        data={'callback_data': cbs.OpenEntryMenu(path=[])}
     )
 
     await (await tg_ui.build_menu(ctx, data)).reply_to(message)
@@ -174,10 +183,10 @@ async def change_parameter_value(
     await state.clear()
 
     entry = properties.get_parameter(callback_data.path)
-    ctx = MenuRenderContext.create(
+    ctx = PropertiesMenuRenderContext(
         menu_id=MenuIds.param_value_manual_input,
         trigger=query,
-        data={'path': callback_data.path, 'entry': entry}
+        entry=entry,
     )
 
     msg = await (await tg_ui.build_menu(ctx, data)).apply_to(query.message)

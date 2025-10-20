@@ -81,11 +81,11 @@ class Telegram:
         self.dispatcher.include_routers(router)
 
     def _setup_ui_defaults(self):
-        for menu_id, menu_builder in default_ui.MENU_BUILDERS.items():
-            self.ui_registry.add_menu_builder(menu_id, menu_builder)
+        for menu_id, (menu_builder, context_type) in default_ui.MENU_BUILDERS.items():
+            self.ui_registry.add_menu_builder(menu_id, menu_builder, context_type)
 
-        for button_id, button_builder in default_ui.BUTTON_BUILDERS.items():
-            self.ui_registry.add_button_builder(button_id, button_builder)
+        for button_id, (button_builder, context_type) in default_ui.BUTTON_BUILDERS.items():
+            self.ui_registry.add_button_builder(button_id, button_builder, context_type)
 
         for menu_id, data in default_ui.MENU_MODIFICATIONS.items():
             for mod_id, (filter, modification) in data.items():

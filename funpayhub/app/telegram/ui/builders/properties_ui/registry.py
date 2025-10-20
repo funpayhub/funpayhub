@@ -7,12 +7,12 @@ __all__ = ['PropertiesUIRegistry']
 from typing import Any, Type, TYPE_CHECKING
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
-from funpayhub.app.properties import FunPayHubProperties
+from funpayhub.app.telegram.ui.builders.properties_ui.context import PropertiesMenuRenderContext, \
+    PropertiesButtonRenderContext
 from funpayhub.lib.properties.base import Entry
 from funpayhub.loggers import telegram_ui as logger
 
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuRenderContext, ButtonRenderContext, \
-    ButtonBuilderProto, MenuBuilderProto
+from funpayhub.lib.telegram.ui.types import Menu, Button, ButtonBuilderProto, MenuBuilderProto
 
 if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui.registry import UIRegistry
@@ -29,16 +29,15 @@ class _PropertiesUIRegistry:
     async def build_menu(
         self,
         registry: UIRegistry,
-        ctx: MenuRenderContext,
-        entry: Entry,
+        ctx: PropertiesMenuRenderContext,
         data: dict[str, Any]
     ) -> Menu:
-        logger.debug(f'Properties menu builder for {entry.path} ({type(entry).__name__}) '
+        logger.debug(f'Properties menu builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
                      f'has been requested.')
 
-        builder = self.get_menu_builder(type(entry))
+        builder = self.get_menu_builder(type(ctx.entry))
         if builder is None:
-            raise ValueError(f'Unknown entry type {type(entry)}.')
+            raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
 
         result = await builder((registry, ctx), data=data)
         return result
@@ -46,15 +45,14 @@ class _PropertiesUIRegistry:
     async def build_button(
         self,
         registry: UIRegistry,
-        ctx: ButtonRenderContext,
-        entry: Entry,
+        ctx: PropertiesButtonRenderContext,
         data: dict[str, Any]) -> Button:
-        logger.debug(f'Properties button builder for {entry.path} ({type(entry).__name__}) '
+        logger.debug(f'Properties button builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
                      f'has been requested.')
 
-        builder = self.get_button_builder(type(entry))
+        builder = self.get_button_builder(type(ctx.entry))
         if builder is None:
-            raise ValueError(f'Unknown entry type {type(entry)}.')
+            raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
 
         result = await builder((registry, ctx), data=data)
         return result
@@ -104,50 +102,5 @@ class _PropertiesUIRegistry:
             f'Properties entry menu builder for {entry_type.__name__!r} '
             f'has been added to properties ui registry.'
         )
-
-    async def entry_menu_builder(
-        self,
-        registry: UIRegistry,
-        ctx: MenuRenderContext,
-        properties: FunPayHubProperties,
-        data: dict[str, Any]
-    ) -> Menu:
-        """
-        Реальный menu builder, который необходимо зарегистрировать в UIRegistry с ID
-        `MenuIds.properties_entry`.
-        """
-        if 'path' not in ctx.data:
-            raise RuntimeError('Unable to build properties entry menu: \'path\' is missing.')
-        entry = properties.get_entry(ctx.data['path'])
-
-        if entry is None:
-            raise RuntimeError(
-                f'Unable to build properties entry menu: '
-                f'no entry with path {ctx.data['path']}.'
-            )
-
-        ctx.data['entry'] = entry
-        return await self.build_menu(registry, ctx, entry, {**data})
-
-    async def entry_button_builder(
-        self,
-        registry: UIRegistry,
-        ctx: ButtonRenderContext,
-        properties: FunPayHubProperties,
-        data: dict[str, Any]
-    ) -> Button:
-        if 'path' not in ctx.data:
-            raise RuntimeError('Unable to build properties entry button: \'path\' is missing.')
-        entry = properties.get_entry(ctx.data['path'])
-
-        if entry is None:
-            raise RuntimeError(
-                f'Unable to build properties entry button: '
-                f'no entry with path {ctx.data['path']}.'
-            )
-
-        ctx.data['entry'] = entry
-        return await self.build_button(registry, ctx, entry, {**data})
-
 
 PropertiesUIRegistry = _PropertiesUIRegistry()

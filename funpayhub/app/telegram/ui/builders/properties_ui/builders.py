@@ -4,10 +4,12 @@ import html
 from typing import TYPE_CHECKING, Any
 
 import funpayhub.lib.telegram.callbacks as cbs
+from funpayhub.app.telegram.ui.builders.properties_ui.context import PropertiesButtonRenderContext, \
+    PropertiesMenuRenderContext
 from funpayhub.lib.properties.base import Entry
-from funpayhub.lib.properties import ChoiceParameter, Properties, MutableParameter, ToggleParameter
+from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
-from funpayhub.lib.telegram.ui.types import MenuRenderContext, ButtonRenderContext, Menu, Button
+from funpayhub.lib.telegram.ui.types import Menu, Button
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
 from aiogram.types import InlineKeyboardButton
 from funpayhub.app.telegram.ui import premade
@@ -19,28 +21,23 @@ if TYPE_CHECKING:
     from funpayhub.app.properties import FunPayHubProperties
 
 
-
-# ---------- PROPERTIES BUTTONS ----------
-# Toggle parameter
 async def toggle_param_button_builder(
     ui: UIRegistry,
-    ctx: ButtonRenderContext,
+    ctx: PropertiesButtonRenderContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Button:
-    entry: ToggleParameter = ctx.data['entry']
     callback_data = ctx.menu_render_context.callback_data
-    print(callback_data)
-    translated_name = translater.translate(entry.name, properties.general.language.real_value)
+    translated_name = translater.translate(ctx.entry.name, properties.general.language.real_value)
 
     return Button(
         button_id=f'toggle_param',
         obj=InlineKeyboardButton(
             callback_data=cbs.NextParamValue(
-                path=entry.path,
+                path=ctx.entry.path,
                 history=callback_data.as_history() if callback_data is not None else []
             ).pack(),
-            text=f'{"🟢" if entry.value else "🔴"} {translated_name}',
+            text=f'{"🟢" if ctx.entry.value else "🔴"} {translated_name}',
         )
     )
 
@@ -48,61 +45,51 @@ async def toggle_param_button_builder(
 # Int / Float / String parameter
 async def parameter_button_builder(
     ui: UIRegistry,
-    ctx: ButtonRenderContext,
+    ctx: PropertiesButtonRenderContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Button:
-    entry: MutableParameter[Any] = ctx.data['entry']
     callback_data = ctx.menu_render_context.callback_data
 
-    if not entry.has_flag(PropsFlags.PROTECT_VALUE):
+    if not ctx.entry.has_flag(PropsFlags.PROTECT_VALUE):
         val_str = (
-            f'{str(entry.value)[:20] + ('...' if len(str(entry.value)) > 20 else '')}'
+            f'{str(ctx.entry.value)[:20] + ('...' if len(str(ctx.entry.value)) > 20 else '')}'
         )
     else:
         val_str = '•' * 8
 
     return Button(
-        button_id=f'param_change:{entry.path}',
+        button_id=f'param_change:{ctx.entry.path}',
         obj=InlineKeyboardButton(
             callback_data=cbs.ManualParamValueInput(
-                path=entry.path,
+                path=ctx.entry.path,
                 history=callback_data.as_history() if callback_data is not None else []
             ).pack(),
-            text=f'{translater.translate(entry.name, properties.general.language.real_value)} '
+            text=f'{translater.translate(ctx.entry.name, properties.general.language.real_value)} '
                  f'【 {val_str} 】',
         )
     )
 
 
 # List / Choice / Properties
-async def build_open_entry_menu_button(
+async def open_entry_menu_button_builder(
     ui: UIRegistry,
-    ctx: ButtonRenderContext,
+    ctx: PropertiesButtonRenderContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Button:
-    """
-    Дефолтный билдер для кнопки открытия меню параметра / категории параметров.
-
-    Использует коллбэк `OpenEntryMenu`.
-    """
-    entry: Properties | MutableParameter[Any] = ctx.data['entry']
     callback_data = ctx.menu_render_context.callback_data
-    print(f'FFF {callback_data}')
 
     return Button(
-        button_id=f'param_change:{entry.path}',
+        button_id=f'param_change:{ctx.entry.path}',
         obj=InlineKeyboardButton(
-            callback_data=cbs.OpenMenu(
-                menu_id=MenuIds.properties_entry,
+            callback_data=cbs.OpenEntryMenu(
+                path=ctx.entry.path,
                 history=callback_data.as_history() if callback_data is not None else [],
-                data={'path': entry.path}
             ).pack(),
-            text=translater.translate(entry.name, properties.general.language.real_value),
+            text=translater.translate(ctx.entry.name, properties.general.language.real_value),
         )
     )
-
 
 
 def _entry_text(entry: Entry, translater: Translater, language: str) -> str:
@@ -115,23 +102,26 @@ def _entry_text(entry: Entry, translater: Translater, language: str) -> str:
 # Menus
 async def properties_menu_builder(
     ui: UIRegistry,
-    ctx: MenuRenderContext,
+    ctx: PropertiesMenuRenderContext,
     translater: Translater,
     properties: FunPayHubProperties,
     data: dict[str, Any]
 ) -> Menu:
     keyboard = []
-    entry: Properties = ctx.data['entry']
 
-    for entry_id, sub_entry in entry.entries.items():
+    for entry_id, sub_entry in ctx.entry.entries.items():
         if not isinstance(sub_entry, Properties | MutableParameter):  # skip immutable params
             continue
 
         try:
+            button_ctx = PropertiesButtonRenderContext(
+                button_id=ButtonIds.properties_entry,
+                menu_render_context=ctx,
+                entry=sub_entry,
+            )
             button = await ui.build_button(
                 button_id=ButtonIds.properties_entry,
-                context=ctx,
-                context_data={'path': sub_entry.path},
+                context=button_ctx,
                 data={**data},
             )
         except:
@@ -142,7 +132,7 @@ async def properties_menu_builder(
         keyboard.append([button])
 
     return Menu(
-        text=_entry_text(entry, translater, properties.general.language.real_value),
+        text=_entry_text(ctx.entry, translater, properties.general.language.real_value),
         main_keyboard=keyboard,
         finalizer=premade.default_finalizer_factory(),
     )
@@ -150,23 +140,22 @@ async def properties_menu_builder(
 
 async def choice_parameter_menu_builder(
     ui: UIRegistry,
-    ctx: MenuRenderContext,
+    ctx: PropertiesMenuRenderContext,
     translater: Translater,
     properties: FunPayHubProperties
 ) -> Menu:
     keyboard = []
-    entry: ChoiceParameter[Any] = ctx.data['entry']
     callback_data = ctx.callback_data
 
-    for choice in entry.choices.values():
+    for choice in ctx.entry.choices.values():
         name = translater.translate(choice.name, properties.general.language.real_value)
         keyboard.append([
             Button(
-                button_id=f'choice_param_value:{choice.id}:{entry.path}',
+                button_id=f'choice_param_value:{choice.id}:{ctx.entry.path}',
                 obj=InlineKeyboardButton(
-                    text=f'【 {name} 】' if entry.value == choice.id else name,
+                    text=f'【 {name} 】' if ctx.entry.value == choice.id else name,
                     callback_data=cbs.ChooseParamValue(
-                        path=entry.path,
+                        path=ctx.entry.path,
                         choice_id=choice.id,
                         history=callback_data.as_history() if callback_data is not None else []
                     ).pack(),
@@ -175,7 +164,7 @@ async def choice_parameter_menu_builder(
         ])
 
     return Menu(
-        text=_entry_text(entry, translater, properties.general.language.real_value),
+        text=_entry_text(ctx.entry, translater, properties.general.language.real_value),
         main_keyboard=keyboard,
         finalizer=premade.default_finalizer_factory(),
     )
@@ -183,16 +172,15 @@ async def choice_parameter_menu_builder(
 
 async def list_parameter_menu_builder(
     ui: UIRegistry,
-    ctx: MenuRenderContext,
+    ctx: PropertiesMenuRenderContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Menu:
     keyboard = []
-    entry = ctx.data['entry']
     mode = ctx.data.get('mode')
     callback_data = ctx.callback_data
 
-    for index, val in enumerate(entry.value):
+    for index, val in enumerate(ctx.entry.value):
         if mode == 'move_up':
             text = f'⬆️ {val}'
         elif mode == 'move_down':
@@ -209,7 +197,7 @@ async def list_parameter_menu_builder(
                     text=text,
                     callback_data=cbs.ListParamItemAction(
                         item_index=index,
-                        path=entry.path,
+                        path=ctx.entry.path,
                         action=mode,
                         history=callback_data.as_history() if callback_data is not None else []
                     ).pack()
@@ -229,7 +217,7 @@ async def list_parameter_menu_builder(
                         menu_page=ctx.menu_page,
                         view_page=ctx.view_page,
                         history=callback_data.history if callback_data is not None else [],
-                        data={'path': entry.path, 'mode': None}
+                        data={'path': ctx.entry.path, 'mode': None}
                     ).pack()
                 )
             )
@@ -245,7 +233,7 @@ async def list_parameter_menu_builder(
                     menu_page=ctx.menu_page,
                     view_page=ctx.view_page,
                     history=callback_data.history if callback_data is not None else [],
-                    data={'path': entry.path, 'mode': 'move_up'}
+                    data={'path': ctx.entry.path, 'mode': 'move_up'}
                 ).pack()
             )
         ),
@@ -258,7 +246,7 @@ async def list_parameter_menu_builder(
                     menu_page=ctx.menu_page,
                     view_page=ctx.view_page,
                     history=callback_data.history if callback_data is not None else [],
-                    data={'path': entry.path, 'mode': 'move_down'}
+                    data={'path': ctx.entry.path, 'mode': 'move_down'}
                 ).pack()
             )
         ),
@@ -271,7 +259,7 @@ async def list_parameter_menu_builder(
                     menu_page=ctx.menu_page,
                     view_page=ctx.view_page,
                     history=callback_data.history if callback_data is not None else [],
-                    data={'path': entry.path, 'mode': 'remove'}
+                    data={'path': ctx.entry.path, 'mode': 'remove'}
                 ).pack()
             )
         ),
@@ -280,7 +268,7 @@ async def list_parameter_menu_builder(
             obj=InlineKeyboardButton(
                 text='➕',
                 callback_data=cbs.ListParamAddItem(
-                    path=entry.path,
+                    path=ctx.entry.path,
                     history=callback_data.as_history() if callback_data is not None else []
                 ).pack()
             )
@@ -288,7 +276,7 @@ async def list_parameter_menu_builder(
     ])
 
     return Menu(
-        text=_entry_text(entry, translater, properties.general.language.real_value),
+        text=_entry_text(ctx.entry, translater, properties.general.language.real_value),
         main_keyboard=keyboard,
         footer_keyboard=footer,
         finalizer=premade.default_finalizer_factory(),
@@ -297,17 +285,16 @@ async def list_parameter_menu_builder(
 
 async def param_value_manual_input_menu_builder(
     ui: UIRegistry,
-    ctx: MenuRenderContext,
+    ctx: PropertiesMenuRenderContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Menu:
-    entry: MutableParameter[Any] = ctx.data['entry']
     language = properties.general.language.real_value
 
     text = translater.translate('$enter_new_value_message', language=language).format(
-        parameter_name=translater.translate(entry.name, language),
-        parameter_description=translater.translate(entry.description, language),
-        current_parameter_value=html.escape(str(entry.value)),
+        parameter_name=translater.translate(ctx.entry.name, language),
+        parameter_description=translater.translate(ctx.entry.description, language),
+        current_parameter_value=html.escape(str(ctx.entry.value)),
     )
 
     footer_keyboard = [[
@@ -334,13 +321,13 @@ async def param_value_manual_input_menu_builder(
 # Modifications
 class PropertiesMenuModification:
     @staticmethod
-    async def filter(ui: UIRegistry, ctx: MenuRenderContext, menu: Menu) -> bool:
-        return ctx.menu_id == MenuIds.properties_entry and ctx.data.get('path') == []
+    async def filter(ui: UIRegistry, ctx: PropertiesMenuRenderContext, menu: Menu) -> bool:
+        return ctx.menu_id == MenuIds.properties_entry and ctx.entry.matches_path([])
 
     @staticmethod
     async def modification(
         ui: UIRegistry,
-        ctx: MenuRenderContext,
+        ctx: PropertiesMenuRenderContext,
         menu: Menu,
         translater: Translater,
         properties: FunPayHubProperties,
@@ -378,18 +365,17 @@ class PropertiesMenuModification:
 
 class AddFormattersListButtonModification:
     @staticmethod
-    async def filter(ui: UIRegistry, ctx: MenuRenderContext, menu: Menu) -> bool:
-        entry = ctx.data['entry']
+    async def filter(ui: UIRegistry, ctx: PropertiesMenuRenderContext, menu: Menu) -> bool:
         return (
-            entry.matches_path(['auto_response', '*', 'response_text']) or
-            entry.matches_path(['review_reply', '*', 'review_reply_text']) or
-            entry.matches_path(['review_reply', '*', 'chat_reply_text'])
+            ctx.entry.matches_path(['auto_response', '*', 'response_text']) or
+            ctx.entry.matches_path(['review_reply', '*', 'review_reply_text']) or
+            ctx.entry.matches_path(['review_reply', '*', 'chat_reply_text'])
         )
 
     @staticmethod
     async def modification(
         ui: UIRegistry,
-        ctx: MenuRenderContext,
+        ctx: PropertiesMenuRenderContext,
         menu: Menu,
         translater: Translater,
         properties: FunPayHubProperties
@@ -414,12 +400,11 @@ class AddFormattersListButtonModification:
 
 class AddCommandButtonModification:
     @staticmethod
-    async def filter(ui: UIRegistry, ctx: MenuRenderContext, menu: Menu) -> bool:
-        entry = ctx.data['entry']
-        return entry.matches_path(['auto_response'])
+    async def filter(ui: UIRegistry, ctx: PropertiesMenuRenderContext, menu: Menu) -> bool:
+        return ctx.entry.matches_path(['auto_response'])
 
     @staticmethod
-    async def modification(ui: UIRegistry, ctx: MenuRenderContext, menu: Menu) -> Menu:
+    async def modification(ui: UIRegistry, ctx: PropertiesMenuRenderContext, menu: Menu) -> Menu:
         menu.footer_keyboard.append([
             Button(
                 button_id='add_command',
