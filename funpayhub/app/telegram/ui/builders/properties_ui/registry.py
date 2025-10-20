@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-__all__ = ['PropertiesUIRegistry']
+__all__ = ['EntriesUIRegistry']
 
 
 from typing import Any, Type
@@ -12,12 +12,12 @@ from funpayhub.loggers import telegram_ui as logger
 from funpayhub.lib.properties.base import Entry
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilderProto, ButtonBuilderProto
 from funpayhub.app.telegram.ui.builders.properties_ui.context import (
-    PropertiesMenuContext,
-    PropertiesButtonContext,
+    EntryMenuContext,
+    EntryButtonContext,
 )
 
 
-class _PropertiesUIRegistry:
+class _EntriesUIRegistry:
     def __init__(self) -> None:
         self._buttons: dict[type[Entry], CallableWrapper[Button]] = {}
         """Дефолтные фабрики кнопок параметров / категорий."""
@@ -25,31 +25,21 @@ class _PropertiesUIRegistry:
         self._menus: dict[type[Entry], CallableWrapper[Menu]] = {}
         """Дефолтные фабрики меню просмотра параметров / категорий."""
 
-    async def build_menu(self, ctx: PropertiesMenuContext, data: dict[str, Any]) -> Menu:
-        logger.debug(
-            f'Properties menu builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
-            f'has been requested.'
-        )
+    async def build_menu(self, ctx: EntryMenuContext, data: dict[str, Any]) -> Menu:
+        logger.debug(f'Menu builder for {ctx.entry.path} ({type(ctx.entry)}) requested.')
 
-        builder = self.get_menu_builder(type(ctx.entry))
-        if builder is None:
-            raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
+        if (builder := self.get_menu_builder(type(ctx.entry))) is None:
+            raise LookupError(f'Unknown entry type {type(ctx.entry)}.')
 
-        result = await builder((ctx, ), data=data)
-        return result
+        return await builder((ctx, ), data=data)
 
-    async def build_button(self, ctx: PropertiesButtonContext, data: dict[str, Any]) -> Button:
-        logger.debug(
-            f'Properties button builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
-            f'has been requested.'
-        )
+    async def build_button(self, ctx: EntryButtonContext, data: dict[str, Any]) -> Button:
+        logger.debug(f'Button builder for {ctx.entry.path} ({type(ctx.entry)}) requested.')
 
-        builder = self.get_button_builder(type(ctx.entry))
-        if builder is None:
-            raise ValueError(f'Unknown entry type {type(ctx.entry)}.')
+        if (builder := self.get_button_builder(type(ctx.entry))) is None:
+            raise LookupError(f'Unknown entry type {type(ctx.entry)}.')
 
-        result = await builder((ctx, ), data=data)
-        return result
+        return await builder((ctx, ), data=data)
 
     def get_button_builder(self, entry_type: Type[Entry]) -> CallableWrapper[Button] | None:
         if entry_type in self._buttons:
@@ -73,33 +63,21 @@ class _PropertiesUIRegistry:
         builder: ButtonBuilderProto,
         overwrite: bool = False,
     ) -> None:
-        if entry_type in self._buttons:
-            if not overwrite:
-                raise KeyError(
-                    f'Properties button builder for {entry_type.__name__!r} already exists.'
-                )
+        if entry_type in self._buttons and not overwrite:
+            raise KeyError(f'Properties button builder for {entry_type} already exists.')
         self._buttons[entry_type] = CallableWrapper(builder)
-        logger.info(
-            f'Properties entry button builder for {entry_type.__name__!r} '
-            f'has been added to properties ui registry.',
-        )
+        logger.info(f'Entry button builder for {entry_type!r} added to entries ui registry.')
 
     def add_menu_builder(
         self,
         entry_type: Type[Entry],
         builder: MenuBuilderProto,
-        overwrite: bool = False,
+        overwrite: bool = False
     ) -> None:
-        if entry_type in self._menus:
-            if not overwrite:
-                raise KeyError(
-                    f'Properties menu builder for {entry_type.__name__!r} already exists.'
-                )
+        if entry_type in self._menus and not overwrite:
+            raise KeyError(f'Entry menu builder for {entry_type!r} already exists.')
         self._menus[entry_type] = CallableWrapper(builder)
-        logger.info(
-            f'Properties entry menu builder for {entry_type.__name__!r} '
-            f'has been added to properties ui registry.',
-        )
+        logger.info(f'Entry menu builder for {entry_type!r} added to entries ui registry.')
 
 
-PropertiesUIRegistry = _PropertiesUIRegistry()
+EntriesUIRegistry = _EntriesUIRegistry()

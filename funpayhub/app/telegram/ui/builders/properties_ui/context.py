@@ -8,11 +8,11 @@ from funpayhub.lib.telegram.ui import MenuContext, ButtonContext
 
 
 @dataclass(kw_only=True)
-class PropertiesMenuContext(MenuContext):
+class EntryMenuContext(MenuContext):
     entry: Properties | MutableParameter[Any]
 
 
 @dataclass(kw_only=True)
-class PropertiesButtonContext(ButtonContext):
-    menu_render_context: PropertiesMenuContext
+class EntryButtonContext(ButtonContext):
+    menu_render_context: EntryMenuContext
     entry: Properties | MutableParameter[Any]

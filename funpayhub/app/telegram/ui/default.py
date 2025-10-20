@@ -6,20 +6,20 @@ from .ids import MenuIds, ButtonIds
 from .builders import formatters_ui, notifications_ui
 from .builders.properties_ui import builders
 from .builders.properties_ui.context import (
-    PropertiesMenuContext,
-    PropertiesButtonContext,
+    EntryMenuContext,
+    EntryButtonContext,
 )
-from .builders.properties_ui.registry import PropertiesUIRegistry
+from .builders.properties_ui.registry import EntriesUIRegistry
 
 
 MENU_BUILDERS = {
     MenuIds.properties_entry: (
-        PropertiesUIRegistry.build_menu,
-        PropertiesMenuContext,
+        EntriesUIRegistry.build_menu,
+        EntryMenuContext,
     ),
     MenuIds.param_value_manual_input: (
         builders.param_value_manual_input_menu_builder,
-        PropertiesMenuContext,
+        EntryMenuContext,
     ),
     MenuIds.formatters_list: (
         formatters_ui.formatters_list_menu_builder,
@@ -38,8 +38,8 @@ MENU_BUILDERS = {
 
 BUTTON_BUILDERS = {
     ButtonIds.properties_entry: (
-        PropertiesUIRegistry.build_button,
-        PropertiesButtonContext,
+        EntriesUIRegistry.build_button,
+        EntryButtonContext,
     ),
 }
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from funpayhub.lib.properties import Properties, parameter as param
 
 from . import builders
-from .registry import PropertiesUIRegistry as Registry
+from .registry import EntriesUIRegistry as Registry
 
 
 Registry.add_menu_builder(param.IntParameter, builders.param_value_manual_input_menu_builder)

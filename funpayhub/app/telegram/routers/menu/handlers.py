@@ -15,7 +15,7 @@ from funpayhub.lib.telegram.ui import MenuContext
 from funpayhub.lib.telegram.states import ChangingParameterValueState
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
-from funpayhub.app.telegram.ui.builders.properties_ui.context import PropertiesMenuContext
+from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 
 from .router import router as r
 from ...ui.ids import MenuIds
@@ -70,7 +70,7 @@ async def open_entry_menu(
     callback_data: cbs.OpenEntryMenu,
 ):
     entry = properties.get_entry(callback_data.path)
-    ctx = PropertiesMenuContext(
+    ctx = EntryMenuContext(
         menu_id=MenuIds.properties_entry,
         trigger=query,
         entry=entry,
@@ -115,7 +115,7 @@ async def send_menu(
     tg_ui: UIRegistry,
     data: dict[str, Any],
 ) -> None:
-    ctx = PropertiesMenuContext(
+    ctx = EntryMenuContext(
         menu_id=MenuIds.properties_entry,
         trigger=message,
         entry=properties,
@@ -187,7 +187,7 @@ async def change_parameter_value(
     await state.clear()
 
     entry = properties.get_parameter(callback_data.path)
-    ctx = PropertiesMenuContext(
+    ctx = EntryMenuContext(
         menu_id=MenuIds.param_value_manual_input,
         trigger=query,
         entry=entry,

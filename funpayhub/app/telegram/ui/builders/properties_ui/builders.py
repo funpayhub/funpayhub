@@ -13,8 +13,8 @@ from funpayhub.lib.properties.base import Entry
 from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
 from funpayhub.lib.telegram.ui.types import Menu, Button
 from funpayhub.app.telegram.ui.builders.properties_ui.context import (
-    PropertiesMenuContext,
-    PropertiesButtonContext,
+    EntryMenuContext,
+    EntryButtonContext,
 )
 
 
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 
 async def toggle_param_button_builder(
-    ctx: PropertiesButtonContext,
+    ctx: EntryButtonContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Button:
@@ -46,7 +46,7 @@ async def toggle_param_button_builder(
 
 # Int / Float / String parameter
 async def parameter_button_builder(
-    ctx: PropertiesButtonContext,
+    ctx: EntryButtonContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Button:
@@ -74,7 +74,7 @@ async def parameter_button_builder(
 
 # List / Choice / Properties
 async def open_entry_menu_button_builder(
-    ctx: PropertiesButtonContext,
+    ctx: EntryButtonContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Button:
@@ -101,7 +101,7 @@ def _entry_text(entry: Entry, translater: Translater, language: str) -> str:
 
 # Menus
 async def properties_menu_builder(
-    ctx: PropertiesMenuContext,
+    ctx: EntryMenuContext,
     translater: Translater,
     properties: FunPayHubProperties,
     tg_ui: UIRegistry,
@@ -114,7 +114,7 @@ async def properties_menu_builder(
             continue
 
         try:
-            button_ctx = PropertiesButtonContext(
+            button_ctx = EntryButtonContext(
                 button_id=ButtonIds.properties_entry,
                 menu_render_context=ctx,
                 entry=sub_entry,
@@ -136,7 +136,7 @@ async def properties_menu_builder(
 
 
 async def choice_parameter_menu_builder(
-    ctx: PropertiesMenuContext,
+    ctx: EntryMenuContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Menu:
@@ -145,23 +145,21 @@ async def choice_parameter_menu_builder(
 
     for choice in ctx.entry.choices.values():
         name = translater.translate(choice.name, properties.general.language.real_value)
-        keyboard.append(
-            [
-                Button(
-                    button_id=f'choice_param_value:{choice.id}:{ctx.entry.path}',
-                    obj=InlineKeyboardButton(
-                        text=f'【 {name} 】' if ctx.entry.value == choice.id else name,
-                        callback_data=cbs.ChooseParamValue(
-                            path=ctx.entry.path,
-                            choice_id=choice.id,
-                            history=callback_data.as_history()
-                            if callback_data is not None
-                            else [],
-                        ).pack(),
-                    ),
+        keyboard.append([
+            Button(
+                button_id=f'choice_param_value:{choice.id}:{ctx.entry.path}',
+                obj=InlineKeyboardButton(
+                    text=f'【 {name} 】' if ctx.entry.value == choice.id else name,
+                    callback_data=cbs.ChooseParamValue(
+                        path=ctx.entry.path,
+                        choice_id=choice.id,
+                        history=callback_data.as_history()
+                        if callback_data is not None
+                        else [],
+                    ).pack(),
                 ),
-            ]
-        )
+            ),
+        ])
 
     return Menu(
         text=_entry_text(ctx.entry, translater, properties.general.language.real_value),
@@ -171,7 +169,7 @@ async def choice_parameter_menu_builder(
 
 
 async def list_parameter_menu_builder(
-    ctx: PropertiesMenuContext,
+    ctx: EntryMenuContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Menu:
@@ -179,54 +177,26 @@ async def list_parameter_menu_builder(
     mode = ctx.data.get('mode')
     callback_data = ctx.callback_data
 
+    texts = {'move_up': '⬆️', 'move_down': '⬇️', 'remove': '🗑️'}
     for index, val in enumerate(ctx.entry.value):
-        if mode == 'move_up':
-            text = f'⬆️ {val}'
-        elif mode == 'move_down':
-            text = f'⬇️ {val}'
-        elif mode == 'remove':
-            text = f'🗑️ {val}'
-        else:
-            text = str(val)
-
-        keyboard.append(
-            [
-                Button(
-                    button_id='temp',
-                    obj=InlineKeyboardButton(
-                        text=text,
-                        callback_data=cbs.ListParamItemAction(
-                            item_index=index,
-                            path=ctx.entry.path,
-                            action=mode,
-                            history=callback_data.as_history()
-                            if callback_data is not None
-                            else [],
-                        ).pack(),
-                    ),
-                ),
-            ]
-        )
-
-    footer = [[]]
-    if mode:
-        footer[0].append(
+        keyboard.append([
             Button(
-                button_id='cancel',
+                button_id='temp',
                 obj=InlineKeyboardButton(
-                    text='❌',
-                    callback_data=cbs.OpenMenu(
-                        menu_id=MenuIds.properties_entry,
-                        menu_page=ctx.menu_page,
-                        view_page=ctx.view_page,
-                        history=callback_data.history if callback_data is not None else [],
-                        data={'path': ctx.entry.path, 'mode': None},
+                    text=f'{texts[mode]} {val}' if mode in texts else str(val),
+                    callback_data=cbs.ListParamItemAction(
+                        item_index=index,
+                        path=ctx.entry.path,
+                        action=mode,
+                        history=callback_data.as_history() if callback_data is not None else [],
                     ).pack(),
                 ),
             ),
-        )
+        ])
 
+    footer = [[]]
     mode_data = {
+        'cancel': ('❌', None),
         'enable_move_up_mode': ('⬆️', 'move_up'),
         'enable_move_down_mode': ('⬇️', 'move_down'),
         'enable_remove_mode': ('🗑️', 'remove'),
@@ -249,6 +219,8 @@ async def list_parameter_menu_builder(
             ),
         )
     footer[0].extend(buttons)
+    if mode:
+        footer[0].pop(0)
 
     footer[0].append(
         Button(
@@ -272,7 +244,7 @@ async def list_parameter_menu_builder(
 
 
 async def param_value_manual_input_menu_builder(
-    ctx: PropertiesMenuContext,
+    ctx: EntryMenuContext,
     translater: Translater,
     properties: FunPayHubProperties,
 ) -> Menu:
@@ -284,21 +256,19 @@ async def param_value_manual_input_menu_builder(
         current_parameter_value=html.escape(str(ctx.entry.value)),
     )
 
-    footer_keyboard = [
-        [
-            Button(
-                button_id='clear_state',
-                obj=InlineKeyboardButton(
-                    text=translater.translate('$clear_state', language),
-                    callback_data=cbs.Clear(
-                        delete_message=False,
-                        open_previous=True,
-                        history=ctx.callback_data.history if ctx.callback_data is not None else [],
-                    ).pack(),
-                ),
+    footer_keyboard = [[
+        Button(
+            button_id='clear_state',
+            obj=InlineKeyboardButton(
+                text=translater.translate('$clear_state', language),
+                callback_data=cbs.Clear(
+                    delete_message=False,
+                    open_previous=True,
+                    history=ctx.callback_data.history if ctx.callback_data is not None else [],
+                ).pack(),
             ),
-        ]
-    ]
+        ),
+    ]]
 
     return Menu(
         text=text,
@@ -310,12 +280,12 @@ async def param_value_manual_input_menu_builder(
 # Modifications
 class PropertiesMenuModification:
     @staticmethod
-    async def filter(ctx: PropertiesMenuContext, menu: Menu) -> bool:
+    async def filter(ctx: EntryMenuContext, menu: Menu) -> bool:
         return ctx.menu_id == MenuIds.properties_entry and ctx.entry.matches_path([])
 
     @staticmethod
     async def modification(
-        ctx: PropertiesMenuContext,
+        ctx: EntryMenuContext,
         menu: Menu,
         translater: Translater,
         properties: FunPayHubProperties,
@@ -323,46 +293,37 @@ class PropertiesMenuModification:
         language = properties.general.language.real_value
         callback_data = ctx.callback_data
 
-        menu.main_keyboard.append(
-            [
-                Button(
-                    button_id='open_formatters_list',
-                    obj=InlineKeyboardButton(
-                        text=translater.translate('$open_formatters_list', language),
-                        callback_data=cbs.OpenMenu(
-                            menu_id=MenuIds.formatters_list,
-                            history=callback_data.as_history()
-                            if callback_data is not None
-                            else [],
-                        ).pack(),
-                    ),
+        menu.main_keyboard.append([
+            Button(
+                button_id='open_formatters_list',
+                obj=InlineKeyboardButton(
+                    text=translater.translate('$open_formatters_list', language),
+                    callback_data=cbs.OpenMenu(
+                        menu_id=MenuIds.formatters_list,
+                        history=callback_data.as_history() if callback_data is not None else [],
+                    ).pack(),
                 ),
-            ]
-        )
+            ),
+        ])
 
-        menu.main_keyboard.insert(
-            1,
-            [
-                Button(
-                    button_id='open_current_chat_notifications',
-                    obj=InlineKeyboardButton(
-                        text=translater.translate('$telegram_notifications', language),
-                        callback_data=cbs.OpenMenu(
-                            menu_id=MenuIds.tg_chat_notifications,
-                            history=callback_data.as_history()
-                            if callback_data is not None
-                            else [],
-                        ).pack(),
-                    ),
+        menu.main_keyboard.insert(1, [
+            Button(
+                button_id='open_current_chat_notifications',
+                obj=InlineKeyboardButton(
+                    text=translater.translate('$telegram_notifications', language),
+                    callback_data=cbs.OpenMenu(
+                        menu_id=MenuIds.tg_chat_notifications,
+                        history=callback_data.as_history() if callback_data is not None else [],
+                    ).pack(),
                 ),
-            ],
+            )],
         )
         return menu
 
 
 class AddFormattersListButtonModification:
     @staticmethod
-    async def filter(ctx: PropertiesMenuContext, menu: Menu) -> bool:
+    async def filter(ctx: EntryMenuContext, menu: Menu) -> bool:
         return (
             ctx.entry.matches_path(['auto_response', '*', 'response_text'])
             or ctx.entry.matches_path(['review_reply', '*', 'review_reply_text'])
@@ -371,7 +332,7 @@ class AddFormattersListButtonModification:
 
     @staticmethod
     async def modification(
-        ctx: PropertiesMenuContext,
+        ctx: EntryMenuContext,
         menu: Menu,
         translater: Translater,
         properties: FunPayHubProperties,
@@ -379,42 +340,33 @@ class AddFormattersListButtonModification:
         language = properties.general.language.real_value
         callback_data = ctx.callback_data
 
-        menu.main_keyboard.append(
-            [
-                Button(
-                    button_id='open_formatters_list',
-                    obj=InlineKeyboardButton(
-                        text=translater.translate('$open_formatters_list', language),
-                        callback_data=cbs.OpenMenu(
-                            menu_id=MenuIds.formatters_list,
-                            history=callback_data.as_history()
-                            if callback_data is not None
-                            else [],
-                        ).pack(),
-                    ),
+        menu.main_keyboard.append([
+            Button(
+                button_id='open_formatters_list',
+                obj=InlineKeyboardButton(
+                    text=translater.translate('$open_formatters_list', language),
+                    callback_data=cbs.OpenMenu(
+                        menu_id=MenuIds.formatters_list,
+                        history=callback_data.as_history() if callback_data is not None else [],
+                    ).pack(),
                 ),
-            ]
+            )]
         )
         return menu
 
 
 class AddCommandButtonModification:
     @staticmethod
-    async def filter(ctx: PropertiesMenuContext, menu: Menu) -> bool:
+    async def filter(ctx: EntryMenuContext, menu: Menu) -> bool:
         return ctx.entry.matches_path(['auto_response'])
 
     @staticmethod
-    async def modification(ctx: PropertiesMenuContext, menu: Menu) -> Menu:
-        menu.footer_keyboard.append(
-            [
-                Button(
-                    button_id='add_command',
-                    obj=InlineKeyboardButton(
-                        text='$add_command',
-                        callback_data=cbs.Dummy().pack(),  # todo
-                    ),
-                ),
-            ]
-        )
+    async def modification(ctx: EntryMenuContext, menu: Menu) -> Menu:
+        menu.footer_keyboard.append([
+            Button(
+                button_id='add_command',
+                obj=InlineKeyboardButton(text='$add_command', callback_data=cbs.Dummy().pack()),  # todo
+            ),
+        ])
 
         return menu
