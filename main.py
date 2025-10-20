@@ -9,6 +9,7 @@ from load_dotenv import load_dotenv
 
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
+from funpaybotengine import Bot
 
 
 load_dotenv()
@@ -32,11 +33,11 @@ dictConfig(
             },
         },
         'loggers': {
-            'funpaybotengine.session_logger': {
+            'funpaybotengine.session': {
                 'level': logging.INFO,
                 'handlers': ['console'],
             },
-            'funpaybotengine.runner_logger': {
+            'funpaybotengine.runner': {
                 'level': logging.DEBUG,
                 'handlers': ['console'],
             },
@@ -81,6 +82,14 @@ dictConfig(
 )
 
 
+async def check_session(bot: Bot):
+    session: AioHttpSession = bot.session  # type: ignore
+    cs = await session.session()
+    async with cs:
+        r = await cs.get('https://api.ipify.org?format=json')
+        print(await r.json())
+
+
 async def main():
     import tracemalloc
 
@@ -89,6 +98,10 @@ async def main():
         props = FunPayHubProperties()
         await props.load()
         app = FunPayHub(properties=props)
+        await check_session(app.funpay.bot)
+        result = input()
+        if result != 'start':
+            sys.exit(0)
         await app.load_plugins()
         await app.start()
     except:

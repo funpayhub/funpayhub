@@ -12,7 +12,7 @@ class TelegramNotificationsProperties(Properties):
             file='config/telegram_notifications.toml',
         )
 
-        self.attach_parameter(
+        self.new_message = self.attach_parameter(
             ListParameter(
                 id='new_message',
                 name='$telegram_notifications.new_message:name',
@@ -21,7 +21,7 @@ class TelegramNotificationsProperties(Properties):
             ),
         )
 
-        self.attach_parameter(
+        self.new_order = self.attach_parameter(
             ListParameter(
                 id='new_order',
                 name='$telegram_notifications.new_order:name',
@@ -30,7 +30,7 @@ class TelegramNotificationsProperties(Properties):
             ),
         )
 
-        self.attach_parameter(
+        self.new_review = self.attach_parameter(
             ListParameter(
                 id='new_review',
                 name='$telegram_notifications.new_review:name',
