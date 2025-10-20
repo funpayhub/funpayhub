@@ -221,6 +221,7 @@ def default_finalizer_factory(back_button: bool = True):
             first_index = ctx.menu_page * max_lines
             last_index = first_index + max_lines
             menu.main_keyboard = menu.main_keyboard[first_index:last_index]
+            print(f'{first_index}:{last_index}')
 
         return menu
 

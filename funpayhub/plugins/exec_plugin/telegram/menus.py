@@ -14,7 +14,7 @@ from funpayhub.app.telegram.ui.premade import (
     build_view_navigation_buttons,
 )
 
-from .callbacks import SendExecFile
+from .callbacks import SendExecFile, SaveExecCode
 
 
 if TYPE_CHECKING:
@@ -49,15 +49,19 @@ async def exec_view_kb(ctx: MenuContext, mode: Literal['output', 'code']) -> Key
         ),
     )
 
-    return [[btn], [download_btn]]
+    save_btn = Button(
+        button_id='save_to_dict',
+        obj=InlineKeyboardButton(
+            text='💿 Сохранить',
+            callback_data=SaveExecCode(exec_id=ctx.data['exec_id']).pack()
+        )
+    )
+
+    return [[btn], [save_btn, download_btn]]
 
 
-async def exec_view_text(
-    ctx: MenuContext,
-    result: ExecR,
-    mode: Literal['output', 'code'],
-) -> str:
-    view_text = result.buffer.getvalue() if mode == 'output' else result.code
+async def exec_view_text(ctx: MenuContext, result: ExecR, mode: Literal['output', 'code']) -> str:
+    view_text = result.output if mode == 'output' else result.code
     first = ctx.view_page * MAX_TEXT_LEN
     last = first + MAX_TEXT_LEN
     text = '<pre>' + html.escape(view_text[first:last]) + '</pre>'
@@ -74,11 +78,7 @@ async def exec_view_text(
 
 
 # menus
-async def exec_list_menu_builder(
-    ui: UIRegistry,
-    ctx: MenuContext,
-    exec_registry: ExecRReg,
-) -> Menu:
+async def exec_list_menu_builder(ctx: MenuContext, exec_registry: ExecRReg) -> Menu:
     keyboard = []
     callback_data = ctx.callback_data
 
@@ -108,13 +108,9 @@ async def exec_list_menu_builder(
     )
 
 
-async def exec_output_menu_builder(
-    ui: UIRegistry,
-    ctx: MenuContext,
-    exec_registry: ExecRReg,
-) -> Menu:
+async def exec_output_menu_builder(ctx: MenuContext, exec_registry: ExecRReg) -> Menu:
     result = exec_registry.registry[ctx.data['exec_id']]
-    total_pages = math.ceil(result.buffer_len / MAX_TEXT_LEN)
+    total_pages = math.ceil(result.output_len / MAX_TEXT_LEN)
 
     return Menu(
         text=await exec_view_text(ctx, result, 'output'),
@@ -124,9 +120,7 @@ async def exec_output_menu_builder(
     )
 
 
-async def exec_code_menu_builder(
-    ui: UIRegistry, ctx: MenuContext, exec_registry: ExecRReg
-) -> Menu:
+async def exec_code_menu_builder(ctx: MenuContext, exec_registry: ExecRReg) -> Menu:
     result = exec_registry.registry[ctx.data['exec_id']]
     total_pages = math.ceil(result.code_len / MAX_TEXT_LEN)
 

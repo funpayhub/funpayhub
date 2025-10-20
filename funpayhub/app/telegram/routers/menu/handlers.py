@@ -72,6 +72,7 @@ async def open_entry_menu(
     entry = properties.get_entry(callback_data.path)
     ctx = EntryMenuContext(
         menu_id=MenuIds.properties_entry,
+        menu_page=callback_data.menu_page,
         trigger=query,
         entry=entry,
     )

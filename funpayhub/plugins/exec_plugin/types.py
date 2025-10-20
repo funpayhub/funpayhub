@@ -3,48 +3,34 @@ from __future__ import annotations
 import random
 import string
 from dataclasses import dataclass
-from io import StringIO
 
 
-class LockableBuffer(StringIO):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self._locked = False
-
-    @property
-    def locked(self) -> bool:
-        return self._locked
-
-    def lock(self) -> None:
-        self._locked = True
-
-    def write(self, s, /):
-        if self._locked:
-            raise RuntimeError('Buffer is locked.')
-        super().write(s)
-
-    def writelines(self, lines, /):
-        if self._locked:
-            raise RuntimeError('Buffer is locked.')
-        super().writelines(lines)
-
-    def writable(self) -> bool:
-        if self._locked:
-            return False
-        return super().writable()
+CHARS = string.ascii_letters
 
 
 @dataclass(frozen=True)
 class ExecutionResult:
     id: str
-    error: bool
     code: str
-    code_len: int
-    code_size: int
-    buffer_size: int
-    buffer_len: int
-    buffer: LockableBuffer
+    output: str
+    error: bool
     execution_time: float
+
+    @property
+    def code_len(self) -> int:
+        return len(self.code)
+
+    @property
+    def code_size(self) -> int:
+        return len(self.code.encode('utf-8'))
+
+    @property
+    def output_len(self) -> int:
+        return len(self.output)
+
+    @property
+    def output_size(self) -> int:
+        return len(self.output.encode('utf-8'))
 
 
 class ExecutionResultsRegistry:
@@ -55,22 +41,17 @@ class ExecutionResultsRegistry:
         self,
         id: str | None,
         code: str,
+        output: str,
         error: bool,
-        buffer: LockableBuffer,
         execution_time: float | int,
     ) -> ExecutionResult:
-        buffer.lock()
         id = self.make_id(id)
 
         result = ExecutionResult(
             id=id,
-            error=error,
             code=code,
-            code_len=len(code),
-            code_size=len(code.encode('utf-8')),
-            buffer_size=len(buffer.getvalue().encode('utf-8')),
-            buffer_len=len(buffer.getvalue()),
-            buffer=buffer,
+            output=output,
+            error=error,
             execution_time=execution_time,
         )
 
@@ -79,14 +60,10 @@ class ExecutionResultsRegistry:
 
     def make_id(self, id: str | None) -> str:
         if not id:
-            result = ''.join(
-                random.choice(string.ascii_lowercase + string.digits) for _ in range(10)
-            )
-            while result in self.registry:
-                result = ''.join(
-                    random.choice(string.ascii_lowercase + string.digits) for _ in range(10)
-                )
-            return result
+            while True:
+                result = ''.join(random.choice(CHARS) for _ in range(10))
+                if result not in self.registry:
+                    return result
 
         if id not in self.registry:
             return id

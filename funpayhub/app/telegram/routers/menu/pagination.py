@@ -112,7 +112,6 @@ async def change_page(
     if callback_data.view_page is not None:
         old.data['view_page'] = callback_data.view_page
     old.history = callback_data.history[:-1]
-
     update = Update(
         update_id=-1,
         callback_query=query.model_copy(update={'data': old.pack()}),

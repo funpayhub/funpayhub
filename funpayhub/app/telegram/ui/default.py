@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from funpayhub.lib.telegram.ui.types import MenuContext
+from .builders.context import NewMessageMenuContext
 
 from .ids import MenuIds, ButtonIds
-from .builders import formatters_ui, notifications_ui
+from .builders import formatters_ui, notifications_ui, message_ui
 from .builders.properties_ui import builders
 from .builders.properties_ui.context import (
     EntryMenuContext,
@@ -33,6 +34,10 @@ MENU_BUILDERS = {
         notifications_ui.current_chat_notifications_menu_builder,
         MenuContext,
     ),
+    MenuIds.new_message: (
+        message_ui.message_menu_builder,
+        NewMessageMenuContext,
+    )
 }
 
 
