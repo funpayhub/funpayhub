@@ -1,22 +1,40 @@
 from .builders.properties_ui import builders
 from .builders.properties_ui.registry import PropertiesUIRegistry
 from .builders.properties_ui.context import PropertiesMenuRenderContext, PropertiesButtonRenderContext
-from funpayhub.lib.telegram.ui.types import MenuRenderContext, ButtonRenderContext
+from funpayhub.lib.telegram.ui.types import MenuRenderContext
 from .builders import formatters_ui, notifications_ui
 from .ids import MenuIds, ButtonIds
 
 
 MENU_BUILDERS = {
-    MenuIds.properties_entry: (PropertiesUIRegistry.build_menu, PropertiesMenuRenderContext),
-    MenuIds.param_value_manual_input: (builders.param_value_manual_input_menu_builder, PropertiesMenuRenderContext),
-    MenuIds.formatters_list: (formatters_ui.formatters_list_menu_builder, MenuRenderContext),
-    MenuIds.formatter_info: (formatters_ui.formatter_info_menu_builder, MenuRenderContext),
-    MenuIds.tg_chat_notifications: (notifications_ui.current_chat_notifications_menu_builder, MenuRenderContext),
+    MenuIds.properties_entry: (
+        PropertiesUIRegistry.build_menu,
+        PropertiesMenuRenderContext
+    ),
+    MenuIds.param_value_manual_input: (
+        builders.param_value_manual_input_menu_builder,
+        PropertiesMenuRenderContext
+    ),
+    MenuIds.formatters_list: (
+        formatters_ui.formatters_list_menu_builder,
+        MenuRenderContext
+    ),
+    MenuIds.formatter_info: (
+        formatters_ui.formatter_info_menu_builder,
+        MenuRenderContext
+    ),
+    MenuIds.tg_chat_notifications: (
+        notifications_ui.current_chat_notifications_menu_builder,
+        MenuRenderContext
+    ),
 }
 
 
 BUTTON_BUILDERS = {
-    ButtonIds.properties_entry: (PropertiesUIRegistry.build_button, PropertiesButtonRenderContext),
+    ButtonIds.properties_entry: (
+        PropertiesUIRegistry.build_button,
+        PropertiesButtonRenderContext
+    ),
 }
 
 
