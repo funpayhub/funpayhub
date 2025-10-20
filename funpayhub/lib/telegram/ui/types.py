@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
 from typing import Literal, overload, Any, Protocol, TYPE_CHECKING
 from eventry.asyncio.callable_wrappers import CallableWrapper
+from typing import Type
 
 from ..callback_data import UnknownCallback
 
@@ -206,11 +207,26 @@ class MenuModification:
 
 @dataclass
 class MenuBuilder:
-    builder: CallableWrapper[Menu]
+    builder: MenuBuilderProto
+    context_type: Type[MenuRenderContext]
     modifications: dict[str, MenuModification] = field(default_factory=dict)
 
-    async def build(self, registry: UIRegistry, context: MenuRenderContext, data: dict[str, Any]) -> Menu:
-        result = await self.builder((registry, context), data)
+    def __post_init__(self) -> None:
+        if not issubclass(self.context_type, MenuRenderContext):
+            raise ValueError(
+                'Invalid context type. '
+                'Context type must be a subtype of `MenuRenderContext`.'
+            )
+
+        self._wrapped_builder: CallableWrapper[Menu] = CallableWrapper(self.builder)
+
+    async def build(
+        self,
+        registry: UIRegistry,
+        context: MenuRenderContext,
+        data: dict[str, Any]
+    ) -> Menu:
+        result = await self.wrapped_builder((registry, context), data)
 
         for i in self.modifications.values():
             try:
@@ -228,6 +244,10 @@ class MenuBuilder:
                 pass  # todo: logging
             result.finalizer = None
         return result
+
+    @property
+    def wrapped_builder(self) -> CallableWrapper[Menu]:
+        return self._wrapped_builder
 
 
 @dataclass

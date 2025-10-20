@@ -8,6 +8,7 @@ from typing import Any
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
 from funpayhub.loggers import telegram_ui as logger
+from typing import Type
 
 from .types import Menu, Button, MenuRenderContext, ButtonRenderContext
 from .types import (
@@ -35,6 +36,7 @@ class UIRegistry:
         self,
         menu_id: str,
         builder: MenuBuilderProto,
+        context_type: Type[MenuRenderContext] = MenuRenderContext,
         overwrite: bool = False
     ) -> None:
         mods = {}
@@ -43,7 +45,7 @@ class UIRegistry:
                 raise KeyError(f'Menu {menu_id!r} already exists.')
             mods = self._menus[menu_id].modifications
 
-        self._menus[menu_id] = MenuBuilder(CallableWrapper(builder), mods)
+        self._menus[menu_id] = MenuBuilder(builder, context_type, mods)
         logger.info(f'Menu builder {menu_id!r} has been added to registry.')
 
     def add_menu_modification(
