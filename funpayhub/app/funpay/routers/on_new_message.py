@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from funpaybotengine import Router
+
 from funpayhub.app.funpay.filters import is_fph_command
 
 
@@ -15,7 +16,6 @@ if TYPE_CHECKING:
 
 
 on_new_message_router = r = Router(name='fph:on_new_message_router')
-
 
 
 @r.on_new_message(

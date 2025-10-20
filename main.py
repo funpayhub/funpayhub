@@ -10,6 +10,7 @@ from load_dotenv import load_dotenv
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
 
+
 load_dotenv()
 
 
@@ -82,6 +83,7 @@ dictConfig(
 
 async def main():
     import tracemalloc
+
     tracemalloc.start()
     try:
         props = FunPayHubProperties()
@@ -91,9 +93,10 @@ async def main():
         await app.start()
     except:
         import traceback
+
         print(traceback.format_exc())
         snapshot = tracemalloc.take_snapshot()
-        top_stats = snapshot.statistics("lineno")
+        top_stats = snapshot.statistics('lineno')
 
         for stat in top_stats[:20]:
             print(stat)

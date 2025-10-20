@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class MenuIds:
     properties_entry = 'properties_entry'
     param_value_manual_input = 'param_value_manual_input'

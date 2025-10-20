@@ -3,13 +3,13 @@ from __future__ import annotations
 
 __all__ = [
     'UNSET',
-    'Entry'
+    'Entry',
 ]
 
 
-from typing import Any, Union, TypeVar, Callable
-from collections.abc import Generator, Iterable
 import threading
+from typing import Any, Union, TypeVar, Callable
+from collections.abc import Iterable, Generator
 
 
 ParamValueType = TypeVar('ParamValueType')

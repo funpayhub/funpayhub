@@ -1,1 +1,3 @@
+from __future__ import annotations
+
 from .log_message_middleware import log_new_message_middleware

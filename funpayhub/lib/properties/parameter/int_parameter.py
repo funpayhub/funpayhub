@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
-from collections.abc import Callable, Awaitable, Iterable
+from collections.abc import Callable, Iterable, Awaitable
 
 from funpayhub.lib.properties.base import UNSET, _UNSET
 from funpayhub.lib.properties.parameter.base import MutableParameter
@@ -26,5 +26,5 @@ class IntParameter(MutableParameter[int]):
             default_value=default_value,
             validator=validator,
             converter=int_converter,
-            flags=flags
+            flags=flags,
         )

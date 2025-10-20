@@ -4,15 +4,18 @@ from __future__ import annotations
 __all__ = ['PropertiesUIRegistry']
 
 
-from typing import Any, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Type
+
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
-from funpayhub.app.telegram.ui.builders.properties_ui.context import PropertiesMenuRenderContext, \
-    PropertiesButtonRenderContext
-from funpayhub.lib.properties.base import Entry
 from funpayhub.loggers import telegram_ui as logger
+from funpayhub.lib.properties.base import Entry
+from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilderProto, ButtonBuilderProto
+from funpayhub.app.telegram.ui.builders.properties_ui.context import (
+    PropertiesMenuRenderContext,
+    PropertiesButtonRenderContext,
+)
 
-from funpayhub.lib.telegram.ui.types import Menu, Button, ButtonBuilderProto, MenuBuilderProto
 
 if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui.registry import UIRegistry
@@ -30,10 +33,12 @@ class _PropertiesUIRegistry:
         self,
         registry: UIRegistry,
         ctx: PropertiesMenuRenderContext,
-        data: dict[str, Any]
+        data: dict[str, Any],
     ) -> Menu:
-        logger.debug(f'Properties menu builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
-                     f'has been requested.')
+        logger.debug(
+            f'Properties menu builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
+            f'has been requested.'
+        )
 
         builder = self.get_menu_builder(type(ctx.entry))
         if builder is None:
@@ -43,12 +48,12 @@ class _PropertiesUIRegistry:
         return result
 
     async def build_button(
-        self,
-        registry: UIRegistry,
-        ctx: PropertiesButtonRenderContext,
-        data: dict[str, Any]) -> Button:
-        logger.debug(f'Properties button builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
-                     f'has been requested.')
+        self, registry: UIRegistry, ctx: PropertiesButtonRenderContext, data: dict[str, Any]
+    ) -> Button:
+        logger.debug(
+            f'Properties button builder for {ctx.entry.path} ({type(ctx.entry).__name__}) '
+            f'has been requested.'
+        )
 
         builder = self.get_button_builder(type(ctx.entry))
         if builder is None:
@@ -77,30 +82,35 @@ class _PropertiesUIRegistry:
         self,
         entry_type: Type[Entry],
         builder: ButtonBuilderProto,
-        overwrite: bool = False
+        overwrite: bool = False,
     ) -> None:
         if entry_type in self._buttons:
             if not overwrite:
-                raise KeyError(f'Properties button builder for {entry_type.__name__!r} already exists.')
+                raise KeyError(
+                    f'Properties button builder for {entry_type.__name__!r} already exists.'
+                )
         self._buttons[entry_type] = CallableWrapper(builder)
         logger.info(
             f'Properties entry button builder for {entry_type.__name__!r} '
-            f'has been added to properties ui registry.'
+            f'has been added to properties ui registry.',
         )
 
     def add_menu_builder(
         self,
         entry_type: Type[Entry],
         builder: MenuBuilderProto,
-        overwrite: bool = False
+        overwrite: bool = False,
     ) -> None:
         if entry_type in self._menus:
             if not overwrite:
-                raise KeyError(f'Properties menu builder for {entry_type.__name__!r} already exists.')
+                raise KeyError(
+                    f'Properties menu builder for {entry_type.__name__!r} already exists.'
+                )
         self._menus[entry_type] = CallableWrapper(builder)
         logger.info(
             f'Properties entry menu builder for {entry_type.__name__!r} '
-            f'has been added to properties ui registry.'
+            f'has been added to properties ui registry.',
         )
+
 
 PropertiesUIRegistry = _PropertiesUIRegistry()

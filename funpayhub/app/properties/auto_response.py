@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import tomllib
-from typing import Any, NoReturn, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, NoReturn
 from types import MappingProxyType
 
 from funpayhub.lib.properties import Properties
@@ -90,15 +90,17 @@ class AutoResponseEntryProperties(Properties):
         )
 
     if TYPE_CHECKING:
+
         @property
-        def parent(self) -> AutoResponseProperties | None: pass
+        def parent(self) -> AutoResponseProperties | None:
+            pass
 
     @Properties.parent.setter
     def parent(self, value: AutoResponseProperties) -> None:
         if not isinstance(value, AutoResponseProperties):
             raise TypeError(
                 f'{self.__class__.__name__!r} must be attached only to '
-                f'{AutoResponseProperties.__name__!r}.'
+                f'{AutoResponseProperties.__name__!r}.',
             )
         Properties.parent.__set__(self, value)
 
@@ -123,7 +125,7 @@ class AutoResponseProperties(Properties):
         if not isinstance(properties, AutoResponseEntryProperties):
             raise ValueError(
                 f'{self.__class__.__name__!r} allows attaching only for '
-                f'{AutoResponseEntryProperties.__name__!r} instances.'
+                f'{AutoResponseEntryProperties.__name__!r} instances.',
             )
         return super().attach_properties(properties)
 

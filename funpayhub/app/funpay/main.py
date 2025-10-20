@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 
 from funpaybotengine import Bot, Dispatcher, AioHttpSession
 
+from funpayhub.app.funpay import middlewares as mdwr
 from funpayhub.app.formatters import FORMATTERS_LIST
 from funpayhub.app.funpay.routers import ALL_ROUTERS
-from funpayhub.app.funpay import middlewares as mdwr
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 
@@ -41,7 +41,7 @@ class FunPay:
 
     def setup_dispatcher(self):
         self.dispatcher.on_new_message.outer_middleware.register_middleware(
-            mdwr.log_new_message_middleware
+            mdwr.log_new_message_middleware,
         )
         self._dispatcher.connect_routers(*ALL_ROUTERS)
 

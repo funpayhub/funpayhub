@@ -1,28 +1,29 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING, Any
 from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
-from aiogram.fsm.context import FSMContext
 from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
+from aiogram.fsm.context import FSMContext
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.properties import ListParameter
-from funpayhub.lib.telegram.states import ChangingParameterValueState
 from funpayhub.lib.telegram.ui import MenuRenderContext
+from funpayhub.lib.telegram.states import ChangingParameterValueState
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 from funpayhub.app.telegram.ui.builders.properties_ui.context import PropertiesMenuRenderContext
-import asyncio
 
 from .router import router as r
 from ...ui.ids import MenuIds
 
+
 if TYPE_CHECKING:
-    from funpayhub.app.properties.properties import FunPayHubProperties
     from funpayhub.app.main import FunPayHub
+    from funpayhub.app.properties.properties import FunPayHubProperties
 
 
 async def _delete_message(msg: Message):
@@ -53,11 +54,12 @@ async def open_custom_menu(
         menu_page=callback_data.menu_page,
         view_page=callback_data.view_page,
         trigger=query,
-        data=callback_data.model_dump(mode='python', exclude={'identifier'}) | callback_data.data
+        data=callback_data.model_dump(mode='python', exclude={'identifier'}) | callback_data.data,
     )
 
     menu = await tg_ui.build_menu(ctx, data | {'query': query})
     await menu.apply_to(query.message)
+
 
 @r.callback_query(cbs.OpenEntryMenu.filter())
 async def open_entry_menu(
@@ -71,10 +73,12 @@ async def open_entry_menu(
     ctx = PropertiesMenuRenderContext(
         menu_id=MenuIds.properties_entry,
         trigger=query,
-        entry=entry
+        entry=entry,
     )
     menu = await tg_ui.build_menu(ctx, data | {'query': query})
     await menu.apply_to(query.message)
+
+
 # TEMP
 
 
@@ -99,8 +103,8 @@ async def clear(
             bot,
             Update(
                 update_id=-1,
-                callback_query=query.model_copy(update={'data': callback_data.pack_history()})
-            )
+                callback_query=query.model_copy(update={'data': callback_data.pack_history()}),
+            ),
         )
 
 
@@ -115,7 +119,7 @@ async def send_menu(
         menu_id=MenuIds.properties_entry,
         trigger=message,
         entry=properties,
-        data={'callback_data': cbs.OpenEntryMenu(path=[])}
+        data={'callback_data': cbs.OpenEntryMenu(path=[])},
     )
 
     await (await tg_ui.build_menu(ctx, data)).reply_to(message)
@@ -143,7 +147,7 @@ async def next_param_value(
         Update(
             update_id=0,
             callback_query=query.model_copy(update={'data': callback_data.pack_history()}),
-        )
+        ),
     )
 
 
@@ -213,7 +217,7 @@ async def toggle_notification_channel(
     properties: FunPayHubProperties,
     callback_data: cbs.ToggleNotificationChannel,
     dispatcher: Dispatcher,
-    bot: Bot
+    bot: Bot,
 ):
     chat_identifier = f'{query.message.chat.id}.{query.message.message_thread_id}'
     param: ListParameter[Any] = properties.telegram.notifications[callback_data.channel]
@@ -229,7 +233,7 @@ async def toggle_notification_channel(
         Update(
             update_id=-1,
             callback_query=query.model_copy(update={'data': callback_data.pack_history()}),
-        )
+        ),
     )
 
 
@@ -262,7 +266,7 @@ async def edit_parameter(
         Update(
             update_id=0,
             callback_query=data.callback_query_obj.model_copy(
-                update={'data': join_callbacks(*data.callbacks_history)}
+                update={'data': join_callbacks(*data.callbacks_history)},
             ),
         ),
     )
@@ -274,7 +278,7 @@ async def make_list_item_action(
     callback_data: cbs.ListParamItemAction,
     bot: Bot,
     dispatcher: Dispatcher,
-    properties: FunPayHubProperties
+    properties: FunPayHubProperties,
 ):
     if callback_data.action is None:
         await query.answer()
@@ -288,12 +292,12 @@ async def make_list_item_action(
         if index == 0:
             await query.answer()
             return
-        param.value[index], param.value[index-1] =  param.value[index-1], param.value[index]
+        param.value[index], param.value[index - 1] = param.value[index - 1], param.value[index]
     elif callback_data.action == 'move_down':
         if index == len(param.value) - 1:
             await query.answer()
             return
-        param.value[index], param.value[index+1] =  param.value[index+1], param.value[index]
+        param.value[index], param.value[index + 1] = param.value[index + 1], param.value[index]
 
     await param.save()
     new_callback = UnknownCallback.from_string(callback_data.pack_history(hash=False))
@@ -302,6 +306,6 @@ async def make_list_item_action(
         bot,
         Update(
             update_id=0,
-            callback_query=query.model_copy(update={'data': new_callback.pack()})
+            callback_query=query.model_copy(update={'data': new_callback.pack()}),
         ),
     )

@@ -12,9 +12,11 @@ __all__ = [
 
 import datetime
 from typing import TYPE_CHECKING
+
 from funpaybotengine.dispatching.events import OrderEvent, NewMessageEvent
 
 from funpayhub.lib.hub.text_formatters import Image, Formatter
+
 
 if TYPE_CHECKING:
     from funpayhub.app import FunPayHub
@@ -125,6 +127,7 @@ async def me_formatter(mode: str = 'username', hub: FunPayHub | None = None) -> 
         return str(hub.funpay.bot.userid)
 
     raise ValueError(f'Unknown mode for $me formatter: {mode!r}')
+
 
 MeFormatter = Formatter(
     key='me',

@@ -9,9 +9,10 @@ from typing import TYPE_CHECKING, Any, Type, Literal, TypeVar, ClassVar
 from copy import copy
 
 from pydantic import Field, BaseModel, field_validator
-from funpayhub.lib.telegram.keyboard_hashinator import HashinatorT1000
 from aiogram.types import CallbackQuery
 from aiogram.filters import Filter
+
+from funpayhub.lib.telegram.keyboard_hashinator import HashinatorT1000
 
 
 T = TypeVar('T', bound='CallbackData')
@@ -162,9 +163,7 @@ class CallbackQueryFilter(Filter):
     via callback data instance
     """
 
-    __slots__ = (
-        'callback_data',
-    )
+    __slots__ = ('callback_data',)
 
     def __init__(
         self,

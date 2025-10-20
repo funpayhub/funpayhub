@@ -5,13 +5,16 @@ import asyncio
 from typing import Any
 
 from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.lib.properties import Parameter, MutableParameter, Properties
+from funpayhub.lib.properties import Parameter, Properties, MutableParameter
 from funpayhub.lib.translater import Translater
+from funpayhub.app.dispatching import (
+    Dispatcher as HubDispatcher,
+    ParameterAttachedEvent,
+    PropertiesAttachedEvent,
+    ParameterValueChangedEvent,
+)
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
-
-from funpayhub.app.dispatching import Dispatcher as HubDispatcher, ParameterValueChangedEvent, \
-    PropertiesAttachedEvent, ParameterAttachedEvent
 
 # plugins
 from funpayhub.plugins.exec_plugin import Plugin
@@ -33,7 +36,7 @@ class FunPayHub:
         self._telegram = Telegram(
             self,
             bot_token=os.environ.get('FPH_TELEGRAM_TOKEN'),  # todo: or from config
-            workflow_data=self.workflow_data
+            workflow_data=self.workflow_data,
         )
 
         self.workflow_data.update(
@@ -65,7 +68,7 @@ class FunPayHub:
 
     async def emit_parameter_changed_event(
         self,
-        parameter: MutableParameter[Any]
+        parameter: MutableParameter[Any],
     ) -> None:
         event = ParameterValueChangedEvent(param=parameter)
         await self.dispatcher.propagate_event(event)

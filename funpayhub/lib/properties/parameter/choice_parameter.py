@@ -4,10 +4,10 @@ from __future__ import annotations
 __all__ = ['ChoiceParameter', 'Choice']
 
 
-from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar
+from typing import TYPE_CHECKING, Any
 from dataclasses import dataclass
-from collections.abc import Callable, Awaitable, Iterable
 from types import MappingProxyType
+from collections.abc import Callable, Iterable, Awaitable
 
 from funpayhub.lib.properties.base import UNSET, _UNSET
 from funpayhub.lib.properties.parameter.base import MutableParameter
@@ -15,7 +15,7 @@ from funpayhub.lib.properties.parameter.converters import string_converter
 
 
 if TYPE_CHECKING:
-    from ..properties import Properties
+    pass
 
 
 @dataclass(frozen=True)
@@ -44,7 +44,7 @@ class ChoiceParameter[T: int | float | bool | str](MutableParameter[str]):
         flags: Iterable[Any] | None = None,
     ) -> None:
         if not choices:
-            raise ValueError("choices cannot be empty")  # todo
+            raise ValueError('choices cannot be empty')  # todo
 
         self._choices: dict[str, Choice[Any]] = {}
         for i in choices:
@@ -60,7 +60,7 @@ class ChoiceParameter[T: int | float | bool | str](MutableParameter[str]):
             default_value=default_value,
             validator=validator,
             converter=string_converter,
-            flags=flags
+            flags=flags,
         )
 
     def add_choice(self, choice: Choice[T]) -> None:

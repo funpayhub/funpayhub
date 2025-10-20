@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+import asyncio
+from typing import Literal
+from contextlib import suppress
+
 from aiogram import Bot, Router, Dispatcher
-from aiogram.types import Update, CallbackQuery, Message
+from aiogram.types import Update, Message, CallbackQuery
+from aiogram.filters import StateFilter
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
 from funpayhub.lib.telegram.states import ChangingMenuPage, ChangingViewPage
-from aiogram.filters import StateFilter
-from contextlib import suppress
-from typing import Literal
-import asyncio
+from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
 
 
 router = Router(name='fph:pagination')
@@ -25,6 +26,7 @@ def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery):
         user_id=obj.from_user.id,
     )
 
+
 # todo: вынести в utils
 async def _delete_message(msg: Message):
     with suppress(Exception):
@@ -37,7 +39,7 @@ async def set_changing_page_state(
     callback_data: CallbackData,
     dp: Dispatcher,
     bot: Bot,
-    type_: Literal['view', 'menu']
+    type_: Literal['view', 'menu'],
 ):
     state = _get_context(dp, bot, query)
     await state.clear()
@@ -63,7 +65,8 @@ async def set_changing_page_state(
 async def change_page_from_message(
     message: Message,
     dp: Dispatcher,
-    bot: Bot, type_: Literal['view', 'menu']
+    bot: Bot,
+    type_: Literal['view', 'menu'],
 ):
     await _delete_message(message)
 
@@ -92,7 +95,7 @@ async def change_page_from_message(
         Update(
             update_id=-1,
             callback_query=data.callback_query_obj.model_copy(update={'data': old.pack()}),
-        )
+        ),
     )
 
 
@@ -122,7 +125,7 @@ async def manual_change_menu_page_activate(
     query: CallbackQuery,
     bot: Bot,
     dispatcher: Dispatcher,
-    callback_data: cbs.ChangeMenuPageManually
+    callback_data: cbs.ChangeMenuPageManually,
 ):
     await set_changing_page_state(query, callback_data, dispatcher, bot, 'menu')
 
@@ -132,7 +135,7 @@ async def manual_change_view_page_activate(
     query: CallbackQuery,
     bot: Bot,
     dispatcher: Dispatcher,
-    callback_data: cbs.ChangeMenuPageManually
+    callback_data: cbs.ChangeMenuPageManually,
 ):
     await set_changing_page_state(query, callback_data, dispatcher, bot, 'view')
 

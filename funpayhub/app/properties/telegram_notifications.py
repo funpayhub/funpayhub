@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from funpayhub.lib.properties import Properties, ListParameter
 
 
@@ -7,7 +9,7 @@ class TelegramNotificationsProperties(Properties):
             id='telegram_notifications',
             name='$telegram_notifications:name',
             description='$telegram_notifications:description',
-            file='config/telegram_notifications.toml'
+            file='config/telegram_notifications.toml',
         )
 
         self.attach_parameter(
@@ -16,7 +18,7 @@ class TelegramNotificationsProperties(Properties):
                 name='$telegram_notifications.new_message:name',
                 description='$telegram_notifications.new_message:description',
                 default_value=[],
-            )
+            ),
         )
 
         self.attach_parameter(
@@ -25,7 +27,7 @@ class TelegramNotificationsProperties(Properties):
                 name='$telegram_notifications.new_order:name',
                 description='$telegram_notifications.new_order:description',
                 default_value=[],
-            )
+            ),
         )
 
         self.attach_parameter(
@@ -34,5 +36,5 @@ class TelegramNotificationsProperties(Properties):
                 name='$telegram_notifications.new_review:name',
                 description='$telegram_notifications.new_review:description',
                 default_value=[],
-            )
+            ),
         )

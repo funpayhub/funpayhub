@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-from funpaybotengine.dispatching.events import NewReviewEvent, ReviewChangedEvent
-from funpayhub.app.properties import FunPayHubProperties
 from funpaybotengine import Bot
+from funpaybotengine.dispatching.events import NewReviewEvent, ReviewChangedEvent
+
+from funpayhub.app.properties import FunPayHubProperties
 
 
 if TYPE_CHECKING:
@@ -18,23 +20,28 @@ ratings = {
     5: 'review_reply.five_stars',
 }
 
+
 async def review_reply_enabled(
     event: NewReviewEvent | ReviewChangedEvent,
     properties: FunPayHubProperties,
-    bot: Bot
+    bot: Bot,
 ):
     if event.message.meta.buyer_id == bot.userid:
         return False
 
     order_page = await event.get_order_page()
     if not order_page.review.rating:
-        return
+        return None
 
-    props: ReviewReplyPropertiesEntry = properties.get_properties(ratings[order_page.review.rating])
-    if not any([
-        props.reply_in_review and props.review_reply_text,
-        props.reply_in_chat and props.chat_reply_text,
-    ]):
+    props: ReviewReplyPropertiesEntry = properties.get_properties(
+        ratings[order_page.review.rating]
+    )
+    if not any(
+        [
+            props.reply_in_review and props.review_reply_text,
+            props.reply_in_chat and props.chat_reply_text,
+        ]
+    ):
         return False
 
     return {'_props': props}

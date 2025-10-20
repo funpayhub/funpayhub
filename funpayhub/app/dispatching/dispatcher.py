@@ -8,8 +8,8 @@ from typing import Any
 
 from eventry.asyncio.dispatcher import Dispatcher as BaseDispatcher, ErrorContext
 
-from .events.base import ErrorEvent
 from .router import Router
+from .events.base import ErrorEvent
 
 
 def error_event_factory(context: ErrorContext) -> ErrorEvent:

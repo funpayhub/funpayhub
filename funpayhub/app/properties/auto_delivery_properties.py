@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import os
 import tomllib
-from typing import Any, NoReturn, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, NoReturn
 from types import MappingProxyType
 
 from funpayhub.lib.properties import Properties, StringParameter, ToggleParameter
-
 
 
 class AutoDeliveryEntryProperties(Properties):
@@ -54,6 +53,7 @@ class AutoDeliveryEntryProperties(Properties):
         )
 
     if TYPE_CHECKING:
+
         @property
         def parent(self) -> AutoDeliveryProperties | None: ...
 
@@ -62,7 +62,7 @@ class AutoDeliveryEntryProperties(Properties):
         if not isinstance(value, AutoDeliveryProperties):
             raise TypeError(
                 f'{self.__class__.__name__!r} must be attached only to '
-                f'{AutoDeliveryProperties.__name__!r}.'
+                f'{AutoDeliveryProperties.__name__!r}.',
             )
         Properties.parent.__set__(self, value)
 
@@ -87,7 +87,7 @@ class AutoDeliveryProperties(Properties):
         if not isinstance(properties, AutoDeliveryEntryProperties):
             raise ValueError(
                 f'{self.__class__.__name__!r} allows attaching only for '
-                f'{AutoDeliveryEntryProperties.__name__!r} instances.'
+                f'{AutoDeliveryEntryProperties.__name__!r} instances.',
             )
         return super().attach_properties(properties)
 

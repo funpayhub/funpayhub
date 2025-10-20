@@ -1,6 +1,9 @@
-from .registry import PropertiesUIRegistry as Registry
+from __future__ import annotations
+
+from funpayhub.lib.properties import Properties, parameter as param
+
 from . import builders
-from funpayhub.lib.properties import parameter as param, Properties
+from .registry import PropertiesUIRegistry as Registry
 
 
 Registry.add_menu_builder(param.IntParameter, builders.param_value_manual_input_menu_builder)
@@ -17,4 +20,3 @@ Registry.add_button_builder(param.StringParameter, builders.parameter_button_bui
 Registry.add_button_builder(param.ChoiceParameter, builders.open_entry_menu_button_builder)
 Registry.add_button_builder(param.ListParameter, builders.open_entry_menu_button_builder)
 Registry.add_button_builder(Properties, builders.open_entry_menu_button_builder)
-

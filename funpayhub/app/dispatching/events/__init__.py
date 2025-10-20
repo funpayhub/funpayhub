@@ -1,2 +1,4 @@
-from .properties_events import *
+from __future__ import annotations
+
 from .base import *
+from .properties_events import *

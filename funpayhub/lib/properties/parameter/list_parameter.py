@@ -5,7 +5,7 @@ __all__ = ['ListParameter']
 
 
 from typing import Any
-from collections.abc import Callable, Awaitable, Iterable
+from collections.abc import Callable, Iterable, Awaitable
 
 from funpayhub.lib.properties.base import UNSET, _UNSET
 from funpayhub.lib.properties.parameter.base import MutableParameter
@@ -32,7 +32,7 @@ class ListParameter[ItemType: ALLOWED_TYPES](MutableParameter[list[ItemType]]):
             default_value=default_value,
             validator=validator,
             converter=lambda _: _,
-            flags=flags
+            flags=flags,
         )
 
     async def add_item(self, item: ItemType) -> None:

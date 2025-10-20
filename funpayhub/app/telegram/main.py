@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
-from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.strategy import FSMStrategy
+from aiogram.client.default import DefaultBotProperties
 
 from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.lib.telegram.ui.registry import UIRegistry
@@ -77,6 +77,7 @@ class Telegram:
 
         # todo
         from funpayhub.app.telegram.routers.help.handlers import NeedHelpMiddleware, router
+
         self.dispatcher.callback_query.outer_middleware(NeedHelpMiddleware())
         self.dispatcher.include_routers(router)
 

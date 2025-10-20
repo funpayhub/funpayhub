@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 __all__ = ['HashinatorT1000']
 
 
@@ -30,7 +31,7 @@ class _HashinatorT1000:
                 return candidate
             if self.hashes[candidate] == text:
                 return candidate
-            candidate = f"<<{self._sha1(candidate + '.')}>>"
+            candidate = f'<<{self._sha1(candidate + ".")}>>'
 
     def unhash(self, hash: str) -> str | None:
         result = self.hashes.get(hash, None)
@@ -44,4 +45,3 @@ class _HashinatorT1000:
 
 
 HashinatorT1000 = _HashinatorT1000()
-

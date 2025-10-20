@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from funpaybotengine import Router
-from funpaybotengine.dispatching import NewReviewEvent, ReviewChangedEvent
-from funpaybotengine import Bot
-from funpayhub.app.funpay.filters.review_reply_enabled import review_reply_enabled
 import asyncio
+from typing import TYPE_CHECKING
+
+from funpaybotengine import Bot, Router
+from funpaybotengine.dispatching import NewReviewEvent, ReviewChangedEvent
+
+from funpayhub.app.funpay.filters.review_reply_enabled import review_reply_enabled
 
 
 if TYPE_CHECKING:
@@ -20,7 +21,7 @@ review_reply_router = r = Router(name='fph:review_reply_router')
 async def reply_on_review(
     event: NewReviewEvent | ReviewChangedEvent,
     bot: Bot,
-    _props: ReviewReplyPropertiesEntry
+    _props: ReviewReplyPropertiesEntry,
 ):
     if _props.review_reply_text and _props.reply_in_review:
         asyncio.create_task(bot.review(event.message.meta.order_id, _props.review_reply_text, 5))

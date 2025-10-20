@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from aiogram import Router, BaseMiddleware
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
+
 import funpayhub.lib.telegram.callbacks as cbs
-from typing import TYPE_CHECKING, Any
 
 
 if TYPE_CHECKING:
@@ -37,7 +39,6 @@ async def help_command(message: Message):
         await message.answer('Вы вошли в режим справки. Снова введите /help для выхода.')
 
 
-
 @router.callback_query(cbs.OpenEntryMenu.filter())
 @router.callback_query(cbs.NextParamValue.filter())
 @router.callback_query(cbs.ManualParamValueInput.filter())
@@ -45,13 +46,12 @@ async def show_entry_help(
     query: CallbackQuery,
     properties: FunPayHubProperties,
     callback_data: cbs.OpenEntryMenu,
-    translater: Translater
+    translater: Translater,
 ):
     entry = properties.get_entry(callback_data.path)
     desc = translater.translate(entry.description, properties.general.language.real_value)
 
     await query.answer(
         text=f'Справка:\n{desc}',
-        show_alert=True
+        show_alert=True,
     )
-

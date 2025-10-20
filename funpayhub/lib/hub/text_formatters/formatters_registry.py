@@ -112,7 +112,7 @@ class FormattersRegistry:
             return list(self._formatters.values())[item]
 
         raise TypeError(
-            f'Invalid key type: expected str, int, or slice, got {type(item).__name__}.'
+            f'Invalid key type: expected str, int, or slice, got {type(item).__name__}.',
         )
 
     def __setitem__(self, key: str, value: Formatter) -> None:

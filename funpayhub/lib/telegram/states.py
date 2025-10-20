@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from typing import Any
 from dataclasses import field, dataclass
 
 from aiogram.types import Message, CallbackQuery
-from typing import Any
 
-from funpayhub.lib.properties import MutableParameter, ListParameter
+from funpayhub.lib.properties import ListParameter, MutableParameter
 from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
 
 

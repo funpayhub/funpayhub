@@ -4,12 +4,13 @@ from typing import TypeVar
 
 from funpayhub.lib.properties import Properties
 
+from .review_reply import ReviewReplyProperties
 from .auto_response import AutoResponseProperties
 from .global_toggles import TogglesProperties
 from .general_properties import GeneralProperties
 from .telegram_properties import TelegramProperties
 from .auto_delivery_properties import AutoDeliveryProperties
-from .review_reply import ReviewReplyProperties
+
 
 T = TypeVar('T', bound=Properties)
 

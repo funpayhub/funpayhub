@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
-from typing import Literal, overload, Any, Protocol, TYPE_CHECKING
-from eventry.asyncio.callable_wrappers import CallableWrapper
-from typing import Type
+from typing import TYPE_CHECKING, Any, Type, Literal, Protocol, overload
+from dataclasses import field, dataclass
 
-from ..callback_data import UnknownCallback
+from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from eventry.asyncio.callable_wrappers import CallableWrapper
+
+from funpayhub.lib.telegram.callback_data import UnknownCallback
+
 
 if TYPE_CHECKING:
     from .registry import UIRegistry
@@ -86,7 +87,9 @@ class MenuRenderContext:
 
     @property
     def callback_data(self) -> UnknownCallback | None:
-        if 'callback_data' in self.data and isinstance(self.data['callback_data'], UnknownCallback):
+        if 'callback_data' in self.data and isinstance(
+            self.data['callback_data'], UnknownCallback
+        ):
             return self.data['callback_data']
         if isinstance(self.trigger, CallbackQuery):
             if hasattr(self.trigger, '__parsed__'):
@@ -104,12 +107,9 @@ class ButtonRenderContext:
 
 class MenuBuilderProto(Protocol):
     async def __call__(
-        self,
-        __registry: UIRegistry,
-        __ctx: MenuRenderContext,
-        *__args: Any,
-        **__kwargs: Any
-    ) -> Menu: ...
+        self, __u: UIRegistry, __c: MenuRenderContext, *__a: Any, **__k: Any
+    ) -> Menu:
+        pass
 
 
 class MenuModFilterProto(Protocol):
@@ -119,7 +119,7 @@ class MenuModFilterProto(Protocol):
         __ctx: MenuRenderContext,
         __menu: Menu,
         *__args: Any,
-        **__kwargs: Any
+        **__kwargs: Any,
     ) -> bool: ...
 
 
@@ -130,7 +130,7 @@ class MenuModProto(Protocol):
         __ctx: MenuRenderContext,
         __menu: Menu,
         *__args: Any,
-        **__kwargs: Any
+        **__kwargs: Any,
     ) -> Menu: ...
 
 
@@ -140,7 +140,7 @@ class ButtonBuilderProto(Protocol):
         __registry: UIRegistry,
         __ctx: ButtonRenderContext,
         *__args: Any,
-        **__kwargs: Any
+        **__kwargs: Any,
     ) -> Button: ...
 
 
@@ -151,7 +151,7 @@ class ButtonModFilterProto(Protocol):
         __ctx: ButtonRenderContext,
         __button: Button,
         *__args: Any,
-        **__kwargs: Any
+        **__kwargs: Any,
     ) -> bool: ...
 
 
@@ -162,7 +162,7 @@ class ButtonModProto(Protocol):
         __ctx: ButtonRenderContext,
         __button: Button,
         *__args: Any,
-        **__kwargs: Any
+        **__kwargs: Any,
     ) -> Button: ...
 
 
@@ -176,7 +176,7 @@ class MenuModification:
         registry: UIRegistry,
         context: MenuRenderContext,
         menu: Menu,
-        data: dict[str, Any]
+        data: dict[str, Any],
     ) -> Menu:
         if self.filter is not None:
             result = await self.filter((registry, context, menu), data)
@@ -194,8 +194,7 @@ class MenuBuilder:
     def __post_init__(self) -> None:
         if not issubclass(self.context_type, MenuRenderContext):
             raise ValueError(
-                'Invalid context type. '
-                'Context type must be a subtype of `MenuRenderContext`.'
+                'Invalid context type. Context type must be a subtype of `MenuRenderContext`.',
             )
 
         self._wrapped_builder: CallableWrapper[Menu] = CallableWrapper(self.builder)
@@ -204,7 +203,7 @@ class MenuBuilder:
         self,
         registry: UIRegistry,
         context: MenuRenderContext,
-        data: dict[str, Any]
+        data: dict[str, Any],
     ) -> Menu:
         result = await self.wrapped_builder((registry, context), data)
 
@@ -220,6 +219,7 @@ class MenuBuilder:
                 result = await wrapped((registry, context, result), data)
             except:
                 import traceback
+
                 print(traceback.format_exc())
                 pass  # todo: logging
             result.finalizer = None
@@ -240,7 +240,7 @@ class ButtonModification:
         registry: UIRegistry,
         context: ButtonRenderContext,
         button: Button,
-        data: dict[str, Any]
+        data: dict[str, Any],
     ) -> Button:
         if self.filter is not None:
             result = await self.filter((registry, context, button), data)
@@ -258,8 +258,7 @@ class ButtonBuilder:
     def __post_init__(self) -> None:
         if not issubclass(self.context_type, ButtonRenderContext):
             raise ValueError(
-                'Invalid context type. '
-                'Context type must be a subtype of `ButtonRenderContext`.'
+                'Invalid context type. Context type must be a subtype of `ButtonRenderContext`.',
             )
 
         self._wrapped_builder: CallableWrapper[Button] = CallableWrapper(self.builder)
@@ -268,7 +267,7 @@ class ButtonBuilder:
         self,
         registry: UIRegistry,
         context: ButtonRenderContext,
-        data: dict[str, Any]
+        data: dict[str, Any],
     ) -> Button:
         result = await self.wrapped_builder((registry, context), data)
         if not self.modifications:

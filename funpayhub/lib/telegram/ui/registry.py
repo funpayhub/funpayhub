@@ -4,24 +4,27 @@ from __future__ import annotations
 __all__ = ['UIRegistry']
 
 
-from typing import Any
+from typing import Any, Type
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
-from funpayhub.loggers import telegram_ui as logger
-from typing import Type
 
-from .types import Menu, Button, MenuRenderContext, ButtonRenderContext
+from funpayhub.loggers import telegram_ui as logger
+
 from .types import (
-    MenuBuilderProto,
-    MenuModFilterProto,
-    MenuModProto,
-    ButtonBuilderProto,
-    ButtonModFilterProto,
-    ButtonModProto,
+    Menu,
+    Button,
     MenuBuilder,
-    MenuModification,
+    MenuModProto,
     ButtonBuilder,
+    ButtonModProto,
+    MenuBuilderProto,
+    MenuModification,
+    MenuRenderContext,
+    ButtonBuilderProto,
     ButtonModification,
+    MenuModFilterProto,
+    ButtonRenderContext,
+    ButtonModFilterProto,
 )
 
 
@@ -37,7 +40,7 @@ class UIRegistry:
         menu_id: str,
         builder: MenuBuilderProto,
         context_type: Type[MenuRenderContext] = MenuRenderContext,
-        overwrite: bool = False
+        overwrite: bool = False,
     ) -> None:
         mods = {}
         if menu_id in self._menus:
@@ -62,12 +65,11 @@ class UIRegistry:
 
         modification_obj = MenuModification(
             CallableWrapper(modification),
-            CallableWrapper(filter) if filter is not None else None
+            CallableWrapper(filter) if filter is not None else None,
         )
         self._menus[menu_id].modifications[modification_id] = modification_obj
         logger.info(
-            f'Modification {modification_id!r} for menu {menu_id!r} '
-            f'has been added to registry.'
+            f'Modification {modification_id!r} for menu {menu_id!r} has been added to registry.',
         )
 
     def get_menu_builder(self, menu_id: str) -> MenuBuilder:
@@ -83,7 +85,7 @@ class UIRegistry:
         if not isinstance(context, builder.context_type):
             raise TypeError(
                 f'Menu {context.menu_id!r} requires context of type {builder.context_type!r}, '
-                f'not {type(context)!r}.'
+                f'not {type(context)!r}.',
             )
 
         logger.info(f'Building menu {context.menu_id!r}.')
@@ -99,7 +101,7 @@ class UIRegistry:
         button_id: str,
         builder: ButtonBuilderProto,
         context_type: Type[ButtonRenderContext] = ButtonRenderContext,
-        overwrite: bool = False
+        overwrite: bool = False,
     ) -> None:
         mods = {}
         if button_id in self._buttons:
@@ -124,12 +126,12 @@ class UIRegistry:
 
         modification_obj = ButtonModification(
             CallableWrapper(modification),
-            CallableWrapper(filter) if filter is not None else None
+            CallableWrapper(filter) if filter is not None else None,
         )
         self._buttons[button_id].modifications[modification_id] = modification_obj
         logger.info(
             f'Modification {modification_id!r} for button {button_id!r} '
-            f'has been added to registry.'
+            f'has been added to registry.',
         )
 
     def get_button_builder(self, button_id: str) -> ButtonBuilder:
@@ -139,7 +141,7 @@ class UIRegistry:
         self,
         button_id: str,
         context: ButtonRenderContext,
-        data: dict[str, Any]
+        data: dict[str, Any],
     ) -> Button:
         try:
             builder = self.get_button_builder(button_id)
@@ -150,7 +152,7 @@ class UIRegistry:
         if not isinstance(context, builder.context_type):
             raise TypeError(
                 f'Menu {context.button_id!r} requires context of type {builder.context_type!r}, '
-                f'not {type(context)!r}.'
+                f'not {type(context)!r}.',
             )
 
         logger.info(f'Building button {button_id!r}.')

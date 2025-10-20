@@ -9,7 +9,7 @@ __all__ = [
     'FloatParameter',
     'ChoiceParameter',
     'StringParameter',
-    'ToggleParameter'
+    'ToggleParameter',
 ]
 
 

@@ -4,13 +4,14 @@ from __future__ import annotations
 __all__ = [
     'Hook',
     'HookArg',
-    'HooksRegistry'
+    'HooksRegistry',
 ]
 
 
 from dataclasses import dataclass
-from typing_extensions import Any
 from collections.abc import Callable
+
+from typing_extensions import Any
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
 
@@ -27,8 +28,6 @@ class HookArg:
 
     converter: Callable[[str], Any] | None = None
     """Конвертор параметра из строки в реальный тип."""
-
-
 
 
 @dataclass
@@ -64,6 +63,6 @@ class HooksRegistry:
 
     def add_hook(self, hook: Hook, overwrite: bool = False) -> None:
         if hook.id in self._hooks and not overwrite:
-            raise ValueError(f"Hook {hook.id!r} already exists.")
+            raise ValueError(f'Hook {hook.id!r} already exists.')
 
         self._hooks[hook.id] = hook

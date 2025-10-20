@@ -8,7 +8,7 @@ import os
 import tomllib
 from typing import Any
 from types import MappingProxyType
-from collections.abc import Generator, Iterable
+from collections.abc import Iterable, Generator
 
 import tomli_w
 
@@ -193,7 +193,9 @@ class Properties(Entry):
             elif isinstance(v, Properties):
                 await v._set_values(values[v.id])
 
-    def get_entry(self, path: list[str | int]) -> Properties | Parameter[Any] | MutableParameter[Any]:
+    def get_entry(
+        self, path: list[str | int]
+    ) -> Properties | Parameter[Any] | MutableParameter[Any]:
         if not path:
             return self
 
@@ -201,7 +203,7 @@ class Properties(Entry):
         if isinstance(segment, str):
             next_entry = self.entries.get(segment)
             if next_entry is None:
-                raise LookupError(f"{self.path!r} has no entry with id {segment!r}.")
+                raise LookupError(f'{self.path!r} has no entry with id {segment!r}.')
         elif isinstance(segment, int):
             try:
                 key = list(self.entries.keys())[segment]
@@ -210,13 +212,13 @@ class Properties(Entry):
             next_entry = self.entries[key]
         else:
             raise ValueError(
-                f'Segment of path must be an instance of \'str\' or \'int\', '
-                f'not {segment.__class__.__name__!r}'
+                f"Segment of path must be an instance of 'str' or 'int', "
+                f'not {segment.__class__.__name__!r}',
             )
 
         if isinstance(next_entry, Parameter):
             if len(path) > 1:
-                raise LookupError(f"No entry with path {path!r}.")
+                raise LookupError(f'No entry with path {path!r}.')
             return next_entry
 
         if isinstance(next_entry, Properties):
@@ -224,7 +226,7 @@ class Properties(Entry):
                 return next_entry.get_entry(path[1:])
             return next_entry
 
-        raise LookupError(f"No entry with path {path!r}.")
+        raise LookupError(f'No entry with path {path!r}.')
 
     def get_parameter(self, path: list[str | int]) -> Parameter[Any] | MutableParameter[Any]:
         result = self.get_entry(path)

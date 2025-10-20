@@ -47,7 +47,7 @@ class TelegramGeneral(Properties):
                 name='$props.telegram.general.password:name',
                 description='$props.telegram.general.password:description',
                 default_value='',
-                flags=[ParamFlags.PROTECT_VALUE]
+                flags=[ParamFlags.PROTECT_VALUE],
             ),
         )
 

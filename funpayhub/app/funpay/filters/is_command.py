@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from funpaybotengine.dispatching.events import NewMessageEvent
+
 from funpayhub.app.properties import FunPayHubProperties
 
 
@@ -21,10 +24,12 @@ def is_fph_command(event: NewMessageEvent, properties: FunPayHubProperties):
         if not params.react_on_others.value and not event.message.from_me:
             return False
 
-        if not any([
-            params.reply.value and params.response_text.value,
-            params.hooks.value
-        ]):
+        if not any(
+            [
+                params.reply.value and params.response_text.value,
+                params.hooks.value,
+            ]
+        ):
             return False
 
         return {'command': params}

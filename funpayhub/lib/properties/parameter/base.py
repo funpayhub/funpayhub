@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
-from collections.abc import Callable, Awaitable, Iterable
+from asyncio import Lock
+from collections.abc import Callable, Iterable, Awaitable
 
 from funpayhub.lib.properties.base import UNSET, _UNSET, Entry
-from asyncio import Lock
 
 
 if TYPE_CHECKING:
@@ -19,7 +19,7 @@ class Parameter[ValueT](Entry):
         name: str,
         description: str,
         value: ValueT,
-        flags: Iterable[Any] | None = None
+        flags: Iterable[Any] | None = None,
     ) -> None:
         """
         Базовый класс неизменяемого параметра.
@@ -58,6 +58,7 @@ class Parameter[ValueT](Entry):
     @parent.setter
     def parent(self, value: Properties | None) -> None:
         from ..properties import Properties
+
         if value and self.parent:
             raise RuntimeError('Already has a parent.')
         if value is not None and not isinstance(value, Properties):
@@ -109,7 +110,7 @@ class MutableParameter[ValueT](Parameter[ValueT]):
             name=name,
             description=description,
             value=default_value,
-            flags=flags
+            flags=flags,
         )
 
     @property
@@ -176,6 +177,6 @@ class MutableParameter[ValueT](Parameter[ValueT]):
         if self.parent is None:
             raise RuntimeError(
                 'Cannot save parameter value because it is not attached to any '
-                '`Properties` instance.'
+                '`Properties` instance.',
             )
         self.parent.save()

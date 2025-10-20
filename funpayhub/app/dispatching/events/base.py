@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import Any
 
 from eventry.asyncio.event import ExtendedEvent
-
 
 
 class HubEvent(ExtendedEvent): ...
@@ -18,5 +17,5 @@ class ErrorEvent(HubEvent):
     def event_context_injection(self) -> dict[str, Any]:
         return {
             'exception': self.exception,
-            'in_event': self.event
+            'in_event': self.event,
         }

@@ -11,7 +11,7 @@ from aiogram.types import Message, CallbackQuery, BufferedInputFile, InputMediaD
 from aiogram.filters import Command
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.lib.telegram.ui import MenuRenderContext, UIRegistry
+from funpayhub.lib.telegram.ui import UIRegistry, MenuRenderContext
 from funpayhub.plugins.exec_plugin.types import LockableBuffer, ExecutionResultsRegistry
 
 from .callbacks import SendExecFile
@@ -25,7 +25,7 @@ async def exec_list_menu(message: Message, tg_ui: UIRegistry, data: dict[str, An
     context = MenuRenderContext(
         menu_id='exec_list',
         trigger=message,
-        data={'callback_data': cbs.OpenMenu(menu_id='exec_list')}
+        data={'callback_data': cbs.OpenMenu(menu_id='exec_list')},
     )
     await (await tg_ui.build_menu(context, data)).reply_to(message)
 
@@ -65,6 +65,7 @@ async def execute_python_code(
             except:
                 error = True
                 import traceback
+
                 traceback.print_exc()
     execution_time = time.time() - a
 
@@ -82,10 +83,10 @@ async def execute_python_code(
         data={
             'callback_data': cbs.OpenMenu(
                 menu_id='exec_output',
-                history=[cbs.OpenMenu(menu_id='exec_list').pack(hash=False)]
+                history=[cbs.OpenMenu(menu_id='exec_list').pack(hash=False)],
             ),
-            'exec_id': r.id
-        }
+            'exec_id': r.id,
+        },
     )
 
     await (await tg_ui.build_menu(context, data)).reply_to(message)
@@ -120,7 +121,8 @@ async def send_exec_file(
         return
 
     await query.answer(
-        text='Выгрузка файлов началась. Это может занять некоторое время.', show_alert=True
+        text='Выгрузка файлов началась. Это может занять некоторое время.',
+        show_alert=True,
     )
 
     await query.message.answer_media_group(media=files)

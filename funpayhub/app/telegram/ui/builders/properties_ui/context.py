@@ -1,7 +1,10 @@
-from funpayhub.lib.telegram.ui import MenuRenderContext, ButtonRenderContext
-from dataclasses import dataclass
-from funpayhub.lib.properties import Properties, MutableParameter
+from __future__ import annotations
+
 from typing import Any
+from dataclasses import dataclass
+
+from funpayhub.lib.properties import Properties, MutableParameter
+from funpayhub.lib.telegram.ui import MenuRenderContext, ButtonRenderContext
 
 
 @dataclass(kw_only=True)

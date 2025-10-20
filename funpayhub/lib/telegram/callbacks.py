@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
 from typing import Literal
+
+from pydantic import BaseModel
+
 from funpayhub.lib.telegram.callback_data import CallbackData
 
 
@@ -13,8 +15,7 @@ class ViewPageable(BaseModel):
     view_page: int = 0
 
 
-class Pageable(MenuPageable, ViewPageable):
-    ...
+class Pageable(MenuPageable, ViewPageable): ...
 
 
 class Dummy(CallbackData, identifier='dummy'):
@@ -32,6 +33,7 @@ class Clear(CallbackData, identifier='clear'):
     При срабатывании бот очищает состояние пользователя в чате / теме, откуда пришел callback +
     удаляет привязанное сообщение.
     """
+
     delete_message: bool = True
     open_previous: bool = False
 

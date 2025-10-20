@@ -3,7 +3,7 @@ from __future__ import annotations
 
 __all__ = ('HandlerManager',)
 
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Type
 
 from eventry.asyncio.default_types import FilterType, HandlerType, MiddlewareType
 from eventry.asyncio.handler_manager import HandlerManager as BaseHandlerManager
