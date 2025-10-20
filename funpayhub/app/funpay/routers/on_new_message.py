@@ -18,10 +18,7 @@ if TYPE_CHECKING:
 on_new_message_router = r = Router(name='fph:on_new_message_router')
 
 
-@r.on_new_message(
-    is_fph_command,
-    handler_id='fph:process_command',
-)
+@r.on_new_message(is_fph_command, handler_id='fph:process_command')
 async def process_command(
     event: NewMessageEvent,
     fp_formatters: FormattersRegistry,
