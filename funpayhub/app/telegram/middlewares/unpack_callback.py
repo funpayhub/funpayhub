@@ -4,7 +4,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery
 
 from funpayhub.lib.telegram.callback_data import CallbackData
-from funpayhub.lib.telegram.keyboard_hashinator import BadHashError, HashinatorT1000
+from funpayhub.lib.telegram.callback_data.hashinator import BadHashError, HashinatorT1000
 
 
 class UnpackMiddleware(BaseMiddleware):

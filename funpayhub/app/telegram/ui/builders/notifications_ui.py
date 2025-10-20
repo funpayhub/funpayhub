@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from aiogram.types import InlineKeyboardButton
 
 import funpayhub.lib.telegram.callbacks as cbs
@@ -11,10 +9,6 @@ from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext
 
 from .. import premade
-
-
-if TYPE_CHECKING:
-    from funpayhub.lib.telegram.ui import UIRegistry
 
 
 async def current_chat_notifications_menu_builder(
@@ -53,7 +47,7 @@ async def current_chat_notifications_menu_builder(
         )
 
     return Menu(
-        text='Ну типа уводмления',
+        text='$notifications',
         main_keyboard=kb,
         finalizer=premade.default_finalizer_factory(),
     )

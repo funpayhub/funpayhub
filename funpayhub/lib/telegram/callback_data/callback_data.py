@@ -12,7 +12,7 @@ from pydantic import Field, BaseModel, field_validator
 from aiogram.types import CallbackQuery
 from aiogram.filters import Filter
 
-from funpayhub.lib.telegram.keyboard_hashinator import HashinatorT1000
+from funpayhub.lib.telegram.callback_data.hashinator import HashinatorT1000
 
 
 T = TypeVar('T', bound='CallbackData')
