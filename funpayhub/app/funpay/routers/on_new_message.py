@@ -6,6 +6,7 @@ from funpaybotengine import Router
 
 from funpayhub.app.funpay.filters import is_fph_command
 from funpayhub.app.properties import FunPayHubProperties
+from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.telegram.ui.builders.context import NewMessageMenuContext
 from funpaybotengine.dispatching.events import ChatChangedEvent, NewMessageEvent, RunnerEvent
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -56,17 +57,17 @@ async def process_command(
 async def send_new_message_notification(
     event: ChatChangedEvent,
     events_stack: list[RunnerEvent],
-    properties: FunPayHubProperties,
-    tg_bot: TGBot,
+    tg: Telegram,
     tg_ui: UIRegistry,
     data: dict[str, Any]
 ):
-    msgs = [i.message for i in events_stack if isinstance(i, NewMessageEvent) and i.message.chat_id == event.chat_preview.id]
+    msgs = [
+        i.message for i in events_stack
+        if isinstance(i, NewMessageEvent) and i.message.chat_id == event.chat_preview.id
+    ]
     if not msgs:
         return
-    chats = properties.telegram.notifications.new_message.value
-    if not chats:
-        return
+
     context = NewMessageMenuContext(
         chat_id=-1,
         menu_id=MenuIds.new_message,
@@ -76,13 +77,8 @@ async def send_new_message_notification(
     )
     menu = await tg_ui.build_menu(context, data)
 
-    for i in chats:
-        split = i.split('.')
-        chat_id, thread_id = int(split[0]), int(split[1]) if split[1].isnumeric() else None
-
-        asyncio.create_task(tg_bot.send_message(
-            chat_id=chat_id,
-            message_thread_id=thread_id,
-            text=menu.text,
-            reply_markup=menu.total_keyboard(convert=True)
-        ))
+    await tg.send_notification(
+        'new_message',
+        text=menu.text,
+        reply_markup=menu.total_keyboard(convert=True)
+    )

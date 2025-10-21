@@ -231,7 +231,6 @@ class Properties(Entry):
     def get_parameter(self, path: list[str | int]) -> Parameter[Any] | MutableParameter[Any]:
         result = self.get_entry(path)
         if not isinstance(result, Parameter):
-            print(f'----- {result} -----')
             raise LookupError(f'No parameter with path {path}')
         return result
 

@@ -6,11 +6,15 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
+from aiogram.types import InlineKeyboardMarkup
 
 from funpayhub.app.telegram.ui import default as default_ui
+from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
+from aiogram.types import Message
+import asyncio
 
 
 if TYPE_CHECKING:
@@ -94,3 +98,48 @@ class Telegram:
 
     async def start(self) -> None:
         await self.dispatcher.start_polling(self.bot)
+
+    async def send_notification(
+        self,
+        notification_channel_id: str,
+        text: str,
+        reply_markup: InlineKeyboardMarkup | None = None,
+    ) -> list[asyncio.Task[Message]]:
+        """
+        Отправляет уведомления во все чаты, которые подписаны на указанный канал уведомлений
+        (параметр `notification_channel_id`).
+
+        :param notification_channel_id: Канал уведомлений.
+        :param text: Текст уведомления.
+        :param reply_markup: Клавиатура уведомления.
+        :return: Список объектов `asyncio.Task`.
+        """
+        try:
+            chats = self.hub.properties.telegram.notifications.get_parameter(
+                [notification_channel_id]
+            )
+            if not isinstance(chats, ListParameter) or not chats.value:
+                return []
+        except LookupError:
+            return []
+
+        tasks = []
+        for identifier in chats.value:
+            try:
+                split = identifier.split('.')
+                chat_id, thread_id = int(split[0]), int(split[1]) if split[1].isnumeric() else None
+            except (IndexError, ValueError):
+                continue
+
+            tasks.append(
+                asyncio.create_task(
+                    self.bot.send_message(
+                        chat_id=chat_id,
+                        message_thread_id=thread_id,
+                        text=text,
+                        reply_markup=reply_markup
+                    )
+                )
+            )
+
+        return tasks
