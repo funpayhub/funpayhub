@@ -24,6 +24,7 @@ from .types import (
     ButtonContext,
     ButtonModFilterProto,
 )
+from ..callback_data import HashinatorT1000
 
 
 class UIRegistry:
@@ -81,7 +82,9 @@ class UIRegistry:
         data = self._workflow_data | data
         data['data'] = data
 
-        return await builder.build(context, data)
+        result = await builder.build(context, data)
+        HashinatorT1000.save()
+        return result
 
     def add_button_builder(
         self,
