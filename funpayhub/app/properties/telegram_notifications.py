@@ -12,7 +12,34 @@ class TelegramNotificationsProperties(Properties):
             file='config/telegram_notifications.toml',
         )
 
-        self.new_message = self.attach_parameter(
+        self.system: ListParameter[str] = self.attach_parameter(
+            ListParameter(
+                id='hub_life',
+                name='$telegram_notifications.system:name',
+                description='$telegram_notifications.system:description',
+                default_value=[],
+            ),
+        )
+
+        self.error: ListParameter[str] = self.attach_parameter(
+            ListParameter(
+                id='error',
+                name='$telegram_notifications.error:name',
+                description='$telegram_notifications.error:description',
+                default_value=[],
+            )
+        )
+
+        self.lots_raised: ListParameter[str] = self.attach_parameter(
+            ListParameter(
+                id='lots_raised',
+                name='$telegram_notifications.lots_raised:name',
+                description='$telegram_notifications.lots_raised:description',
+                default_value=[],
+            )
+        )
+
+        self.new_message: ListParameter[str] = self.attach_parameter(
             ListParameter(
                 id='new_message',
                 name='$telegram_notifications.new_message:name',
@@ -21,20 +48,29 @@ class TelegramNotificationsProperties(Properties):
             ),
         )
 
-        self.new_order = self.attach_parameter(
+        self.new_sale: ListParameter[str] = self.attach_parameter(
             ListParameter(
-                id='new_order',
-                name='$telegram_notifications.new_order:name',
-                description='$telegram_notifications.new_order:description',
+                id='new_sale',
+                name='$telegram_notifications.new_sale:name',
+                description='$telegram_notifications.new_sale:description',
                 default_value=[],
             ),
         )
 
-        self.new_review = self.attach_parameter(
+        self.sale_status_changed: ListParameter[str] = self.attach_parameter(
             ListParameter(
-                id='new_review',
-                name='$telegram_notifications.new_review:name',
-                description='$telegram_notifications.new_review:description',
+                id='sale_status_changed',
+                name='$telegram_notifications.sale_status_changed:name',
+                description='$telegram_notifications.sale_status_changed:description',
+                default_value=[],
+            )
+        )
+
+        self.review: ListParameter[str] = self.attach_parameter(
+            ListParameter(
+                id='review',
+                name='$telegram_notifications.review:name',
+                description='$telegram_notifications.review:description',
                 default_value=[],
             ),
         )

@@ -49,7 +49,7 @@ async def message_menu_builder(
         for msg in ctx.messages:
             username = msg.sender_username
             if msg.badge:
-                username += f' ({msg.badge})'
+                username += f' ({msg.badge.text})'
             if msg.sender_id == 0:
                 username = f'🔵{username}'
             else:

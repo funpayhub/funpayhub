@@ -274,6 +274,70 @@ msgid "$props.review_reply.*.chat_reply_text:description"
 msgstr "Текст ответного сообщения."
 
 
+# ----------------------------------------------------
+# ------------------- Notification -------------------
+# ----------------------------------------------------
+msgid "$telegram_notifications"
+msgstr "🔔 Уведомления"
+
+
+msgid "$telegram_notifications.system:name"
+msgstr "Системные"
+
+msgid "$telegram_notifications.system:description"
+msgstr ""
+"Список чатов, подписанных на уведомления о запуске / остановке FunPayHub и прочих системных событиях "
+"(формат: \"chat_id.thread_it\")."
+
+msgid "$telegram_notifications.error:name"
+msgstr "Ошибки"
+
+msgid "$telegram_notifications.error:description"
+msgstr ""
+"Список чатов, подписанных на уведомления об ошибках в работе FunPayHub "
+"(формат: \"chat_id.thread_it\")."
+
+msgid "$telegram_notifications.lots_raised:name"
+msgstr "Поднятие лотов"
+
+msgid "$telegram_notifications.lots_raised:description"
+msgstr ""
+"Список чатов, подписанных на уведомления о поднятии лотов "
+"(формат: \"chat_id.thread_it\")."
+
+msgid "$telegram_notifications.new_message:name"
+msgstr "Новое сообщение"
+
+msgid "$telegram_notifications.new_message:description"
+msgstr ""
+"Список чатов, подписанных на уведомления о новых сообщениях "
+"(формат: \"chat_id.thread_it\")."
+
+msgid "$telegram_notifications.new_sale:name"
+msgstr "Новый заказ"
+
+msgid "$telegram_notifications.new_sale:description"
+msgstr ""
+"Список чатов, подписанных на уведомления о новых заказах "
+"(формат: \"chat_id.thread_it\")."
+
+msgid "$telegram_notifications.sale_status_changed:name"
+msgstr "Изменение статуса заказа"
+
+msgid "$telegram_notifications.sale_status_changed:description"
+msgstr ""
+"Список чатов, подписанных на уведомления об изменениях статус заказа (завершение, возврат средств, переоткрытие и т.д.) "
+"(формат: \"chat_id.thread_it\")."
+
+msgid "$telegram_notifications.review:name"
+msgstr "Отзывы"
+
+msgid "$telegram_notifications.review:description"
+msgstr ""
+"Список чатов, подписанных на уведомления о новых / измененных и удаленных отзывах "
+"(формат: \"chat_id.thread_it\")."
+
+
 # Messages
 msgid "$enter_new_value_message"
 msgstr ""
