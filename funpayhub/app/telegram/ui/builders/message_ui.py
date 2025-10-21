@@ -57,9 +57,9 @@ async def message_menu_builder(
 
             texts.append(
                 f'<a href="https://funpay.com/users/{msg.sender_id}/">{username}</a>'
-                f'<blockquote><pre>'
+                f'<blockquote>'
                 f'{html.escape(msg.text or msg.image_url)}'
-                f'</pre></blockquote>'
+                f'</blockquote>'
             )
         text = '\n\n'.join(texts)
     else:
