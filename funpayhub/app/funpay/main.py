@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING
 
 from funpaybotengine import Bot, Dispatcher, AioHttpSession
@@ -16,7 +15,14 @@ if TYPE_CHECKING:
 
 
 class FunPay:
-    def __init__(self, hub: FunPayHub, workflow_data: dict | None = None):
+    def __init__(
+        self,
+        hub: FunPayHub,
+        bot_token: str,
+        proxy: str | None = None,
+        headers: dict[str, str] | None = None,
+        workflow_data: dict | None = None
+    ):
         workflow_data = workflow_data if workflow_data is not None else {}
 
         self._hub = hub
@@ -25,13 +31,8 @@ class FunPay:
         for i in FORMATTERS_LIST:
             self._text_formatters.add_formatter(i)
 
-        session = AioHttpSession(
-            proxy=os.environ.get('FPH_FUNPAY_PROXY'),  # todo: or from properties
-        )
-        self._bot = Bot(
-            golden_key=os.environ.get('FPH_GOLDEN_KEY'),  # todo: or from properites
-            session=session,
-        )
+        session = AioHttpSession(proxy=proxy, default_headers=headers)
+        self._bot = Bot(golden_key=bot_token, session=session)
 
         self._dispatcher = Dispatcher(workflow_data=workflow_data)
         self.setup_dispatcher()

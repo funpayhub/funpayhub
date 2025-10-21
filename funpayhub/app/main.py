@@ -32,7 +32,13 @@ class FunPayHub:
         self._translater = Translater()
         self._translater.add_translations('funpayhub/locales')
 
-        self._funpay = FunPay(self, workflow_data=self.workflow_data)
+        self._funpay = FunPay(
+            self,
+            bot_token=os.environ.get('FPH_GOLDEN_KEY'),  # todo: or from properites
+            proxy=os.environ.get('FPH_FUNPAY_PROXY'),  # todo: or from properties
+            headers=None,
+            workflow_data=self.workflow_data
+        )
         self._telegram = Telegram(
             self,
             bot_token=os.environ.get('FPH_TELEGRAM_TOKEN'),  # todo: or from config
@@ -57,7 +63,7 @@ class FunPayHub:
 
     async def start(self):
         tasks = await asyncio.gather(
-            self.funpay.start(),
+            # self.funpay.start(),
             self.telegram.start(),
         )
 
