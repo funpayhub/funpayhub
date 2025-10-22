@@ -116,3 +116,17 @@ class ListParamItemAction(CallbackData, identifier='list_item_action'):
 
 class ListParamAddItem(CallbackData, identifier='list_param_add_item'):
     path: list[str | int]
+
+
+# New message menu
+class SendMessage(CallbackData, identifier='send_message'):
+    to: int | str
+
+
+class SendTemplate(CallbackData, identifier='send_template'):
+    to: int | str
+    index: int
+
+
+class MuteChat(CallbackData, identifier='mute_chat'):
+    chat_id: int | str

@@ -14,7 +14,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.system: ListParameter[str] = self.attach_parameter(
             ListParameter(
-                id='hub_life',
+                id='system',
                 name='$telegram_notifications.system:name',
                 description='$telegram_notifications.system:description',
                 default_value=[],

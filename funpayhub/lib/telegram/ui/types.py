@@ -47,8 +47,16 @@ class Menu:
     async def reply_to(self, msg: Message, /) -> Message:
         return await msg.answer(text=self.text, reply_markup=self.total_keyboard(convert=True))
 
-    async def apply_to(self, msg: Message, /) -> Message | bool:
-        return await msg.edit_text(text=self.text, reply_markup=self.total_keyboard(convert=True))
+    async def apply_to(
+        self,
+        msg: Message, /, *,
+        text: bool = True,
+        keyboard: bool = True,
+    ) -> Message | bool:
+        return await msg.edit_text(
+            text=self.text if text else msg.text,
+            reply_markup=self.total_keyboard(convert=True) if keyboard else msg.reply_markup
+        )
 
 
 @dataclass(kw_only=True)

@@ -22,6 +22,18 @@ async def current_chat_notifications_menu_builder(
     language = properties.general.language.real_value
     callback_data = ctx.callback_data
 
+    notification_buttons = [
+        Button(
+            button_id=f'toggle-notification:{i}',
+            obj=InlineKeyboardButton(
+                text=f'🔕 {i}⭐',
+                callback_data=cbs.Dummy().pack()
+            )
+        )
+        for i in range(1, 6)
+    ]
+    kb.append(notification_buttons)
+
     for entry in props.entries.values():
         if not isinstance(entry, ListParameter):
             continue
