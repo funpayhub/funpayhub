@@ -26,36 +26,37 @@ async def current_chat_notifications_menu_builder(
         Button(
             button_id=f'toggle-notification:{i}',
             obj=InlineKeyboardButton(
-                text=f'🔕 {i}⭐',
-                callback_data=cbs.Dummy().pack()
+                text=f'{'🔔' if chat in props.entries[i].value else'🔕'} {index+1}⭐',
+                callback_data=cbs.ToggleNotificationChannel(
+                    channel=i,
+                    history=callback_data.as_history() if callback_data is not None else [],
+                ).pack(),
             )
         )
-        for i in range(1, 6)
+        for index, i in enumerate(['review_1', 'review_2', 'review_3', 'review_4', 'review_5'])
     ]
     kb.append(notification_buttons)
 
     for entry in props.entries.values():
+        if entry.id in ['review_1', 'review_2', 'review_3', 'review_4', 'review_5']:
+            continue
         if not isinstance(entry, ListParameter):
             continue
 
         indicator = '🔔' if chat in entry.value else '🔕'
         notifications_channel = translater.translate(entry.name, language)
 
-        kb.append(
-            [
-                Button(
-                    button_id=f'toggle_notification:{entry.id}',
-                    obj=InlineKeyboardButton(
-                        text=f'{indicator} {notifications_channel}',
-                        callback_data=cbs.ToggleNotificationChannel(
-                            channel=entry.id,
-                            history=callback_data.as_history()
-                            if callback_data is not None
-                            else [],
-                        ).pack(),
-                    ),
+        kb.append([
+            Button(
+                button_id=f'toggle_notification:{entry.id}',
+                obj=InlineKeyboardButton(
+                    text=f'{indicator} {notifications_channel}',
+                    callback_data=cbs.ToggleNotificationChannel(
+                        channel=entry.id,
+                        history=callback_data.as_history() if callback_data is not None else [],
+                    ).pack(),
                 ),
-            ]
+            )]
         )
 
     return Menu(

@@ -66,11 +66,47 @@ class TelegramNotificationsProperties(Properties):
             )
         )
 
-        self.review: ListParameter[str] = self.attach_parameter(
+        self.review_1: ListParameter[str] = self.attach_parameter(
             ListParameter(
-                id='review',
-                name='$telegram_notifications.review:name',
-                description='$telegram_notifications.review:description',
+                id='review_1',
+                name='$telegram_notifications.review_1:name',
+                description='$telegram_notifications.review_1:description',
+                default_value=[],
+            ),
+        )
+
+        self.review_2: ListParameter[str] = self.attach_parameter(
+            ListParameter(
+                id='review_2',
+                name='$telegram_notifications.review_2:name',
+                description='$telegram_notifications.review_2:description',
+                default_value=[],
+            ),
+        )
+
+        self.review_3: ListParameter[str] = self.attach_parameter(
+            ListParameter(
+                id='review_3',
+                name='$telegram_notifications.review_3:name',
+                description='$telegram_notifications.review_3:description',
+                default_value=[],
+            ),
+        )
+
+        self.review_4: ListParameter[str] = self.attach_parameter(
+            ListParameter(
+                id='review_4',
+                name='$telegram_notifications.review_4:name',
+                description='$telegram_notifications.review_4:description',
+                default_value=[],
+            ),
+        )
+
+        self.review_5: ListParameter[str] = self.attach_parameter(
+            ListParameter(
+                id='review_5',
+                name='$telegram_notifications.review_5:name',
+                description='$telegram_notifications.review_5:description',
                 default_value=[],
             ),
         )
