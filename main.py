@@ -34,7 +34,7 @@ dictConfig(
         },
         'loggers': {
             'funpaybotengine.session': {
-                'level': logging.INFO,
+                'level': logging.DEBUG,
                 'handlers': ['console'],
             },
             'funpaybotengine.runner': {
@@ -91,28 +91,15 @@ async def check_session(bot: Bot):
 
 
 async def main():
-    import tracemalloc
-
-    tracemalloc.start()
-    try:
-        props = FunPayHubProperties()
-        await props.load()
-        app = FunPayHub(properties=props)
-        await check_session(app.funpay.bot)
-        result = input()
-        if result != 'start':
-            sys.exit(0)
-        await app.load_plugins()
-        await app.start()
-    except:
-        import traceback
-
-        print(traceback.format_exc())
-        snapshot = tracemalloc.take_snapshot()
-        top_stats = snapshot.statistics('lineno')
-
-        for stat in top_stats[:20]:
-            print(stat)
+    props = FunPayHubProperties()
+    await props.load()
+    app = FunPayHub(properties=props)
+    await check_session(app.funpay.bot)
+    result = input()
+    if result != 'start':
+        sys.exit(0)
+    await app.load_plugins()
+    await app.start()
 
 
 if __name__ == '__main__':
