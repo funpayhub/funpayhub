@@ -10,6 +10,7 @@ class MenuIds:
     hook_info = 'hook_info'
     tg_chat_notifications = 'tg_chat_notifications'
     new_message = 'new_message'
+    add_list_item = 'add_list_item'
 
 
 class ButtonIds:

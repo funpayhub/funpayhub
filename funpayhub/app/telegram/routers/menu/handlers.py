@@ -12,7 +12,7 @@ from aiogram.fsm.context import FSMContext
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.telegram.ui import MenuContext
-from funpayhub.lib.telegram.states import ChangingParameterValueState
+from funpayhub.lib.telegram.states import ChangingParameterValueState, AddingListItem
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
@@ -75,6 +75,7 @@ async def open_entry_menu(
         menu_page=callback_data.menu_page,
         trigger=query,
         entry=entry,
+        data=callback_data.model_dump(mode='python', exclude={'identifier'}) | callback_data.data
     )
     menu = await tg_ui.build_menu(ctx, data | {'query': query})
     await menu.apply_to(query.message)
@@ -196,7 +197,7 @@ async def change_parameter_value(
 
     msg = await (await tg_ui.build_menu(ctx, data)).apply_to(query.message)
 
-    await state.set_state(ChangingParameterValueState.name)
+    await state.set_state(ChangingParameterValueState.__identifier__)
     await state.set_data(
         {
             'data': ChangingParameterValueState(
@@ -208,8 +209,6 @@ async def change_parameter_value(
             ),
         },
     )
-
-    await query.answer()
 
 
 @r.callback_query(cbs.ToggleNotificationChannel.filter())
@@ -238,7 +237,7 @@ async def toggle_notification_channel(
     )
 
 
-@r.message(StateFilter(ChangingParameterValueState.name))
+@r.message(StateFilter(ChangingParameterValueState.__identifier__))
 async def edit_parameter(
     message: Message,
     bot: Bot,
@@ -308,5 +307,76 @@ async def make_list_item_action(
         Update(
             update_id=0,
             callback_query=query.model_copy(update={'data': new_callback.pack()}),
+        ),
+    )
+
+
+@r.callback_query(cbs.ListParamAddItem.filter())
+async def set_adding_list_item_state(
+    query: CallbackQuery,
+    properties: FunPayHubProperties,
+    tg_ui: UIRegistry,
+    data: dict[str, Any],
+    bot: Bot,
+    dispatcher: Dispatcher,
+    callback_data: cbs.ListParamAddItem,
+) -> None:
+    state = _get_context(dispatcher, bot, query)
+    await state.clear()
+
+    entry = properties.get_parameter(callback_data.path)
+    ctx = EntryMenuContext(
+        menu_id=MenuIds.add_list_item,
+        trigger=query,
+        entry=entry,
+    )
+
+    msg = await (await tg_ui.build_menu(ctx, data)).apply_to(query.message)
+
+    await state.set_state(AddingListItem.__identifier__)
+    await state.set_data(
+        {
+            'data': AddingListItem(
+                parameter=entry,
+                callback_query_obj=query,
+                callback_data=callback_data,
+                message=msg,
+                user_messages=[],
+            ),
+        },
+    )
+
+
+@r.message(StateFilter(AddingListItem.__identifier__))
+async def edit_parameter(
+    message: Message,
+    bot: Bot,
+    dispatcher: Dispatcher,
+    hub: FunPayHub,
+) -> None:
+    await _delete_message(message)
+
+    context = _get_context(dispatcher, bot, message)
+    data: AddingListItem = (await context.get_data())['data']
+    try:
+        await data.parameter.add_item(message.text)
+        await data.parameter.save()
+        await context.clear()
+    except ValueError as e:
+        await data.message.edit_text(
+            text=data.message.html_text
+            + f'\n\nНе удалось добавить элемент в список {data.parameter.name}:\n\n{str(e)}',
+            reply_markup=data.message.reply_markup,
+        )
+        return
+
+    asyncio.create_task(hub.emit_parameter_changed_event(data.parameter))
+    await dispatcher.feed_update(
+        bot,
+        Update(
+            update_id=0,
+            callback_query=data.callback_query_obj.model_copy(
+                update={'data': join_callbacks(data.callback_data.pack_history(hash=False))},
+            ),
         ),
     )

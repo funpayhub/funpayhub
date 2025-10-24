@@ -37,6 +37,10 @@ MENU_BUILDERS = {
     MenuIds.new_message: (
         message_ui.message_menu_builder,
         NewMessageMenuContext,
+    ),
+    MenuIds.add_list_item: (
+        builders.add_list_item_menu_builder,
+        EntryMenuContext,
     )
 }
 

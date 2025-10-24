@@ -42,6 +42,7 @@ class UIRegistry:
         if menu_id in self._menus and not overwrite:
             raise KeyError(f'Menu {menu_id!r} already exists.')
 
+        logger.info(f'Adding menu builder {menu_id!r} to registry...')
         self._menus[menu_id] = MenuBuilder(builder, context_type)
         logger.info(f'Menu builder {menu_id!r} has been added to registry.')
 

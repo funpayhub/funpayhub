@@ -202,24 +202,23 @@ async def list_parameter_menu_builder(
         'enable_remove_mode': ('🗑️', 'remove'),
     }
     buttons = []
-    for button_id, (text, mode) in mode_data.items():
+    for button_id, (text, mode_str) in mode_data.items():
         buttons.append(
             Button(
                 button_id=button_id,
                 obj=InlineKeyboardButton(
                     text=text,
-                    callback_data=cbs.OpenMenu(
-                        menu_id=MenuIds.properties_entry,
+                    callback_data=cbs.OpenEntryMenu(
+                        path=ctx.entry.path,
                         menu_page=ctx.menu_page,
-                        view_page=ctx.view_page,
                         history=callback_data.history if callback_data is not None else [],
-                        data={'path': ctx.entry.path, 'mode': mode},
+                        data={'mode': mode_str},
                     ).pack(),
                 ),
             ),
         )
     footer[0].extend(buttons)
-    if mode:
+    if not mode:
         footer[0].pop(0)
 
     footer[0].append(
@@ -276,6 +275,34 @@ async def param_value_manual_input_menu_builder(
         finalizer=premade.default_finalizer_factory(back_button=False),
     )
 
+
+async def add_list_item_menu_builder(
+    ctx: EntryMenuContext,
+    translater: Translater,
+    properties: FunPayHubProperties
+):
+    language = properties.general.language.real_value
+
+    text = translater.translate('$enter_new_list_item_message', language=language).format()
+    footer_keyboard = [[
+        Button(
+            button_id='clear_state',
+            obj=InlineKeyboardButton(
+                text=translater.translate('$clear_state', language),
+                callback_data=cbs.Clear(
+                    delete_message=False,
+                    open_previous=True,
+                    history=ctx.callback_data.history if ctx.callback_data is not None else [],
+                ).pack(),
+            ),
+        ),
+    ]]
+
+    return Menu(
+        text=text,
+        footer_keyboard=footer_keyboard,
+        finalizer=premade.default_finalizer_factory(back_button=False),
+    )
 
 # Modifications
 class PropertiesMenuModification:
