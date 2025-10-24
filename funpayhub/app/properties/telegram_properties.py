@@ -122,10 +122,3 @@ class NewMessageNotificationAppearance(Properties):
             description='$new_message_appearance.show_trough_bot_only:description',
             default_value=True,
         ))
-
-        self.max_templates_on_page = self.attach_parameter(IntParameter(
-            id='max_templates_on_page',
-            name='$props.new_message_appearance.max_templates_on_page:name',
-            description='$new_message_appearance.max_templates_on_page:description',
-            default_value=3,
-        ))

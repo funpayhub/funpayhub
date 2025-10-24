@@ -189,7 +189,7 @@ async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> K
     return kb
 
 
-def default_finalizer_factory(back_button: bool = True):
+def default_finalizer_factory(back_button: bool = True, max_lines_on_page: int | None = None):
     async def _default_finalizer(
         ctx: MenuContext,
         menu: Menu,
@@ -198,7 +198,7 @@ def default_finalizer_factory(back_button: bool = True):
     ) -> Menu:
         if not menu.footer_keyboard:
             menu.footer_keyboard = []
-        max_lines = properties.telegram.appearance.menu_entries_amount.value
+        max_lines = max_lines_on_page or properties.telegram.appearance.menu_entries_amount.value
 
         total_pages = (
             math.ceil(

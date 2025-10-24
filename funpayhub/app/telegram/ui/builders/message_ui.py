@@ -11,7 +11,7 @@ from funpayhub.lib.telegram.ui.types import Menu, Button
 from funpaybotengine.types.enums import BadgeType, MessageType
 from funpaybotengine import Bot as FPBot
 from .context import NewMessageMenuContext
-
+from ..premade import default_finalizer_factory
 
 _prefixes_by_badge_type = {
     BadgeType.AUTO_DELIVERY: '📦',
@@ -91,4 +91,8 @@ async def message_menu_builder(
     text = (f'✉️ <b>Новые сообщения в чате <code>{ctx.funpay_chat_name}</code> '
             f'(ID: <code>{ctx.funpay_chat_id}</code>).</b>\n\n') + text
 
-    return Menu(text=text, header_keyboard=keyboard)
+    return Menu(
+        text=text,
+        header_keyboard=keyboard,
+        finalizer=default_finalizer_factory()
+    )
