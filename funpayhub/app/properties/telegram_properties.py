@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = ['TelegramProperties']
 
 
-from funpayhub.lib.properties import Properties, IntParameter, StringParameter
+from funpayhub.lib.properties import Properties, IntParameter, StringParameter, ToggleParameter
 from funpayhub.app.properties.flags import ParameterFlags as ParamFlags
 from funpayhub.app.properties.telegram_notifications import TelegramNotificationsProperties
 
@@ -69,3 +69,63 @@ class TelegramAppearance(Properties):
                 validator=entries_validator,
             ),
         )
+
+        self.new_message_appearance = self.attach_properties(NewMessageNotificationAppearance())
+
+
+class NewMessageNotificationAppearance(Properties):
+    def __init__(self) -> None:
+        super().__init__(
+            id='new_message_appearance',
+            name='$props.new_message_appearance:name',
+            description='$props.new_message_appearance:description'
+        )
+
+        self.show_mine = self.attach_parameter(ToggleParameter(
+            id='show_mine',
+            name='$props.new_message_appearance.show_mine:name',
+            description='$new_message_appearance.show_mine:description',
+            default_value=True,
+        ))
+
+        self.show_if_mine_only = self.attach_parameter(ToggleParameter(
+            id='show_if_mine_only',
+            name='$props.new_message_appearance.show_if_mine_only:name',
+            description='$new_message_appearance.show_if_mine_only:description',
+            default_value=True,
+        ))
+
+        self.show_by_bot = self.attach_parameter(ToggleParameter(
+            id='show_by_bot',
+            name='$props.new_message_appearance.show_by_bot:name',
+            description='$new_message_appearance.show_by_bot:description',
+            default_value=True,
+        ))
+
+        self.show_by_bot_only = self.attach_parameter(ToggleParameter(
+            id='show_by_bot_only',
+            name='$props.new_message_appearance.show_by_bot_only:name',
+            description='$new_message_appearance.show_by_bot_only:description',
+            default_value=True,
+        ))
+
+        self.show_through_bot = self.attach_parameter(ToggleParameter(
+            id='show_through_bot',
+            name='$props.new_message_appearance.show_through_bot:name',
+            description='$new_message_appearance.show_through_bot:description',
+            default_value=True,
+        ))
+
+        self.show_trough_bot_only = self.attach_parameter(ToggleParameter(
+            id='show_trough_bot_only',
+            name='$props.new_message_appearance.show_trough_bot_only:name',
+            description='$new_message_appearance.show_trough_bot_only:description',
+            default_value=True,
+        ))
+
+        self.max_templates_on_page = self.attach_parameter(IntParameter(
+            id='max_templates_on_page',
+            name='$props.new_message_appearance.max_templates_on_page:name',
+            description='$new_message_appearance.max_templates_on_page:description',
+            default_value=3,
+        ))

@@ -45,7 +45,7 @@ class ReviewReplyPropertiesEntry(Properties):
 
 
 class ReviewReplyProperties(Properties):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             id='review_reply',
             name='$props.review_reply:name',

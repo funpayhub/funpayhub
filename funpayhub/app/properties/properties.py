@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from funpayhub.lib.properties import Properties
+from funpayhub.lib.properties import Properties, ListParameter
 
 from .review_reply import ReviewReplyProperties
 from .auto_response import AutoResponseProperties
@@ -30,3 +30,9 @@ class FunPayHubProperties(Properties):
         self.auto_response = self.attach_properties(AutoResponseProperties())
         self.auto_delivery = self.attach_properties(AutoDeliveryProperties())
         self.review_reply = self.attach_properties(ReviewReplyProperties())
+        self.message_templates = self.attach_parameter(ListParameter[str](
+            id='message_templates',
+            name='$props.message_templates:names',
+            description='$props:message_templates:description',
+            default_value=[]
+        ))
