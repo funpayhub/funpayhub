@@ -61,7 +61,7 @@ async def build_menu_navigation_buttons(
     to_first_btn = Button(
         button_id='to_first_menu_page',
         obj=InlineKeyboardButton(
-            text='⏪' if ctx.menu_page > 0 else '❌',
+            text='⏪' if ctx.menu_page > 0 else ' ',
             callback_data=cbs.ChangePageTo(
                 menu_page=0,
                 history=callback_data.as_history(),
@@ -74,7 +74,7 @@ async def build_menu_navigation_buttons(
     to_last_btn = Button(
         button_id='to_last_menu_page',
         obj=InlineKeyboardButton(
-            text='⏩' if ctx.menu_page < total_pages - 1 else '❌',
+            text='⏩' if ctx.menu_page < total_pages - 1 else ' ',
             callback_data=cbs.ChangePageTo(
                 menu_page=total_pages - 1,
                 history=callback_data.as_history(),
@@ -87,7 +87,7 @@ async def build_menu_navigation_buttons(
     to_previous_btn = Button(
         button_id='to_previous_menu_page',
         obj=InlineKeyboardButton(
-            text='◀️' if ctx.menu_page > 0 else '❌',
+            text='◀️' if ctx.menu_page > 0 else ' ',
             callback_data=cbs.ChangePageTo(
                 menu_page=ctx.menu_page - 1,
                 history=callback_data.as_history(),
@@ -100,7 +100,7 @@ async def build_menu_navigation_buttons(
     to_next_btn = Button(
         button_id='to_next_menu_page',
         obj=InlineKeyboardButton(
-            text='▶️' if ctx.menu_page < total_pages - 1 else '❌',
+            text='▶️' if ctx.menu_page < total_pages - 1 else ' ',
             callback_data=cbs.ChangePageTo(
                 menu_page=ctx.menu_page + 1,
                 history=callback_data.as_history(),
@@ -136,7 +136,7 @@ async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> K
     to_first_btn = Button(
         button_id='to_first_menu_page',
         obj=InlineKeyboardButton(
-            text='⏪' if ctx.view_page > 0 else '❌',
+            text='⏪' if ctx.view_page > 0 else ' ',
             callback_data=cbs.ChangePageTo(
                 view_page=0,
                 history=callback_data.as_history() if callback_data.history else None,
@@ -149,7 +149,7 @@ async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> K
     to_last_btn = Button(
         button_id='to_last_menu_page',
         obj=InlineKeyboardButton(
-            text='⏩' if ctx.view_page < total_pages - 1 else '❌',
+            text='⏩' if ctx.view_page < total_pages - 1 else ' ',
             callback_data=cbs.ChangePageTo(
                 view_page=total_pages - 1,
                 history=callback_data.as_history() if callback_data.history else None,
@@ -162,7 +162,7 @@ async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> K
     to_previous_btn = Button(
         button_id='to_previous_menu_page',
         obj=InlineKeyboardButton(
-            text='◀️' if ctx.view_page > 0 else '❌',
+            text='◀️' if ctx.view_page > 0 else ' ',
             callback_data=cbs.ChangePageTo(
                 view_page=ctx.view_page - 1,
                 history=callback_data.as_history() if callback_data.history else None,
@@ -175,7 +175,7 @@ async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> K
     to_next_btn = Button(
         button_id='to_next_menu_page',
         obj=InlineKeyboardButton(
-            text='▶️' if ctx.view_page < total_pages - 1 else '❌',
+            text='▶️' if ctx.view_page < total_pages - 1 else ' ',
             callback_data=cbs.ChangePageTo(
                 view_page=ctx.view_page + 1,
                 history=callback_data.as_history() if callback_data.history else None,

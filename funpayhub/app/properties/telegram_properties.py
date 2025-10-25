@@ -84,41 +84,41 @@ class NewMessageNotificationAppearance(Properties):
         self.show_mine = self.attach_parameter(ToggleParameter(
             id='show_mine',
             name='$props.new_message_appearance.show_mine:name',
-            description='$new_message_appearance.show_mine:description',
+            description='$props.new_message_appearance.show_mine:description',
             default_value=True,
         ))
 
         self.show_if_mine_only = self.attach_parameter(ToggleParameter(
             id='show_if_mine_only',
             name='$props.new_message_appearance.show_if_mine_only:name',
-            description='$new_message_appearance.show_if_mine_only:description',
+            description='$props.new_message_appearance.show_if_mine_only:description',
             default_value=True,
         ))
 
         self.show_by_bot = self.attach_parameter(ToggleParameter(
             id='show_by_bot',
             name='$props.new_message_appearance.show_by_bot:name',
-            description='$new_message_appearance.show_by_bot:description',
+            description='$props.new_message_appearance.show_by_bot:description',
             default_value=True,
         ))
 
         self.show_by_bot_only = self.attach_parameter(ToggleParameter(
             id='show_by_bot_only',
             name='$props.new_message_appearance.show_by_bot_only:name',
-            description='$new_message_appearance.show_by_bot_only:description',
+            description='$props.new_message_appearance.show_by_bot_only:description',
             default_value=True,
         ))
 
         self.show_through_bot = self.attach_parameter(ToggleParameter(
             id='show_through_bot',
             name='$props.new_message_appearance.show_through_bot:name',
-            description='$new_message_appearance.show_through_bot:description',
+            description='$props.new_message_appearance.show_through_bot:description',
             default_value=True,
         ))
 
         self.show_trough_bot_only = self.attach_parameter(ToggleParameter(
             id='show_trough_bot_only',
             name='$props.new_message_appearance.show_trough_bot_only:name',
-            description='$new_message_appearance.show_trough_bot_only:description',
+            description='$props.new_message_appearance.show_trough_bot_only:description',
             default_value=True,
         ))
