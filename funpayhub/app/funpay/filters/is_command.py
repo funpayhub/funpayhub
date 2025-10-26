@@ -10,7 +10,6 @@ def is_fph_command(event: NewMessageEvent, properties: FunPayHubProperties):
         return False
 
     text = event.message.text
-    print('entring filter')
 
     for command, params in properties.auto_response.entries.items():
         if not params.case_sensitive.value:

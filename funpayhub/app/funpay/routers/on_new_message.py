@@ -5,17 +5,14 @@ from typing import TYPE_CHECKING, Any
 from funpaybotengine import Router
 
 from funpayhub.app.funpay.filters import is_fph_command
-from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.telegram.ui.builders.context import NewMessageMenuContext
 from funpaybotengine.dispatching.events import ChatChangedEvent, NewMessageEvent, RunnerEvent
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui import UIRegistry
-import asyncio
 
 if TYPE_CHECKING:
     from funpaybotengine import Bot
-    from aiogram import Bot as TGBot
 
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
     from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
@@ -61,10 +58,13 @@ async def send_new_message_notification(
     tg_ui: UIRegistry,
     data: dict[str, Any]
 ):
-    msgs = [
-        i.message for i in events_stack
-        if isinstance(i, NewMessageEvent) and i.message.chat_id == event.chat_preview.id
-    ]
+    msgs = []
+    checked = []
+    for i in events_stack:
+        if isinstance(i, NewMessageEvent) and i.message.chat_id == event.chat_preview.id and i.message.id not in checked:
+            checked.append(i.message.id)
+            msgs.append(i.message)
+
     if not msgs:
         return
 

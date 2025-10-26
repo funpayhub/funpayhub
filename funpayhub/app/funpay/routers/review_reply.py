@@ -6,27 +6,52 @@ from typing import TYPE_CHECKING
 from funpaybotengine import Bot, Router
 from funpaybotengine.dispatching import NewReviewEvent, ReviewChangedEvent
 
-from funpayhub.app.funpay.filters.review_reply_enabled import review_reply_enabled
+from funpayhub.app.funpay.filters.review_reply_enabled import has_review
 
 
 if TYPE_CHECKING:
     from funpayhub.app.properties.review_reply import ReviewReplyPropertiesEntry
+    from funpayhub.app.properties import FunPayHubProperties
 
 
 review_reply_router = r = Router(name='fph:review_reply_router')
 
 
-@r.on_new_review(review_reply_enabled)
-@r.on_review_changed(review_reply_enabled)
+_ratings = {
+    1: ['review_reply', 'one_stars'],
+    2: ['review_reply', 'two_stars'],
+    3: ['review_reply', 'three_stars'],
+    4: ['review_reply', 'four_stars'],
+    5: ['review_reply', 'five_stars'],
+}
+
+
+@r.on_new_review(has_review)
+@r.on_review_changed(has_review)
 async def reply_on_review(
     event: NewReviewEvent | ReviewChangedEvent,
     bot: Bot,
-    _props: ReviewReplyPropertiesEntry,
+    properties: FunPayHubProperties,
 ) -> None:
-    if _props.review_reply_text and _props.reply_in_review:
-        asyncio.create_task(bot.review(event.message.meta.order_id, _props.review_reply_text, 5))
+    order_page = await event.get_order_page()
+    p: ReviewReplyPropertiesEntry = properties.get_properties(_ratings[order_page.review.rating])
+    if not any(
+        [
+            p.reply_in_review.value and p.review_reply_text.value,
+            p.reply_in_chat.value and p.chat_reply_text.value,
+        ]
+    ):
+        return
 
-    if _props.chat_reply_text and _props.reply_in_chat:
-        asyncio.create_task(event.message.reply(_props.chat_reply_text))
+    if p.review_reply_text.value and p.reply_in_review.value:
+        if p.review_reply_text.value == '-' and order_page.review and order_page.review.reply:
+            task = asyncio.create_task(bot.delete_review(event.message.meta.order_id))
+        else:
+            task = asyncio.create_task(
+                bot.review(event.message.meta.order_id, p.review_reply_text.value, 5)
+            )
+
+    if p.chat_reply_text.value and p.reply_in_chat.value:
+        task = asyncio.create_task(event.message.reply(p.chat_reply_text.value))
 
     # todo: добавить поддержку форматтеров
