@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from collections.abc import Callable, Awaitable
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
+from abc import ABC, abstractmethod
 
 from .parser import extract_calls
 
@@ -16,33 +17,40 @@ if TYPE_CHECKING:
 type FORMATTER_R = str | Image | list[str | Image]
 
 
-@dataclass
-class Formatter:
-    """
-    Класс, описывающий форматтер.
-    """
+class classproperty[T, R]:
+    def __init__(self, func: Callable[[type[T]], R]) -> None:
+        self.func = func
 
-    key: str
-    """Ключ форматтера. Используется в тексте в виде `$ключ`."""
+    def __get__(self, obj: Any, cls: type[T]) -> R:
+        return self.func(cls)
 
-    name: str
-    """Человеко-читаемое название форматтера."""
 
-    description: str
-    """Описание форматтера, документация и т.д."""
+class Formatter(ABC):
+    @abstractmethod
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        ...
 
-    formatter: Callable[..., Awaitable[FORMATTER_R] | FORMATTER_R] | CallableWrapper[FORMATTER_R]
-    """
-    Функция-форматтер.
-    Должна возвращать текст или объект `Image`.
-    """
+    async def __call__(self, **data: Any) -> str:
+        wrapper = CallableWrapper(self.format)
+        return await wrapper((), data)
 
-    def __post_init__(self) -> None:
-        if not isinstance(self.formatter, CallableWrapper):
-            self.formatter = CallableWrapper(self.formatter)
+    @abstractmethod
+    async def format(self, *args: Any, **kwargs: Any) -> str: ...
 
-    async def execute(self, user_passed_args: list[Any], data: dict[str, Any]) -> str:
-        return await self.formatter(user_passed_args, data)
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def key(cls) -> str: ...
+
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def name(cls) -> str: ...
+
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def description(cls) -> str: ...
 
 
 @dataclass
@@ -72,9 +80,9 @@ class FormattersRegistry:
         """
         Реестр форматтеров.
         """
-        self._formatters: dict[str, Formatter] = {}
+        self._formatters: dict[str, type[Formatter]] = {}
 
-    def add_formatter(self, formatter: Formatter, raise_if_exists: bool = True) -> None:
+    def add_formatter(self, formatter: type[Formatter], raise_if_exists: bool = True) -> None:
         """
         Добавляет форматтер в реестр.
 
@@ -96,15 +104,12 @@ class FormattersRegistry:
         return False
 
     @overload
-    def __getitem__(self, key: str) -> Formatter: ...
+    def __getitem__(self, key: int | str) -> type[Formatter]: ...
 
     @overload
-    def __getitem__(self, key: int) -> Formatter: ...
+    def __getitem__(self, key: slice) -> list[type[Formatter]]: ...
 
-    @overload
-    def __getitem__(self, key: slice) -> list[Formatter]: ...
-
-    def __getitem__(self, item: str | int | slice) -> Formatter | list[Formatter]:
+    def __getitem__(self, item: str | int | slice) -> type[Formatter] | list[type[Formatter]]:
         if isinstance(item, str):
             return self._formatters[item]
 
@@ -115,12 +120,12 @@ class FormattersRegistry:
             f'Invalid key type: expected str, int, or slice, got {type(item).__name__}.',
         )
 
-    def __setitem__(self, key: str, value: Formatter) -> None:
+    def __setitem__(self, key: str, value: type[Formatter]) -> None:
         if not isinstance(key, str):
             raise ValueError(f'Invalid key type: expected str, got {type(key).__name__}.')
-        if not isinstance(value, Formatter):
+        if not issubclass(value, Formatter):
             raise ValueError(
-                f'Invalid value type: expected Formatter, got {type(value).__name__}.',
+                f'Invalid value type: expected Formatter type, got {type(value).__name__}.',
             )
 
         if key != value.key:
@@ -167,7 +172,8 @@ class FormattersRegistry:
                 continue
 
             try:
-                append_or_concatenate(result, await self[call_name].execute(args, data))
+                formatter = self[call_name](*args)
+                append_or_concatenate(result, await formatter(**data))
             except:
                 if raise_on_error:
                     raise

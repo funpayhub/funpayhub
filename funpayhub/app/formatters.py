@@ -32,109 +32,108 @@ _time_formats = {
 }
 
 
-async def datetime_formatter(mode: str = 'time') -> str:
-    now = datetime.datetime.now()
+class DateTimeFormatter(Formatter):
+    key = 'time'
+    name = '$formatter:datetime:name'
+    description = '$formatter:datetime:description'
 
-    if mode in _time_formats:
-        return now.strftime(_time_formats[mode])
+    def __init__(self, mode: str = 'time'):
+        self.mode = mode
 
-    return now.strftime(mode)
+    async def format(self) -> str:
+        now = datetime.datetime.now()
 
+        if self.mode in _time_formats:
+            return now.strftime(_time_formats[self.mode])
 
-DateTimeFormatter = Formatter(
-    key='time',
-    name='$formatter:datetime:name',
-    description='$formatter:datetime:description',
-    formatter=datetime_formatter,
-)
-
-
-async def image_formatter(path_or_id: int | str) -> Image:
-    return Image(
-        path=path_or_id if isinstance(path_or_id, str) else None,
-        id=path_or_id if isinstance(path_or_id, int) else None,
-    )
+        return now.strftime(self.mode)
 
 
-ImageFormatter = Formatter(
-    key='image',
-    name='$formatter:image:name',
-    description='$formatter:image:description',
-    formatter=image_formatter,
-)
+class ImageFormatter(Formatter):
+    key = 'image'
+    name = '$formatter:image:name'
+    description = '$formatter:image:description'
+
+    def __init__(self, path_or_id: int | str):
+        self.path_or_id = path_or_id
+
+    async def format(self) -> Image:
+        return Image(
+            path=self.path_or_id if isinstance(self.path_or_id, str) else None,
+            id=self.path_or_id if isinstance(self.path_or_id, int) else None,
+        )
 
 
-async def order_formatter(mode: str = 'id', event: OrderEvent | None = None) -> str:
-    if not isinstance(event, OrderEvent):
-        raise TypeError('$order formatter can only be used in order context.')
+class OrderFormatter(Formatter):
+    key = 'order'
+    name = '$formatter:order:name'
+    description = '$formatter:order:description'
 
-    order = await event.get_order_preview()
+    def __init__(self, mode: str = 'id'):
+        self.mode = mode
 
-    if mode == 'id':
-        return order.id or ''
-    if mode == 'title':
-        return order.title or ''
-    if mode == 'sum':
-        return str(order.total.value)
-    if mode == 'fullsum':
-        return str(order.total.value) + order.total.character
-    if mode == 'counterparty.id':
-        return str(order.counterparty.id) or ''
-    if mode == 'counterparty.username':
-        return str(order.counterparty.username) or ''
+    async def format(self, event: OrderEvent) -> str:
+        if not isinstance(event, OrderEvent):
+            raise TypeError('$order formatter can only be used in order context.')
+        order = await event.get_order_preview()
 
-    raise ValueError(f'Unknown mode for $order formatter: {mode!r}')
+        if self.mode == 'id':
+            return order.id or ''
+        if self.mode == 'title':
+            return order.title or ''
+        if self.mode == 'sum':
+            return str(order.total.value)
+        if self.mode == 'fullsum':
+            return str(order.total.value) + order.total.character
+        if self.mode == 'counterparty.id':
+            return str(order.counterparty.id) or ''
+        if self.mode == 'counterparty.username':
+            return str(order.counterparty.username) or ''
 
-
-OrderFormatter = Formatter(
-    key='order',
-    name='$formatter:order:name',
-    description='$formatter:order:description',
-    formatter=order_formatter,
-)
-
-
-async def message_formatter(mode, event: NewMessageEvent | None = None) -> str:
-    if not isinstance(event, NewMessageEvent):
-        raise TypeError('$message formatter can only be used in message context.')
-
-    if mode == 'username':
-        return event.message.sender_username or ''
-    if mode == 'text':
-        return event.message.text or ''
-    if mode == 'chat_id':
-        return event.message.chat_id or ''
-    if mode == 'chat_name':
-        return event.message.chat_name or ''
-    if mode == 'badge_text':
-        return (event.message.badge.text or '') if event.message.badge else ''
-
-    raise ValueError(f'Unknown mode for $message formatter: {mode!r}')
+        raise ValueError(f'Unknown mode for $order formatter: {self.mode!r}')
 
 
-MessageFormatter = Formatter(
-    key='message',
-    name='$formatter:message:name',
-    description='$formatter:message:description',
-    formatter=message_formatter,
-)
+class MessageFormatter(Formatter):
+    key = 'message'
+    name = '$formatter:message:name'
+    description = '$formatter:message:description'
+
+    def __init__(self, mode: str):
+        self.mode = mode
+
+    async def format(self, event: NewMessageEvent) -> str:
+        if not isinstance(event, NewMessageEvent):
+            raise TypeError('$message formatter can only be used in message context.')
+
+        if self.mode == 'username':
+            return event.message.sender_username or ''
+        if self.mode == 'text':
+            return event.message.text or ''
+        if self.mode == 'chat_id':
+            return event.message.chat_id or ''
+        if self.mode == 'chat_name':
+            return event.message.chat_name or ''
+        if self.mode == 'badge_text':
+            return (event.message.badge.text or '') if event.message.badge else ''
+
+        raise ValueError(f'Unknown mode for $message formatter: {self.mode!r}')
 
 
-async def me_formatter(mode: str = 'username', hub: FunPayHub | None = None) -> str:
-    if mode == 'username':
-        return hub.funpay.bot.username
-    if mode == 'id':
-        return str(hub.funpay.bot.userid)
+class MeFormatter(Formatter):
+    key = 'me'
+    name = '$formatter:me:name'
+    description = '$formatter:me:description'
 
-    raise ValueError(f'Unknown mode for $me formatter: {mode!r}')
+    def __init__(self, mode: str = 'username'):
+        self.mode = mode
 
+    async def format(self, hub: FunPayHub) -> str:
+        if self.mode == 'username':
+            return hub.funpay.bot.username
+        if self.mode == 'id':
+            return str(hub.funpay.bot.userid)
 
-MeFormatter = Formatter(
-    key='me',
-    name='$formatter:me:name',
-    description='$formatter:me:description',
-    formatter=me_formatter,
-)
+        raise ValueError(f'Unknown mode for $me formatter: {self.mode!r}')
 
 
 FORMATTERS_LIST = [
