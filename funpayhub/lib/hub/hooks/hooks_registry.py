@@ -12,7 +12,9 @@ from dataclasses import dataclass
 from collections.abc import Callable
 
 from typing_extensions import Any
+from typing import Type
 from eventry.asyncio.callable_wrappers import CallableWrapper
+from abc import ABC, abstractmethod
 
 
 @dataclass
@@ -30,39 +32,60 @@ class HookArg:
     """Конвертор параметра из строки в реальный тип."""
 
 
-@dataclass
-class Hook:
-    id: str
-    """ID хука."""
+class classproperty[T, R]:
+    def __init__(self, func: Callable[[type[T]], R]) -> None:
+        self.func = func
 
-    name: str
-    """Человеко-читаемое название хука."""
+    def __get__(self, obj: Any, cls: type[T]) -> R:
+        return self.func(cls)
 
-    description: str
-    """Описание хука."""
 
-    callable: Callable[..., Any] | CallableWrapper[Any]
-    """Функция хука."""
+class Hook(ABC):
+    @abstractmethod
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        ...
 
-    args: tuple[HookArg, ...] = ()
-    """Принимаемые аргументы хука."""
+    async def __call__(self, **data: Any) -> str:
+        wrapper = CallableWrapper(self.format)
+        return await wrapper((), data)
 
-    filter: Callable[..., Any] | CallableWrapper[Any] | None = None
+    async def __filter_wrapped__(self, **data: Any) -> bool:
+        wrapper = CallableWrapper(self.filter)
+        return await wrapper((), data)
 
-    def __post_init__(self) -> None:
-        if not isinstance(self.callable, CallableWrapper):
-            self.callable = CallableWrapper(self.callable)
+    async def filter(self, *args: Any, **kwargs: Any) -> bool:
+        return True
 
-        if self.filter is not None and not isinstance(self.filter, CallableWrapper):
-            self.filter = CallableWrapper(self.filter)
+    @abstractmethod
+    async def format(self, *args: Any, **kwargs: Any) -> str: ...
+
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def key(cls) -> str: ...
+
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def name(cls) -> str: ...
+
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def description(cls) -> str: ...
+
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def args_description(cls) -> list[HookArg]: ...
 
 
 class HooksRegistry:
     def __init__(self) -> None:
-        self._hooks: dict[str, Hook] = {}
+        self._hooks: dict[str, Type[Hook]] = {}
 
-    def add_hook(self, hook: Hook, overwrite: bool = False) -> None:
-        if hook.id in self._hooks and not overwrite:
-            raise ValueError(f'Hook {hook.id!r} already exists.')
+    def add_hook(self, hook: Type[Hook], overwrite: bool = False) -> None:
+        if hook.name in self._hooks and not overwrite:
+            raise ValueError(f'Hook {hook.name!r} already exists.')
 
-        self._hooks[hook.id] = hook
+        self._hooks[hook.name] = hook

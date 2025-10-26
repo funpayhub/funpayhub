@@ -103,7 +103,7 @@ class MessageFormatter(Formatter):
 
     async def format(self, event: NewMessageEvent) -> str:
         if not isinstance(event, NewMessageEvent):
-            raise TypeError('$message formatter can only be used in message context.')
+            raise TypeError('$message formatter can only be used with NewMessageEvent context.')
 
         if self.mode == 'username':
             return event.message.sender_username or ''
