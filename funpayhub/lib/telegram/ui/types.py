@@ -164,7 +164,6 @@ class MenuBuilder:
     modifications: dict[str, MenuModification] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        print(f'---{type(self.context_type)}---')
         if not issubclass(self.context_type, MenuContext):
             raise ValueError('Invalid context type. Must be a subtype of `MenuContext`.')
         self._wrapped_builder: CallableWrapper[Menu] = CallableWrapper(self.builder)
