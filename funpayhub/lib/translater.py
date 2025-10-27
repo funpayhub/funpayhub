@@ -10,8 +10,9 @@ TRANSLATION_RE = re.compile(r'(?<!\$)\$[a-zA-Z0-9._\-:]+')
 
 
 class Translater:
-    def __init__(self) -> None:
+    def __init__(self, language: str = 'ru') -> None:
         self._catalogs: dict[str, list[gettext.GNUTranslations]] = defaultdict(list)
+        self.current_language = language
 
     def add_translations(self, path_to_locales: str | Path, domain: str = 'main') -> None:
         path = Path(path_to_locales)
@@ -25,7 +26,9 @@ class Translater:
                     tr = gettext.GNUTranslations(f)
                 self._catalogs[lang_dir.name].append(tr)
 
-    def translate(self, key: str, language: str) -> str:
+    def translate(self, key: str, language: str | None = None) -> str:
+        language = language or self.current_language
+
         for tr in self._catalogs.get(language, []):
             result = tr.gettext(key)
             if result != key:
@@ -38,7 +41,9 @@ class Translater:
 
         return key
 
-    def translate_text(self, text: str, language: str) -> str:
+    def translate_text(self, text: str, language: str | None = None) -> str:
+        language = language or self.current_language
+
         text = text.replace('$$', '__ESCAPED_DOLLAR__')
         text = TRANSLATION_RE.sub(
             lambda m: self.translate(m.group(0), language),

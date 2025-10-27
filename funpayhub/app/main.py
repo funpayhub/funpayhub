@@ -15,6 +15,7 @@ from funpayhub.app.dispatching import (
 )
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
+from funpayhub.app.routers import router
 
 # plugins
 from funpayhub.plugins.exec_plugin import Plugin
@@ -27,6 +28,7 @@ class FunPayHub:
     ):
         self._workflow_data = {}
         self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
+        self._dispatcher.connect_router(router)  # todo
         self._properties = properties
 
         self._translater = Translater()
