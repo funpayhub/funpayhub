@@ -61,11 +61,26 @@ class FunPayHub:
             },
         )
 
+        self._running_lock = asyncio.Lock()
+        self._stopping_lock = asyncio.Lock()
+        self._stop_event = asyncio.Event()
+
     async def start(self):
-        tasks = await asyncio.gather(
-            self.funpay.start(),
-            self.telegram.start(),
-        )
+        async with self._running_lock:
+            tasks = [
+                asyncio.create_task(self.funpay.start(), name='funpay'),
+                asyncio.create_task(self.telegram.start(), name='telegram'),
+                asyncio.create_task(self._stop_event.wait())
+            ]
+
+            await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+
+            async with self._stopping_lock:
+                await self.funpay.bot.stop_listening()
+                await self.telegram.dispatcher.stop_polling()
+
+    async def stop(self):
+        self._stop_event.set()
 
     async def load_plugins(self):
         pl = Plugin()
