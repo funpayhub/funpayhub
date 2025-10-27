@@ -3,41 +3,24 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Any
 from copy import copy
-from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import StateFilter
-from aiogram.fsm.context import FSMContext
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui import MenuContext
+from funpayhub.lib.telegram.ui import MenuContext, UIRegistry
 from funpayhub.lib.telegram.states import AddingCommand
-from funpayhub.lib.telegram.ui.registry import UIRegistry
 
+from .. import utils
 from .router import router as r
 from ...ui.ids import MenuIds
 
 
 if TYPE_CHECKING:
     from funpayhub.app import FunPayHub
-
-
-async def _delete_message(msg: Message):
-    with suppress(Exception):
-        await msg.delete()
-
-
-def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery) -> FSMContext:
-    msg = obj if isinstance(obj, Message) else obj.message
-    return dp.fsm.get_context(
-        bot=bot,
-        chat_id=msg.chat.id,
-        thread_id=msg.message_thread_id,
-        user_id=obj.from_user.id,
-    )
 
 
 @r.callback_query(cbs.AddCommand.filter())
@@ -49,7 +32,7 @@ async def set_adding_command_state(
     tg_ui: UIRegistry,
     data: dict[str, Any],
 ):
-    state = _get_context(dispatcher, bot, query)
+    state = utils.get_context(dispatcher, bot, query)
     await state.clear()
 
     ctx = MenuContext(menu_id=MenuIds.add_command, trigger=query, data=copy(callback_data.data))
@@ -79,10 +62,10 @@ async def add_command(
     if not message.text:
         return
 
-    asyncio.create_task(_delete_message(message))
+    asyncio.create_task(utils.delete_message(message))
 
     language = properties.general.language.real_value
-    context = _get_context(dispatcher, bot, message)
+    context = utils.get_context(dispatcher, bot, message)
     data: AddingCommand = (await context.get_data())['data']
 
     props = properties.auto_response
