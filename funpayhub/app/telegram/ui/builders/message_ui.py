@@ -24,11 +24,9 @@ _prefixes_by_badge_type = {
 
 async def message_menu_builder(
     ctx: NewMessageMenuContext,
-    properties: FunPayHubProperties,
     translater: Translater,
     fp_bot: FPBot,
 ) -> Menu:
-    language = properties.general.language.real_value
 
     # Не хэшируем коллбэки данного меню, чтобы не забивать память.
     # Вместо этого делаем коротки коллбэки, чтобы они могли работать между перезапусками.
@@ -37,21 +35,21 @@ async def message_menu_builder(
             Button(
                 button_id='reply',
                 obj=InlineKeyboardButton(
-                    text=translater.translate('$reply', language),
+                    text=translater.translate('$reply'),
                     callback_data=cbs.SendMessage(to=ctx.funpay_chat_id).pack(hash=False),
                 ),
             ),
             Button(
                 button_id='mute',
                 obj=InlineKeyboardButton(
-                    text=translater.translate('$mute', language),
+                    text=translater.translate('$mute'),
                     callback_data=cbs.MuteChat(chat_id=ctx.funpay_chat_id).pack(hash=False),
                 ),
             ),
             Button(
                 button_id='open_chat',
                 obj=InlineKeyboardButton(
-                    text=translater.translate('$open_chat', language),
+                    text=translater.translate('$open_chat'),
                     url=f'https://funpay.com/chat/?node={ctx.funpay_chat_id}',
                 ),
             ),

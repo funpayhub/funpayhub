@@ -64,14 +64,13 @@ async def add_command(
 
     asyncio.create_task(utils.delete_message(message))
 
-    language = properties.general.language.real_value
     context = utils.get_context(dispatcher, bot, message)
     data: AddingCommand = (await context.get_data())['data']
 
     props = properties.auto_response
     if message.text in props.entries:
         await data.message.edit_text(
-            text=data.message.text + '\n\n' + translater.translate('$command_exists', language),
+            text=data.message.text + '\n\n' + translater.translate('$command_exists'),
             reply_markup=data.message.reply_markup,
         )
         return

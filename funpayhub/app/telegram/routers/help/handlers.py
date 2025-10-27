@@ -49,7 +49,7 @@ async def show_entry_help(
     translater: Translater,
 ):
     entry = properties.get_entry(callback_data.path)
-    desc = translater.translate(entry.description, properties.general.language.real_value)
+    desc = translater.translate(entry.description)
 
     await query.answer(
         text=f'Справка:\n{desc}',

@@ -19,7 +19,6 @@ async def curr_chat_notifications_menu_builder(
     props = properties.telegram.notifications
     kb = []
     chat = f'{ctx.chat_id}.{ctx.thread_id}'
-    language = properties.general.language.real_value
     callback_data = ctx.callback_data
 
     notification_buttons = [
@@ -44,7 +43,7 @@ async def curr_chat_notifications_menu_builder(
             continue
 
         indicator = '🔔' if chat in entry.value else '🔕'
-        notifications_channel = translater.translate(entry.name, language)
+        notifications_channel = translater.translate(entry.name)
 
         kb.append(
             [

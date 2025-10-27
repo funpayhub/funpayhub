@@ -20,7 +20,6 @@ from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, MenuContext
 async def build_menu_navigation_buttons(
     ctx: MenuContext,
     translater: Translater,
-    language: str,
     total_pages: int,
     back_button: bool = True,
 ) -> Keyboard:
@@ -35,7 +34,7 @@ async def build_menu_navigation_buttons(
                 Button(
                     button_id='back',
                     obj=InlineKeyboardButton(
-                        text=translater.translate('$back', language),
+                        text=translater.translate('$back'),
                         callback_data=callback_data.pack_history(),
                     ),
                 ),
@@ -211,7 +210,6 @@ def default_finalizer_factory(back_button: bool = True, max_lines_on_page: int |
         navigation_buttons = await build_menu_navigation_buttons(
             ctx=ctx,
             translater=translater,
-            language=properties.general.language.real_value,
             total_pages=total_pages,
             back_button=back_button,
         )

@@ -23,10 +23,8 @@ async def formatters_list_menu_builder(
     ctx: MenuContext,
     fp_formatters: FormattersRegistry,
     translater: Translater,
-    properties: FunPayHubProperties,
 ) -> Menu:
     keyboard = []
-    language = properties.general.language.real_value
     callback_data = ctx.callback_data
 
     for formatter in fp_formatters:
@@ -35,7 +33,7 @@ async def formatters_list_menu_builder(
                 Button(
                     button_id=f'open_formatter_info:{formatter.key}',
                     obj=InlineKeyboardButton(
-                        text=translater.translate(formatter.name, language),
+                        text=translater.translate(formatter.name),
                         callback_data=cbs.OpenMenu(
                             menu_id=MenuIds.formatter_info,
                             data={'formatter_id': formatter.key},
@@ -59,14 +57,11 @@ async def formatter_info_menu_builder(
     ctx: MenuContext,
     fp_formatters: FormattersRegistry,
     translater: Translater,
-    properties: FunPayHubProperties,
 ) -> Menu:
-    language = properties.general.language.real_value
-
     formatter = fp_formatters[ctx.data['formatter_id']]
-    text = f"""{translater.translate(formatter.name, language)}
+    text = f"""{translater.translate(formatter.name)}
 
-{translater.translate(formatter.description, language)}
+{translater.translate(formatter.description)}
 """
     return Menu(
         text=text,
