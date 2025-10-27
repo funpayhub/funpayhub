@@ -21,7 +21,7 @@ class FunPay:
         bot_token: str,
         proxy: str | None = None,
         headers: dict[str, str] | None = None,
-        workflow_data: dict | None = None
+        workflow_data: dict | None = None,
     ):
         workflow_data = workflow_data if workflow_data is not None else {}
 

@@ -37,7 +37,7 @@ class FunPayHub:
             bot_token=os.environ.get('FPH_GOLDEN_KEY'),  # todo: or from properites
             proxy=os.environ.get('FPH_FUNPAY_PROXY'),  # todo: or from properties
             headers=None,
-            workflow_data=self.workflow_data
+            workflow_data=self.workflow_data,
         )
         self._telegram = Telegram(
             self,
@@ -68,9 +68,9 @@ class FunPayHub:
     async def start(self):
         async with self._running_lock:
             tasks = [
-                asyncio.create_task(self.funpay.start(), name='funpay'),
+                # asyncio.create_task(self.funpay.start(), name='funpay'),
                 asyncio.create_task(self.telegram.start(), name='telegram'),
-                asyncio.create_task(self._stop_event.wait())
+                asyncio.create_task(self._stop_event.wait()),
             ]
 
             await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)

@@ -4,7 +4,7 @@ import asyncio
 from typing import Literal
 from contextlib import suppress
 
-from aiogram import Bot, Router, Dispatcher
+from aiogram import Bot, Dispatcher
 from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import StateFilter
 
@@ -12,8 +12,7 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.states import ChangingMenuPage, ChangingViewPage
 from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
 
-
-router = Router(name='fph:pagination')
+from .router import router
 
 
 # todo: вынести в utils

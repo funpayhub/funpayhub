@@ -6,10 +6,10 @@ import logging
 from logging.config import dictConfig
 
 from load_dotenv import load_dotenv
+from funpaybotengine import Bot
 
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
-from funpaybotengine import Bot
 
 
 load_dotenv()

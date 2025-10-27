@@ -194,7 +194,8 @@ class Properties(Entry):
                 await v._set_values(values[v.id])
 
     def get_entry(
-        self, path: list[str | int]
+        self,
+        path: list[str | int],
     ) -> Properties | Parameter[Any] | MutableParameter[Any]:
         if not path:
             return self

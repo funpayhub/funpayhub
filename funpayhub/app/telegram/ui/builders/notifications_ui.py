@@ -11,7 +11,7 @@ from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext
 from .. import premade
 
 
-async def current_chat_notifications_menu_builder(
+async def curr_chat_notifications_menu_builder(
     ctx: MenuContext,
     properties: FunPayHubProperties,
     translater: Translater,
@@ -26,12 +26,12 @@ async def current_chat_notifications_menu_builder(
         Button(
             button_id=f'toggle-notification:{i}',
             obj=InlineKeyboardButton(
-                text=f'{'🔔' if chat in props.entries[i].value else'🔕'} {index+1}⭐',
+                text=f'{"🔔" if chat in props.entries[i].value else "🔕"} {index + 1}⭐',
                 callback_data=cbs.ToggleNotificationChannel(
                     channel=i,
                     history=callback_data.as_history() if callback_data is not None else [],
                 ).pack(),
-            )
+            ),
         )
         for index, i in enumerate(['review_1', 'review_2', 'review_3', 'review_4', 'review_5'])
     ]
@@ -46,17 +46,21 @@ async def current_chat_notifications_menu_builder(
         indicator = '🔔' if chat in entry.value else '🔕'
         notifications_channel = translater.translate(entry.name, language)
 
-        kb.append([
-            Button(
-                button_id=f'toggle_notification:{entry.id}',
-                obj=InlineKeyboardButton(
-                    text=f'{indicator} {notifications_channel}',
-                    callback_data=cbs.ToggleNotificationChannel(
-                        channel=entry.id,
-                        history=callback_data.as_history() if callback_data is not None else [],
-                    ).pack(),
-                ),
-            )]
+        kb.append(
+            [
+                Button(
+                    button_id=f'toggle_notification:{entry.id}',
+                    obj=InlineKeyboardButton(
+                        text=f'{indicator} {notifications_channel}',
+                        callback_data=cbs.ToggleNotificationChannel(
+                            channel=entry.id,
+                            history=callback_data.as_history()
+                            if callback_data is not None
+                            else [],
+                        ).pack(),
+                    ),
+                )
+            ],
         )
 
     return Menu(

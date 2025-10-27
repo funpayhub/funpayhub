@@ -12,16 +12,16 @@ from .types import (
     Menu,
     Button,
     MenuBuilder,
+    MenuContext,
     MenuModProto,
     ButtonBuilder,
+    ButtonContext,
     ButtonModProto,
     MenuBuilderProto,
     MenuModification,
-    MenuContext,
     ButtonBuilderProto,
     ButtonModification,
     MenuModFilterProto,
-    ButtonContext,
     ButtonModFilterProto,
 )
 from ..callback_data import HashinatorT1000
@@ -33,7 +33,8 @@ class UIRegistry:
         self._buttons: dict[str, ButtonBuilder] = {}
         self._workflow_data: dict[str, Any] = workflow_data if workflow_data is not None else {}
 
-    def add_menu_builder(self,
+    def add_menu_builder(
+        self,
         menu_id: str,
         builder: MenuBuilderProto,
         context_type: Type[MenuContext] = MenuContext,
@@ -103,7 +104,8 @@ class UIRegistry:
         self._buttons[button_id] = ButtonBuilder(builder, context_type, mods)
         logger.info(f'Button builder {button_id!r} has been added to registry.')
 
-    def add_button_modification(self,
+    def add_button_modification(
+        self,
         button_id: str,
         mod_id: str,
         modification: ButtonModProto,
@@ -114,7 +116,9 @@ class UIRegistry:
         if mod_id in self._buttons[button_id].modifications:
             raise KeyError(f'Button {button_id!r} already has a modification {mod_id!r}.')
         self._buttons[button_id].modifications[mod_id] = ButtonModification(modification, filter)
-        logger.info(f'Modification {mod_id!r} for button {button_id!r} has been added to registry.')
+        logger.info(
+            f'Modification {mod_id!r} for button {button_id!r} has been added to registry.'
+        )
 
     def get_button_builder(self, button_id: str) -> ButtonBuilder:
         return self._buttons[button_id]

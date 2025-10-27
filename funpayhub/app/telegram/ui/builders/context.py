@@ -1,6 +1,10 @@
-from funpayhub.lib.telegram.ui import MenuContext
-from dataclasses import dataclass, field
+from __future__ import annotations
+
+from dataclasses import field, dataclass
+
 from funpaybotengine.types import Message
+
+from funpayhub.lib.telegram.ui import MenuContext
 
 
 @dataclass(kw_only=True)

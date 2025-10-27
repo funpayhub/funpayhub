@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import json
 import os.path
-from pathlib import Path
 from typing import TYPE_CHECKING
+from pathlib import Path
 
-from .types import ExecutionResultsRegistry, ExecutionResult
+from .types import ExecutionResult, ExecutionResultsRegistry
 from .telegram.menus import (
     exec_code_menu_builder,
     exec_list_menu_builder,
@@ -12,7 +13,6 @@ from .telegram.menus import (
     main_props_menu_modification,
 )
 from .telegram.router import r as router
-import json
 
 
 if TYPE_CHECKING:
@@ -57,5 +57,5 @@ class Plugin:
             code=data['code'],
             output=data['output'],
             error=data['error'],
-            execution_time=data['execution_time']
+            execution_time=data['execution_time'],
         )

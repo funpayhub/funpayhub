@@ -31,7 +31,7 @@ class _EntriesUIRegistry:
         if (builder := self.get_menu_builder(type(ctx.entry))) is None:
             raise LookupError(f'Unknown entry type {type(ctx.entry)}.')
 
-        return await builder((ctx, ), data=data)
+        return await builder((ctx,), data=data)
 
     async def build_button(self, ctx: EntryButtonContext, data: dict[str, Any]) -> Button:
         logger.debug(f'Button builder for {ctx.entry.path} ({type(ctx.entry)}) requested.')
@@ -39,7 +39,7 @@ class _EntriesUIRegistry:
         if (builder := self.get_button_builder(type(ctx.entry))) is None:
             raise LookupError(f'Unknown entry type {type(ctx.entry)}.')
 
-        return await builder((ctx, ), data=data)
+        return await builder((ctx,), data=data)
 
     def get_button_builder(self, entry_type: Type[Entry]) -> CallableWrapper[Button] | None:
         if entry_type in self._buttons:
@@ -72,7 +72,7 @@ class _EntriesUIRegistry:
         self,
         entry_type: Type[Entry],
         builder: MenuBuilderProto,
-        overwrite: bool = False
+        overwrite: bool = False,
     ) -> None:
         if entry_type in self._menus and not overwrite:
             raise KeyError(f'Entry menu builder for {entry_type!r} already exists.')

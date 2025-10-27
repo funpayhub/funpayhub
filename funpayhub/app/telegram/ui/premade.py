@@ -39,7 +39,7 @@ async def build_menu_navigation_buttons(
                         callback_data=callback_data.pack_history(),
                     ),
                 ),
-            ]
+            ],
         ]
 
     if total_pages < 2:

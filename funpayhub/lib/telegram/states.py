@@ -1,20 +1,19 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+import warnings
+from typing import TYPE_CHECKING, Any
 from dataclasses import field, dataclass
 
 from aiogram.types import Message, CallbackQuery
 
-from funpayhub.lib.properties import ListParameter, MutableParameter
-from funpayhub.lib.telegram.callback_data import CallbackData
 import funpayhub.lib.telegram.callbacks as cbs
-import warnings
+from funpayhub.lib.properties import ListParameter, MutableParameter
+from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
 
 
 class State:
     if TYPE_CHECKING:
         __identifier__: str
-
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         if 'identifier' not in kwargs:
@@ -34,7 +33,6 @@ class State:
     @property
     def identifier(self) -> str:
         return self.__identifier__
-
 
 
 @dataclass
@@ -71,3 +69,10 @@ class AddingListItem(State, identifier='adding_list_item'):
     callback_data: cbs.ListParamAddItem
     message: Message
     user_messages: list[Message] = field(default_factory=list)
+
+
+@dataclass
+class AddingCommand(State, identifier='adding_command'):
+    message: Message
+    callback_query_obj: CallbackQuery
+    callback_data: UnknownCallback

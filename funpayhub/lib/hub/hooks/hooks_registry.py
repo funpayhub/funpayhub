@@ -8,13 +8,13 @@ __all__ = [
 ]
 
 
+from typing import Type
 from dataclasses import dataclass
+from abc import ABC, abstractmethod
 from collections.abc import Callable
 
 from typing_extensions import Any
-from typing import Type
 from eventry.asyncio.callable_wrappers import CallableWrapper
-from abc import ABC, abstractmethod
 
 
 @dataclass
@@ -42,8 +42,7 @@ class classproperty[T, R]:
 
 class Hook(ABC):
     @abstractmethod
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        ...
+    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
     async def __call__(self, **data: Any) -> str:
         wrapper = CallableWrapper(self.format)

@@ -3,13 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from funpaybotengine import Router
+from funpaybotengine.dispatching.events import RunnerEvent, NewMessageEvent, ChatChangedEvent
 
-from funpayhub.app.funpay.filters import is_fph_command
-from funpayhub.app.telegram.main import Telegram
-from funpayhub.app.telegram.ui.builders.context import NewMessageMenuContext
-from funpaybotengine.dispatching.events import ChatChangedEvent, NewMessageEvent, RunnerEvent
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui import UIRegistry
+from funpayhub.app.telegram.main import Telegram
+from funpayhub.app.funpay.filters import is_fph_command
+from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.telegram.ui.builders.context import NewMessageMenuContext
+
 
 if TYPE_CHECKING:
     from funpaybotengine import Bot
@@ -56,12 +57,16 @@ async def send_new_message_notification(
     events_stack: list[RunnerEvent],
     tg: Telegram,
     tg_ui: UIRegistry,
-    data: dict[str, Any]
+    data: dict[str, Any],
 ):
     msgs = []
     checked = []
     for i in events_stack:
-        if isinstance(i, NewMessageEvent) and i.message.chat_id == event.chat_preview.id and i.message.id not in checked:
+        if (
+            isinstance(i, NewMessageEvent)
+            and i.message.chat_id == event.chat_preview.id
+            and i.message.id not in checked
+        ):
             checked.append(i.message.id)
             msgs.append(i.message)
 
@@ -73,12 +78,12 @@ async def send_new_message_notification(
         menu_id=MenuIds.new_message,
         funpay_chat_id=event.chat_preview.id,
         funpay_chat_name=event.chat_preview.username,
-        messages=msgs
+        messages=msgs,
     )
     menu = await tg_ui.build_menu(context, data)
 
     await tg.send_notification(
         'new_message',
         text=menu.text,
-        reply_markup=menu.total_keyboard(convert=True)
+        reply_markup=menu.total_keyboard(convert=True),
     )

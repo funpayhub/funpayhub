@@ -28,10 +28,12 @@ class Menu:
     finalizer: MenuModProto | None = None
 
     @overload
-    def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None: pass
+    def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None:
+        pass
 
     @overload
-    def total_keyboard(self, convert: Literal[False]) -> Keyboard | None: pass
+    def total_keyboard(self, convert: Literal[False]) -> Keyboard | None:
+        pass
 
     def total_keyboard(self, convert: bool = False) -> Keyboard | InlineKeyboardMarkup | None:
         total_keyboard = [*self.header_keyboard, *self.main_keyboard, *self.footer_keyboard]
@@ -40,8 +42,8 @@ class Menu:
         if not convert:
             return total_keyboard
 
-        return InlineKeyboardMarkup(inline_keyboard=[
-            [button.obj for button in line] for line in total_keyboard]
+        return InlineKeyboardMarkup(
+            inline_keyboard=[[button.obj for button in line] for line in total_keyboard],
         )
 
     async def reply_to(self, msg: Message, /) -> Message:
@@ -49,13 +51,15 @@ class Menu:
 
     async def apply_to(
         self,
-        msg: Message, /, *,
+        msg: Message,
+        /,
+        *,
         text: bool = True,
         keyboard: bool = True,
     ) -> Message | bool:
         return await msg.edit_text(
             text=self.text if text else msg.text,
-            reply_markup=self.total_keyboard(convert=True) if keyboard else msg.reply_markup
+            reply_markup=self.total_keyboard(convert=True) if keyboard else msg.reply_markup,
         )
 
 
@@ -99,27 +103,33 @@ class ButtonContext:
 
 
 class MenuBuilderProto(Protocol):
-    async def __call__(self, __c: MenuContext, *__a: Any, **__k: Any) -> Menu: pass
+    async def __call__(self, __c: MenuContext, *__a: Any, **__k: Any) -> Menu:
+        pass
 
 
 class MenuModFilterProto(Protocol):
-    async def __call__(self, __c: MenuContext, __m: Menu, *__a: Any, **__k: Any) -> bool: pass
+    async def __call__(self, __c: MenuContext, __m: Menu, *__a: Any, **__k: Any) -> bool:
+        pass
 
 
 class MenuModProto(Protocol):
-    async def __call__(self, __c: MenuContext, __m: Menu, *__a: Any, **__k: Any) -> Menu: pass
+    async def __call__(self, __c: MenuContext, __m: Menu, *__a: Any, **__k: Any) -> Menu:
+        pass
 
 
 class ButtonBuilderProto(Protocol):
-    async def __call__(self, __c: ButtonContext, *__a: Any, **__k: Any) -> Button: pass
+    async def __call__(self, __c: ButtonContext, *__a: Any, **__k: Any) -> Button:
+        pass
 
 
 class ButtonModFilterProto(Protocol):
-    async def __call__(self, __c: ButtonContext, __b: Button, *__a: Any, **__k: Any) -> bool: pass
+    async def __call__(self, __c: ButtonContext, __b: Button, *__a: Any, **__k: Any) -> bool:
+        pass
 
 
 class ButtonModProto(Protocol):
-    async def __call__(self, __c: ButtonContext, __b: Button, *__a: Any, **__k: Any) -> Button: pass
+    async def __call__(self, __c: ButtonContext, __b: Button, *__a: Any, **__k: Any) -> Button:
+        pass
 
 
 @dataclass
@@ -156,11 +166,11 @@ class MenuBuilder:
     def __post_init__(self) -> None:
         print(f'---{type(self.context_type)}---')
         if not issubclass(self.context_type, MenuContext):
-            raise ValueError(f'Invalid context type. Must be a subtype of `MenuContext`.')
+            raise ValueError('Invalid context type. Must be a subtype of `MenuContext`.')
         self._wrapped_builder: CallableWrapper[Menu] = CallableWrapper(self.builder)
 
     async def build(self, context: MenuContext, data: dict[str, Any]) -> Menu:
-        result = await self.wrapped_builder((context, ), data)
+        result = await self.wrapped_builder((context,), data)
 
         for i in self.modifications.values():
             try:
@@ -174,6 +184,7 @@ class MenuBuilder:
                 result = await wrapped((context, result), data)
             except:
                 import traceback
+
                 print(traceback.format_exc())
                 pass  # todo: logging
             result.finalizer = None
@@ -193,7 +204,9 @@ class ButtonModification:
         self._wrapped_modification = CallableWrapper(self.modification)
         self._wrapped_filter = CallableWrapper(self.filter) if self.filter is not None else None
 
-    async def __call__(self, context: ButtonContext, button: Button, data: dict[str, Any]) -> Button:
+    async def __call__(
+        self, context: ButtonContext, button: Button, data: dict[str, Any]
+    ) -> Button:
         if self.wrapped_filter is not None:
             result = await self.wrapped_filter((context, button), data)
             if not result:
@@ -217,11 +230,11 @@ class ButtonBuilder:
 
     def __post_init__(self) -> None:
         if not issubclass(self.context_type, ButtonContext):
-            raise ValueError(f'Invalid context type. Must be a subtype of `ButtonContext`.')
+            raise ValueError('Invalid context type. Must be a subtype of `ButtonContext`.')
         self._wrapped_builder: CallableWrapper[Button] = CallableWrapper(self.builder)
 
     async def build(self, context: ButtonContext, data: dict[str, Any]) -> Button:
-        result = await self.wrapped_builder((context, ), data)
+        result = await self.wrapped_builder((context,), data)
         for i in self.modifications.values():
             try:
                 result = await i(context, result, data)

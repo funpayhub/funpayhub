@@ -130,3 +130,7 @@ class SendTemplate(CallbackData, identifier='send_template'):
 
 class MuteChat(CallbackData, identifier='mute_chat'):
     chat_id: int | str
+
+
+# Other
+class AddCommand(CallbackData, identifier='add_command'): ...

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, overload
 from dataclasses import dataclass
-from collections.abc import Callable, Awaitable
+from abc import ABC, abstractmethod
+from collections.abc import Callable
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
-from abc import ABC, abstractmethod
 
 from .parser import extract_calls
 
@@ -27,8 +27,7 @@ class classproperty[T, R]:
 
 class Formatter(ABC):
     @abstractmethod
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        ...
+    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
     async def __call__(self, **data: Any) -> str:
         wrapper = CallableWrapper(self.format)

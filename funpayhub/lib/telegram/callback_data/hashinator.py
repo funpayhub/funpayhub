@@ -5,8 +5,8 @@ __all__ = ['HashinatorT1000']
 
 
 import hashlib
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 
 
 class BadHashError(Exception):
@@ -29,26 +29,26 @@ class HashinatorStorage:
 
     def create_db(self) -> None:
         with self.conn:
-            self.cursor.execute('''CREATE TABLE IF NOT EXISTS "hashes" (
+            self.cursor.execute("""CREATE TABLE IF NOT EXISTS "hashes" (
     "hash"	TEXT NOT NULL UNIQUE,
     "callback"	TEXT NOT NULL,
     "timestamp"	INTEGER NOT NULL,
     PRIMARY KEY("hash")
-);''')
+);""")
             self.cursor.execute(
-                '''CREATE INDEX IF NOT EXISTS idx_created_at ON hashes(timestamp);'''
+                """CREATE INDEX IF NOT EXISTS idx_created_at ON hashes(timestamp);""",
             )
 
     def get_callback(self, hash: str, update_timestamp: bool = True) -> str | None:
         if update_timestamp:
-            query = '''
+            query = """
 UPDATE hashes
 SET timestamp = strftime('%s','now')
 WHERE hash = ?
 RETURNING callback
-'''
+"""
         else:
-            query = '''SELECT callback FROM hashes WHERE hash = ?'''
+            query = """SELECT callback FROM hashes WHERE hash = ?"""
 
         self.cursor.execute(query, (hash,))
         row = self.cursor.fetchone()
@@ -57,19 +57,19 @@ RETURNING callback
 
     def update_timestamp(self, hash: str) -> None:
         self.cursor.execute(
-            '''UPDATE hashes SET timestamp = strftime('%s','now') WHERE hash = ?''',
-            (hash,)
+            """UPDATE hashes SET timestamp = strftime('%s','now') WHERE hash = ?""",
+            (hash,),
         )
-        return None
+        return
 
     def save_callbacks(self, hashes: dict[str, str]) -> None:
         self.cursor.executemany(
-            '''INSERT INTO hashes(hash, callback, timestamp)
+            """INSERT INTO hashes(hash, callback, timestamp)
 VALUES (?, ?, strftime('%s','now'))
 ON CONFLICT(hash) DO UPDATE SET
 callback = excluded.callback,
-timestamp = strftime('%s','now');''',
-            ((hash, callback) for hash, callback in hashes.items())
+timestamp = strftime('%s','now');""",
+            ((hash, callback) for hash, callback in hashes.items()),
         )
 
 

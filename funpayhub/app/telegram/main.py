@@ -1,20 +1,19 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING, Any
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
+from aiogram.types import Message, InlineKeyboardMarkup
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
-from aiogram.types import InlineKeyboardMarkup
 
-from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.lib.properties import ListParameter
+from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
-from aiogram.types import Message
-import asyncio
 
 
 if TYPE_CHECKING:
@@ -116,7 +115,7 @@ class Telegram:
         """
         try:
             chats = self.hub.properties.telegram.notifications.get_parameter(
-                [notification_channel_id]
+                [notification_channel_id],
             )
             if not isinstance(chats, ListParameter) or not chats.value:
                 return []
@@ -137,9 +136,9 @@ class Telegram:
                         chat_id=chat_id,
                         message_thread_id=thread_id,
                         text=text,
-                        reply_markup=reply_markup
-                    )
-                )
+                        reply_markup=reply_markup,
+                    ),
+                ),
             )
 
         return tasks

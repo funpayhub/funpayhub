@@ -12,7 +12,7 @@ from aiogram.fsm.context import FSMContext
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.telegram.ui import MenuContext
-from funpayhub.lib.telegram.states import ChangingParameterValueState, AddingListItem
+from funpayhub.lib.telegram.states import AddingListItem, ChangingParameterValueState
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
@@ -75,7 +75,7 @@ async def open_entry_menu(
         menu_page=callback_data.menu_page,
         trigger=query,
         entry=entry,
-        data=callback_data.model_dump(mode='python', exclude={'identifier'}) | callback_data.data
+        data=callback_data.model_dump(mode='python', exclude={'identifier'}) | callback_data.data,
     )
     menu = await tg_ui.build_menu(ctx, data | {'query': query})
     await menu.apply_to(query.message)

@@ -15,7 +15,7 @@ from ..ids import MenuIds
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.telegram.ui import UIRegistry
+    pass
 
 
 # Formatters
@@ -45,7 +45,7 @@ async def formatters_list_menu_builder(
                         ).pack(),
                     ),
                 ),
-            ]
+            ],
         )
 
     return Menu(

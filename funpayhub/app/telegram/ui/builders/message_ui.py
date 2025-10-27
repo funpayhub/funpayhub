@@ -3,15 +3,17 @@ from __future__ import annotations
 import html
 
 from aiogram.types import InlineKeyboardButton
+from funpaybotengine import Bot as FPBot
+from funpaybotengine.types.enums import BadgeType
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui.types import Menu, Button
-from funpaybotengine.types.enums import BadgeType, MessageType
-from funpaybotengine import Bot as FPBot
+
 from .context import NewMessageMenuContext
 from ..premade import default_finalizer_factory
+
 
 _prefixes_by_badge_type = {
     BadgeType.AUTO_DELIVERY: '📦',
@@ -24,7 +26,7 @@ async def message_menu_builder(
     ctx: NewMessageMenuContext,
     properties: FunPayHubProperties,
     translater: Translater,
-    fp_bot: FPBot
+    fp_bot: FPBot,
 ) -> Menu:
     language = properties.general.language.real_value
 
@@ -50,9 +52,9 @@ async def message_menu_builder(
                 button_id='open_chat',
                 obj=InlineKeyboardButton(
                     text=translater.translate('$open_chat', language),
-                    url=f'https://funpay.com/chat/?node={ctx.funpay_chat_id}'
-                )
-            )
+                    url=f'https://funpay.com/chat/?node={ctx.funpay_chat_id}',
+                ),
+            ),
         ],
     ]
 
@@ -80,19 +82,23 @@ async def message_menu_builder(
             texts.append(
                 f'<a href="https://funpay.com/users/{msg.sender_id}/">{username}</a> - '
                 f'<i>{msg.send_date_text}</i>\n'
-                f'<blockquote>{msg_text}</blockquote>'
+                f'<blockquote>{msg_text}</blockquote>',
             )
         text = '\n\n'.join(texts)
     else:
-        text = (f'<pre><code class="language-❔ Unknown sender">'
-                f'❌ No messages in menu context :('
-                f'</code></pre>')
+        text = (
+            '<pre><code class="language-❔ Unknown sender">'
+            '❌ No messages in menu context :('
+            '</code></pre>'
+        )
 
-    text = (f'✉️ <b>Новые сообщения в чате <code>{ctx.funpay_chat_name}</code> '
-            f'(ID: <code>{ctx.funpay_chat_id}</code>).</b>\n\n') + text
+    text = (
+        f'✉️ <b>Новые сообщения в чате <code>{ctx.funpay_chat_name}</code> '
+        f'(ID: <code>{ctx.funpay_chat_id}</code>).</b>\n\n'
+    ) + text
 
     return Menu(
         text=text,
         header_keyboard=keyboard,
-        finalizer=default_finalizer_factory()
+        finalizer=default_finalizer_factory(),
     )

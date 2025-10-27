@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import tomllib
-from typing import TYPE_CHECKING, Any, NoReturn
+from typing import Any, NoReturn, override
 from types import MappingProxyType
 
 from funpayhub.lib.properties import Properties
@@ -40,7 +40,7 @@ class AutoResponseEntryProperties(Properties):
                 id='ignore_formatters_errors',
                 name='$props.auto_response.*.ignore_formatters_errors:name',
                 description='$props.auto_response.*.ignore_formatters_errors:description',
-                default_value=False,
+                default_value=True,
             ),
         )
 
@@ -49,7 +49,7 @@ class AutoResponseEntryProperties(Properties):
                 id='ignore_hooks_errors',
                 name='$props.auto_response.*.ignore_hooks_errors:name',
                 description='$props.auto_response.*.ignore_hooks_errors:description',
-                default_value=False,
+                default_value=True,
             ),
         )
 
@@ -76,7 +76,7 @@ class AutoResponseEntryProperties(Properties):
                 id='response_text',
                 name='$props.auto_response.*.response_text:name',
                 description='$props.auto_response.*.response_text:description',
-                default_value='Ответ на $message_text',
+                default_value='',
             ),
         )
 
@@ -89,13 +89,13 @@ class AutoResponseEntryProperties(Properties):
             ),
         )
 
-    if TYPE_CHECKING:
+    @override
+    @property
+    def parent(self) -> AutoResponseProperties | None:
+        return super().parent  # type: ignore
 
-        @property
-        def parent(self) -> AutoResponseProperties | None:
-            pass
-
-    @Properties.parent.setter
+    @override
+    @parent.setter
     def parent(self, value: AutoResponseProperties) -> None:
         if not isinstance(value, AutoResponseProperties):
             raise TypeError(
@@ -119,7 +119,7 @@ class AutoResponseProperties(Properties):
         return super().entries  # type: ignore
 
     def attach_parameter(self, parameter: Any) -> NoReturn:
-        raise RuntimeError('AutoDeliveryProperties does not support parameters.')
+        raise RuntimeError('`AutoDeliveryProperties` does not support parameters.')
 
     def attach_properties[P: AutoResponseEntryProperties](self, properties: P) -> P:
         if not isinstance(properties, AutoResponseEntryProperties):

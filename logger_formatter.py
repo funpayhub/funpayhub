@@ -1,10 +1,10 @@
-import logging
+from __future__ import annotations
+
 import sys
-import colorama
+import logging
 
 
-class MyLoggerFormatter(logging.Formatter):
-    ...
+class MyLoggerFormatter(logging.Formatter): ...
 
 
 console_handler = logging.StreamHandler(sys.stdout)
@@ -21,4 +21,4 @@ logger.error('Error Log')
 logger.critical('Critical Log')
 
 
-print(f'\x1b[1m\x1b[38;5;74mSome Text\x1b[0m\x1b[38;5;75mSomeText\x1b[0m')
+print('\x1b[1m\x1b[38;5;74mSome Text\x1b[0m\x1b[38;5;75mSomeText\x1b[0m')

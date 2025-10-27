@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import os
+import json
 import time
 import textwrap
+import traceback
 import contextlib
 from typing import Any
+from io import StringIO
 from copy import copy
 
 from aiogram import Router
@@ -13,21 +16,19 @@ from aiogram.filters import Command
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
-from funpayhub.plugins.exec_plugin.types import ExecutionResultsRegistry, ExecutionResult
-from io import StringIO
-import traceback
-import json
+from funpayhub.plugins.exec_plugin.types import ExecutionResult, ExecutionResultsRegistry
 
-from .callbacks import SendExecFile, SaveExecCode
+from .callbacks import SaveExecCode, SendExecFile
 
 
 r = Router(name='exec_plugin')
+
 
 async def execute_code(
     registry: ExecutionResultsRegistry,
     exec_id: str | None,
     code: str,
-    execution_dict: dict[str, Any]
+    execution_dict: dict[str, Any],
 ) -> ExecutionResult:
     temp_buffer = StringIO()
     error = False
@@ -59,8 +60,6 @@ async def execute_code(
     )
 
 
-
-
 @r.message(Command('execlist'))
 async def exec_list_menu(message: Message, tg_ui: UIRegistry, data: dict[str, Any]):
     context = MenuContext(
@@ -87,10 +86,12 @@ async def execute_python_code(
     source = split[1].strip() if len(split) > 1 else None
 
     if not exec_id and not source:
-        await message.answer('Укажите ID исполнения на одной строке с /exec или код исполнения с новой строки.')
+        await message.answer(
+            'Укажите ID исполнения на одной строке с /exec или код исполнения с новой строки.'
+        )
         return
-    elif exec_id and not source:
-        if not exec_id in exec_registry.registry:
+    if exec_id and not source:
+        if exec_id not in exec_registry.registry:
             await message.answer(f'Исполнение {exec_id!r} не найдено.')
             return
         source = exec_registry.registry[exec_id].code
@@ -159,14 +160,16 @@ async def save_exec(
     result = exec_registry.registry[callback_data.exec_id]
     os.makedirs(f'.exec/{callback_data.exec_id}', exist_ok=True)
     with open(f'.exec/{callback_data.exec_id}/exec.json', 'w', encoding='utf-8') as f:
-        f.write(json.dumps(
-            {
-                'code': result.code,
-                'output': result.output,
-                'error': result.error,
-                'execution_time': result.execution_time,
-            },
-            ensure_ascii=False,
-        ))
+        f.write(
+            json.dumps(
+                {
+                    'code': result.code,
+                    'output': result.output,
+                    'error': result.error,
+                    'execution_time': result.execution_time,
+                },
+                ensure_ascii=False,
+            )
+        )
 
     await query.answer(f'Данные исполнения сохранены в .exec/{callback_data.exec_id}/exec.json.')

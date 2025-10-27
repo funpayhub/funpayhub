@@ -28,7 +28,7 @@ def is_fph_command(event: NewMessageEvent, properties: FunPayHubProperties):
             [
                 params.reply.value and params.response_text.value,
                 params.hooks.value,
-            ]
+            ],
         ):
             return False
         return {'command': params}

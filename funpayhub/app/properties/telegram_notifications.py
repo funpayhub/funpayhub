@@ -27,7 +27,7 @@ class TelegramNotificationsProperties(Properties):
                 name='$telegram_notifications.error:name',
                 description='$telegram_notifications.error:description',
                 default_value=[],
-            )
+            ),
         )
 
         self.lots_raised: ListParameter[str] = self.attach_parameter(
@@ -36,7 +36,7 @@ class TelegramNotificationsProperties(Properties):
                 name='$telegram_notifications.lots_raised:name',
                 description='$telegram_notifications.lots_raised:description',
                 default_value=[],
-            )
+            ),
         )
 
         self.new_message: ListParameter[str] = self.attach_parameter(
@@ -63,7 +63,7 @@ class TelegramNotificationsProperties(Properties):
                 name='$telegram_notifications.sale_status_changed:name',
                 description='$telegram_notifications.sale_status_changed:description',
                 default_value=[],
-            )
+            ),
         )
 
         self.review_1: ListParameter[str] = self.attach_parameter(

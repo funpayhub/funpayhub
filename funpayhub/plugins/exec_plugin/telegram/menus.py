@@ -14,7 +14,7 @@ from funpayhub.app.telegram.ui.premade import (
     build_view_navigation_buttons,
 )
 
-from .callbacks import SendExecFile, SaveExecCode
+from .callbacks import SaveExecCode, SendExecFile
 
 
 if TYPE_CHECKING:
@@ -53,8 +53,8 @@ async def exec_view_kb(ctx: MenuContext, mode: Literal['output', 'code']) -> Key
         button_id='save_to_dict',
         obj=InlineKeyboardButton(
             text='💿 Сохранить',
-            callback_data=SaveExecCode(exec_id=ctx.data['exec_id']).pack()
-        )
+            callback_data=SaveExecCode(exec_id=ctx.data['exec_id']).pack(),
+        ),
     )
 
     return [[btn], [save_btn, download_btn]]
@@ -98,7 +98,7 @@ async def exec_list_menu_builder(ctx: MenuContext, exec_registry: ExecRReg) -> M
                         ).pack(),
                     ),
                 ),
-            ]
+            ],
         )
 
     return Menu(
@@ -148,10 +148,11 @@ async def main_props_menu_modification(
                 button_id='open_exec_registry',
                 text='💻 Exec Registry',
                 callback_data=cbs.OpenMenu(
-                    menu_id='exec_list', history=[ctx.callback.pack()]
+                    menu_id='exec_list',
+                    history=[ctx.callback.pack()],
                 ).pack(),
             ),
-        ]
+        ],
     )
 
     return menu

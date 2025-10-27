@@ -10,8 +10,8 @@ from funpayhub.app.funpay.filters.review_reply_enabled import has_review
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.properties.review_reply import ReviewReplyPropertiesEntry
     from funpayhub.app.properties import FunPayHubProperties
+    from funpayhub.app.properties.review_reply import ReviewReplyPropertiesEntry
 
 
 review_reply_router = r = Router(name='fph:review_reply_router')
@@ -39,7 +39,7 @@ async def reply_on_review(
         [
             p.reply_in_review.value and p.review_reply_text.value,
             p.reply_in_chat.value and p.chat_reply_text.value,
-        ]
+        ],
     ):
         return
 
@@ -48,7 +48,7 @@ async def reply_on_review(
             task = asyncio.create_task(bot.delete_review(event.message.meta.order_id))
         else:
             task = asyncio.create_task(
-                bot.review(event.message.meta.order_id, p.review_reply_text.value, 5)
+                bot.review(event.message.meta.order_id, p.review_reply_text.value, 5),
             )
 
     if p.chat_reply_text.value and p.reply_in_chat.value:
