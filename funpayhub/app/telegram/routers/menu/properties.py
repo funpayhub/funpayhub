@@ -205,7 +205,6 @@ async def change_parameter_value(
                 callback_query_obj=query,
                 callbacks_history=unpacked_callback.history,
                 message=msg,
-                user_messages=[],
             ),
         },
     )
@@ -341,7 +340,6 @@ async def set_adding_list_item_state(
                 callback_query_obj=query,
                 callback_data=callback_data,
                 message=msg,
-                user_messages=[],
             ),
         },
     )

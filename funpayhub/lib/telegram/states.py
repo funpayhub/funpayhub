@@ -41,7 +41,6 @@ class ChangingParameterValueState(State, identifier='changing_parameter_value'):
     callback_query_obj: CallbackQuery
     callbacks_history: list[str]
     message: Message
-    user_messages: list[Message]
 
 
 @dataclass
@@ -50,7 +49,6 @@ class ChangingMenuPage(State, identifier='changing_menu_page'):
     callback_data: CallbackData
     message: Message
     max_pages: int
-    user_messages: list[Message]
 
 
 @dataclass
@@ -59,7 +57,6 @@ class ChangingViewPage(State, identifier='changing_view_page'):
     callback_data: CallbackData
     message: Message
     max_pages: int
-    user_messages: list[Message]
 
 
 @dataclass
@@ -68,7 +65,6 @@ class AddingListItem(State, identifier='adding_list_item'):
     callback_query_obj: CallbackQuery
     callback_data: cbs.ListParamAddItem
     message: Message
-    user_messages: list[Message] = field(default_factory=list)
 
 
 @dataclass

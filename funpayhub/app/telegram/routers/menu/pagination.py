@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 from typing import Literal
-from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update, Message, CallbackQuery
@@ -11,25 +10,9 @@ from aiogram.filters import StateFilter
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.states import ChangingMenuPage, ChangingViewPage
 from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
+from .. import utils
 
 from .router import router
-
-
-# todo: вынести в utils
-def _get_context(dp: Dispatcher, bot: Bot, obj: Message | CallbackQuery):
-    msg = obj if isinstance(obj, Message) else obj.message
-    return dp.fsm.get_context(
-        bot=bot,
-        chat_id=msg.chat.id,
-        thread_id=msg.message_thread_id,
-        user_id=obj.from_user.id,
-    )
-
-
-# todo: вынести в utils
-async def _delete_message(msg: Message):
-    with suppress(Exception):
-        await msg.delete()
 
 
 # Helpers
@@ -40,13 +23,13 @@ async def set_changing_page_state(
     bot: Bot,
     type_: Literal['view', 'menu'],
 ):
-    state = _get_context(dp, bot, query)
+    state = utils.get_context(dp, bot, query)
     await state.clear()
 
     msg = await query.message.answer(text='$enter_new_page_index_message')
 
     data = ChangingViewPage if type_ == 'view' else ChangingMenuPage
-    await state.set_state(data.name)
+    await state.set_state(data.__identifier__)
     await state.set_data(
         {
             'data': data(
@@ -54,7 +37,6 @@ async def set_changing_page_state(
                 callback_data=callback_data,
                 message=msg,
                 max_pages=callback_data.total_pages,
-                user_messages=[],
             ),
         },
     )
@@ -67,13 +49,13 @@ async def change_page_from_message(
     bot: Bot,
     type_: Literal['view', 'menu'],
 ):
-    await _delete_message(message)
+    await utils.delete_message(message)
 
     if not message.text.isnumeric():
         return
     new_page_index = int(message.text) - 1
 
-    context = _get_context(dp, bot, message)
+    context = utils.get_context(dp, bot, message)
     if type_ == 'view':
         data: ChangingViewPage = (await context.get_data())['data']
     else:
@@ -83,7 +65,7 @@ async def change_page_from_message(
         return
 
     await context.clear()
-    asyncio.create_task(_delete_message(data.message))
+    asyncio.create_task(utils.delete_message(data.message))
 
     old = UnknownCallback.from_string(data.callback_data.history[-1])
     old.data['view_page' if type_ == 'view' else 'menu_page'] = new_page_index
@@ -138,19 +120,11 @@ async def manual_change_view_page_activate(
     await set_changing_page_state(query, callback_data, dispatcher, bot, 'view')
 
 
-@router.message(StateFilter(ChangingMenuPage.name))
-async def manual_menu_page_change(
-    message: Message,
-    dispatcher: Dispatcher,
-    bot: Bot,
-):
+@router.message(StateFilter(ChangingMenuPage.__identifier__))
+async def manual_menu_page_change(message: Message, dispatcher: Dispatcher, bot: Bot):
     await change_page_from_message(message, dispatcher, bot, 'menu')
 
 
-@router.message(StateFilter(ChangingViewPage.name))
-async def manual_view_page_change(
-    message: Message,
-    dispatcher: Dispatcher,
-    bot: Bot,
-):
+@router.message(StateFilter(ChangingViewPage.__identifier__))
+async def manual_view_page_change(message: Message, dispatcher: Dispatcher, bot: Bot):
     await change_page_from_message(message, dispatcher, bot, 'view')
