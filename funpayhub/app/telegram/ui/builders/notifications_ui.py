@@ -59,7 +59,7 @@ async def curr_chat_notifications_menu_builder(
                             else [],
                         ).pack(),
                     ),
-                )
+                ),
             ],
         )
 

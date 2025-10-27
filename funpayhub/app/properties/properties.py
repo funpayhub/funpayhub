@@ -36,5 +36,5 @@ class FunPayHubProperties(Properties):
                 name='$props.message_templates:names',
                 description='$props:message_templates:description',
                 default_value=[],
-            )
+            ),
         )

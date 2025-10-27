@@ -87,7 +87,7 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_mine:name',
                 description='$props.new_message_appearance.show_mine:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.show_if_mine_only = self.attach_parameter(
@@ -96,7 +96,7 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_if_mine_only:name',
                 description='$props.new_message_appearance.show_if_mine_only:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.show_by_bot = self.attach_parameter(
@@ -105,7 +105,7 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_by_bot:name',
                 description='$props.new_message_appearance.show_by_bot:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.show_by_bot_only = self.attach_parameter(
@@ -114,7 +114,7 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_by_bot_only:name',
                 description='$props.new_message_appearance.show_by_bot_only:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.show_through_bot = self.attach_parameter(
@@ -123,7 +123,7 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_through_bot:name',
                 description='$props.new_message_appearance.show_through_bot:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.show_trough_bot_only = self.attach_parameter(
@@ -132,5 +132,5 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_trough_bot_only:name',
                 description='$props.new_message_appearance.show_trough_bot_only:description',
                 default_value=True,
-            )
+            ),
         )

@@ -11,7 +11,7 @@ from aiogram.filters import StateFilter
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui import MenuContext, UIRegistry
+from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
 from funpayhub.lib.telegram.states import AddingCommand
 
 from .. import utils
@@ -46,7 +46,7 @@ async def set_adding_command_state(
                 callback_query_obj=query,
                 callback_data=callback_data,
             ),
-        }
+        },
     )
 
 

@@ -160,7 +160,7 @@ async def choice_parameter_menu_builder(
                         ).pack(),
                     ),
                 ),
-            ]
+            ],
         )
 
     return Menu(
@@ -197,7 +197,7 @@ async def list_parameter_menu_builder(
                         ).pack(),
                     ),
                 ),
-            ]
+            ],
         )
 
     footer = [[]]
@@ -274,7 +274,7 @@ async def param_value_manual_input_menu_builder(
                     ).pack(),
                 ),
             ),
-        ]
+        ],
     ]
 
     return Menu(
@@ -305,7 +305,7 @@ async def add_list_item_menu_builder(
                     ).pack(),
                 ),
             ),
-        ]
+        ],
     ]
 
     return Menu(
@@ -345,7 +345,7 @@ class PropertiesMenuModification:
                         ).pack(),
                     ),
                 ),
-            ]
+            ],
         )
 
         menu.main_keyboard.insert(
@@ -362,7 +362,7 @@ class PropertiesMenuModification:
                             else [],
                         ).pack(),
                     ),
-                )
+                ),
             ],
         )
         return menu
@@ -400,7 +400,7 @@ class AddFormattersListButtonModification:
                             else [],
                         ).pack(),
                     ),
-                )
+                ),
             ],
         )
         return menu
@@ -427,7 +427,7 @@ class AddCommandButtonModification:
                         ).pack(),
                     ),
                 ),
-            ]
+            ],
         )
 
         return menu

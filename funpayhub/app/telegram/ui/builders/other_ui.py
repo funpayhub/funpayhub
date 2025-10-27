@@ -32,6 +32,6 @@ async def add_command_menu_builder(
                         ).pack(),
                     ),
                 ),
-            ]
+            ],
         ],
     )

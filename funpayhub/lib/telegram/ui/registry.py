@@ -117,7 +117,7 @@ class UIRegistry:
             raise KeyError(f'Button {button_id!r} already has a modification {mod_id!r}.')
         self._buttons[button_id].modifications[mod_id] = ButtonModification(modification, filter)
         logger.info(
-            f'Modification {mod_id!r} for button {button_id!r} has been added to registry.'
+            f'Modification {mod_id!r} for button {button_id!r} has been added to registry.',
         )
 
     def get_button_builder(self, button_id: str) -> ButtonBuilder:

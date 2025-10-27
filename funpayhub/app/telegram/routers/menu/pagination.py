@@ -10,8 +10,8 @@ from aiogram.filters import StateFilter
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.telegram.states import ChangingMenuPage, ChangingViewPage
 from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
-from .. import utils
 
+from .. import utils
 from .router import router
 
 

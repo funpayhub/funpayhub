@@ -205,7 +205,10 @@ class ButtonModification:
         self._wrapped_filter = CallableWrapper(self.filter) if self.filter is not None else None
 
     async def __call__(
-        self, context: ButtonContext, button: Button, data: dict[str, Any]
+        self,
+        context: ButtonContext,
+        button: Button,
+        data: dict[str, Any],
     ) -> Button:
         if self.wrapped_filter is not None:
             result = await self.wrapped_filter((context, button), data)

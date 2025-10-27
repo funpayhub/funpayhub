@@ -87,7 +87,7 @@ async def execute_python_code(
 
     if not exec_id and not source:
         await message.answer(
-            'Укажите ID исполнения на одной строке с /exec или код исполнения с новой строки.'
+            'Укажите ID исполнения на одной строке с /exec или код исполнения с новой строки.',
         )
         return
     if exec_id and not source:
@@ -169,7 +169,7 @@ async def save_exec(
                     'execution_time': result.execution_time,
                 },
                 ensure_ascii=False,
-            )
+            ),
         )
 
     await query.answer(f'Данные исполнения сохранены в .exec/{callback_data.exec_id}/exec.json.')

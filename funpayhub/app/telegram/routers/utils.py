@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 from contextlib import suppress
+
+from aiogram import Bot, Dispatcher
 from aiogram.types import Message, CallbackQuery
-from aiogram import Dispatcher, Bot
 from aiogram.fsm.context import FSMContext
 
 

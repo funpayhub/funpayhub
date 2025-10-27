@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import warnings
 from typing import TYPE_CHECKING, Any
-from dataclasses import field, dataclass
+from dataclasses import dataclass
 
 from aiogram.types import Message, CallbackQuery
 
