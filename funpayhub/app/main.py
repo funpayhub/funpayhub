@@ -19,6 +19,7 @@ from funpayhub.app.routers import router
 
 # plugins
 from funpayhub.plugins.exec_plugin import Plugin
+from .workflow_data import WorkflowData
 
 
 class FunPayHub:
@@ -26,7 +27,7 @@ class FunPayHub:
         self,
         properties: FunPayHubProperties,
     ):
-        self._workflow_data = {}
+        self._workflow_data = WorkflowData
         self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
         self._dispatcher.connect_router(router)  # todo
         self._properties = properties
