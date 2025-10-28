@@ -3,7 +3,7 @@ from __future__ import annotations
 from funpayhub.lib.telegram.ui.types import MenuContext
 
 from .ids import MenuIds, ButtonIds
-from .builders import other_ui, message_ui, formatters_ui, notifications_ui
+from .builders import other_ui, message_ui, formatters_ui, notifications_ui, control_ui
 from .builders.context import NewMessageMenuContext
 from .builders.properties_ui import builders
 from .builders.properties_ui.context import (
@@ -28,6 +28,7 @@ MENU_BUILDERS = {
     MenuIds.new_message: (message_ui.message_menu_builder, NewMessageMenuContext),
     MenuIds.add_list_item: (builders.add_list_item_menu_builder, EntryMenuContext),
     MenuIds.add_command: (other_ui.add_command_menu_builder, MenuContext),
+    MenuIds.control: (control_ui.control_ui_menu_builder, MenuContext),
 }
 
 

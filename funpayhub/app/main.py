@@ -64,6 +64,8 @@ class FunPayHub:
             },
         )
 
+        print(self.workflow_data)
+
         self._running_lock = asyncio.Lock()
         self._stopping_lock = asyncio.Lock()
         self._stop_event = asyncio.Event()

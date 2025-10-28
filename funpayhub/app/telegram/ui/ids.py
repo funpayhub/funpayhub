@@ -14,6 +14,8 @@ class MenuIds:
 
     add_command = 'fph:add_command'
 
+    control = 'fph:control'
+
 
 class ButtonIds:
     properties_entry = 'fph:properties_entry'

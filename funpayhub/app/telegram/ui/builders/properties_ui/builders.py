@@ -301,7 +301,7 @@ class PropertiesMenuModification:
     ) -> Menu:
         callback_data = ctx.callback_data
 
-        menu.main_keyboard.append(
+        menu.main_keyboard.extend([
             [
                 Button(
                     button_id='open_formatters_list',
@@ -316,7 +316,19 @@ class PropertiesMenuModification:
                     ),
                 ),
             ],
-        )
+            [
+                Button(
+                    button_id='open_control_ui',
+                    obj=InlineKeyboardButton(
+                        text=translater.translate('$control_ui'),
+                        callback_data=cbs.OpenMenu(
+                            menu_id=MenuIds.control,
+                            history=callback_data.as_history() if callback_data is not None else [],
+                        ).pack()
+                    )
+                )
+            ]
+        ])
 
         menu.main_keyboard.insert(
             1,

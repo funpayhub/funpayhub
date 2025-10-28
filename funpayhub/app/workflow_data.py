@@ -46,19 +46,19 @@ class _WorkflowData(UserDict):
     
     def pop(self, key, /):
         with self:
-            super().pop(key)
+            self.data.pop(key)
             
     def popitem(self):
         with self:
-            super().popitem()
+            self.data.popitem()
     
     def clear(self):
         with self:
-            super().clear()
+            self.data.clear()
     
     def update(self, m, /, **kwargs):
         with self:
-            super().update()
+            self.data.update(m, **kwargs)
     
     @property
     def hub(self) -> FunPayHub:
