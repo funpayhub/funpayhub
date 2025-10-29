@@ -11,58 +11,86 @@ from funpayhub.loggers import telegram_ui as logger
 from .types import (
     Menu,
     Button,
-    MenuBuilder,
     MenuContext,
-    MenuModProto,
+    MenuBuilder,
+    MenuModification,
     ButtonBuilder,
     ButtonContext,
-    ButtonModProto,
-    MenuBuilderProto,
-    MenuModification,
-    ButtonBuilderProto,
     ButtonModification,
-    MenuModFilterProto,
-    ButtonModFilterProto,
 )
 from ..callback_data import HashinatorT1000
+from dataclasses import dataclass, field
+from eventry.asyncio.callable_wrappers import CallableWrapper
+
+
+@dataclass
+class _MenuBuilder:
+    builder: MenuBuilder[Any]
+    modifications: dict[str, MenuModification[Any]] = field(default_factory=dict)
+
+    async def build(self, context: MenuContext, data: dict[str, Any]) -> Menu:
+        result = await self.builder(context, data)
+
+        for i in self.modifications.values():
+            try:
+                result = await i(context, result, data)
+            except:
+                continue  # todo: logging
+
+        if result.finalizer:
+            try:
+                wrapped = CallableWrapper(result.finalizer)
+                result = await wrapped((context, result), data)
+            except:
+                import traceback
+
+                print(traceback.format_exc())
+                pass  # todo: logging
+            result.finalizer = None
+        return result
+
+
+@dataclass
+class _ButtonBuilder:
+    builder: ButtonBuilder[Any]
+    modifications: dict[str, ButtonModification[Any]] = field(default_factory=dict)
+
+    async def build(self, context: ButtonContext, data: dict[str, Any]) -> Button:
+        result = await self.builder(context, data)
+        for i in self.modifications.values():
+            try:
+                result = await i(context, result, data)
+            except:
+                continue  # todo: logging
+        return result
 
 
 class UIRegistry:
     def __init__(self, workflow_data: dict[str, Any] | None = None) -> None:
-        self._menus: dict[str, MenuBuilder] = {}
-        self._buttons: dict[str, ButtonBuilder] = {}
+        self._menus: dict[str, _MenuBuilder] = {}
+        self._buttons: dict[str, _ButtonBuilder] = {}
         self._workflow_data: dict[str, Any] = workflow_data if workflow_data is not None else {}
 
-    def add_menu_builder(
-        self,
-        menu_id: str,
-        builder: MenuBuilderProto,
-        context_type: Type[MenuContext] = MenuContext,
-        overwrite: bool = False,
-    ) -> None:
-        if menu_id in self._menus and not overwrite:
-            raise KeyError(f'Menu {menu_id!r} already exists.')
+    def add_menu_builder(self,  builder: Type[MenuBuilder[Any]],  overwrite: bool = False) -> None:
+        if builder.id in self._menus and not overwrite:
+            raise KeyError(f'Menu {builder.id!r} already exists.')
 
-        logger.info(f'Adding menu builder {menu_id!r} to registry...')
-        self._menus[menu_id] = MenuBuilder(builder, context_type)
-        logger.info(f'Menu builder {menu_id!r} has been added to registry.')
+        logger.info(f'Adding menu builder {builder.id!r} to registry...')
+        self._menus[builder.id] = _MenuBuilder(builder())
+        logger.info(f'Menu builder {builder.id!r} has been added to registry.')
 
     def add_menu_modification(
         self,
+        modification: Type[MenuModification[Any]],
         menu_id: str,
-        mod_id: str,
-        modification: MenuModProto,
-        filter: MenuModFilterProto | None = None,
     ) -> None:
         if menu_id not in self._menus:
             raise KeyError(f'Menu {menu_id!r} does not exist.')
-        if mod_id in self._menus[menu_id].modifications:
-            raise KeyError(f'Menu {menu_id!r} already has a modification {mod_id!r}.')
+        if modification.id in self._menus[menu_id].modifications:
+            raise KeyError(f'Menu {menu_id!r} already has a modification {modification.id!r}.')
+        self._menus[menu_id].modifications[modification.id] = modification()
 
-        self._menus[menu_id].modifications[mod_id] = MenuModification(modification, filter)
-        logger.info(f'Modification {mod_id!r} for menu {menu_id!r} has been added to registry.')
-
-    def get_menu_builder(self, menu_id: str) -> MenuBuilder:
+    def get_menu_builder(self, menu_id: str) -> _MenuBuilder:
         return self._menus[menu_id]
 
     async def build_menu(self, context: MenuContext, data: dict[str, Any]) -> Menu:
@@ -72,9 +100,9 @@ class UIRegistry:
             logger.error(f'Menu {context.menu_id!r} not found.')
             raise  # todo: custom error
 
-        if not isinstance(context, builder.context_type):
+        if not isinstance(context, builder.builder.context_type):
             raise TypeError(
-                f'Menu {context.menu_id!r} requires context of type {builder.context_type!r}, '
+                f'Menu {context.menu_id!r} requires context of type {builder.builder.context_type!r}, '
                 f'not {type(context)!r}.',
             )
 
@@ -88,39 +116,25 @@ class UIRegistry:
         HashinatorT1000.save()
         return result
 
-    def add_button_builder(
-        self,
-        button_id: str,
-        builder: ButtonBuilderProto,
-        context_type: Type[ButtonContext] = ButtonContext,
-        overwrite: bool = False,
-    ) -> None:
-        mods = {}
-        if button_id in self._buttons:
-            if not overwrite:
-                raise KeyError(f'Button {button_id!r} already exists.')
-            mods = self._buttons[button_id].modifications
+    def add_button_builder(self, builder: Type[ButtonBuilder[Any]], overwrite: bool = False) -> None:
+        if builder.id in self._buttons and not overwrite:
+            raise KeyError(f'Button {builder.id!r} already exists.')
 
-        self._buttons[button_id] = ButtonBuilder(builder, context_type, mods)
-        logger.info(f'Button builder {button_id!r} has been added to registry.')
+        logger.info(f'Adding button builder {builder.id!r} to registry...')
+        self._buttons[builder.id] = _ButtonBuilder(builder())
+        logger.info(f'Button builder {builder.id!r} has been added to registry.')
 
-    def add_button_modification(
-        self,
-        button_id: str,
-        mod_id: str,
-        modification: ButtonModProto,
-        filter: ButtonModFilterProto | None = None,
-    ) -> None:
+    def add_button_modification(self, modification: Type[ButtonModification[Any]], button_id: str) -> None:
         if button_id not in self._buttons:
             raise KeyError(f'Button {button_id!r} does not exist.')
-        if mod_id in self._buttons[button_id].modifications:
-            raise KeyError(f'Button {button_id!r} already has a modification {mod_id!r}.')
-        self._buttons[button_id].modifications[mod_id] = ButtonModification(modification, filter)
+        if modification.id in self._buttons[button_id].modifications:
+            raise KeyError(f'Button {button_id!r} already has a modification {modification.id!r}.')
+        self._buttons[button_id].modifications[modification.id] = modification()
         logger.info(
-            f'Modification {mod_id!r} for button {button_id!r} has been added to registry.',
+            f'Modification {modification.id!r} for button {button_id!r} has been added to registry.',
         )
 
-    def get_button_builder(self, button_id: str) -> ButtonBuilder:
+    def get_button_builder(self, button_id: str) -> _ButtonBuilder:
         return self._buttons[button_id]
 
     async def build_button(self, context: ButtonContext, data: dict[str, Any]) -> Button:
@@ -130,9 +144,9 @@ class UIRegistry:
             logger.error(f'Button {context.button_id!r} not found.')
             raise
 
-        if not isinstance(context, builder.context_type):
+        if not isinstance(context, builder.builder.context_type):
             raise TypeError(
-                f'Menu {context.button_id!r} requires context of type {builder.context_type!r}, '
+                f'Menu {context.button_id!r} requires context of type {builder.builder.context_type!r}, '
                 f'not {type(context)!r}.',
             )
 

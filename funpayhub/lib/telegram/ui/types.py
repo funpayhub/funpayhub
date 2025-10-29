@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Type, Literal, Protocol, overload
+from typing import Any, Type, Literal, overload
 from dataclasses import field, dataclass
 
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
@@ -26,7 +26,7 @@ class Menu:
     header_keyboard: Keyboard = field(default_factory=list)
     main_keyboard: Keyboard = field(default_factory=list)
     footer_keyboard: Keyboard = field(default_factory=list)
-    finalizer: MenuModProto | None = None
+    finalizer: Any | None = None  # todo: type
 
     @overload
     def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None:
@@ -105,12 +105,15 @@ class ButtonContext:
 
 class MenuBuilder[CTX: MenuContext](ABC):
     def __init__(self) -> None:
+        if not issubclass(self.context_type, MenuContext):
+            raise ValueError('Invalid context type. Must be a subtype of `MenuContext`.')
+
         self._wrapped: CallableWrapper[Menu] = CallableWrapper(self.build)
 
     @abstractmethod
     @classproperty
     @classmethod
-    def menu_id(cls) -> str: ...
+    def id(cls) -> str: ...
 
     @abstractmethod
     @classproperty
@@ -126,57 +129,18 @@ class MenuBuilder[CTX: MenuContext](ABC):
 
 class MenuModification[CTX: MenuContext](ABC):
     def __init__(self) -> None:
-        ...
+        self._wrapped_modification: CallableWrapper[Menu] = CallableWrapper(self.modify)
+        self._wrapped_filter: CallableWrapper[bool] = CallableWrapper(self.filter)
 
     @abstractmethod
     @classproperty
     @classmethod
-    def modification_id(cls) -> str: ...
+    def id(cls) -> str: ...
 
     async def filter(self, __c: CTX, __m: Menu, *__a: Any, **__k: Any) -> bool: return True
 
     @abstractmethod
     async def modify(self, __c: CTX, __m: Menu, *__a: Any, **__k: Any) -> Menu: ...
-
-
-class MenuBuilderProto(Protocol):
-    async def __call__(self, __c: MenuContext, *__a: Any, **__k: Any) -> Menu:
-        pass
-
-
-class MenuModFilterProto(Protocol):
-    async def __call__(self, __c: MenuContext, __m: Menu, *__a: Any, **__k: Any) -> bool:
-        pass
-
-
-class MenuModProto(Protocol):
-    async def __call__(self, __c: MenuContext, __m: Menu, *__a: Any, **__k: Any) -> Menu:
-        pass
-
-
-class ButtonBuilderProto(Protocol):
-    async def __call__(self, __c: ButtonContext, *__a: Any, **__k: Any) -> Button:
-        pass
-
-
-class ButtonModFilterProto(Protocol):
-    async def __call__(self, __c: ButtonContext, __b: Button, *__a: Any, **__k: Any) -> bool:
-        pass
-
-
-class ButtonModProto(Protocol):
-    async def __call__(self, __c: ButtonContext, __b: Button, *__a: Any, **__k: Any) -> Button:
-        pass
-
-
-@dataclass
-class MenuModification:
-    modification: MenuModProto
-    filter: MenuModFilterProto | None = None
-
-    def __post_init__(self) -> None:
-        self._wrapped_modification = CallableWrapper(self.modification)
-        self._wrapped_filter = CallableWrapper(self.filter) if self.filter is not None else None
 
     async def __call__(self, context: MenuContext, menu: Menu, data: dict[str, Any]) -> Menu:
         if self.wrapped_filter is not None:
@@ -194,58 +158,46 @@ class MenuModification:
         return self._wrapped_filter
 
 
-@dataclass
-class MenuBuilder:
-    builder: MenuBuilderProto
-    context_type: Type[MenuContext]
-    modifications: dict[str, MenuModification] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        if not issubclass(self.context_type, MenuContext):
+class ButtonBuilder[CTX: ButtonContext](ABC):
+    def __init__(self) -> None:
+        if not issubclass(self.context_type, ButtonContext):
             raise ValueError('Invalid context type. Must be a subtype of `MenuContext`.')
-        self._wrapped_builder: CallableWrapper[Menu] = CallableWrapper(self.builder)
 
-    async def build(self, context: MenuContext, data: dict[str, Any]) -> Menu:
-        result = await self.wrapped_builder((context,), data)
+        self._wrapped: CallableWrapper[Button] = CallableWrapper(self.build)
 
-        for i in self.modifications.values():
-            try:
-                result = await i(context, result, data)
-            except:
-                continue  # todo: logging
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def id(cls) -> str: ...
 
-        if result.finalizer:
-            try:
-                wrapped = CallableWrapper(result.finalizer)
-                result = await wrapped((context, result), data)
-            except:
-                import traceback
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def context_type(cls) -> Type[CTX]: ...
 
-                print(traceback.format_exc())
-                pass  # todo: logging
-            result.finalizer = None
-        return result
+    @abstractmethod
+    async def build(self, __ctx: CTX, *__a: Any, **__k: Any) -> Button: ...
 
-    @property
-    def wrapped_builder(self) -> CallableWrapper[Menu]:
-        return self._wrapped_builder
+    async def __call__(self, ctx: CTX, data: dict[str, Any]) -> Button:
+        return await self._wrapped((ctx,), data)
 
 
-@dataclass
-class ButtonModification:
-    modification: ButtonModProto
-    filter: ButtonModFilterProto | None = None
+class ButtonModification[CTX: ButtonContext](ABC):
+    def __init__(self) -> None:
+        self._wrapped_modification: CallableWrapper[Button] = CallableWrapper(self.modify)
+        self._wrapped_filter: CallableWrapper[bool] = CallableWrapper(self.filter)
 
-    def __post_init__(self) -> None:
-        self._wrapped_modification = CallableWrapper(self.modification)
-        self._wrapped_filter = CallableWrapper(self.filter) if self.filter is not None else None
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def id(cls) -> str: ...
 
-    async def __call__(
-        self,
-        context: ButtonContext,
-        button: Button,
-        data: dict[str, Any],
-    ) -> Button:
+    async def filter(self, __c: CTX, __b: Button, *__a: Any, **__k: Any) -> bool: return True
+
+    @abstractmethod
+    async def modify(self, __c: CTX, __b: Button, *__a: Any, **__k: Any) -> Button: ...
+
+    async def __call__(self, context: ButtonContext, button: Button, data: dict[str, Any]) -> Button:
         if self.wrapped_filter is not None:
             result = await self.wrapped_filter((context, button), data)
             if not result:
@@ -259,28 +211,3 @@ class ButtonModification:
     @property
     def wrapped_filter(self) -> CallableWrapper[bool] | None:
         return self._wrapped_filter
-
-
-@dataclass
-class ButtonBuilder:
-    builder: ButtonBuilderProto
-    context_type: Type[ButtonContext]
-    modifications: dict[str, ButtonModification] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        if not issubclass(self.context_type, ButtonContext):
-            raise ValueError('Invalid context type. Must be a subtype of `ButtonContext`.')
-        self._wrapped_builder: CallableWrapper[Button] = CallableWrapper(self.builder)
-
-    async def build(self, context: ButtonContext, data: dict[str, Any]) -> Button:
-        result = await self.wrapped_builder((context,), data)
-        for i in self.modifications.values():
-            try:
-                result = await i(context, result, data)
-            except:
-                continue  # todo: logging
-        return result
-
-    @property
-    def wrapped_builder(self) -> CallableWrapper[Button]:
-        return self._wrapped_builder
