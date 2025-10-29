@@ -73,7 +73,7 @@ class FunPayHub:
             self._stop_event.clear()
 
             tasks = [
-                asyncio.create_task(self.funpay.start(), name='funpay'),
+                # asyncio.create_task(self.funpay.start(), name='funpay'),
                 asyncio.create_task(self.telegram.start(), name='telegram'),
                 asyncio.create_task(self._stop_event.wait()),
             ]

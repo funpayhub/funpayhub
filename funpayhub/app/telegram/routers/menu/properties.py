@@ -12,7 +12,7 @@ from aiogram.fsm.context import FSMContext
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.telegram.ui import MenuContext
-from funpayhub.lib.telegram.states import AddingListItem, ChangingParameterValueState
+from funpayhub.lib.telegram.states import AddingListItem, ChangingParameterValue
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
@@ -197,10 +197,10 @@ async def change_parameter_value(
 
     msg = await (await tg_ui.build_menu(ctx, data)).apply_to(query.message)
 
-    await state.set_state(ChangingParameterValueState.__identifier__)
+    await state.set_state(ChangingParameterValue.__identifier__)
     await state.set_data(
         {
-            'data': ChangingParameterValueState(
+            'data': ChangingParameterValue(
                 parameter=entry,
                 callback_query_obj=query,
                 callbacks_history=unpacked_callback.history,
@@ -236,7 +236,7 @@ async def toggle_notification_channel(
     )
 
 
-@r.message(StateFilter(ChangingParameterValueState.__identifier__))
+@r.message(StateFilter(ChangingParameterValue.__identifier__))
 async def edit_parameter(
     message: Message,
     bot: Bot,
@@ -246,7 +246,7 @@ async def edit_parameter(
     await _delete_message(message)
 
     context = _get_context(dispatcher, bot, message)
-    data: ChangingParameterValueState = (await context.get_data())['data']
+    data: ChangingParameterValue = (await context.get_data())['data']
 
     try:
         await data.parameter.set_value(message.text)

@@ -14,4 +14,6 @@ async def set_sending_message_state(
     bot: Bot,
 ):
     context = utils.get_context(dispatcher, bot, query)
+    await context.clear()
+
 

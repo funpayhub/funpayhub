@@ -53,7 +53,7 @@ class NextParamValue(CallbackData, identifier='next_param_value'):
 
 class ManualParamValueInput(CallbackData, identifier='manual_value_input'):
     """
-    Устанавливает состояние на `ChangingParameterValueState`, отправляет меню параметра по пути
+    Устанавливает состояние на `ChangingParameterValue`, отправляет меню параметра по пути
     `path`.
     """
 
