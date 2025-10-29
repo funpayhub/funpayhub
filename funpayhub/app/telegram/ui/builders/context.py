@@ -12,3 +12,8 @@ class NewMessageMenuContext(MenuContext):
     funpay_chat_name: str
     funpay_chat_id: int
     messages: list[Message] = field(default_factory=list)
+
+
+@dataclass(kw_only=True)
+class SendMessageMenuContext(MenuContext):
+    funpay_chat_id: int | str

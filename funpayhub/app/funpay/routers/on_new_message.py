@@ -75,7 +75,7 @@ async def send_new_message_notification(
 
     context = NewMessageMenuContext(
         chat_id=-1,
-        menu_id=MenuIds.new_message,
+        menu_id=MenuIds.new_funpay_message,
         funpay_chat_id=event.chat_preview.id,
         funpay_chat_name=event.chat_preview.username,
         messages=msgs,

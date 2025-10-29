@@ -9,12 +9,14 @@ class MenuIds:
     hooks_list = 'fph:hooks_list'
     hook_info = 'fph:hook_info'
     tg_chat_notifications = 'fph:tg_chat_notifications'
-    new_message = 'fph:new_message'
     add_list_item = 'fph:add_list_item'
-
     add_command = 'fph:add_command'
-
     control = 'fph:control'
+
+    new_funpay_message = 'fph:new_funpay_message'
+    send_funpay_message = 'fph:send_funpay_message'
+
+
 
 
 class ButtonIds:

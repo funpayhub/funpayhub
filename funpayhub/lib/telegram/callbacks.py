@@ -119,11 +119,11 @@ class ListParamAddItem(CallbackData, identifier='list_param_add_item'):
 
 
 # New message menu
-class SendMessage(CallbackData, identifier='send_message'):
+class SendMessage(CallbackData, identifier='send_m'):
     to: int | str
 
 
-class SendTemplate(CallbackData, identifier='send_template'):
+class SendTemplate(CallbackData, identifier='st'):
     to: int | str
     index: int
 
