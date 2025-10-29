@@ -7,7 +7,8 @@ from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKe
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.telegram.callback_data import UnknownCallback
-
+from abc import ABC, abstractmethod
+from funpayhub.lib.core import classproperty
 
 type Keyboard = list[list[Button]]
 
@@ -100,6 +101,42 @@ class ButtonContext:
     menu_render_context: MenuContext
     button_id: str
     data: dict[str, Any] = field(default_factory=dict)
+
+
+class MenuBuilder[CTX: MenuContext](ABC):
+    def __init__(self) -> None:
+        self._wrapped: CallableWrapper[Menu] = CallableWrapper(self.build)
+
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def menu_id(cls) -> str: ...
+
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def context_type(cls) -> Type[CTX]: ...
+
+    @abstractmethod
+    async def build(self, __ctx: CTX, *__a: Any, **__k: Any) -> Menu: ...
+
+    async def __call__(self, ctx: CTX, data: dict[str, Any]) -> Menu:
+        return await self._wrapped((ctx,), data)
+
+
+class MenuModification[CTX: MenuContext](ABC):
+    def __init__(self) -> None:
+        ...
+
+    @abstractmethod
+    @classproperty
+    @classmethod
+    def modification_id(cls) -> str: ...
+
+    async def filter(self, __c: CTX, __m: Menu, *__a: Any, **__k: Any) -> bool: return True
+
+    @abstractmethod
+    async def modify(self, __c: CTX, __m: Menu, *__a: Any, **__k: Any) -> Menu: ...
 
 
 class MenuBuilderProto(Protocol):
