@@ -13,10 +13,7 @@ class NotEnoughProductsError(RuntimeError):
 
 
 class ProductsFile:
-    def __init__(
-        self,
-        path: str | Path,
-    ):
+    def __init__(self, path: str | Path):
         self._path = Path(path) if isinstance(path, str) else path
 
         if not os.path.exists(self._path):

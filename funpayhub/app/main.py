@@ -64,16 +64,16 @@ class FunPayHub:
             },
         )
 
-        print(self.workflow_data)
-
         self._running_lock = asyncio.Lock()
         self._stopping_lock = asyncio.Lock()
         self._stop_event = asyncio.Event()
 
     async def start(self):
         async with self._running_lock:
+            self._stop_event.clear()
+
             tasks = [
-                # asyncio.create_task(self.funpay.start(), name='funpay'),
+                asyncio.create_task(self.funpay.start(), name='funpay'),
                 asyncio.create_task(self.telegram.start(), name='telegram'),
                 asyncio.create_task(self._stop_event.wait()),
             ]

@@ -154,11 +154,7 @@ async def choice_parameter_menu_builder(ctx: EntryMenuContext, translater: Trans
     )
 
 
-async def list_parameter_menu_builder(
-    ctx: EntryMenuContext,
-    translater: Translater,
-    properties: FunPayHubProperties,
-) -> Menu:
+async def list_parameter_menu_builder(ctx: EntryMenuContext, translater: Translater) -> Menu:
     keyboard = []
     mode = ctx.data.get('mode')
     callback_data = ctx.callback_data
