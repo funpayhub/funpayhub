@@ -11,7 +11,7 @@ from funpayhub.app.telegram.ui import premade
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
 from funpayhub.lib.properties.base import Entry
 from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
-from funpayhub.lib.telegram.ui.types import Menu, Button
+from funpayhub.lib.telegram.ui.types import Menu, Button, MenuModification
 from funpayhub.app.telegram.ui.builders.properties_ui.context import (
     EntryMenuContext,
     EntryButtonContext,
@@ -284,13 +284,14 @@ async def add_list_item_menu_builder(ctx: EntryMenuContext, translater: Translat
 
 
 # Modifications
-class PropertiesMenuModification:
-    @staticmethod
-    async def filter(ctx: EntryMenuContext, menu: Menu) -> bool:
+class PropertiesMenuModification(MenuModification):
+    id = 'fph:main_properties_menu_modification'
+
+    async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
         return ctx.menu_id == MenuIds.properties_entry and ctx.entry.matches_path([])
 
-    @staticmethod
-    async def modification(
+    async def modify(
+        self,
         ctx: EntryMenuContext,
         menu: Menu,
         translater: Translater,
@@ -346,17 +347,17 @@ class PropertiesMenuModification:
         return menu
 
 
-class AddFormattersListButtonModification:
-    @staticmethod
-    async def filter(ctx: EntryMenuContext, menu: Menu) -> bool:
+class AddFormattersListButtonModification(MenuModification):
+    id = 'fph:add_formatters_list_button_modification'
+
+    async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
         return (
             ctx.entry.matches_path(['auto_response', '*', 'response_text'])
             or ctx.entry.matches_path(['review_reply', '*', 'review_reply_text'])
             or ctx.entry.matches_path(['review_reply', '*', 'chat_reply_text'])
         )
 
-    @staticmethod
-    async def modification(ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
+    async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
         callback_data = ctx.callback_data
 
         menu.main_keyboard.append(
@@ -378,13 +379,13 @@ class AddFormattersListButtonModification:
         return menu
 
 
-class AddCommandButtonModification:
-    @staticmethod
-    async def filter(ctx: EntryMenuContext, menu: Menu) -> bool:
+class AddCommandButtonModification(MenuModification):
+    id = 'fph:add_command_button_modification'
+
+    async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
         return ctx.entry.matches_path(['auto_response'])
 
-    @staticmethod
-    async def modification(ctx: EntryMenuContext, menu: Menu) -> Menu:
+    async def modify(self, ctx: EntryMenuContext, menu: Menu) -> Menu:
         callback_data = ctx.callback_data
         menu.footer_keyboard.append(
             [

@@ -6,12 +6,7 @@ from typing import TYPE_CHECKING
 from pathlib import Path
 
 from .types import ExecutionResult, ExecutionResultsRegistry
-from .telegram.menus import (
-    exec_code_menu_builder,
-    exec_list_menu_builder,
-    exec_output_menu_builder,
-    main_props_menu_modification,
-)
+from .telegram.menus import ExecListMenuBuilder, ExecCodeMenuBuilder, ExecOutputMenuBuilder
 from .telegram.router import r as router
 
 
@@ -38,9 +33,9 @@ class Plugin:
 
         hub.workflow_data['exec_registry'] = registry
 
-        hub.telegram.ui_registry.add_menu_builder('exec_list', exec_list_menu_builder)
-        hub.telegram.ui_registry.add_menu_builder('exec_code', exec_code_menu_builder)
-        hub.telegram.ui_registry.add_menu_builder('exec_output', exec_output_menu_builder)
+        hub.telegram.ui_registry.add_menu_builder(ExecListMenuBuilder)
+        hub.telegram.ui_registry.add_menu_builder(ExecCodeMenuBuilder)
+        hub.telegram.ui_registry.add_menu_builder(ExecOutputMenuBuilder)
 
         # hub.telegram.ui_registry.add_entry_menu_modification(
         #     'exec:main_props_menu_modification',

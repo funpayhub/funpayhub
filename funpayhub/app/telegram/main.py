@@ -85,15 +85,15 @@ class Telegram:
         self.dispatcher.include_routers(router)
 
     def _setup_ui_defaults(self):
-        for menu_id, (menu_builder, context_type) in default_ui.MENU_BUILDERS.items():
-            self.ui_registry.add_menu_builder(menu_id, menu_builder)
+        for m in default_ui.MENU_BUILDERS:
+            self.ui_registry.add_menu_builder(m)
 
-        for button_id, (button_builder, context_type) in default_ui.BUTTON_BUILDERS.items():
-            self.ui_registry.add_button_builder(button_id, button_builder)
+        for b in default_ui.BUTTON_BUILDERS:
+            self.ui_registry.add_button_builder(b)
 
-        for menu_id, data in default_ui.MENU_MODIFICATIONS.items():
-            for mod_id, (filter, modification) in data.items():
-                self.ui_registry.add_menu_modification(menu_id, mod_id, modification, filter)
+        for menu_id, modifications in default_ui.MENU_MODIFICATIONS.items():
+            for mod in modifications:
+                self.ui_registry.add_menu_modification(mod, menu_id)
 
     async def start(self) -> None:
         await self.dispatcher.start_polling(self.bot)

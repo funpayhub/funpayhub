@@ -8,9 +8,10 @@ from typing import Any, Type
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
+from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
 from funpayhub.loggers import telegram_ui as logger
 from funpayhub.lib.properties.base import Entry
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilderProto, ButtonBuilderProto
+from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
 from funpayhub.app.telegram.ui.builders.properties_ui.context import (
     EntryMenuContext,
     EntryButtonContext,
@@ -24,22 +25,6 @@ class _EntriesUIRegistry:
 
         self._menus: dict[type[Entry], CallableWrapper[Menu]] = {}
         """Дефолтные фабрики меню просмотра параметров / категорий."""
-
-    async def build_menu(self, ctx: EntryMenuContext, data: dict[str, Any]) -> Menu:
-        logger.debug(f'Menu builder for {ctx.entry.path} ({type(ctx.entry)}) requested.')
-
-        if (builder := self.get_menu_builder(type(ctx.entry))) is None:
-            raise LookupError(f'Unknown entry type {type(ctx.entry)}.')
-
-        return await builder((ctx,), data=data)
-
-    async def build_button(self, ctx: EntryButtonContext, data: dict[str, Any]) -> Button:
-        logger.debug(f'Button builder for {ctx.entry.path} ({type(ctx.entry)}) requested.')
-
-        if (builder := self.get_button_builder(type(ctx.entry))) is None:
-            raise LookupError(f'Unknown entry type {type(ctx.entry)}.')
-
-        return await builder((ctx,), data=data)
 
     def get_button_builder(self, entry_type: Type[Entry]) -> CallableWrapper[Button] | None:
         if entry_type in self._buttons:
@@ -60,7 +45,7 @@ class _EntriesUIRegistry:
     def add_button_builder(
         self,
         entry_type: Type[Entry],
-        builder: ButtonBuilderProto,
+        builder: Any,  # todo: type
         overwrite: bool = False,
     ) -> None:
         if entry_type in self._buttons and not overwrite:
@@ -71,7 +56,7 @@ class _EntriesUIRegistry:
     def add_menu_builder(
         self,
         entry_type: Type[Entry],
-        builder: MenuBuilderProto,
+        builder: Any,  # todo: type
         overwrite: bool = False,
     ) -> None:
         if entry_type in self._menus and not overwrite:
@@ -81,3 +66,29 @@ class _EntriesUIRegistry:
 
 
 EntriesUIRegistry = _EntriesUIRegistry()
+
+
+class PropertiesEntryMenuBuilder(MenuBuilder):
+    id = MenuIds.properties_entry
+    context_type = EntryMenuContext
+
+    async def build(self, ctx: EntryMenuContext, data: dict[str, Any]) -> Menu:
+        logger.debug(f'Menu builder for {ctx.entry.path} ({type(ctx.entry)}) requested.')
+
+        if (builder := EntriesUIRegistry.get_menu_builder(type(ctx.entry))) is None:
+            raise LookupError(f'Unknown entry type {type(ctx.entry)}.')
+
+        return await builder((ctx,), data=data)
+
+
+class PropertiesEntryButtonBuilder(ButtonBuilder):
+    id = ButtonIds.properties_entry
+    context_type = EntryButtonContext
+
+    async def build(self, ctx: EntryButtonContext, data: dict[str, Any]) -> Button:
+        logger.debug(f'Button builder for {ctx.entry.path} ({type(ctx.entry)}) requested.')
+
+        if (builder := EntriesUIRegistry.get_button_builder(type(ctx.entry))) is None:
+            raise LookupError(f'Unknown entry type {type(ctx.entry)}.')
+
+        return await builder((ctx,), data=data)

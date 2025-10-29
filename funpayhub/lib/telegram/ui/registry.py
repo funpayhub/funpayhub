@@ -71,7 +71,7 @@ class UIRegistry:
         self._buttons: dict[str, _ButtonBuilder] = {}
         self._workflow_data: dict[str, Any] = workflow_data if workflow_data is not None else {}
 
-    def add_menu_builder(self,  builder: Type[MenuBuilder[Any]],  overwrite: bool = False) -> None:
+    def add_menu_builder(self,  builder: Type[MenuBuilder[Any]], overwrite: bool = False) -> None:
         if builder.id in self._menus and not overwrite:
             raise KeyError(f'Menu {builder.id!r} already exists.')
 
