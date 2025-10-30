@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, overload
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from collections.abc import Callable
+from funpayhub.lib.core import classproperty
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
@@ -15,14 +15,6 @@ if TYPE_CHECKING:
 
 
 type FORMATTER_R = str | Image | list[str | Image]
-
-
-class classproperty[T, R]:
-    def __init__(self, func: Callable[[type[T]], R]) -> None:
-        self.func = func
-
-    def __get__(self, obj: Any, cls: type[T]) -> R:
-        return self.func(cls)
 
 
 class Formatter(ABC):

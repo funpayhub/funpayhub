@@ -15,6 +15,7 @@ from collections.abc import Callable
 
 from typing_extensions import Any
 from eventry.asyncio.callable_wrappers import CallableWrapper
+from funpayhub.lib.core import classproperty
 
 
 @dataclass
@@ -30,14 +31,6 @@ class HookArg:
 
     converter: Callable[[str], Any] | None = None
     """Конвертор параметра из строки в реальный тип."""
-
-
-class classproperty[T, R]:
-    def __init__(self, func: Callable[[type[T]], R]) -> None:
-        self.func = func
-
-    def __get__(self, obj: Any, cls: type[T]) -> R:
-        return self.func(cls)
 
 
 class Hook(ABC):
