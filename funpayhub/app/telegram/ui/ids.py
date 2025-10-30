@@ -16,8 +16,15 @@ class MenuIds:
     new_funpay_message = 'fph:new_funpay_message'
     send_funpay_message = 'fph:send_funpay_message'
 
+    properties_properties = 'fph:properties_properties'
+    properties_list_param = 'fph:properties_list_param'
+    properties_choice_param = 'fph:properties_choice_param'
+
 
 
 
 class ButtonIds:
     properties_entry = 'fph:properties_entry'
+    properties_toggle_param = 'fph:properties_toggle_param'
+    properties_change_param_value = 'fph:properties_change_param_value'
+    properties_open_param_menu = 'fph:properties_open_param_menu'

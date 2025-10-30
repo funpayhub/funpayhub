@@ -161,7 +161,7 @@ class MenuModification[CTX: MenuContext](ABC):
 class ButtonBuilder[CTX: ButtonContext](ABC):
     def __init__(self) -> None:
         if not issubclass(self.context_type, ButtonContext):
-            raise ValueError('Invalid context type. Must be a subtype of `MenuContext`.')
+            raise ValueError('Invalid context type. Must be a subtype of `ButtonContext`.')
 
         self._wrapped: CallableWrapper[Button] = CallableWrapper(self.build)
 

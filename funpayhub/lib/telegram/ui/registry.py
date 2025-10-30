@@ -28,16 +28,23 @@ class _MenuBuilder:
     builder: MenuBuilder[Any]
     modifications: dict[str, MenuModification[Any]] = field(default_factory=dict)
 
-    async def build(self, context: MenuContext, data: dict[str, Any]) -> Menu:
+    async def build(
+        self,
+        context: MenuContext,
+        data: dict[str, Any],
+        run_modifications: bool = True,
+        finalize: bool = True
+    ) -> Menu:
         result = await self.builder(context, data)
 
-        for i in self.modifications.values():
-            try:
-                result = await i(context, result, data)
-            except:
-                continue  # todo: logging
+        if run_modifications:
+            for i in self.modifications.values():
+                try:
+                    result = await i(context, result, data)
+                except:
+                    continue  # todo: logging
 
-        if result.finalizer:
+        if finalize and result.finalizer:
             try:
                 wrapped = CallableWrapper(result.finalizer)
                 result = await wrapped((context, result), data)
@@ -55,13 +62,21 @@ class _ButtonBuilder:
     builder: ButtonBuilder[Any]
     modifications: dict[str, ButtonModification[Any]] = field(default_factory=dict)
 
-    async def build(self, context: ButtonContext, data: dict[str, Any]) -> Button:
+    async def build(
+        self,
+        context: ButtonContext,
+        data: dict[str, Any],
+        run_modifications: bool = True,
+    ) -> Button:
         result = await self.builder(context, data)
-        for i in self.modifications.values():
-            try:
-                result = await i(context, result, data)
-            except:
-                continue  # todo: logging
+
+        if run_modifications:
+            for i in self.modifications.values():
+                try:
+                    result = await i(context, result, data)
+                except:
+                    continue  # todo: logging
+
         return result
 
 
@@ -93,7 +108,13 @@ class UIRegistry:
     def get_menu_builder(self, menu_id: str) -> _MenuBuilder:
         return self._menus[menu_id]
 
-    async def build_menu(self, context: MenuContext, data: dict[str, Any]) -> Menu:
+    async def build_menu(
+        self,
+        context: MenuContext,
+        data: dict[str, Any],
+        use_modificatoins: bool = True,
+        finalize: bool = True
+    ) -> Menu:
         try:
             builder = self.get_menu_builder(context.menu_id)
         except KeyError:
@@ -112,7 +133,12 @@ class UIRegistry:
         data = self._workflow_data | data
         data['data'] = data
 
-        result = await builder.build(context, data)
+        result = await builder.build(
+            context,
+            data,
+            run_modifications=use_modificatoins,
+            finalize=finalize
+        )
         HashinatorT1000.save()
         return result
 
@@ -137,7 +163,12 @@ class UIRegistry:
     def get_button_builder(self, button_id: str) -> _ButtonBuilder:
         return self._buttons[button_id]
 
-    async def build_button(self, context: ButtonContext, data: dict[str, Any]) -> Button:
+    async def build_button(
+        self,
+        context: ButtonContext,
+        data: dict[str, Any],
+        run_modifications: bool = True,
+    ) -> Button:
         try:
             builder = self.get_button_builder(context.button_id)
         except KeyError:
@@ -155,4 +186,4 @@ class UIRegistry:
         data = self._workflow_data | data
         data['data'] = data
 
-        return await builder.build(context, data)
+        return await builder.build(context, data, run_modifications=run_modifications)
