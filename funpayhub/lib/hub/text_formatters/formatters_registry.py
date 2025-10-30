@@ -27,7 +27,7 @@ class Formatter(ABC):
         return await wrapper((), data)
 
     @abstractmethod
-    async def format(self, *args: Any, **kwargs: Any) -> str: ...
+    async def format(self, *args: Any, **kwargs: Any) -> FORMATTER_R: ...
 
     @abstractmethod
     @classproperty
