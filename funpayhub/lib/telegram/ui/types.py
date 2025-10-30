@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from typing import Any, Type, Literal, overload
 from dataclasses import field, dataclass
+from abc import ABC, abstractmethod
 
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
-from funpayhub.lib.telegram.callback_data import UnknownCallback
-from abc import ABC, abstractmethod
 from funpayhub.lib.core import classproperty
+from funpayhub.lib.telegram.callback_data import UnknownCallback
+
 
 type Keyboard = list[list[Button]]
 
@@ -137,7 +138,8 @@ class MenuModification[CTX: MenuContext](ABC):
     @classmethod
     def id(cls) -> str: ...
 
-    async def filter(self, __c: CTX, __m: Menu, *__a: Any, **__k: Any) -> bool: return True
+    async def filter(self, __c: CTX, __m: Menu, *__a: Any, **__k: Any) -> bool:
+        return True
 
     @abstractmethod
     async def modify(self, __c: CTX, __m: Menu, *__a: Any, **__k: Any) -> Menu: ...
@@ -192,12 +194,15 @@ class ButtonModification[CTX: ButtonContext](ABC):
     @classmethod
     def id(cls) -> str: ...
 
-    async def filter(self, __c: CTX, __b: Button, *__a: Any, **__k: Any) -> bool: return True
+    async def filter(self, __c: CTX, __b: Button, *__a: Any, **__k: Any) -> bool:
+        return True
 
     @abstractmethod
     async def modify(self, __c: CTX, __b: Button, *__a: Any, **__k: Any) -> Button: ...
 
-    async def __call__(self, context: ButtonContext, button: Button, data: dict[str, Any]) -> Button:
+    async def __call__(
+        self, context: ButtonContext, button: Button, data: dict[str, Any]
+    ) -> Button:
         if self.wrapped_filter is not None:
             result = await self.wrapped_filter((context, button), data)
             if not result:

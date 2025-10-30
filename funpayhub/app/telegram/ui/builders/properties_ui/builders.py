@@ -11,7 +11,13 @@ from funpayhub.app.telegram.ui import premade
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
 from funpayhub.lib.properties.base import Entry
 from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuModification, MenuBuilder, ButtonBuilder
+from funpayhub.lib.telegram.ui.types import (
+    Menu,
+    Button,
+    MenuBuilder,
+    ButtonBuilder,
+    MenuModification,
+)
 from funpayhub.app.telegram.ui.builders.properties_ui.context import (
     EntryMenuContext,
     EntryButtonContext,
@@ -65,8 +71,7 @@ class ChangeParamValueButtonBuilder(ButtonBuilder):
                     path=ctx.entry.path,
                     history=callback_data.as_history() if callback_data is not None else [],
                 ).pack(),
-                text=f'{translater.translate(ctx.entry.name)} '
-                f'【 {val_str} 】',
+                text=f'{translater.translate(ctx.entry.name)} 【 {val_str} 】',
             ),
         )
 
@@ -332,34 +337,38 @@ class PropertiesMenuModification(MenuModification):
     ) -> Menu:
         callback_data = ctx.callback_data
 
-        menu.main_keyboard.extend([
+        menu.main_keyboard.extend(
             [
-                Button(
-                    button_id='open_formatters_list',
-                    obj=InlineKeyboardButton(
-                        text=translater.translate('$open_formatters_list'),
-                        callback_data=cbs.OpenMenu(
-                            menu_id=MenuIds.formatters_list,
-                            history=callback_data.as_history()
-                            if callback_data is not None
-                            else [],
-                        ).pack(),
+                [
+                    Button(
+                        button_id='open_formatters_list',
+                        obj=InlineKeyboardButton(
+                            text=translater.translate('$open_formatters_list'),
+                            callback_data=cbs.OpenMenu(
+                                menu_id=MenuIds.formatters_list,
+                                history=callback_data.as_history()
+                                if callback_data is not None
+                                else [],
+                            ).pack(),
+                        ),
                     ),
-                ),
-            ],
-            [
-                Button(
-                    button_id='open_control_ui',
-                    obj=InlineKeyboardButton(
-                        text=translater.translate('$control_ui'),
-                        callback_data=cbs.OpenMenu(
-                            menu_id=MenuIds.control,
-                            history=callback_data.as_history() if callback_data is not None else [],
-                        ).pack()
-                    )
-                )
+                ],
+                [
+                    Button(
+                        button_id='open_control_ui',
+                        obj=InlineKeyboardButton(
+                            text=translater.translate('$control_ui'),
+                            callback_data=cbs.OpenMenu(
+                                menu_id=MenuIds.control,
+                                history=callback_data.as_history()
+                                if callback_data is not None
+                                else [],
+                            ).pack(),
+                        ),
+                    ),
+                ],
             ]
-        ])
+        )
 
         menu.main_keyboard.insert(
             1,

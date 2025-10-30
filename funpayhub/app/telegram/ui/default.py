@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from .ids import MenuIds
-from .builders import other_ui, message_ui, formatters_ui, notifications_ui, control_ui
+from .builders import other_ui, control_ui, message_ui, formatters_ui, notifications_ui
 from .builders.properties_ui import builders as properties_ui
-from .builders.properties_ui.registry import PropertiesEntryMenuBuilder, PropertiesEntryButtonBuilder
+from .builders.properties_ui.registry import (
+    PropertiesEntryMenuBuilder,
+    PropertiesEntryButtonBuilder,
+)
 
 
 MENU_BUILDERS = (
@@ -13,7 +16,6 @@ MENU_BUILDERS = (
     PropertiesEntryMenuBuilder,
     properties_ui.ParamValueManualInputMenuBuilder,
     properties_ui.AddListItemMenuBuilder,
-
     formatters_ui.FormatterListMenuBuilder,
     formatters_ui.FormatterInfoMenuBuilder,
     notifications_ui.NotificationsMenuBuilder,
@@ -36,5 +38,5 @@ MENU_MODIFICATIONS = {
         properties_ui.PropertiesMenuModification,
         properties_ui.AddFormattersListButtonModification,
         properties_ui.AddCommandButtonModification,
-    )
+    ),
 }

@@ -11,8 +11,8 @@ from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder
 
-from .context import NewMessageMenuContext, SendMessageMenuContext
 from ..ids import MenuIds
+from .context import NewMessageMenuContext, SendMessageMenuContext
 from ..premade import default_finalizer_factory
 
 
@@ -33,7 +33,6 @@ class NewMessageNotificationMenuBuilder(MenuBuilder):
         translater: Translater,
         fp_bot: FPBot,
     ) -> Menu:
-
         # Не хэшируем коллбэки данного меню, чтобы не забивать память.
         # Вместо этого делаем коротки коллбэки, чтобы они могли работать между перезапусками.
         keyboard = [
@@ -112,34 +111,41 @@ class SendMessageMenuBuilder(MenuBuilder):
     id = MenuIds.send_funpay_message
     context_type = SendMessageMenuContext
 
-
     async def build(
         self,
         ctx: SendMessageMenuContext,
         properties: FunPayHubProperties,
-        translater: Translater
+        translater: Translater,
     ) -> Menu:
         kb = []
         for index, i in enumerate(properties.message_templates.value()):
-            kb.append([Button(
-                button_id=f'send_template:{index}',
-                obj=InlineKeyboardButton(
-                    text=i[:30] + ('...' if len(i) > 30 else ''),
-                    callback_data=cbs.SendTemplate(to=ctx.funpay_chat_id, index=index).pack(hash=False),
-                )
-            )])
+            kb.append(
+                [
+                    Button(
+                        button_id=f'send_template:{index}',
+                        obj=InlineKeyboardButton(
+                            text=i[:30] + ('...' if len(i) > 30 else ''),
+                            callback_data=cbs.SendTemplate(
+                                to=ctx.funpay_chat_id, index=index
+                            ).pack(hash=False),
+                        ),
+                    )
+                ]
+            )
 
         return Menu(
             text='$enter_message_text',
-            footer_keyboard=[[
-                Button(
-                    button_id='cancel',
-                    obj=InlineKeyboardButton(
-                        text=translater.translate('$clear_state'),
-                        callback_data=cbs.Clear(delete_message=True).pack()
-                    )
-                )
-            ]],
+            footer_keyboard=[
+                [
+                    Button(
+                        button_id='cancel',
+                        obj=InlineKeyboardButton(
+                            text=translater.translate('$clear_state'),
+                            callback_data=cbs.Clear(delete_message=True).pack(),
+                        ),
+                    ),
+                ]
+            ],
             main_keyboard=kb,
             finalizer=default_finalizer_factory(back_button=False),
         )

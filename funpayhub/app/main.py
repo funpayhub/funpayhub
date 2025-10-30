@@ -4,6 +4,7 @@ import os
 import asyncio
 from typing import Any
 
+from funpayhub.app.routers import router
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties import Parameter, Properties, MutableParameter
 from funpayhub.lib.translater import Translater
@@ -15,10 +16,10 @@ from funpayhub.app.dispatching import (
 )
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
-from funpayhub.app.routers import router
 
 # plugins
 from funpayhub.plugins.exec_plugin import Plugin
+
 from .workflow_data import WorkflowData
 
 

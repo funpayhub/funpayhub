@@ -3,9 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, overload
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from funpayhub.lib.core import classproperty
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
+
+from funpayhub.lib.core import classproperty
 
 from .parser import extract_calls
 

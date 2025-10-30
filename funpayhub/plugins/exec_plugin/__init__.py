@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from pathlib import Path
 
 from .types import ExecutionResult, ExecutionResultsRegistry
-from .telegram.menus import ExecListMenuBuilder, ExecCodeMenuBuilder, ExecOutputMenuBuilder
+from .telegram.menus import ExecCodeMenuBuilder, ExecListMenuBuilder, ExecOutputMenuBuilder
 from .telegram.router import r as router
 
 

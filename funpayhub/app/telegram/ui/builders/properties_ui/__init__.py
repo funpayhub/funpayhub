@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from funpayhub.lib.properties import Properties, parameter as param
-from .registry import EntriesUIRegistry as Registry
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
+
+from .registry import EntriesUIRegistry as Registry
+
 
 Registry.add_menu_builder(param.IntParameter, MenuIds.param_value_manual_input)
 Registry.add_menu_builder(param.FloatParameter, MenuIds.param_value_manual_input)

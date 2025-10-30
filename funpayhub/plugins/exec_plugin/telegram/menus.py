@@ -8,12 +8,12 @@ from aiogram.types import InlineKeyboardButton
 
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.lib.telegram.ui import Menu, Button, Keyboard, UIRegistry, MenuContext
+from funpayhub.lib.telegram.ui import Menu, Button, Keyboard, MenuContext
+from funpayhub.lib.telegram.ui.types import MenuBuilder, MenuModification
 from funpayhub.app.telegram.ui.premade import (
     default_finalizer_factory,
     build_view_navigation_buttons,
 )
-from funpayhub.lib.telegram.ui.types import MenuBuilder, MenuModification
 
 from .callbacks import SaveExecCode, SendExecFile
 

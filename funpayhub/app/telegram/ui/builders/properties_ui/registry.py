@@ -4,17 +4,19 @@ from __future__ import annotations
 __all__ = ['EntriesUIRegistry']
 
 
-from typing import Any, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Type
+from dataclasses import replace
 
-from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
 from funpayhub.loggers import telegram_ui as logger
+from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
 from funpayhub.lib.properties.base import Entry
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
 from funpayhub.app.telegram.ui.builders.properties_ui.context import (
     EntryMenuContext,
     EntryButtonContext,
 )
-from dataclasses import replace
+
+
 if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui import UIRegistry
 
@@ -55,7 +57,7 @@ class _EntriesUIRegistry:
 
         logger.info(
             f'Button builder {button_builder_id} assigned as button builder for entries '
-            f'of type {entry_type!r}.'
+            f'of type {entry_type!r}.',
         )
 
     def add_menu_builder(
@@ -69,7 +71,7 @@ class _EntriesUIRegistry:
         self._menus[entry_type] = menu_builder_id
         logger.info(
             f'Menu builder {menu_builder_id} assigned as menu builder for entries '
-            f'of type {entry_type!r}.'
+            f'of type {entry_type!r}.',
         )
 
 
@@ -91,7 +93,9 @@ class PropertiesEntryButtonBuilder(ButtonBuilder):
     id = ButtonIds.properties_entry
     context_type = EntryButtonContext
 
-    async def build(self, ctx: EntryButtonContext, tg_ui: UIRegistry, data: dict[str, Any]) -> Button:
+    async def build(
+        self, ctx: EntryButtonContext, tg_ui: UIRegistry, data: dict[str, Any]
+    ) -> Button:
         if (builder_id := EntriesUIRegistry.get_button_builder(type(ctx.entry))) is None:
             raise LookupError(f'Unknown entry type {type(ctx.entry)}.')
         context = replace(ctx, button_id=builder_id)

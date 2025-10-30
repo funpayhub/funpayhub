@@ -3,7 +3,6 @@ from __future__ import annotations
 from funpaybotengine.types import Message
 
 from funpayhub.loggers import main as logger
-from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 
 

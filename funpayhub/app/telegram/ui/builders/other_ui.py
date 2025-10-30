@@ -3,9 +3,9 @@ from __future__ import annotations
 from aiogram.types import InlineKeyboardButton
 
 import funpayhub.lib.telegram.callbacks as cbs
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext, MenuBuilder
+from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
 
 
 class AddCommandMenuBuilder(MenuBuilder):

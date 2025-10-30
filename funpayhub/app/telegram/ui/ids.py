@@ -21,8 +21,6 @@ class MenuIds:
     properties_choice_param = 'fph:properties_choice_param'
 
 
-
-
 class ButtonIds:
     properties_entry = 'fph:properties_entry'
     properties_toggle_param = 'fph:properties_toggle_param'

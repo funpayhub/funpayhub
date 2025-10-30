@@ -5,22 +5,23 @@ __all__ = ['UIRegistry']
 
 
 from typing import Any, Type
+from dataclasses import field, dataclass
+
+from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.loggers import telegram_ui as logger
 
 from .types import (
     Menu,
     Button,
-    MenuContext,
     MenuBuilder,
-    MenuModification,
+    MenuContext,
     ButtonBuilder,
     ButtonContext,
+    MenuModification,
     ButtonModification,
 )
 from ..callback_data import HashinatorT1000
-from dataclasses import dataclass, field
-from eventry.asyncio.callable_wrappers import CallableWrapper
 
 
 @dataclass
@@ -33,7 +34,7 @@ class _MenuBuilder:
         context: MenuContext,
         data: dict[str, Any],
         run_modifications: bool = True,
-        finalize: bool = True
+        finalize: bool = True,
     ) -> Menu:
         result = await self.builder(context, data)
 
@@ -86,7 +87,7 @@ class UIRegistry:
         self._buttons: dict[str, _ButtonBuilder] = {}
         self._workflow_data: dict[str, Any] = workflow_data if workflow_data is not None else {}
 
-    def add_menu_builder(self,  builder: Type[MenuBuilder[Any]], overwrite: bool = False) -> None:
+    def add_menu_builder(self, builder: Type[MenuBuilder[Any]], overwrite: bool = False) -> None:
         if builder.id in self._menus and not overwrite:
             raise KeyError(f'Menu {builder.id!r} already exists.')
 
@@ -113,7 +114,7 @@ class UIRegistry:
         context: MenuContext,
         data: dict[str, Any],
         use_modificatoins: bool = True,
-        finalize: bool = True
+        finalize: bool = True,
     ) -> Menu:
         try:
             builder = self.get_menu_builder(context.menu_id)
@@ -137,12 +138,14 @@ class UIRegistry:
             context,
             data,
             run_modifications=use_modificatoins,
-            finalize=finalize
+            finalize=finalize,
         )
         HashinatorT1000.save()
         return result
 
-    def add_button_builder(self, builder: Type[ButtonBuilder[Any]], overwrite: bool = False) -> None:
+    def add_button_builder(
+        self, builder: Type[ButtonBuilder[Any]], overwrite: bool = False
+    ) -> None:
         if builder.id in self._buttons and not overwrite:
             raise KeyError(f'Button {builder.id!r} already exists.')
 
@@ -150,7 +153,9 @@ class UIRegistry:
         self._buttons[builder.id] = _ButtonBuilder(builder())
         logger.info(f'Button builder {builder.id!r} has been added to registry.')
 
-    def add_button_modification(self, modification: Type[ButtonModification[Any]], button_id: str) -> None:
+    def add_button_modification(
+        self, modification: Type[ButtonModification[Any]], button_id: str
+    ) -> None:
         if button_id not in self._buttons:
             raise KeyError(f'Button {button_id!r} does not exist.')
         if modification.id in self._buttons[button_id].modifications:

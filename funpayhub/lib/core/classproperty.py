@@ -4,9 +4,8 @@ from __future__ import annotations
 __all__ = ['classproperty']
 
 
-from collections.abc import Callable
 from typing import Any
-
+from collections.abc import Callable
 
 
 class classproperty[T, R]:

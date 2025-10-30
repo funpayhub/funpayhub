@@ -6,7 +6,7 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext, MenuBuilder
+from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
 
 from .. import premade
 from ..ids import MenuIds

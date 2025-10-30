@@ -15,6 +15,7 @@ from collections.abc import Callable
 
 from typing_extensions import Any
 from eventry.asyncio.callable_wrappers import CallableWrapper
+
 from funpayhub.lib.core import classproperty
 
 
