@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from aiogram.types import InlineKeyboardButton
 
-import funpayhub.lib.telegram.callbacks as cbs
+import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.translater import Translater
 from funpayhub.app.telegram.ui import premade
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext

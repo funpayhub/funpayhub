@@ -6,7 +6,7 @@ from aiogram import Router, BaseMiddleware
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 
-import funpayhub.lib.telegram.callbacks as cbs
+import funpayhub.app.telegram.callbacks as cbs
 
 
 if TYPE_CHECKING:

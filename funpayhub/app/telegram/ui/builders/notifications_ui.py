@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from aiogram.types import InlineKeyboardButton
 
-import funpayhub.lib.telegram.callbacks as cbs
+import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.translater import Translater

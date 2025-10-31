@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from aiogram.types import Message, CallbackQuery
 
-import funpayhub.lib.telegram.callbacks as cbs
+import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.properties import ListParameter, MutableParameter
 from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
 from funpayhub.lib.core import classproperty

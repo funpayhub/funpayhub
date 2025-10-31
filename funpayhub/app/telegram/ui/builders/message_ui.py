@@ -6,7 +6,7 @@ from aiogram.types import InlineKeyboardButton
 from funpaybotengine import Bot as FPBot
 from funpaybotengine.types.enums import BadgeType
 
-import funpayhub.lib.telegram.callbacks as cbs
+import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder

@@ -8,11 +8,11 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Update, Message, CallbackQuery
 from aiogram.filters import StateFilter
 
-import funpayhub.lib.telegram.callbacks as cbs
+import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
-from funpayhub.lib.telegram.states import AddingCommand
+from funpayhub.app.telegram.states import AddingCommand
 
 from .. import utils
 from .router import router as r

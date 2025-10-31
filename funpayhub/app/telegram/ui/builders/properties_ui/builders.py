@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import html
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from aiogram.types import InlineKeyboardButton
 
-import funpayhub.lib.telegram.callbacks as cbs
+import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.app.telegram.ui import premade
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds

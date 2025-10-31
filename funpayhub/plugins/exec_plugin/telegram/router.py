@@ -14,7 +14,7 @@ from aiogram import Router
 from aiogram.types import Message, CallbackQuery, BufferedInputFile, InputMediaDocument
 from aiogram.filters import Command
 
-import funpayhub.lib.telegram.callbacks as cbs
+import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
 from funpayhub.plugins.exec_plugin.types import ExecutionResult, ExecutionResultsRegistry
 

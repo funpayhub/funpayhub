@@ -4,11 +4,10 @@ from aiogram import Bot, Dispatcher
 from aiogram.filters import StateFilter
 from aiogram.types import CallbackQuery, ReactionTypeEmoji, ReactionTypePaid
 
-from funpayhub.lib.telegram import callbacks as cbs
-from funpayhub.lib.telegram import states
+from ... import callbacks as cbs, states
 from funpayhub.app.telegram.ui.builders.context import SendMessageMenuContext
 from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.lib.telegram.states import SendingFunpayMessage
+from funpayhub.app.telegram.states import SendingFunpayMessage
 from funpayhub.lib.telegram.ui import UIRegistry
 from aiogram.types import Message
 from funpaybotengine import Bot as FPBot
