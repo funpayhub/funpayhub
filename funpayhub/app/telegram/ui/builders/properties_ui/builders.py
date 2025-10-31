@@ -133,7 +133,7 @@ class PropertiesMenuBuilder(MenuBuilder):
         return Menu(
             text=_entry_text(ctx.entry, translater),
             main_keyboard=keyboard,
-            finalizer=premade.default_finalizer_factory(),
+            finalizer=premade.StripAndNavigationFinalizer(),
         )
 
 
@@ -168,7 +168,7 @@ class ChoiceParameterMenuBuilder(MenuBuilder):
         return Menu(
             text=_entry_text(ctx.entry, translater),
             main_keyboard=keyboard,
-            finalizer=premade.default_finalizer_factory(),
+            finalizer=premade.StripAndNavigationFinalizer(),
         )
 
 
@@ -246,7 +246,7 @@ class ListParameterMenuBuilder(MenuBuilder):
             text=_entry_text(ctx.entry, translater),
             main_keyboard=keyboard,
             footer_keyboard=footer,
-            finalizer=premade.default_finalizer_factory(),
+            finalizer=premade.StripAndNavigationFinalizer(),
         )
 
 
@@ -281,7 +281,7 @@ class ParamValueManualInputMenuBuilder(MenuBuilder):
         return Menu(
             text=text,
             footer_keyboard=footer_keyboard,
-            finalizer=premade.default_finalizer_factory(back_button=False),
+            finalizer=premade.StripAndNavigationFinalizer(back_button=False),
         )
 
 
@@ -312,7 +312,7 @@ class AddListItemMenuBuilder(MenuBuilder):
         return Menu(
             text=text,
             footer_keyboard=footer_keyboard,
-            finalizer=premade.default_finalizer_factory(back_button=False),
+            finalizer=premade.StripAndNavigationFinalizer(back_button=False),
         )
 
 

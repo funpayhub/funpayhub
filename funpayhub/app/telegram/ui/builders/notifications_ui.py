@@ -71,5 +71,5 @@ class NotificationsMenuBuilder(MenuBuilder):
         return Menu(
             text='$notifications',
             main_keyboard=kb,
-            finalizer=premade.default_finalizer_factory(),
+            finalizer=premade.StripAndNavigationFinalizer(),
         )

@@ -10,10 +10,11 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder
+from dataclasses import replace
 
 from ..ids import MenuIds
 from .context import NewMessageMenuContext, SendMessageMenuContext
-from ..premade import default_finalizer_factory
+from ..premade import StripAndNavigationFinalizer
 
 
 _prefixes_by_badge_type = {
@@ -32,6 +33,7 @@ class NewMessageNotificationMenuBuilder(MenuBuilder):
         ctx: NewMessageMenuContext,
         translater: Translater,
         fp_bot: FPBot,
+        properties: FunPayHubProperties,
     ) -> Menu:
         # Не хэшируем коллбэки данного меню, чтобы не забивать память.
         # Вместо этого делаем коротки коллбэки, чтобы они могли работать между перезапусками.
@@ -103,7 +105,7 @@ class NewMessageNotificationMenuBuilder(MenuBuilder):
         return Menu(
             text=text,
             header_keyboard=keyboard,
-            finalizer=default_finalizer_factory(),
+            finalizer=StripAndNavigationFinalizer(),
         )
 
 
@@ -133,6 +135,20 @@ class SendMessageMenuBuilder(MenuBuilder):
                 ]
             )
 
+        fake_callback_data = cbs.SendMessage(
+            to=ctx.funpay_chat_id,
+            set_state=False,
+            menu_page=ctx.menu_page,
+            view_page=ctx.view_page
+        )
+
+        finalizer_context = replace(
+            ctx,
+            data=ctx.data | {'callback_data': fake_callback_data},
+            menu_page=ctx.menu_page,
+            view_page=ctx.view_page
+        )
+
         return Menu(
             text='$enter_message_text',
             footer_keyboard=[
@@ -147,5 +163,8 @@ class SendMessageMenuBuilder(MenuBuilder):
                 ]
             ],
             main_keyboard=kb,
-            finalizer=default_finalizer_factory(back_button=False),
+            finalizer=StripAndNavigationFinalizer(
+                back_button=False,
+                context_override=finalizer_context
+            ),
         )

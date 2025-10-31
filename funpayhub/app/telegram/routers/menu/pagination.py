@@ -77,6 +77,7 @@ async def change_page_from_message(
             update_id=-1,
             callback_query=data.callback_query_obj.model_copy(update={'data': old.pack()}),
         ),
+        dispatcher=dp,
     )
 
 
@@ -97,7 +98,7 @@ async def change_page(
         update_id=-1,
         callback_query=query.model_copy(update={'data': old.pack()}),
     )
-    await dispatcher.feed_update(bot, update)
+    await dispatcher.feed_update(bot, update, dispatcher=dispatcher)
 
 
 @router.callback_query(cbs.ChangeMenuPageManually.filter())

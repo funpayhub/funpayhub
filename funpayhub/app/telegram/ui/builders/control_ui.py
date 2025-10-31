@@ -7,7 +7,7 @@ from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import Menu, Button, MenuContext
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import MenuBuilder
-from funpayhub.app.telegram.ui.premade import default_finalizer_factory
+from funpayhub.app.telegram.ui.premade import StripAndNavigationFinalizer
 
 
 class ControlMenuBuilder(MenuBuilder):
@@ -55,5 +55,5 @@ class ControlMenuBuilder(MenuBuilder):
                     )
                 ],
             ],
-            finalizer=default_finalizer_factory(),
+            finalizer=StripAndNavigationFinalizer(),
         )

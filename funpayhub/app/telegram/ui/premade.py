@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = [
     'build_menu_navigation_buttons',
     'build_view_navigation_buttons',
-    'default_finalizer_factory',
+    'StripAndNavigationFinalizer',
 ]
 
 import math
@@ -15,7 +15,73 @@ import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui.types import Menu, Button, Keyboard, MenuContext
+from funpayhub.lib.telegram.callback_data import UnknownCallback
 
+
+class StripAndNavigationFinalizer:
+    def __init__(
+        self,
+        back_button: bool = True,
+        max_lines_on_page: int  | None = None,
+        context_override: MenuContext | None = None,
+    ) -> None:
+        self.back_button = back_button
+        self.max_lines_on_page = max_lines_on_page
+        self.context_override = context_override
+
+    async def __call__(
+        self,
+        ctx: MenuContext,
+        menu: Menu,
+        properties: FunPayHubProperties,
+        translater: Translater
+    ) -> Menu:
+        ctx = self.context_override if self.context_override is not None else ctx
+        if not menu.footer_keyboard:
+            menu.footer_keyboard = []
+        max_lines = self.max_lines_on_page or properties.telegram.appearance.menu_entries_amount.value
+        total_pages = math.ceil(len(menu.main_keyboard) / max_lines) if menu.main_keyboard else 0
+
+        navigation_buttons = await build_menu_navigation_buttons(
+            ctx=ctx,
+            translater=translater,
+            total_pages=total_pages,
+            back_button=self.back_button,
+        )
+        menu.footer_keyboard.extend(navigation_buttons)
+
+        if menu.main_keyboard:
+            first_index = ctx.menu_page * max_lines
+            last_index = first_index + max_lines
+            menu.main_keyboard = menu.main_keyboard[first_index:last_index]
+        return menu
+
+
+def _nav_button(
+    id: str,
+    text: str,
+    condition: bool,
+    callback_data: UnknownCallback,
+    target_menu_page: int | None = None,
+    target_view_page: int | None = None
+) -> Button:
+    """Фабрика кнопок навигации по страницам."""
+
+    return Button(
+        button_id=id,
+        obj=InlineKeyboardButton(
+            text=text if condition else ' ',
+            callback_data=(
+                cbs.ChangePageTo(
+                    menu_page=target_menu_page,
+                    view_page=target_view_page,
+                    history=callback_data.as_history()
+                ).pack()
+                if condition and (target_menu_page is not None or target_view_page is not None)
+                else cbs.Dummy().pack()
+            ),
+        ),
+    )
 
 async def build_menu_navigation_buttons(
     ctx: MenuContext,
@@ -58,59 +124,14 @@ async def build_menu_navigation_buttons(
         ),
     )
 
-    to_first_btn = Button(
-        button_id='to_first_menu_page',
-        obj=InlineKeyboardButton(
-            text='⏪' if ctx.menu_page > 0 else ' ',
-            callback_data=cbs.ChangePageTo(
-                menu_page=0,
-                history=callback_data.as_history(),
-            ).pack()
-            if ctx.menu_page > 0
-            else cbs.Dummy().pack(),
-        ),
-    )
-
-    to_last_btn = Button(
-        button_id='to_last_menu_page',
-        obj=InlineKeyboardButton(
-            text='⏩' if ctx.menu_page < total_pages - 1 else ' ',
-            callback_data=cbs.ChangePageTo(
-                menu_page=total_pages - 1,
-                history=callback_data.as_history(),
-            ).pack()
-            if ctx.menu_page < total_pages - 1
-            else cbs.Dummy().pack(),
-        ),
-    )
-
-    to_previous_btn = Button(
-        button_id='to_previous_menu_page',
-        obj=InlineKeyboardButton(
-            text='◀️' if ctx.menu_page > 0 else ' ',
-            callback_data=cbs.ChangePageTo(
-                menu_page=ctx.menu_page - 1,
-                history=callback_data.as_history(),
-            ).pack()
-            if ctx.menu_page > 0
-            else cbs.Dummy().pack(),
-        ),
-    )
-
-    to_next_btn = Button(
-        button_id='to_next_menu_page',
-        obj=InlineKeyboardButton(
-            text='▶️' if ctx.menu_page < total_pages - 1 else ' ',
-            callback_data=cbs.ChangePageTo(
-                menu_page=ctx.menu_page + 1,
-                history=callback_data.as_history(),
-            ).pack()
-            if ctx.menu_page < total_pages - 1
-            else cbs.Dummy().pack(),
-        ),
-    )
-
-    kb.insert(0, [to_first_btn, to_previous_btn, page_amount_btn, to_next_btn, to_last_btn])
+    nav_kb = [
+        _nav_button('first_menu_page', '⏪', ctx.menu_page > 0, callback_data, 0),
+        _nav_button('previous_menu_page', '◀️', ctx.menu_page > 0, callback_data, ctx.menu_page - 1),
+        page_amount_btn,
+        _nav_button('next_menu_page', '▶️', ctx.menu_page < total_pages - 1, callback_data, ctx.menu_page + 1),
+        _nav_button('last_menu_page', '⏩', ctx.menu_page < total_pages - 1, callback_data, total_pages - 1),
+    ]
+    kb.insert(0, nav_kb)
     return kb
 
 
@@ -133,94 +154,12 @@ async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> K
         ),
     )
 
-    to_first_btn = Button(
-        button_id='to_first_menu_page',
-        obj=InlineKeyboardButton(
-            text='⏪' if ctx.view_page > 0 else ' ',
-            callback_data=cbs.ChangePageTo(
-                view_page=0,
-                history=callback_data.as_history() if callback_data.history else None,
-            ).pack()
-            if ctx.view_page > 0
-            else cbs.Dummy().pack(),
-        ),
-    )
-
-    to_last_btn = Button(
-        button_id='to_last_menu_page',
-        obj=InlineKeyboardButton(
-            text='⏩' if ctx.view_page < total_pages - 1 else ' ',
-            callback_data=cbs.ChangePageTo(
-                view_page=total_pages - 1,
-                history=callback_data.as_history() if callback_data.history else None,
-            ).pack()
-            if ctx.view_page < total_pages - 1
-            else cbs.Dummy().pack(),
-        ),
-    )
-
-    to_previous_btn = Button(
-        button_id='to_previous_menu_page',
-        obj=InlineKeyboardButton(
-            text='◀️' if ctx.view_page > 0 else ' ',
-            callback_data=cbs.ChangePageTo(
-                view_page=ctx.view_page - 1,
-                history=callback_data.as_history() if callback_data.history else None,
-            ).pack()
-            if ctx.view_page > 0
-            else cbs.Dummy().pack(),
-        ),
-    )
-
-    to_next_btn = Button(
-        button_id='to_next_menu_page',
-        obj=InlineKeyboardButton(
-            text='▶️' if ctx.view_page < total_pages - 1 else ' ',
-            callback_data=cbs.ChangePageTo(
-                view_page=ctx.view_page + 1,
-                history=callback_data.as_history() if callback_data.history else None,
-            ).pack()
-            if ctx.view_page < total_pages - 1
-            else cbs.Dummy().pack(),
-        ),
-    )
-
-    kb.insert(0, [to_first_btn, to_previous_btn, page_amount_btn, to_next_btn, to_last_btn])
+    nav_kb = [
+        _nav_button('first_view_page', '⏪', ctx.view_page > 0, callback_data, None, 0),
+        _nav_button('previous_view_page', '◀️', ctx.view_page > 0, callback_data, None, ctx.view_page - 1),
+        page_amount_btn,
+        _nav_button('next_view_page', '▶️', ctx.view_page < total_pages - 1, callback_data, None, ctx.view_page + 1),
+        _nav_button('last_view_page', '⏩', ctx.view_page < total_pages - 1, callback_data, None, total_pages - 1),
+    ]
+    kb.insert(0, nav_kb)
     return kb
-
-
-def default_finalizer_factory(back_button: bool = True, max_lines_on_page: int | None = None):
-    async def _default_finalizer(
-        ctx: MenuContext,
-        menu: Menu,
-        properties: FunPayHubProperties,
-        translater: Translater,
-    ) -> Menu:
-        if not menu.footer_keyboard:
-            menu.footer_keyboard = []
-        max_lines = max_lines_on_page or properties.telegram.appearance.menu_entries_amount.value
-
-        total_pages = (
-            math.ceil(
-                len(menu.main_keyboard) / max_lines,
-            )
-            if menu.main_keyboard
-            else 0
-        )
-
-        navigation_buttons = await build_menu_navigation_buttons(
-            ctx=ctx,
-            translater=translater,
-            total_pages=total_pages,
-            back_button=back_button,
-        )
-        menu.footer_keyboard.extend(navigation_buttons)
-
-        if menu.main_keyboard:
-            first_index = ctx.menu_page * max_lines
-            last_index = first_index + max_lines
-            menu.main_keyboard = menu.main_keyboard[first_index:last_index]
-
-        return menu
-
-    return _default_finalizer

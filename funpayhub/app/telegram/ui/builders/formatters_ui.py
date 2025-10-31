@@ -53,7 +53,7 @@ class FormatterListMenuBuilder(MenuBuilder):
         return Menu(
             text='Форматтеры',
             main_keyboard=keyboard,
-            finalizer=premade.default_finalizer_factory(),
+            finalizer=premade.StripAndNavigationFinalizer(),
         )
 
 
@@ -74,5 +74,5 @@ class FormatterInfoMenuBuilder(MenuBuilder):
 """
         return Menu(
             text=text,
-            finalizer=premade.default_finalizer_factory(),
+            finalizer=premade.StripAndNavigationFinalizer(),
         )

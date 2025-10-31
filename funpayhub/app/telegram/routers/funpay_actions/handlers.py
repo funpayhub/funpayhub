@@ -21,20 +21,27 @@ async def set_sending_message_state(
     dispatcher: Dispatcher,
     bot: Bot,
 ):
-    context = utils.get_context(dispatcher, bot, query)
-    await context.clear()
-
     menu_context = SendMessageMenuContext(
         menu_id=MenuIds.send_funpay_message,
         funpay_chat_id=callback_data.to,
-        trigger=query
+        trigger=query,
+        menu_page=callback_data.menu_page,
+        view_page=callback_data.view_page,
     )
     menu = await tg_ui.build_menu(menu_context, {})
 
-    msg = await query.message.answer(
-        text=menu.text,
-        reply_markup=menu.total_keyboard(convert=True)
-    )
+    if callback_data.set_state:
+        msg = await query.message.answer(
+            text=menu.text,
+            reply_markup=menu.total_keyboard(convert=True)
+        )
 
-    await context.set_state(states.SendingFunpayMessage.__identifier__)
-    await context.set_data({'data': states.SendingFunpayMessage(message=msg, to=callback_data.to)})
+        context = utils.get_context(dispatcher, bot, query)
+        await context.clear()
+        await context.set_state(states.SendingFunpayMessage.__identifier__)
+        await context.set_data(
+            {'data': states.SendingFunpayMessage(message=msg, to=callback_data.to)}
+        )
+        await query.answer()
+    else:
+        await menu.apply_to(query.message)

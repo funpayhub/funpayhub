@@ -11,7 +11,7 @@ from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.telegram.ui import Menu, Button, Keyboard, MenuContext
 from funpayhub.lib.telegram.ui.types import MenuBuilder, MenuModification
 from funpayhub.app.telegram.ui.premade import (
-    default_finalizer_factory,
+    StripAndNavigationFinalizer,
     build_view_navigation_buttons,
 )
 
@@ -109,7 +109,7 @@ class ExecListMenuBuilder(MenuBuilder):
         return Menu(
             text='Exec registry',
             main_keyboard=keyboard,
-            finalizer=default_finalizer_factory(),
+            finalizer=StripAndNavigationFinalizer(),
         )
 
 
@@ -125,7 +125,7 @@ class ExecOutputMenuBuilder(MenuBuilder):
             text=await exec_view_text(ctx, result, 'output'),
             header_keyboard=await build_view_navigation_buttons(ctx, total_pages),
             main_keyboard=await exec_view_kb(ctx, 'output'),
-            finalizer=default_finalizer_factory(),
+            finalizer=StripAndNavigationFinalizer(),
         )
 
 
@@ -142,7 +142,7 @@ class ExecCodeMenuBuilder(MenuBuilder):
             image=None,
             header_keyboard=await build_view_navigation_buttons(ctx, total_pages),
             main_keyboard=await exec_view_kb(ctx, 'code'),
-            finalizer=default_finalizer_factory(),
+            finalizer=StripAndNavigationFinalizer(),
         )
 
 
