@@ -29,6 +29,11 @@ class _WorkflowData(UserDict):
     def lock(self):
         self._locked = True
 
+    def __getitem__(self, item: str):
+        if item in ['workflow_data', 'wfd']:
+            return self
+        return super().__getitem__(item)
+
     def __setitem__(self, key, value):
         with self:
             super().__setitem__(key, value)
