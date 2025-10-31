@@ -118,7 +118,7 @@ class SendMessageMenuBuilder(MenuBuilder):
         translater: Translater,
     ) -> Menu:
         kb = []
-        for index, i in enumerate(properties.message_templates.value()):
+        for index, i in enumerate(properties.message_templates.value):
             kb.append(
                 [
                     Button(

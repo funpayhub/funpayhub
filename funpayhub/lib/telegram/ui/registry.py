@@ -93,7 +93,6 @@ class UIRegistry:
 
         logger.info(f'Adding menu builder {builder.id!r} to registry...')
         self._menus[builder.id] = _MenuBuilder(builder())
-        logger.info(f'Menu builder {builder.id!r} has been added to registry.')
 
     def add_menu_modification(
         self,
@@ -112,7 +111,7 @@ class UIRegistry:
     async def build_menu(
         self,
         context: MenuContext,
-        data: dict[str, Any],
+        data: dict[str, Any] | None = None,
         use_modificatoins: bool = True,
         finalize: bool = True,
     ) -> Menu:
@@ -131,12 +130,10 @@ class UIRegistry:
         logger.info(f'Building menu {context.menu_id!r}.')
 
         # create new workflow data object and replace 'data' key
-        data = self._workflow_data | data
-        data['data'] = data
 
         result = await builder.build(
             context,
-            data,
+            self._workflow_data,
             run_modifications=use_modificatoins,
             finalize=finalize,
         )
@@ -151,7 +148,6 @@ class UIRegistry:
 
         logger.info(f'Adding button builder {builder.id!r} to registry...')
         self._buttons[builder.id] = _ButtonBuilder(builder())
-        logger.info(f'Button builder {builder.id!r} has been added to registry.')
 
     def add_button_modification(
         self, modification: Type[ButtonModification[Any]], button_id: str
@@ -171,7 +167,7 @@ class UIRegistry:
     async def build_button(
         self,
         context: ButtonContext,
-        data: dict[str, Any],
+        data: dict[str, Any] | None = None,
         run_modifications: bool = True,
     ) -> Button:
         try:
@@ -188,7 +184,4 @@ class UIRegistry:
 
         logger.info(f'Building button {context.button_id!r}.')
 
-        data = self._workflow_data | data
-        data['data'] = data
-
-        return await builder.build(context, data, run_modifications=run_modifications)
+        return await builder.build(context, self._workflow_data, run_modifications=run_modifications)

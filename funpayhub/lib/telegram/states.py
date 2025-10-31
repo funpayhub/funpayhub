@@ -9,6 +9,7 @@ from aiogram.types import Message, CallbackQuery
 import funpayhub.lib.telegram.callbacks as cbs
 from funpayhub.lib.properties import ListParameter, MutableParameter
 from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
+from funpayhub.lib.core import classproperty
 
 
 _STATES: set[str] = set()
@@ -38,9 +39,10 @@ class State:
         warnings.warn('`.name` is deprecated. Use `.identifier`.', DeprecationWarning)
         return self.__identifier__
 
-    @property
-    def identifier(self) -> str:
-        return self.__identifier__
+    @classproperty
+    @classmethod
+    def identifier(cls) -> str:
+        return cls.__identifier__
 
 
 @dataclass

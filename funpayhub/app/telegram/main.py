@@ -14,14 +14,11 @@ from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
+from funpayhub.app.telegram.routers import ROUTERS
 
 
 if TYPE_CHECKING:
     from funpayhub.app import FunPayHub
-
-
-# routers
-from funpayhub.app.telegram.routers.menu import router as properties_menu_router
 
 
 class Telegram:
@@ -46,7 +43,7 @@ class Telegram:
             ),
         )
 
-        self._ui_registry = UIRegistry()
+        self._ui_registry = UIRegistry(workflow_data=self.hub.workflow_data)
         self._setup_ui_defaults()
 
     @property
@@ -66,9 +63,7 @@ class Telegram:
         return self._hub
 
     def _setup_dispatcher(self):
-        self._dispatcher.include_routers(
-            properties_menu_router,
-        )
+        self._dispatcher.include_routers(*ROUTERS)
 
         middleware = AddDataMiddleware()
         for i, o in self.dispatcher.observers.items():

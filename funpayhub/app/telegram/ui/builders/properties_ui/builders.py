@@ -108,13 +108,7 @@ class PropertiesMenuBuilder(MenuBuilder):
     id = MenuIds.properties_properties
     context_type = EntryMenuContext
 
-    async def build(
-        self,
-        ctx: EntryMenuContext,
-        translater: Translater,
-        tg_ui: UIRegistry,
-        data: dict[str, Any],
-    ) -> Menu:
+    async def build(self, ctx: EntryMenuContext, translater: Translater, tg_ui: UIRegistry) -> Menu:
         keyboard = []
 
         for entry_id, sub_entry in ctx.entry.entries.items():
@@ -127,7 +121,7 @@ class PropertiesMenuBuilder(MenuBuilder):
                     menu_render_context=ctx,
                     entry=sub_entry,
                 )
-                button = await tg_ui.build_button(context=button_ctx, data=data)
+                button = await tg_ui.build_button(context=button_ctx)
             except:
                 import traceback
 

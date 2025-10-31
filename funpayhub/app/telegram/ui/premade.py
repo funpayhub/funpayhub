@@ -23,10 +23,11 @@ async def build_menu_navigation_buttons(
     total_pages: int,
     back_button: bool = True,
 ) -> Keyboard:
+    if ctx.callback_data is None:
+        return []
+
     kb: Keyboard = []
     callback_data = ctx.callback_data
-    if callback_data is None:
-        return kb
 
     if callback_data.history and back_button:
         kb = [

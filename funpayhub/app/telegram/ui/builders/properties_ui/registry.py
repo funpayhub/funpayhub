@@ -82,21 +82,19 @@ class PropertiesEntryMenuBuilder(MenuBuilder):
     id = MenuIds.properties_entry
     context_type = EntryMenuContext
 
-    async def build(self, ctx: EntryMenuContext, tg_ui: UIRegistry, data: dict[str, Any]) -> Menu:
+    async def build(self, ctx: EntryMenuContext, tg_ui: UIRegistry) -> Menu:
         if (builder_id := EntriesUIRegistry.get_menu_builder(type(ctx.entry))) is None:
             raise LookupError(f'Unknown entry type {type(ctx.entry)}.')
         context = replace(ctx, menu_id=builder_id)
-        return await tg_ui.build_menu(context, data, finalize=False)
+        return await tg_ui.build_menu(context, finalize=False)
 
 
 class PropertiesEntryButtonBuilder(ButtonBuilder):
     id = ButtonIds.properties_entry
     context_type = EntryButtonContext
 
-    async def build(
-        self, ctx: EntryButtonContext, tg_ui: UIRegistry, data: dict[str, Any]
-    ) -> Button:
+    async def build(self, ctx: EntryButtonContext, tg_ui: UIRegistry) -> Button:
         if (builder_id := EntriesUIRegistry.get_button_builder(type(ctx.entry))) is None:
             raise LookupError(f'Unknown entry type {type(ctx.entry)}.')
         context = replace(ctx, button_id=builder_id)
-        return await tg_ui.build_button(context, data)
+        return await tg_ui.build_button(context)

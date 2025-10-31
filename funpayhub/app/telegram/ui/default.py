@@ -9,7 +9,7 @@ from .builders.properties_ui.registry import (
 )
 
 
-MENU_BUILDERS = (
+MENU_BUILDERS = [
     properties_ui.PropertiesMenuBuilder,
     properties_ui.ListParameterMenuBuilder,
     properties_ui.ChoiceParameterMenuBuilder,
@@ -23,20 +23,21 @@ MENU_BUILDERS = (
     message_ui.SendMessageMenuBuilder,
     other_ui.AddCommandMenuBuilder,
     control_ui.ControlMenuBuilder,
-)
+]
 
-BUTTON_BUILDERS = (
+
+BUTTON_BUILDERS = [
     properties_ui.ToggleParamButtonBuilder,
     properties_ui.ChangeParamValueButtonBuilder,
     properties_ui.OpenParamMenuButtonBuilder,
     PropertiesEntryButtonBuilder,
-)
+]
 
 
 MENU_MODIFICATIONS = {
-    MenuIds.properties_entry: (
+    MenuIds.properties_entry: [
         properties_ui.PropertiesMenuModification,
         properties_ui.AddFormattersListButtonModification,
         properties_ui.AddCommandButtonModification,
-    ),
+    ],
 }
