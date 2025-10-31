@@ -13,4 +13,5 @@ class classproperty[T, R]:
         self.func = func
 
     def __get__(self, obj: Any, cls: type[T]) -> R:
-        return self.func(cls)
+        func = self.func.__get__(None, cls)
+        return func()

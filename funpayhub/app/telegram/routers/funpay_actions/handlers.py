@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 from aiogram import Bot, Dispatcher
-from aiogram.types import CallbackQuery
+from aiogram.filters import StateFilter
+from aiogram.types import CallbackQuery, ReactionTypeEmoji, ReactionTypePaid
 
 from funpayhub.lib.telegram import callbacks as cbs
 from funpayhub.lib.telegram import states
 from funpayhub.app.telegram.ui.builders.context import SendMessageMenuContext
 from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.lib.telegram.states import SendingFunpayMessage
 from funpayhub.lib.telegram.ui import UIRegistry
+from aiogram.types import Message
+from funpaybotengine import Bot as FPBot
+import asyncio
 
 from .. import utils
 from .router import router
@@ -45,3 +50,35 @@ async def set_sending_message_state(
         await query.answer()
     else:
         await menu.apply_to(query.message)
+
+
+@router.message(StateFilter(states.SendingFunpayMessage.identifier))
+async def send_funpay_message(
+    message: Message,
+    dispatcher: Dispatcher,
+    bot: Bot,
+    fp_bot: FPBot
+):
+    context = utils.get_context(dispatcher, bot, message)
+    data: SendingFunpayMessage = (await context.get_data())['data']
+
+    asyncio.create_task(utils.delete_message(data.message))
+
+    await context.clear()
+
+    result = False
+    try:
+        await fp_bot.send_message(
+            chat_id=data.to,
+            text=message.text,
+        )
+        result = True
+    except:
+        pass
+
+    if result:
+        await message.react(reaction=[ReactionTypeEmoji(emoji="👍")], is_big=True)
+    else:
+        reaction = ReactionTypePaid()
+        await message.react(reaction=[ReactionTypeEmoji(emoji= "💩"), reaction], is_big=True)
+    # todo: formatting
