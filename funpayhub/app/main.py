@@ -67,26 +67,41 @@ class FunPayHub:
 
         self._running_lock = asyncio.Lock()
         self._stopping_lock = asyncio.Lock()
-        self._stop_event = asyncio.Event()
+        self._stop: asyncio.Future[int] = asyncio.Future()
 
-    async def start(self):
+    async def start(self) -> int:
+        async def wait_future(fut: asyncio.Future) -> None:
+            await fut
+            print(f'future done: {fut.result()}')
+
         async with self._running_lock:
-            self._stop_event.clear()
+            self._stop = asyncio.Future()
 
             tasks = [
                 # asyncio.create_task(self.funpay.start(), name='funpay'),
                 asyncio.create_task(self.telegram.start(), name='telegram'),
-                asyncio.create_task(self._stop_event.wait()),
+                asyncio.create_task(wait_future(self._stop)),
             ]
 
             await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
 
             async with self._stopping_lock:
-                await self.funpay.bot.stop_listening()
-                await self.telegram.dispatcher.stop_polling()
+                try:
+                    await self.funpay.bot.stop_listening()
+                except RuntimeError:
+                    pass
 
-    async def stop(self):
-        self._stop_event.set()
+                try:
+                    await self.telegram.dispatcher.stop_polling()
+                except RuntimeError:
+                    pass
+
+            return self._stop.result()
+
+    async def stop(self, code: int) -> None:
+        if self._stopping_lock.locked() or not self._running_lock.locked():
+            raise RuntimeError('Already stopped')
+        self._stop.set_result(code)
 
     async def load_plugins(self):
         pl = Plugin()
