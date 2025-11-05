@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
-from aiogram.types import Message, InlineKeyboardMarkup
+from aiogram.types import Message, InlineKeyboardMarkup, BotCommand
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
 
@@ -15,7 +15,7 @@ from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
 from funpayhub.app.telegram.routers import ROUTERS
-
+from funpayhub.lib.telegram import CommandsRegistry
 
 if TYPE_CHECKING:
     from funpayhub.app import FunPayHub
@@ -29,6 +29,8 @@ class Telegram:
         workflow_data: dict[str, Any],
     ) -> None:
         self._hub = hub
+        self._commands = CommandsRegistry()
+        self._setup_commands()
         self._dispatcher = Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
         self._dispatcher.workflow_data = workflow_data
         self._setup_dispatcher()
@@ -79,6 +81,10 @@ class Telegram:
         self.dispatcher.callback_query.outer_middleware(NeedHelpMiddleware())
         self.dispatcher.include_routers(router)
 
+    def _setup_commands(self):
+        self._commands.create_command('start', 'hub', True, '$command:start:description')
+        self._commands.create_command('help', 'hub', True, '$commands:help:description')
+
     def _setup_ui_defaults(self):
         for m in default_ui.MENU_BUILDERS:
             self.ui_registry.add_menu_builder(m)
@@ -91,6 +97,14 @@ class Telegram:
                 self.ui_registry.add_menu_modification(mod, menu_id)
 
     async def start(self) -> None:
+        commands = [
+            BotCommand(
+                command=cmd.command,
+                description=self.hub.translater.translate(cmd.description)
+            )
+            for cmd in self._commands.commands(setup_only=True)
+        ]
+        await self.bot.set_my_commands(commands)
         await self.dispatcher.start_polling(self.bot)
 
     async def send_notification(
