@@ -43,7 +43,7 @@ class NewMessageNotificationMenuBuilder(MenuBuilder):
                     button_id='reply',
                     obj=InlineKeyboardButton(
                         text=translater.translate('$reply'),
-                        callback_data=cbs.SendMessage(to=ctx.funpay_chat_id).pack(hash=False),
+                        callback_data=cbs.SendMessage(to=ctx.funpay_chat_id).pack(), # todo
                     ),
                 ),
                 Button(

@@ -105,6 +105,7 @@ class Telegram:
             for cmd in self._commands.commands(setup_only=True)
         ]
         await self.bot.set_my_commands(commands)
+        await self.bot.delete_webhook(drop_pending_updates=True)
         await self.dispatcher.start_polling(self.bot)
 
     async def send_notification(
