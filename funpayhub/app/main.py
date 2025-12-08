@@ -113,21 +113,21 @@ class FunPayHub:
         parameter: MutableParameter[Any],
     ) -> None:
         event = ParameterValueChangedEvent(param=parameter)
-        await self.dispatcher.propagate_event(event)
+        await self.dispatcher.event_entry(event)
 
     async def emit_properties_attached_event(
         self,
         properties: Properties,
     ) -> None:
         event = PropertiesAttachedEvent(props=properties)
-        await self.dispatcher.propagate_event(event)
+        await self.dispatcher.event_entry(event)
 
     async def emit_parameter_attached_event(
         self,
         parameter: Parameter[Any] | MutableParameter[Any],
     ) -> None:
         event = ParameterAttachedEvent(param=parameter)
-        await self.dispatcher.propagate_event(event)
+        await self.dispatcher.event_entry(event)
 
     @property
     def properties(self) -> FunPayHubProperties:
