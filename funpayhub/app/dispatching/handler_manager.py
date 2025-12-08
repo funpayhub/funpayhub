@@ -29,18 +29,28 @@ class HandlerManager(BaseHandlerManager[FilterType, HandlerType, MiddlewareType,
             event_type_filter=event_type_filter,
         )
 
-        self._add_middleware_manager(MiddlewareManagerTypes.GLOBAL, MiddlewareManager())
+        self._add_middleware_manager(MiddlewareManagerTypes.MANAGER_OUTER, MiddlewareManager())
+        self._add_middleware_manager(MiddlewareManagerTypes.MANAGER_INNER, MiddlewareManager())
+        self._add_middleware_manager(MiddlewareManagerTypes.HANDLING_PROCESS, MiddlewareManager())
         self._add_middleware_manager(MiddlewareManagerTypes.OUTER_PER_HANDLER, MiddlewareManager())
         self._add_middleware_manager(MiddlewareManagerTypes.INNER_PER_HANDLER, MiddlewareManager())
 
     @property
     def inner_middleware(self) -> MiddlewareManager:
-        return self.middleware_manager(MiddlewareManagerTypes.INNER_PER_HANDLER)  # type: ignore  # not None
+        return self.middleware_manager(MiddlewareManagerTypes.INNER_PER_HANDLER)
 
     @property
     def outer_middleware(self) -> MiddlewareManager:
-        return self.middleware_manager(MiddlewareManagerTypes.OUTER_PER_HANDLER)  # type: ignore  # not None
+        return self.middleware_manager(MiddlewareManagerTypes.OUTER_PER_HANDLER)
 
     @property
-    def global_middleware(self) -> MiddlewareManager:
-        return self.middleware_manager(MiddlewareManagerTypes.GLOBAL)  # type: ignore  # not None
+    def manager_outer(self) -> MiddlewareManager:
+        return self.middleware_manager(MiddlewareManagerTypes.MANAGER_OUTER)
+
+    @property
+    def manager_inner(self) -> MiddlewareManager:
+        return self.middleware_manager(MiddlewareManagerTypes.MANAGER_INNER)
+
+    @property
+    def manager_handling_process(self) -> MiddlewareManager:
+        return self.middleware_manager(MiddlewareManagerTypes.HANDLING_PROCESS)

@@ -22,6 +22,7 @@ class UnknownCallback(BaseModel):
     identifier: str = Field(frozen=True)
     history: list[str] = Field(default_factory=list, exclude=True)
     data: dict[str, Any] = Field(default_factory=dict, exclude=True)
+    unsigned_data: tuple[Any, ...] = Field(default_factory=tuple, exclude=True)
 
     def pack(self, include_history: bool = True, hash: bool = True) -> str:
         result = (repr(self.data) if self.data else '') + self.identifier
@@ -109,6 +110,21 @@ class CallbackData(UnknownCallback):
         if hash:
             result = HashinatorT1000.hash(result)
         return result
+
+    def pack_compact(self, drop_data: bool = False) -> str:
+        """
+        Упаковывает CallbackData в компактном формате:
+
+        `IDENTIFIER:arg1:arg2:argN`
+        """
+        if self.data and not drop_data:
+            raise RuntimeError(
+                f'Instance of {self.__class__.__name__} cannot be packed compactly: '
+                f'data is not empty.'
+            )
+
+        data = self.model_dump(mode='python', exclude={'identifier'})
+        return f'{self.__identifier__}:{":".join(str(i) for i in data.values())}'
 
     @classmethod
     def unpack(cls: Type[T], value: str | UnknownCallback) -> T:
