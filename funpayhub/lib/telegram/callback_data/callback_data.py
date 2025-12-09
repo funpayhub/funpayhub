@@ -5,6 +5,7 @@ __all__ = ['CallbackData', 'UnknownCallback', 'CallbackQueryFilter', 'join_callb
 
 
 import ast
+import string
 from typing import TYPE_CHECKING, Any, Type, Literal, TypeVar, ClassVar
 from copy import copy
 
@@ -18,18 +19,38 @@ from funpayhub.lib.telegram.callback_data.hashinator import HashinatorT1000
 T = TypeVar('T', bound='CallbackData')
 
 
+_ALLOWED = set(string.ascii_letters + string.digits + '._-')
+
+
 class UnknownCallback(BaseModel):
     identifier: str = Field(frozen=True)
     history: list[str] = Field(default_factory=list, exclude=True)
     data: dict[str, Any] = Field(default_factory=dict, exclude=True)
-    unsigned_data: tuple[Any, ...] = Field(default_factory=tuple, exclude=True)
+    unsigned_data: list[Any] = Field(default_factory=list, exclude=True)
+    compact: bool = Field(default=False, exclude=True)
 
     def pack(self, include_history: bool = True, hash: bool = True) -> str:
         result = (repr(self.data) if self.data else '') + self.identifier
         if include_history:
-            return join_callbacks(*self.history, result)
+            result = join_callbacks(*self.history, result)
+        if not result.startswith('!'):
+            result = '!' + result
+
         if hash:
             result = HashinatorT1000.hash(result)
+        return result
+
+    def pack_compact(self, drop_data: bool = False) -> str:
+        if self.data and not drop_data:
+            raise RuntimeError(
+                f'Instance of {self.__class__.__name__} cannot be packed compactly: '
+                f'data is not empty.',
+            )
+
+        result = ':'.join(self._serialize_value(v) for v in self.unsigned_data)
+        result = f'{self.identifier}:{result}' if result else self.identifier
+        if len(result) > 64:
+            raise ValueError(f'Compacted callback data is too long ({len(result)} > 64).')
         return result
 
     def pack_history(self, hash: bool = True) -> str:
@@ -41,6 +62,19 @@ class UnknownCallback(BaseModel):
     def as_history(self) -> list[str]:
         return [self.pack(include_history=True, hash=False)]
 
+    def _serialize_value(self, value: Any) -> str:
+        if isinstance(value, bool):
+            return str(int(value))
+
+        if not isinstance(value, (int, str, float)):
+            raise TypeError(f'Unable to serialize value of type {type(value).__name__!r}.')
+
+        result = str(value)
+        if ':' in result:
+            raise ValueError("Serialized value cannot contain ':' character.")
+
+        return result
+
     @classmethod
     def from_string(cls, query: str) -> UnknownCallback:
         return CallbackData.parse(query)
@@ -49,9 +83,18 @@ class UnknownCallback(BaseModel):
     def parse(value: str) -> UnknownCallback:
         if HashinatorT1000.is_hash(value):
             value = HashinatorT1000.unhash(value)
+
+        if UnknownCallback.is_compact(value):
+            split = value.split(':')
+            return UnknownCallback(
+                identifier=split[0],
+                unsigned_data=split[1].split(':') if len(split) > 1 else [],
+                compact=True,
+            )
+
         callbacks = []
 
-        current_index = 0
+        current_index = 1  # skip first '!' for non-compact callbacks
         last_callback_args = ''
         last_callback_str = ''
         while True:
@@ -61,6 +104,8 @@ class UnknownCallback(BaseModel):
             if callback_end != -1:
                 callbacks.append(value[current_index:callback_end])
                 current_index = callback_end + 1
+                while value[current_index] == '!':
+                    current_index += 1
                 continue
 
             callbacks.append(value[current_index:])
@@ -77,23 +122,46 @@ class UnknownCallback(BaseModel):
             data=ast.literal_eval(last_callback_args) if last_callback_args else {},
         )
 
+    @staticmethod
+    def is_compact(value: str) -> bool:
+        if len(value) >= 64:
+            return False
+        if HashinatorT1000.is_hash(value):
+            return False
+        if value.startswith('!'):
+            return False
+        return True
+
+    @field_validator('identifier', mode='after')
+    @classmethod
+    def _check_identifier(cls, identifier: str) -> str:
+        if not identifier:
+            raise ValueError('Identifier cannot be empty.')
+
+        if not set(identifier) <= _ALLOWED:
+            raise ValueError(
+                f'Identifier {identifier!r} contains invalid characters: '
+                f'{set(identifier) - _ALLOWED}.',
+            )
+
+        return identifier
+
 
 class CallbackData(UnknownCallback):
     if TYPE_CHECKING:
         __identifier__: ClassVar[str]
 
     identifier: str = Field(default='', frozen=True, validate_default=True)
-    data: dict[str, Any] = Field(default_factory=dict, exclude=True)
-    history: list[str] = Field(default_factory=list, exclude=True)
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         if 'identifier' not in kwargs:
             raise ValueError(
-                f'identifier required, usage example: '
+                f'Identifier required. Example: '
                 f"`class {cls.__name__}(CallbackData, identifier='my_callback'): ...`",
             )
-        cls.__identifier__ = kwargs.pop('identifier')
+        identifier = kwargs.pop('identifier')
 
+        cls.__identifier__ = identifier
         super().__init_subclass__(**kwargs)
 
     def pack(self, include_history: bool = True, hash: bool = True) -> str:
@@ -102,11 +170,13 @@ class CallbackData(UnknownCallback):
 
         :return: valid callback data for Telegram Bot API
         """
-        data = self.model_dump(mode='python', exclude={'identifier'})
+        data = self.model_dump(mode='python', exclude={'identifier', 'compact'})
         data = self.data | data
         result = (repr(data) if data else '') + self.__identifier__
         if include_history:
             result = join_callbacks(*self.history, result)
+        if not result.startswith('!'):
+            result = '!' + result
         if hash:
             result = HashinatorT1000.hash(result)
         return result
@@ -120,11 +190,12 @@ class CallbackData(UnknownCallback):
         if self.data and not drop_data:
             raise RuntimeError(
                 f'Instance of {self.__class__.__name__} cannot be packed compactly: '
-                f'data is not empty.'
+                f'data is not empty.',
             )
 
         data = self.model_dump(mode='python', exclude={'identifier'})
-        return f'{self.__identifier__}:{":".join(str(i) for i in data.values())}'
+        serialized = ':'.join(self._serialize_value(i) for i in data.values())
+        return f'{self.identifier}:{serialized}' if serialized else self.identifier
 
     @classmethod
     def unpack(cls: Type[T], value: str | UnknownCallback) -> T:
@@ -139,6 +210,10 @@ class CallbackData(UnknownCallback):
 
         if value.identifier != cls.__identifier__:
             raise ValueError(f'Bad identifier ({value.identifier!r} != {cls.__identifier__!r})')
+
+        if value.compact:
+            return cls(**value.data)
+
         value.data.pop('data', None)
         value.data.pop('history', None)
 
@@ -228,7 +303,7 @@ def join_callbacks(*callbacks: str) -> str:
 
     :return: Строка, представляющая объединённую историю коллбэков.
     """
-    return '>'.join(callbacks)
+    return '>'.join('!' + i if not i.startswith('!') else i for i in callbacks)
 
 
 def get_callback_params(

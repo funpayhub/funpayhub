@@ -103,7 +103,7 @@ class _HashinatorT1000:
 
             return f'<<{candidate}>>'
 
-    def unhash(self, hash: str) -> str | None:
+    def unhash(self, hash: str) -> str:
         if not self.is_hash(hash):
             raise BadHashError(hash)
 

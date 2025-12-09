@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+from dataclasses import replace
 
 from aiogram.types import InlineKeyboardButton
 from funpaybotengine import Bot as FPBot
@@ -10,7 +11,6 @@ import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder
-from dataclasses import replace
 
 from ..ids import MenuIds
 from .context import NewMessageMenuContext, SendMessageMenuContext
@@ -43,14 +43,14 @@ class NewMessageNotificationMenuBuilder(MenuBuilder):
                     button_id='reply',
                     obj=InlineKeyboardButton(
                         text=translater.translate('$reply'),
-                        callback_data=cbs.SendMessage(to=ctx.funpay_chat_id).pack(), # todo
+                        callback_data=cbs.SendMessage(to=ctx.funpay_chat_id).pack(),  # todo
                     ),
                 ),
                 Button(
                     button_id='mute',
                     obj=InlineKeyboardButton(
                         text=translater.translate('$mute'),
-                        callback_data=cbs.MuteChat(chat_id=ctx.funpay_chat_id).pack(hash=False),
+                        callback_data=cbs.MuteChat(chat_id=ctx.funpay_chat_id).pack_compact(),
                     ),
                 ),
                 Button(
@@ -128,25 +128,26 @@ class SendMessageMenuBuilder(MenuBuilder):
                         obj=InlineKeyboardButton(
                             text=i[:30] + ('...' if len(i) > 30 else ''),
                             callback_data=cbs.SendTemplate(
-                                to=ctx.funpay_chat_id, index=index
+                                to=ctx.funpay_chat_id,
+                                index=index,
                             ).pack(hash=False),
                         ),
-                    )
-                ]
+                    ),
+                ],
             )
 
         fake_callback_data = cbs.SendMessage(
             to=ctx.funpay_chat_id,
             set_state=False,
             menu_page=ctx.menu_page,
-            view_page=ctx.view_page
+            view_page=ctx.view_page,
         )
 
         finalizer_context = replace(
             ctx,
             data=ctx.data | {'callback_data': fake_callback_data},
             menu_page=ctx.menu_page,
-            view_page=ctx.view_page
+            view_page=ctx.view_page,
         )
 
         return Menu(
@@ -160,11 +161,11 @@ class SendMessageMenuBuilder(MenuBuilder):
                             callback_data=cbs.Clear(delete_message=True).pack(),
                         ),
                     ),
-                ]
+                ],
             ],
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(
                 back_button=False,
-                context_override=finalizer_context
+                context_override=finalizer_context,
             ),
         )
