@@ -5,13 +5,14 @@ from typing import Any
 from aiogram.types import InlineKeyboardButton
 
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder
+from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.callbacks import Dummy
 from funpayhub.app.telegram.ui.premade import StripAndNavigationFinalizer
 from funpayhub.app.telegram.ui.builders.context import MyChatsMenuContext
 
 
 class MyChatsUI(MenuBuilder):
-    id = 'fph:my_chats'
+    id = MenuIds.my_chats
     context_type = MyChatsMenuContext
 
     async def build(self, ctx: MyChatsMenuContext, *args: Any, **kwargs: Any) -> Menu:

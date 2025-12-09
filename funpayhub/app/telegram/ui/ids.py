@@ -22,6 +22,7 @@ class MenuIds:
 
     # MyChats
     my_chats = 'fph:my_chats'
+    chat = 'fph:chat'
 
 
 class ButtonIds:
