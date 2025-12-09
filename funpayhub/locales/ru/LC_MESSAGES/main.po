@@ -546,3 +546,24 @@ msgstr ""
 # ----------------------------------------------------
 msgid "$log:new_message"
 msgstr "Новое сообщение от {author_username} в чате {chat_id}: {text}"
+
+
+
+# ----------------------------------------------------
+# ----------------- New Message Menu -----------------
+# ----------------------------------------------------
+msgid "$new_message_ui.reply"
+msgstr "🗨️ Ответить"
+
+msgid "$new_message_ui.mute"
+msgstr "🔕 Не уведомлять"
+
+msgid "$new_message_ui.unmute"
+msgstr "🔔 Уведомлять"
+
+msgid "$new_message_ui.open_chat"
+msgstr "🌐 Чат"
+
+
+msgid "$new_message_ui.enter_reply_text"
+msgstr "<b>Отправьте сообщение или изображение пользователю <a href=\"https://funpay.com/chat/?node={chat_id}\">{chat_name}</a>.</b>"

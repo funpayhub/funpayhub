@@ -121,6 +121,7 @@ class ListParamAddItem(CallbackData, identifier='list_param_add_item'):
 # New message menu
 class SendMessage(CallbackData, Pageable, identifier='sm'):
     to: int | str
+    name: str
     set_state: bool = True
 
 

@@ -42,21 +42,24 @@ class NewMessageNotificationMenuBuilder(MenuBuilder):
                 Button(
                     button_id='reply',
                     obj=InlineKeyboardButton(
-                        text=translater.translate('$reply'),
-                        callback_data=cbs.SendMessage(to=ctx.funpay_chat_id).pack(),  # todo
+                        text=translater.translate('$new_message_ui.reply'),
+                        callback_data=cbs.SendMessage(
+                            to=ctx.funpay_chat_id,
+                            name=ctx.funpay_chat_name,
+                        ).pack_compact(),
                     ),
                 ),
                 Button(
                     button_id='mute',
                     obj=InlineKeyboardButton(
-                        text=translater.translate('$mute'),
+                        text=translater.translate('$new_message_ui.mute'),
                         callback_data=cbs.MuteChat(chat_id=ctx.funpay_chat_id).pack_compact(),
                     ),
                 ),
                 Button(
                     button_id='open_chat',
                     obj=InlineKeyboardButton(
-                        text=translater.translate('$open_chat'),
+                        text=translater.translate('$new_message_ui.open_chat'),
                         url=f'https://funpay.com/chat/?node={ctx.funpay_chat_id}',
                     ),
                 ),
@@ -138,6 +141,7 @@ class SendMessageMenuBuilder(MenuBuilder):
 
         fake_callback_data = cbs.SendMessage(
             to=ctx.funpay_chat_id,
+            name=ctx.funpay_chat_name,
             set_state=False,
             menu_page=ctx.menu_page,
             view_page=ctx.view_page,
@@ -151,7 +155,10 @@ class SendMessageMenuBuilder(MenuBuilder):
         )
 
         return Menu(
-            text='$enter_message_text',
+            text=translater.translate('$new_message_ui.enter_reply_text').format(
+                chat_id=ctx.funpay_chat_id,
+                chat_name=ctx.funpay_chat_name,
+            ),
             footer_keyboard=[
                 [
                     Button(

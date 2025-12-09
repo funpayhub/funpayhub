@@ -83,7 +83,7 @@ class UnknownCallback(BaseModel):
             value = HashinatorT1000.unhash(value)
 
         if UnknownCallback.is_compact(value):
-            split = value.split(':')
+            split = value.split(':', 1)
             return UnknownCallback(
                 identifier=split[0],
                 unsigned_data=split[1].split(':') if len(split) > 1 else [],
@@ -212,7 +212,14 @@ class CallbackData(UnknownCallback):
             raise ValueError(f'Bad identifier ({value.identifier!r} != {cls.__identifier__!r})')
 
         if value.compact:
-            return cls(**value.data)
+            names = [
+                i for i in cls.model_fields.keys() if i not in UnknownCallback.model_fields.keys()
+            ]
+            if len(value.unsigned_data) != len(names):
+                raise ValueError(
+                    f'Values amount ({len(value.unsigned_data)}) != fields amount ({len(names)}).',
+                )
+            return cls(**{k: v for k, v in zip(names, value.unsigned_data)})
 
         value.data.pop('data', None)
         value.data.pop('history', None)
@@ -282,6 +289,9 @@ class CallbackQueryFilter(Filter):
             callback_data = self.callback_data.unpack(unpacked)
             return {'callback_data': callback_data}
         except (TypeError, ValueError):
+            unpacked = getattr(query, '__parsed__', None)
+            if unpacked.identifier == self.callback_data.__identifier__:
+                print(unpacked.unsigned_data)
             return False
 
 

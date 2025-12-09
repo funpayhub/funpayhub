@@ -17,3 +17,4 @@ class NewMessageMenuContext(MenuContext):
 @dataclass(kw_only=True)
 class SendMessageMenuContext(MenuContext):
     funpay_chat_id: int | str
+    funpay_chat_name: str
