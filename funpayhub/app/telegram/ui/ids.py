@@ -20,6 +20,9 @@ class MenuIds:
     properties_list_param = 'fph:properties_list_param'
     properties_choice_param = 'fph:properties_choice_param'
 
+    # MyChats
+    my_chats = 'fph:my_chats'
+
 
 class ButtonIds:
     properties_entry = 'fph:properties_entry'

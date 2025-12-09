@@ -1,7 +1,14 @@
 from __future__ import annotations
 
 from .ids import MenuIds
-from .builders import other_ui, control_ui, message_ui, formatters_ui, notifications_ui
+from .builders import (
+    other_ui,
+    control_ui,
+    message_ui,
+    my_chats_ui,
+    formatters_ui,
+    notifications_ui,
+)
 from .builders.properties_ui import builders as properties_ui
 from .builders.properties_ui.registry import (
     PropertiesEntryMenuBuilder,
@@ -23,6 +30,7 @@ MENU_BUILDERS = [
     message_ui.SendMessageMenuBuilder,
     other_ui.AddCommandMenuBuilder,
     control_ui.ControlMenuBuilder,
+    my_chats_ui.MyChatsUI,
 ]
 
 
