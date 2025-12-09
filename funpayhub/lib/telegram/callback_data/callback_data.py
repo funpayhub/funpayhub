@@ -94,26 +94,28 @@ class UnknownCallback(BaseModel):
 
         callbacks = []
 
-        current_index = 1  # skip first '!' for non-compact callbacks
+        callback_start_index = 0
         last_callback_args = ''
         last_callback_str = ''
         while True:
-            args_end_index = find_args_end(value, current_index)
-            callback_end = value.find('>', args_end_index + 1)
+            args_end_index = find_args_end(value, callback_start_index)
+            callback_end_index = value.find('>', args_end_index + 1)
 
-            if callback_end != -1:
-                callbacks.append(value[current_index:callback_end])
-                current_index = callback_end + 1
-                while value[current_index] == '!':
-                    current_index += 1
+            if callback_end_index != -1:
+                callbacks.append(value[callback_start_index:callback_end_index])
+                callback_start_index = callback_end_index + 1
                 continue
 
-            callbacks.append(value[current_index:])
-            if args_end_index != current_index:
-                last_callback_args = value[current_index : args_end_index + 1]
+            callbacks.append(value[callback_start_index:])
+            if args_end_index != callback_start_index:  # if there are args
+                last_callback_args = value[callback_start_index : args_end_index + 1]
+                if last_callback_args.startswith('!'):
+                    last_callback_args = last_callback_args[1:]
             last_callback_str = value[
-                args_end_index + (1 if args_end_index != current_index else 0) :
+                args_end_index + (1 if args_end_index != callback_start_index else 0) :
             ]
+            if last_callback_str.startswith('!'):
+                last_callback_str = last_callback_str[1:]
             break
 
         return UnknownCallback(
@@ -306,26 +308,38 @@ def join_callbacks(*callbacks: str) -> str:
     return '>'.join('!' + i if not i.startswith('!') else i for i in callbacks)
 
 
-def get_callback_params(
-    callback_query: str,
-    params_start_index: int = 0,
-    params_end_index: int = -1,
-) -> dict[str, Any]:
-    if params_end_index < 0:
-        params_end_index = find_args_end(callback_query, params_start_index)
-
-    if params_start_index == params_end_index:
-        return {}
-
-    return ast.literal_eval(callback_query[params_start_index : params_end_index + 1])
-
-
 def find_args_end(text: str, start_pos: int = 0) -> int:
-    if text[start_pos] != '{':
+    """
+    Находит конец аргументов в строке после `start_pos`.
+
+    Данная функция необходима для парсинга "некомпактных" callback data, потому
+    у которых формат: `!{'some_args': 'some_values'}identifier`.
+
+    `start_pos` всегда должен указывать на начало callback data (на `!`).
+
+    Пример:
+    start_pos = 0
+    text = !{'some_arg1': 'some_value'}identifier
+                                      ^
+                                      конец аргументов (return 27)
+
+    start_pos = 39
+    text = !{'some_arg1': 'some_value'}identifier>!{'some2': 'value2'}another
+                                                  ^                  ^
+                                                  start_pos          конец аргументов (return 58)
+    """
+    if text[start_pos] != '!':
+        raise ValueError('Invalid start position.')
+
+    # Если символ после `!` - не `{` - значит у callback data нет параметров, только идентификатор
+    if text[start_pos + 1] != '{':
         return start_pos
 
-    index = start_pos + 1
+    # Параметры присутствуют. Сразу пропускаем маркер `!` и начало параметров `{` (`!{`).
+    index = start_pos + 2
     in_quotes = False
+    quote: str | None = None
+    quotes = ['"', "'"]
     depth = 1
 
     next_index = index
@@ -333,8 +347,12 @@ def find_args_end(text: str, start_pos: int = 0) -> int:
         index = next_index
         next_index += 1
 
-        if text[index] == "'":
-            in_quotes = not in_quotes
+        if text[index] in quotes:
+            if in_quotes and text[index] == quote:
+                in_quotes = False
+            elif not in_quotes:
+                in_quotes = True
+                quote = text[index]
 
         elif not in_quotes:
             if text[index] == '{' and not in_quotes:
