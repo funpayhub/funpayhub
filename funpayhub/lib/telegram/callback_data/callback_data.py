@@ -33,8 +33,6 @@ class UnknownCallback(BaseModel):
         result = (repr(self.data) if self.data else '') + self.identifier
         if include_history:
             result = join_callbacks(*self.history, result)
-        if not result.startswith('!'):
-            result = '!' + result
 
         if hash:
             result = HashinatorT1000.hash(result)
