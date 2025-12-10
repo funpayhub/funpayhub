@@ -8,7 +8,7 @@ from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.callbacks import Dummy
 from funpayhub.app.telegram.ui.premade import StripAndNavigationFinalizer
-from funpayhub.app.telegram.ui.builders.context import MyChatsMenuContext
+from funpayhub.app.telegram.ui.builders.context import ChatMenuContext, MyChatsMenuContext
 
 
 class MyChatsUI(MenuBuilder):
@@ -16,6 +16,21 @@ class MyChatsUI(MenuBuilder):
     context_type = MyChatsMenuContext
 
     async def build(self, ctx: MyChatsMenuContext, *args: Any, **kwargs: Any) -> Menu:
+        keyboard: list[list[Button]] = []
+        for i in ctx.chats.chats.values():
+            button_text = i.username if not i.is_unread else f'⚡️ {i.username}'
+            keyboard.append(
+                [
+                    Button(
+                        button_id=f'my_chat:{i.id}',
+                        obj=InlineKeyboardButton(
+                            text=button_text,
+                            callback_data=Dummy().pack_compact(),
+                        ),
+                    ),
+                ],
+            )
+
         return Menu(
             text='My Chat',
             main_keyboard=[
@@ -32,3 +47,10 @@ class MyChatsUI(MenuBuilder):
             ],
             finalizer=StripAndNavigationFinalizer(),
         )
+
+
+class ChatUI(MenuBuilder):
+    id = MenuIds.chat
+    context_type = ChatMenuContext
+
+    async def build(self, ctx: ChatMenuContext, *args: Any, **kwargs: Any) -> Menu: ...

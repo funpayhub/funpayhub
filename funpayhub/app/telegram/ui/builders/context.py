@@ -28,3 +28,11 @@ class SendMessageMenuContext(MenuContext):
 @dataclass
 class MyChatsMenuContext(MenuContext):
     chats: MyChats
+
+
+@dataclass
+class ChatMenuContext(MenuContext):
+    chats: MyChats
+    messages: list[Message]
+    next_id: int | None
+    previous_id: int | None
