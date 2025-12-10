@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Type, Literal, overload
 from dataclasses import field, dataclass
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Iterator
 
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from eventry.asyncio.callable_wrappers import CallableWrapper
@@ -11,13 +12,77 @@ from funpayhub.lib.core import classproperty
 from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
-type Keyboard = list[list[Button]]
+type Keyboard = list[list[Button]] | 'KeyboardBuilder'
 
 
 @dataclass
 class Button:
     button_id: str
     obj: InlineKeyboardButton
+
+    @classmethod
+    def callback_button(cls, button_id: str, text: str, callback_data: str) -> Button:
+        return Button(
+            button_id=button_id,
+            obj=InlineKeyboardButton(text=text, callback_data=callback_data),
+        )
+
+    @classmethod
+    def url_button(cls, button_id: str, text: str, url: str) -> Button:
+        return Button(
+            button_id=button_id,
+            obj=InlineKeyboardButton(text=text, url=url),
+        )
+
+
+@dataclass
+class KeyboardBuilder:
+    keyboard: Keyboard = field(default_factory=list)
+
+    def add_row(self, *buttons: Button) -> None:
+        self.keyboard.append(list(buttons))
+
+    def add_rows(self, *rows: list[Button]) -> None:
+        self.keyboard.extend(rows)
+
+    def add_button(self, button: Button) -> None:
+        self.keyboard.append([button])
+
+    def add_callback_button(self, button_id: str, text: str, callback_data: str) -> None:
+        self.add_button(Button.callback_button(button_id, text, callback_data))
+
+    def add_url_button(self, button_id: str, text: str, url: str) -> None:
+        self.add_button(Button.url_button(button_id, text, url))
+
+    def __getitem__(self, index: int) -> list[Button]:
+        return self.keyboard[index]
+
+    def __setitem__(self, index: int, value: list[Button]) -> None:
+        self.keyboard[index] = value
+
+    def __len__(self) -> int:
+        return len(self.keyboard)
+
+    def __iter__(self) -> Iterator[list[Button]]:
+        return iter(self.keyboard)
+
+    def __contains__(self, item):
+        return item in self.keyboard
+
+    def __reversed__(self):
+        return reversed(self.keyboard)
+
+    def __bool__(self) -> bool:
+        return bool(self.keyboard)
+
+    def append(self, row: list[Button]) -> None:
+        self.keyboard.append(row)
+
+    def extend(self, rows: Iterable[list[Button]]) -> None:
+        self.keyboard.extend(rows)
+
+    def insert(self, index: int, row: list[Button]) -> None:
+        self.keyboard.insert(index, row)
 
 
 @dataclass
@@ -201,7 +266,10 @@ class ButtonModification[CTX: ButtonContext](ABC):
     async def modify(self, __c: CTX, __b: Button, *__a: Any, **__k: Any) -> Button: ...
 
     async def __call__(
-        self, context: ButtonContext, button: Button, data: dict[str, Any]
+        self,
+        context: ButtonContext,
+        button: Button,
+        data: dict[str, Any],
     ) -> Button:
         if self.wrapped_filter is not None:
             result = await self.wrapped_filter((context, button), data)

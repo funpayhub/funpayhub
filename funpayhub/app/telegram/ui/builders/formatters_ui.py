@@ -2,12 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from aiogram.types import InlineKeyboardButton
-
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.translater import Translater
 from funpayhub.app.telegram.ui import premade
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
+from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 from ..ids import MenuIds
@@ -28,30 +26,54 @@ class FormatterListMenuBuilder(MenuBuilder):
         fp_formatters: FormattersRegistry,
         translater: Translater,
     ) -> Menu:
-        keyboard = []
+        keyboard = KeyboardBuilder()
         callback_data = ctx.callback_data
 
-        for formatter in fp_formatters._formatters.values():
-            keyboard.append(
-                [
-                    Button(
-                        button_id=f'open_formatter_info:{formatter.key}',
-                        obj=InlineKeyboardButton(
-                            text=translater.translate(formatter.name),
-                            callback_data=cbs.OpenMenu(
-                                menu_id=MenuIds.formatter_info,
-                                data={'formatter_id': formatter.key},
-                                history=callback_data.as_history()
-                                if callback_data is not None
-                                else [],
-                            ).pack(),
-                        ),
-                    ),
-                ],
+        if ctx.data.get('by_category'):
+            for category in fp_formatters._categories_to_formatters.keys():
+                keyboard.add_callback_button(
+                    button_id=f'open_formatters_category:{category.id}',
+                    text=translater.translate(category.name),
+                    callback_data=cbs.OpenMenu(
+                        menu_id=MenuIds.formatters_list,
+                        data={'category': category.id},
+                        history=callback_data.as_history() if callback_data is not None else [],
+                    ).pack(),
+                )
+        else:
+            if ctx.data.get('category'):
+                cat = fp_formatters._categories[ctx.data['category']]
+                formatters = fp_formatters._categories_to_formatters[cat]
+            else:
+                formatters = fp_formatters._formatters.values()
+
+            for formatter in formatters:
+                keyboard.add_callback_button(
+                    button_id=f'open_formatter_info:{formatter.key}',
+                    text=translater.translate(formatter.name),
+                    callback_data=cbs.OpenMenu(
+                        menu_id=MenuIds.formatter_info,
+                        data={'formatter_id': formatter.key},
+                        history=callback_data.as_history() if callback_data is not None else [],
+                    ).pack(),
+                )
+
+        footer_keyboard = KeyboardBuilder()
+        if not ctx.data.get('category'):
+            footer_keyboard.add_callback_button(
+                button_id='open_formatters_by_category',
+                text=translater.translate('$open_formatters_by_category'),
+                callback_data=cbs.OpenMenu(
+                    menu_id=MenuIds.formatters_list,
+                    data={'by_category': not bool(ctx.data.get('by_category'))},
+                    history=[callback_data.pack_history()] if callback_data is not None else [],
+                ).pack(),
             )
+
         return Menu(
             text='Форматтеры',
             main_keyboard=keyboard,
+            footer_keyboard=footer_keyboard,
             finalizer=premade.StripAndNavigationFinalizer(),
         )
 
