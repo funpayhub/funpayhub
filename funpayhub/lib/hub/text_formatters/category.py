@@ -4,41 +4,45 @@ from typing import TYPE_CHECKING, Any
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 
-from funpayhub.lib.core import classproperty
-
 
 if TYPE_CHECKING:
     from .formatters_registry import Formatter, FormattersRegistry
 
 
 class _LogicalOperatorsMixin:
-    def __and__(self, other: _LogicalOperatorsMixin) -> CategoriesQuery:
+    @classmethod
+    def __and__(cls, other: _LogicalOperatorsMixin) -> CategoriesQuery:
         if not isinstance(other, CategoriesQuery) and (
             not isinstance(other, type) or not issubclass(other, FormatterCategory)
         ):
             raise TypeError(
-                'CategoriesQuery can only be combined with other `CategoriesQuery` or `FormattersCategory` types.'
+                'CategoriesQuery can only be combined with other `CategoriesQuery` or `FormattersCategory` types.',
             )
-        return CategoriesAndQuery(self, other)
+        return CategoriesAndQuery(cls, other)
 
-    def __or__(self, other: _LogicalOperatorsMixin) -> CategoriesQuery:
+    @classmethod
+    def __or__(cls, other: _LogicalOperatorsMixin) -> CategoriesQuery:
         if not isinstance(other, CategoriesQuery) and (
             not isinstance(other, type) or not issubclass(other, FormatterCategory)
         ):
             raise TypeError(
-                'CategoriesQuery can only be combined with other `CategoriesQuery` or `FormattersCategory` types.'
+                'CategoriesQuery can only be combined with other `CategoriesQuery` or `FormattersCategory` types.',
             )
-        return CategoriesOrQuery(self, other)
+        return CategoriesOrQuery(cls, other)
 
-    def __invert__(self) -> CategoriesQuery:
-        return CategoriesNotQuery(self)
+    @classmethod
+    def __invert__(cls) -> CategoriesQuery:
+        return CategoriesNotQuery(cls)
 
 
-class FormatterCategory(ABC, _LogicalOperatorsMixin):
+class FormatterCategory(_LogicalOperatorsMixin):
     if TYPE_CHECKING:
         include_formatters: set[type[Formatter]]
         include_categories: set[type[FormatterCategory]]
         rules: set[Callable[[type[Formatter]], bool]]
+        id: str
+        name: str
+        description: str
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         formatters: set[type[Formatter]] = getattr(cls, 'include_formatters', set())
@@ -49,22 +53,10 @@ class FormatterCategory(ABC, _LogicalOperatorsMixin):
         cls.include_categories = set(categories)
         cls.rules = set(rules)
 
-    @abstractmethod
-    @classproperty
-    @classmethod
-    def id(cls) -> str: ...
+        if not hasattr(cls, 'id') or not hasattr(cls, 'name') or not hasattr(cls, 'description'):
+            raise ValueError('`id`, `name` and `description` attributes must be specified.')
 
-    @abstractmethod
-    @classproperty
-    @classmethod
-    def name(self) -> str:
-        pass
-
-    @abstractmethod
-    @classproperty
-    @classmethod
-    def description(self) -> str:
-        pass
+        super().__init_subclass__(**kwargs)
 
     @classmethod
     def applies_to(cls, formatter: type[Formatter]) -> bool:
@@ -85,7 +77,7 @@ class FormatterCategory(ABC, _LogicalOperatorsMixin):
         return False
 
 
-class CategoriesQuery(ABC, _LogicalOperatorsMixin):
+class CategoriesQuery(_LogicalOperatorsMixin, ABC):
     @abstractmethod
     def __call__(self, formatter: type[Formatter], registry: FormattersRegistry) -> bool: ...
 
