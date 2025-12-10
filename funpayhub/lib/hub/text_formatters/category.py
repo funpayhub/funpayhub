@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Never, Union, TypeAlias
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 
@@ -9,33 +9,36 @@ if TYPE_CHECKING:
     from .formatters_registry import Formatter, FormattersRegistry
 
 
+QUERYABLE_TYPE: TypeAlias = Union['CategoriesQuery', type['FormatterCategory']]
+
+
 class _LogicalOperatorsMixin:
-    @classmethod
-    def __and__(cls, other: _LogicalOperatorsMixin) -> CategoriesQuery:
+    def __and__(self, other: QUERYABLE_TYPE) -> CategoriesQuery:
         if not isinstance(other, CategoriesQuery) and (
             not isinstance(other, type) or not issubclass(other, FormatterCategory)
         ):
             raise TypeError(
                 'CategoriesQuery can only be combined with other `CategoriesQuery` or `FormattersCategory` types.',
             )
-        return CategoriesAndQuery(cls, other)
+        return CategoriesAndQuery(self, other)  # type: ignore # Mixin will not be used outside this method.
 
-    @classmethod
-    def __or__(cls, other: _LogicalOperatorsMixin) -> CategoriesQuery:
+    def __or__(self, other: QUERYABLE_TYPE) -> CategoriesQuery:
         if not isinstance(other, CategoriesQuery) and (
             not isinstance(other, type) or not issubclass(other, FormatterCategory)
         ):
             raise TypeError(
                 'CategoriesQuery can only be combined with other `CategoriesQuery` or `FormattersCategory` types.',
             )
-        return CategoriesOrQuery(cls, other)
+        return CategoriesOrQuery(self, other)  # type: ignore # Mixin will not be used outside this method.
 
-    @classmethod
-    def __invert__(cls) -> CategoriesQuery:
-        return CategoriesNotQuery(cls)
+    def __invert__(self) -> CategoriesQuery:
+        return CategoriesNotQuery(self)  # type: ignore # Mixin will not be used outside this method.
 
 
-class FormatterCategory(_LogicalOperatorsMixin):
+class LogicalOperatorsMeta(type, _LogicalOperatorsMixin): ...
+
+
+class FormatterCategory(metaclass=LogicalOperatorsMeta):
     if TYPE_CHECKING:
         include_formatters: set[type[Formatter]]
         include_categories: set[type[FormatterCategory]]
@@ -56,7 +59,8 @@ class FormatterCategory(_LogicalOperatorsMixin):
         if not hasattr(cls, 'id') or not hasattr(cls, 'name') or not hasattr(cls, 'description'):
             raise ValueError('`id`, `name` and `description` attributes must be specified.')
 
-        super().__init_subclass__(**kwargs)
+    def __init__(self) -> Never:
+        raise RuntimeError('`FormatterCategory` should not be instantiated.')
 
     @classmethod
     def applies_to(cls, formatter: type[Formatter]) -> bool:
@@ -73,11 +77,10 @@ class FormatterCategory(_LogicalOperatorsMixin):
             except Exception:
                 # todo: logging
                 continue
-
         return False
 
 
-class CategoriesQuery(_LogicalOperatorsMixin, ABC):
+class CategoriesQuery(ABC, _LogicalOperatorsMixin):
     @abstractmethod
     def __call__(self, formatter: type[Formatter], registry: FormattersRegistry) -> bool: ...
 
@@ -91,7 +94,7 @@ class CategoriesExistsQuery(CategoriesQuery):
 
 
 class CategoriesAndQuery(CategoriesQuery):
-    def __init__(self, *queries: CategoriesQuery | type[FormatterCategory]) -> None:
+    def __init__(self, *queries: QUERYABLE_TYPE) -> None:
         self.queries = [
             i if isinstance(i, CategoriesQuery) else CategoriesExistsQuery(i) for i in queries
         ]
@@ -104,7 +107,7 @@ class CategoriesAndQuery(CategoriesQuery):
 
 
 class CategoriesOrQuery(CategoriesQuery):
-    def __init__(self, *queries: CategoriesQuery | type[FormatterCategory]) -> None:
+    def __init__(self, *queries: QUERYABLE_TYPE) -> None:
         self.queries = [
             i if isinstance(i, CategoriesQuery) else CategoriesExistsQuery(i) for i in queries
         ]
@@ -117,7 +120,7 @@ class CategoriesOrQuery(CategoriesQuery):
 
 
 class CategoriesNotQuery(CategoriesQuery):
-    def __init__(self, query: CategoriesQuery | type[FormatterCategory]) -> None:
+    def __init__(self, query: QUERYABLE_TYPE) -> None:
         self.query = query if isinstance(query, CategoriesQuery) else CategoriesExistsQuery(query)
 
     def __call__(self, formatter: type[Formatter], registry: FormattersRegistry) -> bool:
