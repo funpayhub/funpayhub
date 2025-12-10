@@ -38,8 +38,8 @@ async def process_command(
     if command.reply.value:
         text = await fp_formatters.format_text(
             text=command.response_text.value,
-            raise_on_error=not command.ignore_hooks_errors.value,
             data=data,
+            raise_on_error=not command.ignore_hooks_errors.value,
         )
 
         await text.send(bot=fp_bot, chat_id=event.message.chat_id)
