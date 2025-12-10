@@ -9,7 +9,7 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 from funpayhub.lib.core import classproperty
 
 from .parser import extract_calls
-from .formatters_context import FormatterContext
+from .formatters_context import FormatterCategory
 
 
 if TYPE_CHECKING:
@@ -74,7 +74,7 @@ class FormattersRegistry:
         Реестр форматтеров.
         """
         self._formatters: dict[str, type[Formatter]] = {}
-        self._formatters_contexts: dict[str, set[FormatterContext]] = {}
+        self._formatters_contexts: dict[str, set[FormatterCategory]] = {}
 
     def add_formatter(self, formatter: type[Formatter], raise_if_exists: bool = True) -> None:
         """
