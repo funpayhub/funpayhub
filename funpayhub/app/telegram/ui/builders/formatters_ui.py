@@ -7,6 +7,7 @@ from funpayhub.lib.translater import Translater
 from funpayhub.app.telegram.ui import premade
 from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
+from funpayhub.app.utils.formatters_query_parser import parse_categories_query
 
 from ..ids import MenuIds
 
@@ -36,14 +37,14 @@ class FormatterListMenuBuilder(MenuBuilder):
                     text=translater.translate(category.name),
                     callback_data=cbs.OpenMenu(
                         menu_id=MenuIds.formatters_list,
-                        data={'category': category.id},
+                        data={'query': category.id},
                         history=callback_data.as_history() if callback_data is not None else [],
                     ).pack(),
                 )
         else:
-            if ctx.data.get('category'):
-                cat = fp_formatters._categories[ctx.data['category']]
-                formatters = fp_formatters._categories_to_formatters[cat]
+            if ctx.data.get('query'):
+                query = parse_categories_query(ctx.data['query'])
+                formatters = fp_formatters.get_formatters(query)
             else:
                 formatters = fp_formatters._formatters.values()
 
@@ -59,7 +60,7 @@ class FormatterListMenuBuilder(MenuBuilder):
                 )
 
         footer_keyboard = KeyboardBuilder()
-        if not ctx.data.get('category'):
+        if not ctx.data.get('query'):
             footer_keyboard.add_callback_button(
                 button_id='open_formatters_by_category',
                 text=translater.translate('$open_formatters_by_category'),
