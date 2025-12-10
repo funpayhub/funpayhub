@@ -20,6 +20,7 @@ type FORMATTER_R = str | Image | list[str | Image]
 
 
 class Formatter(ABC):
+
     @abstractmethod
     def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 

@@ -13,13 +13,12 @@ class FormatterCategory(ABC):
         include_formatters: set[Formatter]
         include_categories: set[FormatterCategory]
 
-    def __init_subclass__(cls, **kwargs) -> None:
-        if not hasattr(cls, 'include_formatters'):
-            cls.include_formatters = set()
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        formatters: set[Formatter] = getattr(cls, 'include_formatters', set())
+        categories: set[FormatterCategory] = getattr(cls, 'include_categories', set())
 
-        if not hasattr(cls, 'include_categories'):
-            cls.include_categories = set()
-
+        cls.include_formatters = set(formatters)
+        cls.include_categories = set(categories)
 
     @abstractmethod
     @classproperty
@@ -44,22 +43,3 @@ class FormatterCategory(ABC):
         return False
 
 
-class ContextFilter(ABC):
-    @abstractmethod
-    def __call__(self, formatter: Formatter) -> bool:
-        ...
-
-
-class ContextAvailableFilter(ContextFilter):
-    def __init__(self, context: FormatterCategory) -> None:
-        self._context = context
-
-    def __call__(self, formatter: Formatter) -> bool:
-        return self._context in formatter.contexts
-
-
-class AndContextFilter(ContextFilter):
-    def __init__(self, *contexts: FormatterCategory) -> None:
-        self._context = contexts
-
-    def __call__(self, formatter: Formatter):
