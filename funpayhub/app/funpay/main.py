@@ -33,8 +33,6 @@ class FunPay:
         for i in FORMATTERS_LIST:
             self._text_formatters.add_formatter(i)
 
-        self._text_formatters.get_formatters(CATEGORIES_LIST[0] | CATEGORIES_LIST[1])
-
         session = AioHttpSession(proxy=proxy, default_headers=headers)
         self._bot = Bot(golden_key=bot_token, session=session)
 

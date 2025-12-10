@@ -13,7 +13,7 @@ QUERYABLE_TYPE: TypeAlias = Union['CategoriesQuery', type['FormatterCategory']]
 
 
 class _LogicalOperatorsMixin:
-    def __and__(self, other: QUERYABLE_TYPE) -> CategoriesQuery:
+    def and_(self, other: QUERYABLE_TYPE) -> CategoriesQuery:
         if not isinstance(other, CategoriesQuery) and (
             not isinstance(other, type) or not issubclass(other, FormatterCategory)
         ):
@@ -22,7 +22,7 @@ class _LogicalOperatorsMixin:
             )
         return CategoriesAndQuery(self, other)  # type: ignore # Mixin will not be used outside this method.
 
-    def __or__(self, other: QUERYABLE_TYPE) -> CategoriesQuery:
+    def or_(self, other: QUERYABLE_TYPE) -> CategoriesQuery:
         if not isinstance(other, CategoriesQuery) and (
             not isinstance(other, type) or not issubclass(other, FormatterCategory)
         ):
@@ -31,7 +31,7 @@ class _LogicalOperatorsMixin:
             )
         return CategoriesOrQuery(self, other)  # type: ignore # Mixin will not be used outside this method.
 
-    def __invert__(self) -> CategoriesQuery:
+    def invert(self) -> CategoriesQuery:
         return CategoriesNotQuery(self)  # type: ignore # Mixin will not be used outside this method.
 
 
