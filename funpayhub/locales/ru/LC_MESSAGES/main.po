@@ -416,6 +416,17 @@ msgstr "🔘 Отмена"
 msgid "$open_formatters_list"
 msgstr "🔖 Форматтеры"
 
+msgid "$formatters:categories"
+msgstr "Категории"
+
+msgid "$formatters_categories:general:name"
+msgstr "Общее"
+
+msgid "$formatters_categories:order:name"
+msgstr "Заказы"
+
+msgid "$formatters_categories:message:name"
+msgstr "Сообщения"
 
 msgid "$formatter:datetime:name"
 msgstr "📆 Дата и время ($datetime)"

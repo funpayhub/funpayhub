@@ -154,7 +154,6 @@ class OrderFormattersCategory(FormatterCategory):
     name = '$formatters_categories:order:name'
     description = '$formatters_categories:order:description'
     include_formatters = {OrderFormatter}
-    include_categories = {GeneralFormattersCategory}
 
 
 class MessageFormattersCategory(FormatterCategory):
@@ -162,7 +161,6 @@ class MessageFormattersCategory(FormatterCategory):
     name = '$formatters_categories:message:name'
     description = '$formatters_categories:message:description'
     include_formatters = {MessageFormatter}
-    include_categories = {GeneralFormattersCategory}
 
 
 FORMATTERS_LIST = [

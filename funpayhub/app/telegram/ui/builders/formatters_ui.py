@@ -31,7 +31,7 @@ class FormatterListMenuBuilder(MenuBuilder):
         keyboard = []
         callback_data = ctx.callback_data
 
-        for formatter in fp_formatters:
+        for formatter in fp_formatters._formatters.values():
             keyboard.append(
                 [
                     Button(
@@ -49,7 +49,6 @@ class FormatterListMenuBuilder(MenuBuilder):
                     ),
                 ],
             )
-
         return Menu(
             text='Форматтеры',
             main_keyboard=keyboard,
@@ -67,9 +66,14 @@ class FormatterInfoMenuBuilder(MenuBuilder):
         fp_formatters: FormattersRegistry,
         translater: Translater,
     ) -> Menu:
-        formatter = fp_formatters[ctx.data['formatter_id']]
+        formatter = fp_formatters._formatters[ctx.data['formatter_id']]
+        categories = fp_formatters._formatters_to_categories[formatter]
+        categories_text = '; '.join(translater.translate(i.name) for i in categories)
+
         text = f"""{translater.translate(formatter.name)}
-    
+
+{translater.translate('$formatters:categories')}: <i>{categories_text}.</i>
+
 {translater.translate(formatter.description)}
 """
         return Menu(
