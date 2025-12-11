@@ -37,7 +37,9 @@ BUTTON_BUILDERS = [
 MENU_MODIFICATIONS = {
     MenuIds.properties_entry: [
         properties_ui.PropertiesMenuModification,
-        properties_ui.AddFormattersListButtonModification,
         properties_ui.AddCommandButtonModification,
     ],
+    MenuIds.param_value_manual_input: [
+        properties_ui.AddFormattersListButtonModification,
+    ]
 }
