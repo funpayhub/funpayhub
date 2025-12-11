@@ -109,7 +109,8 @@ class FormattersRegistry:
                 self._categories_to_formatters[category].append(formatter)
 
     def get_formatters(
-        self, query: type[FormatterCategory] | CategoriesQuery
+        self,
+        query: type[FormatterCategory] | CategoriesQuery,
     ) -> list[type[Formatter]]:
         if isinstance(query, CategoriesQuery):
             return [i for i in self._formatters.values() if query(i, self)]

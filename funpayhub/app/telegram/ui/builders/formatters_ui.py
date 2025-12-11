@@ -61,7 +61,11 @@ class FormatterListMenuBuilder(MenuBuilder):
 
         footer_keyboard = KeyboardBuilder()
         if not ctx.data.get('query'):
-            text = translater.translate('$formatters:show_all' if ctx.data.get('by_category') else '$formatters:show_categories')
+            text = translater.translate(
+                '$formatters:show_all'
+                if ctx.data.get('by_category')
+                else '$formatters:show_categories'
+            )
             footer_keyboard.add_callback_button(
                 button_id='open_formatters_by_category',
                 text=text,

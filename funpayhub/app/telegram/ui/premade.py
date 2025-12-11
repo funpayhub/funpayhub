@@ -22,7 +22,7 @@ class StripAndNavigationFinalizer:
     def __init__(
         self,
         back_button: bool = True,
-        max_lines_on_page: int  | None = None,
+        max_lines_on_page: int | None = None,
         context_override: MenuContext | None = None,
     ) -> None:
         self.back_button = back_button
@@ -34,12 +34,14 @@ class StripAndNavigationFinalizer:
         ctx: MenuContext,
         menu: Menu,
         properties: FunPayHubProperties,
-        translater: Translater
+        translater: Translater,
     ) -> Menu:
         ctx = self.context_override if self.context_override is not None else ctx
         if not menu.footer_keyboard:
             menu.footer_keyboard = []
-        max_lines = self.max_lines_on_page or properties.telegram.appearance.menu_entries_amount.value
+        max_lines = (
+            self.max_lines_on_page or properties.telegram.appearance.menu_entries_amount.value
+        )
         total_pages = math.ceil(len(menu.main_keyboard) / max_lines) if menu.main_keyboard else 0
 
         navigation_buttons = await build_menu_navigation_buttons(
@@ -63,7 +65,7 @@ def _nav_button(
     condition: bool,
     callback_data: UnknownCallback,
     target_menu_page: int | None = None,
-    target_view_page: int | None = None
+    target_view_page: int | None = None,
 ) -> Button:
     """Фабрика кнопок навигации по страницам."""
 
@@ -75,13 +77,14 @@ def _nav_button(
                 cbs.ChangePageTo(
                     menu_page=target_menu_page,
                     view_page=target_view_page,
-                    history=callback_data.as_history()
+                    history=callback_data.as_history(),
                 ).pack()
                 if condition and (target_menu_page is not None or target_view_page is not None)
                 else cbs.Dummy().pack()
             ),
         ),
     )
+
 
 async def build_menu_navigation_buttons(
     ctx: MenuContext,
@@ -126,10 +129,20 @@ async def build_menu_navigation_buttons(
 
     nav_kb = [
         _nav_button('first_menu_page', '⏪', ctx.menu_page > 0, callback_data, 0),
-        _nav_button('previous_menu_page', '◀️', ctx.menu_page > 0, callback_data, ctx.menu_page - 1),
+        _nav_button(
+            'previous_menu_page', '◀️', ctx.menu_page > 0, callback_data, ctx.menu_page - 1
+        ),
         page_amount_btn,
-        _nav_button('next_menu_page', '▶️', ctx.menu_page < total_pages - 1, callback_data, ctx.menu_page + 1),
-        _nav_button('last_menu_page', '⏩', ctx.menu_page < total_pages - 1, callback_data, total_pages - 1),
+        _nav_button(
+            'next_menu_page',
+            '▶️',
+            ctx.menu_page < total_pages - 1,
+            callback_data,
+            ctx.menu_page + 1,
+        ),
+        _nav_button(
+            'last_menu_page', '⏩', ctx.menu_page < total_pages - 1, callback_data, total_pages - 1
+        ),
     ]
     kb.insert(0, nav_kb)
     return kb
@@ -156,10 +169,26 @@ async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> K
 
     nav_kb = [
         _nav_button('first_view_page', '⏪', ctx.view_page > 0, callback_data, None, 0),
-        _nav_button('previous_view_page', '◀️', ctx.view_page > 0, callback_data, None, ctx.view_page - 1),
+        _nav_button(
+            'previous_view_page', '◀️', ctx.view_page > 0, callback_data, None, ctx.view_page - 1
+        ),
         page_amount_btn,
-        _nav_button('next_view_page', '▶️', ctx.view_page < total_pages - 1, callback_data, None, ctx.view_page + 1),
-        _nav_button('last_view_page', '⏩', ctx.view_page < total_pages - 1, callback_data, None, total_pages - 1),
+        _nav_button(
+            'next_view_page',
+            '▶️',
+            ctx.view_page < total_pages - 1,
+            callback_data,
+            None,
+            ctx.view_page + 1,
+        ),
+        _nav_button(
+            'last_view_page',
+            '⏩',
+            ctx.view_page < total_pages - 1,
+            callback_data,
+            None,
+            total_pages - 1,
+        ),
     ]
     kb.insert(0, nav_kb)
     return kb

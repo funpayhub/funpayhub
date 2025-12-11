@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from collections import ChainMap
 from collections.abc import Generator
@@ -29,7 +31,7 @@ class CommandsRegistry:
         command: str,
         source: str,
         setup: bool = False,
-        description: str | None = None
+        description: str | None = None,
     ) -> Command:
         cmd = Command(command, source, setup, description)
         self.add_command(cmd)

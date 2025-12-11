@@ -3,8 +3,6 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
-from aiogram.types import InlineKeyboardButton
-
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.app.telegram.ui import premade
@@ -16,8 +14,8 @@ from funpayhub.lib.telegram.ui.types import (
     Button,
     MenuBuilder,
     ButtonBuilder,
-    MenuModification,
     KeyboardBuilder,
+    MenuModification,
 )
 from funpayhub.app.telegram.ui.builders.properties_ui.context import (
     EntryMenuContext,
@@ -87,7 +85,7 @@ class OpenParamMenuButtonBuilder(ButtonBuilder):
             callback_data=cbs.OpenEntryMenu(
                 path=ctx.entry.path,
                 history=callback_data.as_history() if callback_data is not None else [],
-            ).pack()
+            ).pack(),
         )
 
 
@@ -103,7 +101,9 @@ class PropertiesMenuBuilder(MenuBuilder):
     id = MenuIds.properties_properties
     context_type = EntryMenuContext
 
-    async def build(self, ctx: EntryMenuContext, translater: Translater, tg_ui: UIRegistry) -> Menu:
+    async def build(
+        self, ctx: EntryMenuContext, translater: Translater, tg_ui: UIRegistry
+    ) -> Menu:
         keyboard = KeyboardBuilder()
 
         for entry_id, sub_entry in ctx.entry.entries.items():
@@ -119,6 +119,7 @@ class PropertiesMenuBuilder(MenuBuilder):
                 button = await tg_ui.build_button(context=button_ctx)
             except:
                 import traceback
+
                 print(traceback.format_exc())
                 continue  # todo: err log
 
@@ -306,11 +307,18 @@ class PropertiesMenuModification(MenuModification):
             callback_data=cbs.OpenMenu(menu_id=MenuIds.control, history=history).pack(),
         )
 
-        menu.main_keyboard.insert(1, [Button.callback_button(
-            button_id='open_current_chat_notifications',
-            text=translater.translate('$telegram_notifications'),
-            callback_data=cbs.OpenMenu(menu_id=MenuIds.tg_chat_notifications, history=history).pack(),
-        )])
+        menu.main_keyboard.insert(
+            1,
+            [
+                Button.callback_button(
+                    button_id='open_current_chat_notifications',
+                    text=translater.translate('$telegram_notifications'),
+                    callback_data=cbs.OpenMenu(
+                        menu_id=MenuIds.tg_chat_notifications, history=history
+                    ).pack(),
+                )
+            ],
+        )
         return menu
 
 
@@ -328,7 +336,9 @@ class AddFormattersListButtonModification(MenuModification):
     async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
         if ctx.entry.matches_path(['auto_response', '*', 'response_text']):
             query = 'fph:general|fph:message'
-        elif ctx.entry.matches_path(['review_reply', '*', 'review_reply_text']) or ctx.entry.matches_path(['review_reply', '*', 'chat_reply_text']):
+        elif ctx.entry.matches_path(
+            ['review_reply', '*', 'review_reply_text']
+        ) or ctx.entry.matches_path(['review_reply', '*', 'chat_reply_text']):
             query = 'fph:general|fph:order'
         else:
             query = None
