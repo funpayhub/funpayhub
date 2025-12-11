@@ -7,9 +7,9 @@ from dataclasses import dataclass
 from aiogram.types import Message, CallbackQuery
 
 import funpayhub.app.telegram.callbacks as cbs
+from funpayhub.lib.core import classproperty
 from funpayhub.lib.properties import ListParameter, MutableParameter
 from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
-from funpayhub.lib.core import classproperty
 
 
 _STATES: set[str] = set()

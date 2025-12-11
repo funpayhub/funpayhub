@@ -7,7 +7,11 @@ __all__ = [
     'OrderFormatter',
     'MessageFormatter',
     'MeFormatter',
+    'GeneralFormattersCategory',
+    'OrderFormattersCategory',
+    'MessageFormattersCategory',
     'FORMATTERS_LIST',
+    'CATEGORIES_LIST',
 ]
 
 import datetime
@@ -16,6 +20,7 @@ from typing import TYPE_CHECKING
 from funpaybotengine.dispatching.events import OrderEvent, NewMessageEvent
 
 from funpayhub.lib.hub.text_formatters import Image, Formatter
+from funpayhub.lib.hub.text_formatters.category import FormatterCategory
 
 
 if TYPE_CHECKING:
@@ -136,10 +141,38 @@ class MeFormatter(Formatter):
         raise ValueError(f'Unknown mode for $me formatter: {self.mode!r}')
 
 
+# Categories
+class GeneralFormattersCategory(FormatterCategory):
+    id = 'fph:general'
+    name = '$formatters_categories:general:name'
+    description = '$formatters_categories:general:description'
+    include_formatters = {DateTimeFormatter, ImageFormatter, MeFormatter}
+
+
+class OrderFormattersCategory(FormatterCategory):
+    id = 'fph:order'
+    name = '$formatters_categories:order:name'
+    description = '$formatters_categories:order:description'
+    include_formatters = {OrderFormatter}
+
+
+class MessageFormattersCategory(FormatterCategory):
+    id = 'fph:message'
+    name = '$formatters_categories:message:name'
+    description = '$formatters_categories:message:description'
+    include_formatters = {MessageFormatter}
+
+
 FORMATTERS_LIST = [
     DateTimeFormatter,
     ImageFormatter,
     OrderFormatter,
     MessageFormatter,
     MeFormatter,
+]
+
+CATEGORIES_LIST = [
+    GeneralFormattersCategory,
+    OrderFormattersCategory,
+    MessageFormattersCategory,
 ]

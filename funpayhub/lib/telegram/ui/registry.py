@@ -141,7 +141,9 @@ class UIRegistry:
         return result
 
     def add_button_builder(
-        self, builder: Type[ButtonBuilder[Any]], overwrite: bool = False
+        self,
+        builder: Type[ButtonBuilder[Any]],
+        overwrite: bool = False,
     ) -> None:
         if builder.id in self._buttons and not overwrite:
             raise KeyError(f'Button {builder.id!r} already exists.')
@@ -150,7 +152,9 @@ class UIRegistry:
         self._buttons[builder.id] = _ButtonBuilder(builder())
 
     def add_button_modification(
-        self, modification: Type[ButtonModification[Any]], button_id: str
+        self,
+        modification: Type[ButtonModification[Any]],
+        button_id: str,
     ) -> None:
         if button_id not in self._buttons:
             raise KeyError(f'Button {button_id!r} does not exist.')
@@ -184,4 +188,6 @@ class UIRegistry:
 
         logger.info(f'Building button {context.button_id!r}.')
 
-        return await builder.build(context, self._workflow_data, run_modifications=run_modifications)
+        return await builder.build(
+            context, self._workflow_data, run_modifications=run_modifications
+        )

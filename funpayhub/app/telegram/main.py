@@ -5,17 +5,18 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
-from aiogram.types import Message, InlineKeyboardMarkup, BotCommand
+from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
 
+from funpayhub.lib.telegram import CommandsRegistry
 from funpayhub.lib.properties import ListParameter
 from funpayhub.app.telegram.ui import default as default_ui
+from funpayhub.app.telegram.routers import ROUTERS
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
-from funpayhub.app.telegram.routers import ROUTERS
-from funpayhub.lib.telegram import CommandsRegistry
+
 
 if TYPE_CHECKING:
     from funpayhub.app import FunPayHub
@@ -100,7 +101,7 @@ class Telegram:
         commands = [
             BotCommand(
                 command=cmd.command,
-                description=self.hub.translater.translate(cmd.description)
+                description=self.hub.translater.translate(cmd.description),
             )
             for cmd in self._commands.commands(setup_only=True)
         ]

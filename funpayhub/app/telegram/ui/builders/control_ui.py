@@ -25,7 +25,7 @@ class ControlMenuBuilder(MenuBuilder):
                             text=translater.translate('$shutdown'),
                             callback_data=cbs.Dummy().pack(),
                         ),
-                    )
+                    ),
                 ],
                 [
                     Button(
@@ -34,7 +34,7 @@ class ControlMenuBuilder(MenuBuilder):
                             text=translater.translate('$restart'),
                             callback_data=cbs.Dummy().pack(),
                         ),
-                    )
+                    ),
                 ],
                 [
                     Button(
@@ -43,7 +43,7 @@ class ControlMenuBuilder(MenuBuilder):
                             text=translater.translate('$restart_safe'),
                             callback_data=cbs.Dummy().pack(),
                         ),
-                    )
+                    ),
                 ],
                 [
                     Button(
@@ -52,7 +52,7 @@ class ControlMenuBuilder(MenuBuilder):
                             text=translater.translate('$update'),
                             callback_data=cbs.Dummy().pack(),
                         ),
-                    )
+                    ),
                 ],
             ],
             finalizer=StripAndNavigationFinalizer(),

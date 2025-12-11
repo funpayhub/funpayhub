@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 from funpaybotengine import Router
 from funpaybotengine.dispatching.events import RunnerEvent, NewMessageEvent, ChatChangedEvent
 
+from funpayhub.app.formatters import GeneralFormattersCategory, MessageFormattersCategory
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.funpay.filters import is_fph_command
@@ -38,8 +39,9 @@ async def process_command(
     if command.reply.value:
         text = await fp_formatters.format_text(
             text=command.response_text.value,
-            raise_on_error=not command.ignore_hooks_errors.value,
+            query=GeneralFormattersCategory. or_ (MessageFormattersCategory),
             data=data,
+            raise_on_error=not command.ignore_formatters_errors.value,
         )
 
         await text.send(bot=fp_bot, chat_id=event.message.chat_id)

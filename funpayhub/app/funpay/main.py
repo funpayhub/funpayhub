@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from funpaybotengine import Bot, Dispatcher, AioHttpSession
 
 from funpayhub.app.funpay import middlewares as mdwr
-from funpayhub.app.formatters import FORMATTERS_LIST
+from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
 from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
@@ -28,6 +28,8 @@ class FunPay:
         self._hub = hub
 
         self._text_formatters = FormattersRegistry()
+        for c in CATEGORIES_LIST:
+            self._text_formatters.add_category(c)
         for i in FORMATTERS_LIST:
             self._text_formatters.add_formatter(i)
 

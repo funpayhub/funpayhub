@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, overload
+from typing import TYPE_CHECKING, Any, Type
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
@@ -9,6 +9,7 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 from funpayhub.lib.core import classproperty
 
 from .parser import extract_calls
+from .category import CategoriesQuery, FormatterCategory, CategoriesExistsQuery
 
 
 if TYPE_CHECKING:
@@ -73,68 +74,53 @@ class FormattersRegistry:
         Реестр форматтеров.
         """
         self._formatters: dict[str, type[Formatter]] = {}
+        self._categories: dict[str, type[FormatterCategory]] = {}
 
-    def add_formatter(self, formatter: type[Formatter], raise_if_exists: bool = True) -> None:
+        self._categories_to_formatters: dict[type[FormatterCategory], list[type[Formatter]]] = {}
+        self._formatters_to_categories: dict[type[Formatter], list[type[FormatterCategory]]] = {}
+
+    def add_formatter(self, formatter: type[Formatter]) -> None:
         """
         Добавляет форматтер в реестр.
 
-        :param formatter: Объект форматтера.
-        :param raise_if_exists: Возбуждать ли `ValueError`, если форматтер с таким же `key` уже
-            существует в реестре.
+        :param formatter: Класс форматтера.
         """
-        if raise_if_exists and formatter.key in self._formatters:
-            raise ValueError(f'Formatter with key {formatter.key} already exists.')
+        if formatter.key in self._formatters:
+            raise ValueError(f'Formatter with key {formatter.key!r} already exists.')
 
         self._formatters[formatter.key] = formatter
+        self._formatters_to_categories[formatter] = []
 
-    def __contains__(self, item: Any) -> bool:
-        if isinstance(item, str):
-            return item in self._formatters
+        for cat, formatters in self._categories_to_formatters.items():
+            if cat.applies_to(formatter):
+                formatters.append(formatter)
+                self._formatters_to_categories[formatter].append(cat)
 
-        if isinstance(item, Formatter):
-            return item.key in self._formatters
-        return False
+    def add_category(self, category: type[FormatterCategory]) -> None:
+        if category.id in self._categories:
+            raise ValueError(f'Category with ID {category.id!r} already exists.')
 
-    @overload
-    def __getitem__(self, key: int | str) -> type[Formatter]: ...
+        self._categories[category.id] = category
+        self._categories_to_formatters[category] = []
 
-    @overload
-    def __getitem__(self, key: slice) -> list[type[Formatter]]: ...
+        for formatter, categories in self._formatters_to_categories.items():
+            if category.applies_to(formatter):
+                categories.append(category)
+                self._categories_to_formatters[category].append(formatter)
 
-    def __getitem__(self, item: str | int | slice) -> type[Formatter] | list[type[Formatter]]:
-        if isinstance(item, str):
-            return self._formatters[item]
-
-        if isinstance(item, (int, slice)):
-            return list(self._formatters.values())[item]
-
-        raise TypeError(
-            f'Invalid key type: expected str, int, or slice, got {type(item).__name__}.',
-        )
-
-    def __setitem__(self, key: str, value: type[Formatter]) -> None:
-        if not isinstance(key, str):
-            raise ValueError(f'Invalid key type: expected str, got {type(key).__name__}.')
-        if not issubclass(value, Formatter):
-            raise ValueError(
-                f'Invalid value type: expected Formatter type, got {type(value).__name__}.',
-            )
-
-        if key != value.key:
-            raise ValueError(
-                f'Mismatched keys: provided mapping key {key!r} does not match '
-                f'Formatter.key {value.key!r}.',
-            )
-
-        self.add_formatter(formatter=value, raise_if_exists=False)
-
-    def __len__(self) -> int:
-        return len(self._formatters)
+    def get_formatters(
+        self,
+        query: type[FormatterCategory] | CategoriesQuery,
+    ) -> list[type[Formatter]]:
+        if isinstance(query, CategoriesQuery):
+            return [i for i in self._formatters.values() if query(i, self)]
+        return list(self._categories_to_formatters.get(query, []))
 
     async def format_text(
         self,
         text: str,
         data: dict[str, Any],
+        query: Type[FormatterCategory] | CategoriesQuery | None = None,
         raise_on_error: bool = True,
     ) -> MessagesStack:
         """
@@ -144,6 +130,9 @@ class FormattersRegistry:
         :param data: Словарь с данными, который будет передаваться в функции-форматтеры.
         :return: `MessagesStack`.
         """
+        if query is not None and not isinstance(query, CategoriesQuery):
+            query = CategoriesExistsQuery(query)
+
         parser = extract_calls(text)
         result: list[str | Image] = []
         first_iter = True
@@ -160,11 +149,12 @@ class FormattersRegistry:
             append_or_concatenate(result, text[:call_start])
             text = text[call_end + 1 :]
 
-            if call_name not in self:
+            formatter_cls = self._formatters.get(call_name)
+            if not formatter_cls or (query and not query(formatter_cls, self)):
                 continue
 
             try:
-                formatter = self[call_name](*args)
+                formatter = formatter_cls(*args)
                 append_or_concatenate(result, await formatter(**data))
             except:
                 if raise_on_error:

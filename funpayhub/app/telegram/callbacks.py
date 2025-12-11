@@ -101,6 +101,7 @@ class ChooseParamValue(CallbackData, identifier='choose_param_value'):
 
 class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
     menu_id: str
+    force_new_message: bool = False
 
 
 class ToggleNotificationChannel(CallbackData, identifier='toggle_notification_channel'):

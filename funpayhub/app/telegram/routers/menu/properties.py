@@ -58,7 +58,11 @@ async def open_custom_menu(
     )
 
     menu = await tg_ui.build_menu(ctx, data | {'query': query})
-    await menu.apply_to(query.message)
+
+    if callback_data.force_new_message:
+        await menu.reply_to(query.message)
+    else:
+        await menu.apply_to(query.message)
 
 
 @r.callback_query(cbs.OpenEntryMenu.filter())

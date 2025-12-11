@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = ['EntriesUIRegistry']
 
 
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Type
 from dataclasses import replace
 
 from funpayhub.loggers import telegram_ui as logger
