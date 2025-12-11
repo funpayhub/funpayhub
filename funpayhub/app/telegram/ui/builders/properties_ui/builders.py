@@ -326,12 +326,11 @@ class AddFormattersListButtonModification(MenuModification):
     id = 'fph:add_formatters_list_button_modification'
 
     async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
-        result = (
+        return (
             ctx.entry.matches_path(['auto_response', '*', 'response_text'])
             or ctx.entry.matches_path(['review_reply', '*', 'review_reply_text'])
             or ctx.entry.matches_path(['review_reply', '*', 'chat_reply_text'])
         )
-        return result
 
     async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
         if ctx.entry.matches_path(['auto_response', '*', 'response_text']):
@@ -343,7 +342,7 @@ class AddFormattersListButtonModification(MenuModification):
         else:
             query = None
 
-        menu.main_keyboard.add_callback_button(
+        menu.footer_keyboard.add_callback_button(
             button_id='open_formatters_list',
             text=translater.translate('$open_formatters_list'),
             callback_data=cbs.OpenMenu(

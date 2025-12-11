@@ -139,7 +139,6 @@ class ExecCodeMenuBuilder(MenuBuilder):
 
         return Menu(
             text=await exec_view_text(ctx, result, 'code'),
-            image=None,
             header_keyboard=await build_view_navigation_buttons(ctx, total_pages),
             main_keyboard=await exec_view_kb(ctx, 'code'),
             finalizer=StripAndNavigationFinalizer(),

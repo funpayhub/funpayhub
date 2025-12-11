@@ -88,10 +88,9 @@ class KeyboardBuilder:
 @dataclass
 class Menu:
     text: str = ''
-    image: str | None = None
-    header_keyboard: Keyboard = field(default_factory=list)
-    main_keyboard: Keyboard = field(default_factory=list)
-    footer_keyboard: Keyboard = field(default_factory=list)
+    header_keyboard: Keyboard = field(default_factory=KeyboardBuilder)
+    main_keyboard: Keyboard = field(default_factory=KeyboardBuilder)
+    footer_keyboard: Keyboard = field(default_factory=KeyboardBuilder)
     finalizer: Any | None = None  # todo: type
 
     @overload
