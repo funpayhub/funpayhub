@@ -20,19 +20,53 @@ class Button:
     button_id: str
     obj: InlineKeyboardButton
 
+    @overload
     @classmethod
-    def callback_button(cls, button_id: str, text: str, callback_data: str) -> Button:
-        return Button(
+    def callback_button(
+        cls, button_id: str, text: str, callback_data: str, row: Literal[False]
+    ) -> Button:
+        pass
+
+    @overload
+    @classmethod
+    def callback_button(
+        cls, button_id: str, text: str, callback_data: str, row: Literal[True]
+    ) -> list[Button]:
+        pass
+
+    @classmethod
+    def callback_button(
+        cls, button_id: str, text: str, callback_data: str, row: bool = False
+    ) -> Button | list[Button]:
+        btn = Button(
             button_id=button_id,
             obj=InlineKeyboardButton(text=text, callback_data=callback_data),
         )
+        if row:
+            return [btn]
+        return btn
+
+    @overload
+    @classmethod
+    def url_button(cls, button_id: str, text: str, url: str, row: Literal[False]) -> Button:
+        pass
+
+    @overload
+    @classmethod
+    def url_button(cls, button_id: str, text: str, url: str, row: Literal[True]) -> list[Button]:
+        pass
 
     @classmethod
-    def url_button(cls, button_id: str, text: str, url: str) -> Button:
-        return Button(
+    def url_button(
+        cls, button_id: str, text: str, url: str, row: bool = False
+    ) -> Button | list[Button]:
+        btn = Button(
             button_id=button_id,
             obj=InlineKeyboardButton(text=text, url=url),
         )
+        if row:
+            return [btn]
+        return btn
 
 
 @dataclass
