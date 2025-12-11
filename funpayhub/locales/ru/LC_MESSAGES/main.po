@@ -419,6 +419,12 @@ msgstr "🔖 Форматтеры"
 msgid "$formatters:categories"
 msgstr "Категории"
 
+msgid "$formatters:show_categories"
+msgstr "По категориям"
+
+msgid "$formatters:show_all"
+msgstr "Весь список"
+
 msgid "$formatters_categories:general:name"
 msgstr "Общее"
 
