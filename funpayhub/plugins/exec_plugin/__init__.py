@@ -6,8 +6,14 @@ from typing import TYPE_CHECKING
 from pathlib import Path
 
 from .types import ExecutionResult, ExecutionResultsRegistry
-from .telegram.menus import ExecCodeMenuBuilder, ExecListMenuBuilder, ExecOutputMenuBuilder
+from .telegram.menus import (
+    ExecCodeMenuBuilder,
+    ExecListMenuBuilder,
+    ExecOutputMenuBuilder,
+    MainPropsMenuModification,
+)
 from .telegram.router import r as router
+from ...app.telegram.ui.ids import MenuIds
 
 
 if TYPE_CHECKING:
@@ -37,10 +43,10 @@ class Plugin:
         hub.telegram.ui_registry.add_menu_builder(ExecCodeMenuBuilder)
         hub.telegram.ui_registry.add_menu_builder(ExecOutputMenuBuilder)
 
-        # hub.telegram.ui_registry.add_entry_menu_modification(
-        #     'exec:main_props_menu_modification',
-        #     main_props_menu_modification,
-        # )
+        hub.telegram.ui_registry.add_menu_modification(
+            MainPropsMenuModification,
+            MenuIds.properties_entry,
+        )
 
         hub.telegram.dispatcher.include_router(router)
 

@@ -12,9 +12,6 @@ from funpayhub.lib.core import classproperty
 from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
-type Keyboard = list[list[Button]] | 'KeyboardBuilder'
-
-
 @dataclass
 class Button:
     button_id: str
@@ -23,20 +20,32 @@ class Button:
     @overload
     @classmethod
     def callback_button(
-        cls, button_id: str, text: str, callback_data: str, row: Literal[False]
+        cls,
+        button_id: str,
+        text: str,
+        callback_data: str,
+        row: Literal[False] = ...,
     ) -> Button:
         pass
 
     @overload
     @classmethod
     def callback_button(
-        cls, button_id: str, text: str, callback_data: str, row: Literal[True]
+        cls,
+        button_id: str,
+        text: str,
+        callback_data: str,
+        row: Literal[True] = ...,
     ) -> list[Button]:
         pass
 
     @classmethod
     def callback_button(
-        cls, button_id: str, text: str, callback_data: str, row: bool = False
+        cls,
+        button_id: str,
+        text: str,
+        callback_data: str,
+        row: bool = False,
     ) -> Button | list[Button]:
         btn = Button(
             button_id=button_id,
@@ -48,7 +57,7 @@ class Button:
 
     @overload
     @classmethod
-    def url_button(cls, button_id: str, text: str, url: str, row: Literal[False]) -> Button:
+    def url_button(cls, button_id: str, text: str, url: str, row: Literal[False] = ...) -> Button:
         pass
 
     @overload
@@ -58,7 +67,11 @@ class Button:
 
     @classmethod
     def url_button(
-        cls, button_id: str, text: str, url: str, row: bool = False
+        cls,
+        button_id: str,
+        text: str,
+        url: str,
+        row: bool = False,
     ) -> Button | list[Button]:
         btn = Button(
             button_id=button_id,
@@ -71,7 +84,7 @@ class Button:
 
 @dataclass
 class KeyboardBuilder:
-    keyboard: Keyboard = field(default_factory=list)
+    keyboard: list[list[Button]] = field(default_factory=list)
 
     def add_row(self, *buttons: Button) -> None:
         self.keyboard.append(list(buttons))
@@ -88,7 +101,15 @@ class KeyboardBuilder:
     def add_url_button(self, button_id: str, text: str, url: str) -> None:
         self.add_button(Button.url_button(button_id, text, url))
 
-    def __getitem__(self, index: int) -> list[Button]:
+    @overload
+    def __getitem__(self, index: int) -> list[Button]: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> KeyboardBuilder: ...
+
+    def __getitem__(self, index: int | slice) -> list[Button] | KeyboardBuilder:
+        if isinstance(index, slice):
+            return KeyboardBuilder(keyboard=self.keyboard[index])
         return self.keyboard[index]
 
     def __setitem__(self, index: int, value: list[Button]) -> None:
@@ -122,9 +143,9 @@ class KeyboardBuilder:
 @dataclass
 class Menu:
     text: str = ''
-    header_keyboard: Keyboard = field(default_factory=KeyboardBuilder)
-    main_keyboard: Keyboard = field(default_factory=KeyboardBuilder)
-    footer_keyboard: Keyboard = field(default_factory=KeyboardBuilder)
+    header_keyboard: KeyboardBuilder = field(default_factory=KeyboardBuilder)
+    main_keyboard: KeyboardBuilder = field(default_factory=KeyboardBuilder)
+    footer_keyboard: KeyboardBuilder = field(default_factory=KeyboardBuilder)
     finalizer: Any | None = None  # todo: type
 
     @overload
@@ -132,10 +153,12 @@ class Menu:
         pass
 
     @overload
-    def total_keyboard(self, convert: Literal[False]) -> Keyboard | None:
+    def total_keyboard(self, convert: Literal[False]) -> KeyboardBuilder | None:
         pass
 
-    def total_keyboard(self, convert: bool = False) -> Keyboard | InlineKeyboardMarkup | None:
+    def total_keyboard(
+        self, convert: bool = False
+    ) -> KeyboardBuilder | InlineKeyboardMarkup | None:
         total_keyboard = [*self.header_keyboard, *self.main_keyboard, *self.footer_keyboard]
         if not total_keyboard:
             return None

@@ -4,16 +4,15 @@ import html
 import math
 from typing import TYPE_CHECKING, Final, Literal
 
-from aiogram.types import InlineKeyboardButton
-
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.lib.telegram.ui import Menu, Button, Keyboard, MenuContext
+from funpayhub.lib.telegram.ui import Menu, Button, MenuContext, KeyboardBuilder
 from funpayhub.lib.telegram.ui.types import MenuBuilder, MenuModification
 from funpayhub.app.telegram.ui.premade import (
     StripAndNavigationFinalizer,
     build_view_navigation_buttons,
 )
+from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 
 from .callbacks import SaveExecCode, SendExecFile
 
@@ -28,37 +27,33 @@ if TYPE_CHECKING:
 MAX_TEXT_LEN: Final = 3000
 
 
-async def exec_view_kb(ctx: MenuContext, mode: Literal['output', 'code']) -> Keyboard:
+async def exec_view_kb(ctx: MenuContext, mode: Literal['output', 'code']) -> KeyboardBuilder:
     callback_data = ctx.callback_data
-    btn = Button(
+    keyboard = KeyboardBuilder()
+    keyboard.add_callback_button(
         button_id='download_exec_files',
-        obj=InlineKeyboardButton(
-            text='🔲 Код' if mode == 'output' else '📄 Вывод',
-            callback_data=cbs.OpenMenu(
-                menu_id='exec_code' if mode == 'output' else 'exec_output',
-                data={'exec_id': ctx.data['exec_id']},
-                history=callback_data.history if callback_data is not None else [],
-            ).pack(),
-        ),
+        text='🔲 Код' if mode == 'output' else '📄 Вывод',
+        callback_data=cbs.OpenMenu(
+            menu_id='exec_code' if mode == 'output' else 'exec_output',
+            data={'exec_id': ctx.data['exec_id']},
+            history=callback_data.history if callback_data is not None else [],
+        ).pack(),
     )
 
-    download_btn = Button(
-        button_id='exec_switch_code_output',
-        obj=InlineKeyboardButton(
+    keyboard.add_row(
+        Button.callback_button(
+            button_id='exec_switch_code_output',
             text='💾 Скачать',
             callback_data=SendExecFile(exec_id=ctx.data['exec_id']).pack(),
         ),
-    )
-
-    save_btn = Button(
-        button_id='save_to_dict',
-        obj=InlineKeyboardButton(
+        Button.callback_button(
+            button_id='save_to_dict',
             text='💿 Сохранить',
             callback_data=SaveExecCode(exec_id=ctx.data['exec_id']).pack(),
         ),
     )
 
-    return [[btn], [save_btn, download_btn]]
+    return keyboard
 
 
 async def exec_view_text(ctx: MenuContext, result: ExecR, mode: Literal['output', 'code']) -> str:
@@ -84,26 +79,18 @@ class ExecListMenuBuilder(MenuBuilder):
     context_type = MenuContext
 
     async def build(self, ctx: MenuContext, exec_registry: ExecRReg) -> Menu:
-        keyboard = []
+        keyboard = KeyboardBuilder()
         callback_data = ctx.callback_data
 
         for exec_id, result in exec_registry.registry.items():
-            keyboard.append(
-                [
-                    Button(
-                        button_id=f'open_exec_output:{exec_id}',
-                        obj=InlineKeyboardButton(
-                            text=f'{"❌" if result.error else "✅"} {exec_id}',
-                            callback_data=cbs.OpenMenu(
-                                menu_id='exec_output',
-                                data={'exec_id': exec_id},
-                                history=callback_data.as_history()
-                                if callback_data is not None
-                                else [],
-                            ).pack(),
-                        ),
-                    ),
-                ],
+            keyboard.add_callback_button(
+                button_id=f'open_exec_output:{exec_id}',
+                text=f'{"❌" if result.error else "✅"} {exec_id}',
+                callback_data=cbs.OpenMenu(
+                    menu_id='exec_output',
+                    data={'exec_id': exec_id},
+                    history=callback_data.as_history() if callback_data is not None else [],
+                ).pack(),
             )
 
         return Menu(
@@ -149,25 +136,20 @@ class ExecCodeMenuBuilder(MenuBuilder):
 class MainPropsMenuModification(MenuModification):
     id = 'exec:main_props_menu_modification'
 
-    async def modify(
-        self,
-        ctx: Any,
-        menu: Menu,
-    ) -> Menu:
+    async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
+        return ctx.entry.matches_path([])
+
+    async def modify(self, ctx: EntryMenuContext, menu: Menu) -> Menu:
         if not isinstance(ctx.entry, FunPayHubProperties):
             return menu
 
-        menu.keyboard.append(
-            [
-                Button(
-                    button_id='open_exec_registry',
-                    text='💻 Exec Registry',
-                    callback_data=cbs.OpenMenu(
-                        menu_id='exec_list',
-                        history=[ctx.callback.pack()],
-                    ).pack(),
-                ),
-            ],
+        menu.main_keyboard.add_callback_button(
+            button_id='open_exec_registry',
+            text='💻 Exec Registry',
+            callback_data=cbs.OpenMenu(
+                menu_id='exec_list',
+                history=ctx.callback_data.as_history() if ctx.callback_data is not None else [],
+            ).pack(),
         )
 
         return menu

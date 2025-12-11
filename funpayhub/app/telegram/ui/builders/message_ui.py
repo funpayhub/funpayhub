@@ -3,14 +3,13 @@ from __future__ import annotations
 import html
 from dataclasses import replace
 
-from aiogram.types import InlineKeyboardButton
 from funpaybotengine import Bot as FPBot
 from funpaybotengine.types.enums import BadgeType
 
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder
+from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, KeyboardBuilder
 
 from ..ids import MenuIds
 from .context import NewMessageMenuContext, SendMessageMenuContext
@@ -37,34 +36,27 @@ class NewMessageNotificationMenuBuilder(MenuBuilder):
     ) -> Menu:
         # Не хэшируем коллбэки данного меню, чтобы не забивать память.
         # Вместо этого делаем коротки коллбэки, чтобы они могли работать между перезапусками.
-        keyboard = [
-            [
-                Button(
-                    button_id='reply',
-                    obj=InlineKeyboardButton(
-                        text=translater.translate('$new_message_ui.reply'),
-                        callback_data=cbs.SendMessage(
-                            to=ctx.funpay_chat_id,
-                            name=ctx.funpay_chat_name,
-                        ).pack_compact(),
-                    ),
-                ),
-                Button(
-                    button_id='mute',
-                    obj=InlineKeyboardButton(
-                        text=translater.translate('$new_message_ui.mute'),
-                        callback_data=cbs.MuteChat(chat_id=ctx.funpay_chat_id).pack_compact(),
-                    ),
-                ),
-                Button(
-                    button_id='open_chat',
-                    obj=InlineKeyboardButton(
-                        text=translater.translate('$new_message_ui.open_chat'),
-                        url=f'https://funpay.com/chat/?node={ctx.funpay_chat_id}',
-                    ),
-                ),
-            ],
-        ]
+        keyboard = KeyboardBuilder()
+        keyboard.add_row(
+            Button.callback_button(
+                button_id='reply',
+                text=translater.translate('$new_message_ui.reply'),
+                callback_data=cbs.SendMessage(
+                    to=ctx.funpay_chat_id,
+                    name=ctx.funpay_chat_name,
+                ).pack_compact(),
+            ),
+            Button.callback_button(
+                button_id='mute',
+                text=translater.translate('$new_message_ui.mute'),
+                callback_data=cbs.MuteChat(chat_id=ctx.funpay_chat_id).pack_compact(),
+            ),
+            Button.url_button(
+                button_id='open_chat',
+                text=translater.translate('$new_message_ui.open_chat'),
+                url=f'https://funpay.com/chat/?node={ctx.funpay_chat_id}',
+            ),
+        )
 
         if ctx.messages:
             texts = []
@@ -122,21 +114,15 @@ class SendMessageMenuBuilder(MenuBuilder):
         properties: FunPayHubProperties,
         translater: Translater,
     ) -> Menu:
-        kb = []
+        keyboard = KeyboardBuilder()
         for index, i in enumerate(properties.message_templates.value):
-            kb.append(
-                [
-                    Button(
-                        button_id=f'send_template:{index}',
-                        obj=InlineKeyboardButton(
-                            text=i[:30] + ('...' if len(i) > 30 else ''),
-                            callback_data=cbs.SendTemplate(
-                                to=ctx.funpay_chat_id,
-                                index=index,
-                            ).pack(hash=False),
-                        ),
-                    ),
-                ],
+            keyboard.add_callback_button(
+                button_id=f'send_template:{index}',
+                text=i[:30] + ('...' if len(i) > 30 else ''),
+                callback_data=cbs.SendTemplate(
+                    to=ctx.funpay_chat_id,
+                    index=index,
+                ).pack(hash=False),
             )
 
         fake_callback_data = cbs.SendMessage(
@@ -159,18 +145,17 @@ class SendMessageMenuBuilder(MenuBuilder):
                 chat_id=ctx.funpay_chat_id,
                 chat_name=ctx.funpay_chat_name,
             ),
-            footer_keyboard=[
-                [
-                    Button(
+            footer_keyboard=KeyboardBuilder(
+                keyboard=[
+                    Button.callback_button(
                         button_id='cancel',
-                        obj=InlineKeyboardButton(
-                            text=translater.translate('$clear_state'),
-                            callback_data=cbs.Clear(delete_message=True).pack(),
-                        ),
+                        text=translater.translate('$clear_state'),
+                        callback_data=cbs.Clear(delete_message=True).pack(),
+                        row=True,
                     ),
-                ],
-            ],
-            main_keyboard=kb,
+                ]
+            ),
+            main_keyboard=keyboard,
             finalizer=StripAndNavigationFinalizer(
                 back_button=False,
                 context_override=finalizer_context,
