@@ -6,14 +6,14 @@ __all__ = ('Dispatcher',)
 
 from typing import Any
 
-from eventry.asyncio.dispatcher import Dispatcher as BaseDispatcher, ErrorContext
+from eventry.asyncio.dispatcher import Dispatcher as BaseDispatcher
 
 from .router import Router
-from .events.base import ErrorEvent
+from .events.base import HubEvent, ErrorEvent
 
 
-def error_event_factory(context: ErrorContext) -> ErrorEvent:
-    return ErrorEvent(exception=context.exception, event=context.event)
+def error_event_factory(event: HubEvent, exception: Exception) -> ErrorEvent:
+    return ErrorEvent(exception=exception, event=event)
 
 
 class Dispatcher(BaseDispatcher, Router):
