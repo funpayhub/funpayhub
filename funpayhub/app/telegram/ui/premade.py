@@ -154,7 +154,7 @@ async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> K
         text=f'{ctx.view_page + (1 if total_pages else 0)} / {total_pages}',
         callback_data=cbs.ChangeViewPageManually(
             total_pages=total_pages,
-            history=callback_data.as_history() if callback_data.history else None,
+            history=callback_data.as_history(),
         ).pack()
         if total_pages > 1
         else cbs.Dummy().pack(),

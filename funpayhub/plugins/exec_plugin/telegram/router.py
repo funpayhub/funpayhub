@@ -106,6 +106,7 @@ async def execute_python_code(
         data={
             'callback_data': cbs.OpenMenu(
                 menu_id='exec_output',
+                data={'exec_id': r.id},
                 history=[cbs.OpenMenu(menu_id='exec_list').pack(hash=False)],
             ),
             'exec_id': r.id,
