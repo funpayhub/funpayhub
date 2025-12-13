@@ -22,6 +22,7 @@ MENU_BUILDERS = [
     message_ui.NewMessageNotificationMenuBuilder,
     message_ui.SendMessageMenuBuilder,
     other_ui.AddCommandMenuBuilder,
+    other_ui.StartNotificationMenuBuilder,
     control_ui.ControlMenuBuilder,
 ]
 

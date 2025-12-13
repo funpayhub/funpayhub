@@ -102,7 +102,10 @@ class PropertiesMenuBuilder(MenuBuilder):
     context_type = EntryMenuContext
 
     async def build(
-        self, ctx: EntryMenuContext, translater: Translater, tg_ui: UIRegistry
+        self,
+        ctx: EntryMenuContext,
+        translater: Translater,
+        tg_ui: UIRegistry,
     ) -> Menu:
         keyboard = KeyboardBuilder()
 
@@ -314,9 +317,10 @@ class PropertiesMenuModification(MenuModification):
                     button_id='open_current_chat_notifications',
                     text=translater.translate('$telegram_notifications'),
                     callback_data=cbs.OpenMenu(
-                        menu_id=MenuIds.tg_chat_notifications, history=history
+                        menu_id=MenuIds.tg_chat_notifications,
+                        history=history,
                     ).pack(),
-                )
+                ),
             ],
         )
         return menu
@@ -336,7 +340,7 @@ class AddFormattersListButtonModification(MenuModification):
         if ctx.entry.matches_path(['auto_response', '*', 'response_text']):
             query = 'fph:general|fph:message'
         elif ctx.entry.matches_path(
-            ['review_reply', '*', 'review_reply_text']
+            ['review_reply', '*', 'review_reply_text'],
         ) or ctx.entry.matches_path(['review_reply', '*', 'chat_reply_text']):
             query = 'fph:general|fph:order'
         else:

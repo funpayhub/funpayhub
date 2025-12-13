@@ -39,7 +39,7 @@ async def process_command(
     if command.reply.value:
         text = await fp_formatters.format_text(
             text=command.response_text.value,
-            query=GeneralFormattersCategory. or_ (MessageFormattersCategory),
+            query=GeneralFormattersCategory.or_(MessageFormattersCategory),
             data=data,
             raise_on_error=not command.ignore_formatters_errors.value,
         )
@@ -76,7 +76,7 @@ async def send_new_message_notification(
         return
 
     context = NewMessageMenuContext(
-        chat_id=-1,
+        chat_id=-1,  # todo
         menu_id=MenuIds.new_funpay_message,
         funpay_chat_id=event.chat_preview.id,
         funpay_chat_name=event.chat_preview.username,

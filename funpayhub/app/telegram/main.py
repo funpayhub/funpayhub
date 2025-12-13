@@ -13,6 +13,7 @@ from funpayhub.lib.telegram import CommandsRegistry
 from funpayhub.lib.properties import ListParameter
 from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.app.telegram.routers import ROUTERS
+from funpayhub.app.dispatching.events import TelegramStartEvent
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
 from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
@@ -107,6 +108,7 @@ class Telegram:
         ]
         await self.bot.set_my_commands(commands)
         await self.bot.delete_webhook(drop_pending_updates=True)
+        await self.hub.dispatcher.event_entry(TelegramStartEvent())
         await self.dispatcher.start_polling(self.bot)
 
     async def send_notification(

@@ -37,7 +37,7 @@ class NotificationsMenuBuilder(MenuBuilder):
                     ).pack(),
                 )
                 for index, i in enumerate(f'review_{j}' for j in range(1, 6))
-            )
+            ),
         )
 
         for entry in props.entries.values():

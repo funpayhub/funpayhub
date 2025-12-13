@@ -157,7 +157,8 @@ class Menu:
         pass
 
     def total_keyboard(
-        self, convert: bool = False
+        self,
+        convert: bool = False,
     ) -> KeyboardBuilder | InlineKeyboardMarkup | None:
         total_keyboard = [*self.header_keyboard, *self.main_keyboard, *self.footer_keyboard]
         if not total_keyboard:

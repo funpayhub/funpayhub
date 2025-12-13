@@ -1,3 +1,4 @@
 from __future__ import annotations
 
 from .log_message_middleware import log_new_message_middleware
+from .make_profile_snapshot_on_new_order import make_profile_snapshot_middleware

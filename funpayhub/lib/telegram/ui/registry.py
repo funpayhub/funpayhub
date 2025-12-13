@@ -112,7 +112,7 @@ class UIRegistry:
         self,
         context: MenuContext,
         data: dict[str, Any] | None = None,
-        use_modificatoins: bool = True,
+        run_modifications: bool = True,
         finalize: bool = True,
     ) -> Menu:
         try:
@@ -134,7 +134,7 @@ class UIRegistry:
         result = await builder.build(
             context,
             self._workflow_data,
-            run_modifications=use_modificatoins,
+            run_modifications=run_modifications,
             finalize=finalize,
         )
         HashinatorT1000.save()
@@ -189,5 +189,7 @@ class UIRegistry:
         logger.info(f'Building button {context.button_id!r}.')
 
         return await builder.build(
-            context, self._workflow_data, run_modifications=run_modifications
+            context,
+            self._workflow_data,
+            run_modifications=run_modifications,
         )

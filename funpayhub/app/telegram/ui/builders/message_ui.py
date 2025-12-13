@@ -153,7 +153,7 @@ class SendMessageMenuBuilder(MenuBuilder):
                         callback_data=cbs.Clear(delete_message=True).pack(),
                         row=True,
                     ),
-                ]
+                ],
             ),
             main_keyboard=keyboard,
             finalizer=StripAndNavigationFinalizer(

@@ -4,7 +4,7 @@ import os
 import asyncio
 from typing import Any
 
-from funpayhub.app.routers import router
+from funpayhub.app.routers import ROUTERS
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties import Parameter, Properties, MutableParameter
 from funpayhub.lib.translater import Translater
@@ -30,7 +30,7 @@ class FunPayHub:
     ):
         self._workflow_data = WorkflowData
         self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
-        self._dispatcher.connect_router(router)  # todo
+        self.setup_dispatcher()
         self._properties = properties
 
         self._translater = Translater()
@@ -68,6 +68,9 @@ class FunPayHub:
         self._running_lock = asyncio.Lock()
         self._stopping_lock = asyncio.Lock()
         self._stop: asyncio.Future[int] = asyncio.Future()
+
+    def setup_dispatcher(self):
+        self._dispatcher.connect_routers(*ROUTERS)
 
     async def start(self) -> int:
         async def wait_future(fut: asyncio.Future) -> None:

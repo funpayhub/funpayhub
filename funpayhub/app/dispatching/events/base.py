@@ -14,6 +14,7 @@ class ErrorEvent(HubEvent):
         self.event = event
         super().__init__()
 
+    @property
     def event_context_injection(self) -> dict[str, Any]:
         return {
             'exception': self.exception,

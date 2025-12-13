@@ -20,6 +20,8 @@ class MenuIds:
     properties_list_param = 'fph:properties_list_param'
     properties_choice_param = 'fph:properties_choice_param'
 
+    start_notification = 'fph:start_notification'
+
 
 class ButtonIds:
     properties_entry = 'fph:properties_entry'

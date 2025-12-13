@@ -28,6 +28,16 @@ class AddCommandMenuBuilder(MenuBuilder):
                         ).pack(),
                         row=True,
                     ),
-                ]
+                ],
             ),
+        )
+
+
+class StartNotificationMenuBuilder(MenuBuilder):
+    id = MenuIds.start_notification
+    context_type = MenuContext
+
+    async def build(self, ctx: MenuContext, translater: Translater) -> Menu:
+        return Menu(
+            text=translater.translate('$start_notification_text'),
         )
