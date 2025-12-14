@@ -8,7 +8,11 @@ from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.app.telegram.ui import premade
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
 from funpayhub.lib.properties.base import Entry
-from funpayhub.app.properties.flags import ParameterFlags as PropsFlags
+from funpayhub.app.properties.flags import (
+    ParameterFlags,
+    ParameterFlags as PropsFlags,
+    PropertiesFlags,
+)
 from funpayhub.lib.telegram.ui.types import (
     Menu,
     Button,
@@ -111,6 +115,9 @@ class PropertiesMenuBuilder(MenuBuilder):
 
         for entry_id, sub_entry in ctx.entry.entries.items():
             if not isinstance(sub_entry, Properties | MutableParameter):  # skip immutable params
+                continue
+
+            if PropertiesFlags.HIDE in sub_entry.flags or ParameterFlags.HIDE in sub_entry.flags:
                 continue
 
             try:
