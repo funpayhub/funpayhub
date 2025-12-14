@@ -21,6 +21,7 @@ class MenuIds:
     properties_choice_param = 'fph:properties_choice_param'
 
     start_notification = 'fph:start_notification'
+    successful_funpay_start_notification = 'fph:successful_funpay_start_notification'
 
 
 class ButtonIds:

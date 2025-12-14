@@ -6,6 +6,7 @@ from funpaybotengine import Bot, Dispatcher, AioHttpSession
 
 from funpayhub.app.funpay import middlewares as mdwr
 from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
+from funpayhub.app.dispatching import FunPayStartEvent
 from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
@@ -40,6 +41,11 @@ class FunPay:
         self.setup_dispatcher()
 
     async def start(self):
+        try:
+            await self._bot.update()
+        except Exception:
+            pass
+        await self.hub.dispatcher.event_entry(FunPayStartEvent())
         await self._bot.listen_events(self._dispatcher)
 
     def setup_dispatcher(self):

@@ -15,6 +15,7 @@ _events = {
     'properties_attached': events.PropertiesAttachedEvent,
     'parameter_attached': events.ParameterAttachedEvent,
     'telegram_start': events.TelegramStartEvent,
+    'funpay_start': events.FunPayStartEvent,
 }
 
 
@@ -23,6 +24,7 @@ class Router(BaseRouter):
     on_properties_attached: HandlerManager
     on_parameter_attached: HandlerManager
     on_telegram_start: HandlerManager
+    on_funpay_start: HandlerManager
 
     def __init__(self, name: str | None = None) -> None:
         super().__init__(name=name or f'Router{id(self)}')

@@ -81,7 +81,7 @@ class FunPayHub:
             self._stop = asyncio.Future()
 
             tasks = [
-                # asyncio.create_task(self.funpay.start(), name='funpay'),
+                asyncio.create_task(self.funpay.start(), name='funpay'),
                 asyncio.create_task(self.telegram.start(), name='telegram'),
                 asyncio.create_task(wait_future(self._stop)),
             ]
