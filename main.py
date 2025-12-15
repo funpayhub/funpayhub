@@ -94,6 +94,7 @@ async def main():
     props = FunPayHubProperties()
     await props.load()
     app = FunPayHub(properties=props)
+    print(app.instance_id)
     await check_session(app.funpay.bot)
     result = input()
     if result != 'start':

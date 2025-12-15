@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+import random
+import string
 import asyncio
 from typing import Any
 
@@ -23,11 +25,17 @@ from funpayhub.plugins.exec_plugin import Plugin
 from .workflow_data import WorkflowData
 
 
+random_part = lambda length: ''.join(
+    random.choice(string.ascii_uppercase + string.digits) for _ in range(length)
+)
+
+
 class FunPayHub:
     def __init__(
         self,
         properties: FunPayHubProperties,
     ):
+        self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
         self._workflow_data = WorkflowData
         self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
         self.setup_dispatcher()
@@ -155,3 +163,7 @@ class FunPayHub:
     @property
     def dispatcher(self) -> HubDispatcher:
         return self._dispatcher
+
+    @property
+    def instance_id(self) -> str:
+        return self._instance_id
