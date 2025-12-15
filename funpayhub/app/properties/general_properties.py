@@ -3,8 +3,8 @@ from __future__ import annotations
 
 __all__ = ['GeneralProperties']
 
-
-from funpayhub.lib.properties import Properties, FloatParameter, ChoiceParameter
+from funpayhub.lib.properties import Properties, FloatParameter, ChoiceParameter, StringParameter
+from funpayhub.app.properties.flags import ParameterFlags
 from funpayhub.lib.properties.parameter.choice_parameter import Choice
 
 
@@ -28,6 +28,35 @@ class GeneralProperties(Properties):
                     Choice('banana', '🍌 Bacunana', 'banana'),
                 ),
                 default_value='ru',
+            ),
+        )
+
+        self.proxy = self.attach_parameter(
+            StringParameter(
+                id='proxy',
+                name='$props.general.proxy:name',
+                description='$props.general.proxy:description',
+                default_value='',
+                flags=[ParameterFlags.HIDE_VALUE],
+            ),
+        )
+
+        self.user_agent = self.attach_parameter(
+            StringParameter(
+                id='user_agent',
+                name='$props.general.user_agent:name',
+                description='$props.general.user_agent:description',
+                default_value='',
+            ),
+        )
+
+        self.golden_key = self.attach_parameter(
+            StringParameter(
+                id='golden_key',
+                name='$props.general.golden_key:name',
+                description='$props.general.golden_key:description',
+                default_value='',
+                flags=[ParameterFlags.HIDE_VALUE],
             ),
         )
 

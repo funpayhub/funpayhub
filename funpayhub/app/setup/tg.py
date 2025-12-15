@@ -1,19 +1,17 @@
 from __future__ import annotations
 
+import os
 import asyncio
 from typing import TYPE_CHECKING
 
 from aiogram import Bot, Router
-from aiogram.filters import StateFilter
 from aiogram.types import Message, CallbackQuery
+from aiogram.filters import StateFilter
 from aiogram.utils.chat_action import ChatActionSender
 
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
 
-from . import callbacks as cbs
-from . import states
-import os
-
+from . import states, callbacks as cbs
 from ..properties import FunPayHubProperties
 
 
@@ -60,9 +58,9 @@ async def open_select_proxy_menu(
             trigger=cb,
             data={
                 'proxy_env': bool(os.environ.get('FPH_PROXY')),
-                'proxy_props': bool(True)  # todo proxy property
-            }
-        )
+                'proxy_props': bool(properties.general.proxy.value),
+            },
+        ),
     )
     await menu.apply_to(cb.message)
     state = states.EnteringProxyState(message=cb.message, callback_data=callback_data)
@@ -70,17 +68,15 @@ async def open_select_proxy_menu(
         tg.bot,
         cb.message.chat.id,
         cb.from_user.id,
-        cb.message.message_thread_id
+        cb.message.message_thread_id,
     )
     await ctx.set_state(state.identifier)
     await ctx.set_data({'data': state})
 
 
 @router.message(StateFilter(states.EnteringProxyState.identifier))
-async def check_proxy_and_open_select_user_agent_menu():
-    ...
+async def check_proxy_and_open_select_user_agent_menu(): ...
 
 
 @router.callback_query(cbs.SetupProxy.filter())
-async def setup_proxy_and_open_select_user_agent_menu():
-    ...
+async def setup_proxy_and_open_select_user_agent_menu(): ...

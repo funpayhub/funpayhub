@@ -36,7 +36,10 @@ class EnterProxyMenu(MenuBuilder):
     context_type = MenuContext
 
     async def build(
-        self, ctx: MenuContext, properties: FunPayHubProperties, translater: Translater
+        self,
+        ctx: MenuContext,
+        properties: FunPayHubProperties,
+        translater: Translater,
     ) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
@@ -44,7 +47,7 @@ class EnterProxyMenu(MenuBuilder):
             text='$skip_proxy_setup',
             callback_data=cbs.SetupProxy(
                 action=cbs.ProxyAction.no_proxy,
-                history=ctx.callback_data.as_history()
+                history=ctx.callback_data.as_history(),
             ).pack(),
         )
 
@@ -54,8 +57,8 @@ class EnterProxyMenu(MenuBuilder):
                 text='$use_proxy_from_env',
                 callback_data=cbs.SetupProxy(
                     action=cbs.ProxyAction.from_env,
-                    history=ctx.callback_data.as_history()
-                ).pack()
+                    history=ctx.callback_data.as_history(),
+                ).pack(),
             )
 
         if ctx.data.get('proxy_props'):
@@ -64,8 +67,8 @@ class EnterProxyMenu(MenuBuilder):
                 text='$use_proxy_from_props',
                 callback_data=cbs.SetupProxy(
                     action=cbs.ProxyAction.from_properties,
-                    history=ctx.callback_data.as_history()
-                ).pack()
+                    history=ctx.callback_data.as_history(),
+                ).pack(),
             )
 
         return Menu(
@@ -80,7 +83,10 @@ class EnterUserAgentMenu(MenuBuilder):
     context_type = MenuContext
 
     async def build(
-        self, ctx: MenuContext, properties: FunPayHubProperties, translater: Translater
+        self,
+        ctx: MenuContext,
+        properties: FunPayHubProperties,
+        translater: Translater,
     ) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
@@ -88,6 +94,26 @@ class EnterUserAgentMenu(MenuBuilder):
             text='$default_user_agent',
             callback_data='default_user_agent',
         )
+
+        if ctx.data.get('user_agent_env'):
+            kb.add_callback_button(
+                button_id='user_agent_from_env',
+                text='$use_user_agent_from_env',
+                callback_data=cbs.SetupProxy(
+                    action=cbs.ProxyAction.from_env,
+                    history=ctx.callback_data.as_history(),
+                ).pack(),
+            )
+
+        if ctx.data.get('user_agent_props'):
+            kb.add_callback_button(
+                button_id='user_agent_from_props',
+                text='$use_user_agent_from_props',
+                callback_data=cbs.SetupProxy(
+                    action=cbs.ProxyAction.from_properties,
+                    history=ctx.callback_data.as_history(),
+                ).pack(),
+            )
 
         return Menu(
             text=translater.translate('$setup_enter_user_agent'),
