@@ -42,8 +42,31 @@ class EnterProxyMenu(MenuBuilder):
         kb.add_callback_button(
             button_id='no_proxy',
             text='$skip_proxy_setup',
-            callback_data='skip_proxy_setup',
+            callback_data=cbs.SetupProxy(
+                action=cbs.ProxyAction.no_proxy,
+                history=ctx.callback_data.as_history()
+            ).pack(),
         )
+
+        if ctx.data.get('proxy_env'):
+            kb.add_callback_button(
+                button_id='proxy_from_env',
+                text='$use_proxy_from_env',
+                callback_data=cbs.SetupProxy(
+                    action=cbs.ProxyAction.from_env,
+                    history=ctx.callback_data.as_history()
+                ).pack()
+            )
+
+        if ctx.data.get('proxy_props'):
+            kb.add_callback_button(
+                button_id='proxy_from_props',
+                text='$use_proxy_from_props',
+                callback_data=cbs.SetupProxy(
+                    action=cbs.ProxyAction.from_properties,
+                    history=ctx.callback_data.as_history()
+                ).pack()
+            )
 
         return Menu(
             text=translater.translate('$setup_enter_proxy_message'),
