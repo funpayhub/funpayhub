@@ -9,3 +9,4 @@ from dataclasses import dataclass
 class EnteringProxyState(State, identifier='EnteringProxyState'):
     message: Message
     callback_data: CallbackData
+    last_entered_proxy: str | None = ''

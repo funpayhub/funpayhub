@@ -5,11 +5,15 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from aiogram import Bot, Router
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import StateFilter
 from aiogram.utils.chat_action import ChatActionSender
 
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
+from funpayhub.app.properties.validators import proxy_validator
+from aiohttp_socks import ProxyConnector
+from aiohttp import ClientSession
 
 from . import states, callbacks as cbs
 from ..properties import FunPayHubProperties
@@ -75,8 +79,48 @@ async def open_select_proxy_menu(
 
 
 @router.message(StateFilter(states.EnteringProxyState.identifier))
-async def check_proxy_and_open_select_user_agent_menu(): ...
+async def check_proxy_and_open_select_user_agent_menu(
+    msg: Message,
+    tg: Telegram,
+    properties: FunPayHubProperties,
+):
+    ctx: FSMContext = await tg.dispatcher.fsm.get_context(
+        tg.bot,
+        msg.chat.id,
+        msg.from_user.id,
+        msg.message_thread_id
+    )
+    data: states.EnteringProxyState = await ctx.get_value('data')
+
+    if msg.text == data.last_entered_proxy:
+        # quick save
+        await properties.general.proxy.set_value(msg.text)
+
+    try:
+        await proxy_validator(msg.text)
+    except ValueError as e:
+        await msg.reply(str(e))
+        return
+
+    try:
+        connector = ProxyConnector.from_url(msg.text)
+        async with ClientSession(connector=connector) as s:
+            r = await s.get('https://ifconfig.me/ip')
+            result = await r.text()
+    except Exception as e:
+        data.last_entered_proxy = msg.text
+        await msg.reply(
+            'Не удалось проверить работоспособность прокси.\n'
+            'Если вы уверены вы все равно хотите использовать данный прокси, отправьте его еще раз.'
+        )
 
 
 @router.callback_query(cbs.SetupProxy.filter())
-async def setup_proxy_and_open_select_user_agent_menu(): ...
+async def setup_proxy_and_open_select_user_agent_menu(
+    query: CallbackQuery,
+    callback_data: cbs.SetupProxy,
+    properties: FunPayHubProperties,
+):
+    if callback_data.action == [cbs.ProxyAction.no_proxy, cbs.ProxyAction.from_env]:
+        await properties.general.proxy.set_value('')
+    pass

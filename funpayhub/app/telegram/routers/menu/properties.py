@@ -240,7 +240,7 @@ async def toggle_notification_channel(
     )
 
 
-@r.message(StateFilter(ChangingParameterValue.__identifier__))
+@r.message(StateFilter(ChangingParameterValue.identifier))
 async def edit_parameter(
     message: Message,
     bot: Bot,
@@ -251,9 +251,9 @@ async def edit_parameter(
 
     context = _get_context(dispatcher, bot, message)
     data: ChangingParameterValue = (await context.get_data())['data']
-
+    new_value = '' if message.text == '-' else message.text
     try:
-        await data.parameter.set_value(message.text)
+        await data.parameter.set_value(new_value)
         await context.clear()
     except ValueError as e:
         await data.message.edit_text(
