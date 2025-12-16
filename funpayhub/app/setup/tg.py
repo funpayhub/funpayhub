@@ -30,6 +30,7 @@ setup_chat: int | None = None
 
 router = Router()
 setup_started = asyncio.Event()
+USE_NO_PROXY = False
 
 
 @router.message(lambda m, hub: m.text == hub.instance_id and not setup_started.is_set())
@@ -139,7 +140,29 @@ async def setup_proxy_and_open_select_user_agent_menu(
     query: CallbackQuery,
     callback_data: cbs.SetupProxy,
     properties: FunPayHubProperties,
+    tg: Telegram,
+    tg_ui: UIRegistry,
 ):
+    global USE_NO_PROXY
+
     if callback_data.action == [cbs.ProxyAction.no_proxy, cbs.ProxyAction.from_env]:
         await properties.general.proxy.set_value('')
-    pass
+        if callback_data.action == cbs.ProxyAction.no_proxy:
+            USE_NO_PROXY = True
+
+    ctx: FSMContext = tg.dispatcher.fsm.get_context(
+        tg.bot,
+        query.message.chat.id,
+        query.from_user.id,
+        query.message.message_thread_id,
+    )
+    await ctx.clear()
+
+    user_agent_menu = await tg_ui.build_menu(
+        MenuContext(
+            menu_id='fph:setup_enter_user_agent',
+            trigger=query,
+        ),
+    )
+
+    await user_agent_menu.apply_to(query.message)
