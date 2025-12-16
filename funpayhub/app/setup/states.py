@@ -13,3 +13,9 @@ class EnteringProxyState(State, identifier='EnteringProxyState'):
     message: Message
     callback_data: CallbackData
     last_entered_proxy: str | None = ''
+
+
+@dataclass
+class EnteringUserAgentState(State, identifier='EnteringUserAgentState'):
+    message: Message
+    callback_data: CallbackData

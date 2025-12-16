@@ -115,15 +115,17 @@ async def check_proxy_and_open_select_user_agent_menu(
             )
             return
 
+    new_callback = OpenMenu(
+        menu_id='fph:setup_enter_user_agent',
+        history=data.callback_data.as_history(),
+    )
+
     user_agent_menu = await tg_ui.build_menu(
         MenuContext(
             menu_id='fph:setup_enter_user_agent',
             trigger=msg,
             data={
-                'callback_data': OpenMenu(
-                    menu_id='fph:setup_enter_user_agent',
-                    history=data.callback_data.as_history(),
-                ),
+                'callback_data': new_callback,
             },
         ),
     )
@@ -132,7 +134,10 @@ async def check_proxy_and_open_select_user_agent_menu(
     await properties.general.proxy.set_value(msg.text)
     await ctx.clear()
 
-    await user_agent_menu.reply_to(msg)
+    msg = await user_agent_menu.reply_to(msg)
+    new_state = states.EnteringUserAgentState(message=msg, callback_data=new_callback)
+    await ctx.set_state(new_state.identifier)
+    await ctx.set_data({'data': new_state})
 
 
 @router.callback_query(cbs.SetupProxy.filter())
@@ -166,3 +171,15 @@ async def setup_proxy_and_open_select_user_agent_menu(
     )
 
     await user_agent_menu.apply_to(query.message)
+
+    new_state = states.EnteringUserAgentState(message=query.message, callback_data=callback_data)
+    await ctx.set_state(new_state.identifier)
+    await ctx.set_data({'data': new_state})
+
+
+@router.callback_query(cbs.SetupUserAgent.filter())
+async def setup_user_agent_and_open_golden_key_menu(): ...
+
+
+@router.message(states.EnteringUserAgentState.identifier)
+async def setup_user_agent_and_open_golden_key_menu(): ...
