@@ -13,6 +13,5 @@ for root, _, files in os.walk(BASE_DIR):
             po_path = os.path.join(root, file)
             mo_path = os.path.splitext(po_path)[0] + '.mo'
 
-            print(f'Compiling {po_path} -> {mo_path}')
             po = polib.pofile(po_path)
             po.save_as_mofile(mo_path)

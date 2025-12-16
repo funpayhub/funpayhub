@@ -25,9 +25,8 @@ from funpayhub.plugins.exec_plugin import Plugin
 from .workflow_data import WorkflowData
 
 
-random_part = lambda length: ''.join(
-    random.choice(string.ascii_uppercase + string.digits) for _ in range(length)
-)
+def random_part(length):
+    return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
 class FunPayHub:
@@ -83,7 +82,6 @@ class FunPayHub:
     async def start(self) -> int:
         async def wait_future(fut: asyncio.Future) -> None:
             await fut
-            print(f'future done: {fut.result()}')
 
         async with self._running_lock:
             self._stop = asyncio.Future()

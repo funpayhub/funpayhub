@@ -50,9 +50,6 @@ class _MenuBuilder:
                 wrapped = CallableWrapper(result.finalizer)
                 result = await wrapped((context, result), data)
             except:
-                import traceback
-
-                print(traceback.format_exc())
                 pass  # todo: logging
             result.finalizer = None
         return result

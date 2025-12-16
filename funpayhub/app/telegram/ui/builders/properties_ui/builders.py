@@ -128,9 +128,6 @@ class PropertiesMenuBuilder(MenuBuilder):
                 )
                 button = await tg_ui.build_button(context=button_ctx)
             except:
-                import traceback
-
-                print(traceback.format_exc())
                 continue  # todo: err log
 
             keyboard.add_button(button)

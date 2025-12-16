@@ -122,7 +122,7 @@ class _HashinatorT1000:
         self.hashes.clear()
 
     @classmethod
-    def is_hash(self, value: str) -> bool:
+    def is_hash(cls, value: str) -> bool:
         return value.startswith('<<') and value.endswith('>>') and len(value) == 36
 
 

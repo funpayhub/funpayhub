@@ -34,9 +34,7 @@ async def set_sending_message_state(
         view_page=callback_data.view_page,
     )
     menu = await tg_ui.build_menu(menu_context, {})
-    print('CALL')
     if callback_data.set_state:
-        print('STATE IS SET')
         msg = await query.message.answer(
             text=menu.text,
             reply_markup=menu.total_keyboard(convert=True),
@@ -50,7 +48,6 @@ async def set_sending_message_state(
         )
         await query.answer()
     else:
-        print('STATE UNSET')
         await menu.apply_to(query.message)
 
 

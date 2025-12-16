@@ -31,7 +31,7 @@ class FunPayHubProperties(Properties):
                 name='version',
                 description='version',
                 value='0.1.0',
-            )
+            ),
         )
         self.setup_completed = self.attach_parameter(
             ToggleParameter(
@@ -40,7 +40,7 @@ class FunPayHubProperties(Properties):
                 description='setup_completed',
                 default_value=False,
                 flags=[ParameterFlags.HIDE],
-            )
+            ),
         )
         self.toggles = self.attach_properties(TogglesProperties())
         self.general = self.attach_properties(GeneralProperties())

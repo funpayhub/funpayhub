@@ -1,8 +1,11 @@
-from funpayhub.app.telegram.states import State
+from __future__ import annotations
+
+from dataclasses import dataclass
+
 from aiogram.types import Message
 
+from funpayhub.app.telegram.states import State
 from funpayhub.lib.telegram.callback_data import CallbackData
-from dataclasses import dataclass
 
 
 @dataclass

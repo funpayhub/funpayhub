@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from yarl import URL
 
 
@@ -17,5 +18,6 @@ async def proxy_validator(value: str) -> None:
         raise ValueError('Невалидный прокси.')
 
     if url.scheme not in ('http', 'https', 'socks5'):
-        raise ValueError(f'Неподдерживаемая схема {url.scheme!r}.\n'
-                         f'Доступные варианты: http, https, socks5')
+        raise ValueError(
+            f'Неподдерживаемая схема {url.scheme!r}.\nДоступные варианты: http, https, socks5',
+        )

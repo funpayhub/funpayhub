@@ -13,12 +13,12 @@ async def make_profile_snapshot_middleware(
     bot: Bot,
 ) -> dict[str, Any] | None:
     if events_stack.get('profile_snapshot'):
-        profile_snapshot = events_stack.get('profile_snapshot')
+        events_stack.get('profile_snapshot')
 
     for i in events_stack.events:
         if not isinstance(i, NewSaleEvent):
             continue
         events_stack['profile_snapshot'] = await bot.get_profile_page(bot.userid)
-        profile_snapshot = events_stack.get('profile_snapshot')
+        events_stack.get('profile_snapshot')
     else:
         return None

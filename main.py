@@ -86,15 +86,13 @@ async def check_session(bot: Bot):
     session: AioHttpSession = bot.session  # type: ignore
     cs = await session.session()
     async with cs:
-        r = await cs.get('https://api.ipify.org?format=json')
-        print(await r.json())
+        await cs.get('https://api.ipify.org?format=json')
 
 
 async def main():
     props = FunPayHubProperties()
     await props.load()
     app = FunPayHub(properties=props)
-    print(app.instance_id)
     await check_session(app.funpay.bot)
     result = input()
     if result != 'start':

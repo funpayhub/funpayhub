@@ -6,6 +6,7 @@ __all__ = ['GeneralProperties']
 from funpayhub.lib.properties import Properties, FloatParameter, ChoiceParameter, StringParameter
 from funpayhub.app.properties.flags import ParameterFlags
 from funpayhub.lib.properties.parameter.choice_parameter import Choice
+
 from .validators import proxy_validator
 
 
@@ -39,7 +40,7 @@ class GeneralProperties(Properties):
                 description='$props.general.proxy:description',
                 default_value='',
                 flags=[ParameterFlags.HIDE_VALUE],
-                validator=proxy_validator
+                validator=proxy_validator,
             ),
         )
 

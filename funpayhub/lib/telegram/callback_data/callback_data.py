@@ -219,7 +219,7 @@ class CallbackData(UnknownCallback):
                 raise ValueError(
                     f'Values amount ({len(value.unsigned_data)}) != fields amount ({len(names)}).',
                 )
-            return cls(**{k: v for k, v in zip(names, value.unsigned_data)})
+            return cls(**dict(zip(names, value.unsigned_data)))
 
         value.data.pop('data', None)
         value.data.pop('history', None)
@@ -291,7 +291,7 @@ class CallbackQueryFilter(Filter):
         except (TypeError, ValueError):
             unpacked = getattr(query, '__parsed__', None)
             if unpacked.identifier == self.callback_data.__identifier__:
-                print(unpacked.unsigned_data)
+                pass
             return False
 
 

@@ -19,6 +19,3 @@ logger.info('Info Log')
 logger.warning('Warning Log')
 logger.error('Error Log')
 logger.critical('Critical Log')
-
-
-print('\x1b[1m\x1b[38;5;74mSome Text\x1b[0m\x1b[38;5;75mSomeText\x1b[0m')
