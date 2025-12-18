@@ -181,5 +181,38 @@ async def setup_proxy_and_open_select_user_agent_menu(
 async def setup_user_agent_and_open_golden_key_menu(): ...
 
 
-@router.message(states.EnteringUserAgentState.identifier)
-async def setup_user_agent_and_open_golden_key_menu(): ...
+@router.message(StateFilter(states.EnteringUserAgentState.identifier))
+async def setup_user_agent_and_open_golden_key_menu(
+    msg: Message,
+    tg: Telegram,
+    tg_ui: UIRegistry,
+    properties: FunPayHubProperties,
+):
+    ctx: FSMContext = tg.dispatcher.fsm.get_context(
+        tg.bot,
+        msg.chat.id,
+        msg.from_user.id,
+        msg.message_thread_id,
+    )
+    data: states.EnteringUserAgentState = await ctx.get_value('data')
+
+    new_callback = OpenMenu(
+        menu_id='fph:setup_golden_key',
+        history=data.callback_data.as_history(),
+    )
+
+    await data.message.delete()
+    await properties.general.user_agent.set_value(msg.text)
+
+    await ctx.clear()
+
+    golden_key_menu = await tg_ui.build_menu(
+        MenuContext(
+            menu_id='fph:setup_golden_key',
+            trigger=msg,
+            data={'callback_data': new_callback}
+        ),
+    )
+
+    await golden_key_menu.reply_to(msg)
+
