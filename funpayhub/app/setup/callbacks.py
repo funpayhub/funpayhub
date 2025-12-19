@@ -15,6 +15,12 @@ class UserAgentAction:
     from_env = 2
 
 
+class GoldenKeyAction:
+    no_golden_key = 0
+    from_properties = 1
+    from_env = 2
+
+
 class SelectSetupLanguage(CallbackData, identifier='1'):
     lang: str
 
@@ -24,4 +30,8 @@ class SetupProxy(CallbackData, identifier='2'):
 
 
 class SetupUserAgent(CallbackData, identifier='3'):
+    action: int
+
+
+class SetupGoldenKey(CallbackData, identifier='4'):
     action: int

@@ -120,3 +120,45 @@ class EnterUserAgentMenu(MenuBuilder):
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )
+
+
+class EnterGoldenKeyMenu(MenuBuilder):
+    id = 'fph:setup_enter_golden_key'
+    context_type = MenuContext
+
+    async def build(self, ctx: MenuContext, translater: Translater) -> Menu:
+        kb = KeyboardBuilder()
+
+        kb.add_callback_button(
+            button_id='no_golden_key',
+            text='$skip_golden_key_setup',
+            callback_data=cbs.SetupGoldenKey(
+                action=cbs.GoldenKeyAction.no_golden_key,
+                history=ctx.callback_data.as_history(),
+            ).pack(),
+        )
+
+        if ctx.data.get('golden_key_env'):
+            kb.add_callback_button(
+                button_id='golden_key_from_env',
+                text='$use_golden_key_from_env',
+                callback_data=cbs.SetupGoldenKey(
+                    action=cbs.GoldenKeyAction.from_env,
+                    history=ctx.callback_data.as_history(),
+                ).pack(),
+            )
+
+        if ctx.data.get('golden_key_props'):
+            kb.add_callback_button(
+                button_id='golden_key_from_props',
+                text='$use_golden_key_from_props',
+                callback_data=cbs.SetupGoldenKey(
+                    action=cbs.GoldenKeyAction.from_properties,
+                    history=ctx.callback_data.as_history(),
+                ).pack(),
+            )
+
+        return Menu(
+            text=translater.translate('$setup_enter_golden_key'),
+            finalizer=StripAndNavigationFinalizer(),
+        )
