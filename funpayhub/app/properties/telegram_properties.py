@@ -4,7 +4,13 @@ from __future__ import annotations
 __all__ = ['TelegramProperties']
 
 
-from funpayhub.lib.properties import Properties, IntParameter, StringParameter, ToggleParameter
+from funpayhub.lib.properties import (
+    Properties,
+    IntParameter,
+    ListParameter,
+    StringParameter,
+    ToggleParameter,
+)
 from funpayhub.app.properties.flags import ParameterFlags as ParamFlags
 from funpayhub.app.properties.telegram_notifications import TelegramNotificationsProperties
 
@@ -48,6 +54,15 @@ class TelegramGeneral(Properties):
                 description='$props.telegram.general.password:description',
                 default_value='',
                 flags=[ParamFlags.PROTECT_VALUE],
+            ),
+        )
+
+        self.authorized_users = self.attach_parameter(
+            ListParameter(
+                id='authorized_users',
+                name='$props.telegram.general.authorized_users:name',
+                description='$props.telegram.general.authorized_users:description',
+                default_value=[],
             ),
         )
 

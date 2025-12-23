@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import json
 import asyncio
-import os.path
 from typing import TYPE_CHECKING, Any
 
 from aiogram import Bot, Dispatcher
@@ -43,9 +41,6 @@ class Telegram:
         self._dispatcher.workflow_data = workflow_data
         self._setup_dispatcher()
 
-        self._authorized_users: frozenset[int] = frozenset()
-        self._load_authorized_users()
-
         self._bot = Bot(
             token=bot_token,
             default=DefaultBotProperties(
@@ -74,10 +69,6 @@ class Telegram:
     @property
     def hub(self) -> FunPayHub:
         return self._hub
-
-    @property
-    def authorized_users(self) -> frozenset[int]:
-        return self._authorized_users
 
     def _setup_dispatcher(self):
         self._dispatcher.include_routers(*TG_ROUTERS)  # todo: remove
@@ -118,27 +109,6 @@ class Telegram:
         for menu_id, modifications in default_ui.MENU_MODIFICATIONS.items():
             for mod in modifications:
                 self.ui_registry.add_menu_modification(mod, menu_id)
-
-    def _load_authorized_users(self) -> None:
-        if not os.path.exists('storage/tg_authorized.json'):
-            self._authorized_users = frozenset()
-            return
-
-        with open('storage/tg_authorized.json', 'r', encoding='utf-8') as f:
-            try:
-                self._authorized_users = frozenset(json.loads(f.read()))
-            except:
-                self._authorized_users = frozenset()
-
-    def authorize_user(self, user_id: int) -> None:
-        self._authorized_users |= {user_id}
-        with open(os.path.join('storage', 'tg_authorized.json'), 'w', encoding='utf-8') as f:
-            json.dump(tuple(self._authorized_users), f, indent=2)
-
-    def deauthorize_user(self, user_id: int) -> None:
-        self._authorized_users -= {user_id}
-        with open(os.path.join('storage', 'tg_authorized.json'), 'w', encoding='utf-8') as f:
-            json.dump(tuple(self._authorized_users), f, indent=2)
 
     async def start(self) -> None:
         commands = [
