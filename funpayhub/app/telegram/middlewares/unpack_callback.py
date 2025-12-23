@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+
+__all__ = ['UnpackMiddleware']
+
+
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery
 

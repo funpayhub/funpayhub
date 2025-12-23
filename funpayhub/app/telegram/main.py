@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import asyncio
+import os.path
 from typing import TYPE_CHECKING, Any
 
 from aiogram import Bot, Dispatcher
@@ -15,9 +17,12 @@ from funpayhub.lib.properties import ListParameter
 from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.app.telegram.routers import ROUTERS
 from funpayhub.app.dispatching.events import TelegramStartEvent
+from funpayhub.app.telegram.middlewares import (
+    UnpackMiddleware,
+    AddDataMiddleware,
+    IsAuthorizedMiddleware,
+)
 from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.app.telegram.middlewares.unpack_callback import UnpackMiddleware
-from funpayhub.app.telegram.middlewares.add_data_to_workflow_data import AddDataMiddleware
 
 
 if TYPE_CHECKING:
@@ -37,6 +42,9 @@ class Telegram:
         self._dispatcher = Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
         self._dispatcher.workflow_data = workflow_data
         self._setup_dispatcher()
+
+        self._authorized_users: frozenset[int] = frozenset()
+        self._load_authorized_users()
 
         self._bot = Bot(
             token=bot_token,
@@ -67,6 +75,10 @@ class Telegram:
     def hub(self) -> FunPayHub:
         return self._hub
 
+    @property
+    def authorized_users(self) -> frozenset[int]:
+        return self._authorized_users
+
     def _setup_dispatcher(self):
         self._dispatcher.include_routers(*TG_ROUTERS)  # todo: remove
         self._dispatcher.include_routers(*ROUTERS)
@@ -78,6 +90,10 @@ class Telegram:
             o.outer_middleware(middleware)
 
         self.dispatcher.callback_query.outer_middleware(UnpackMiddleware())
+
+        _is_authorized_middleware = IsAuthorizedMiddleware()
+        self.dispatcher.callback_query.outer_middleware(_is_authorized_middleware)
+        self.dispatcher.message.outer_middleware(_is_authorized_middleware)
 
         # todo
         from funpayhub.app.telegram.routers.help.handlers import NeedHelpMiddleware, router
@@ -102,6 +118,27 @@ class Telegram:
         for menu_id, modifications in default_ui.MENU_MODIFICATIONS.items():
             for mod in modifications:
                 self.ui_registry.add_menu_modification(mod, menu_id)
+
+    def _load_authorized_users(self) -> None:
+        if not os.path.exists('storage/tg_authorized.json'):
+            self._authorized_users = frozenset()
+            return
+
+        with open('storage/tg_authorized.json', 'r', encoding='utf-8') as f:
+            try:
+                self._authorized_users = frozenset(json.loads(f.read()))
+            except:
+                self._authorized_users = frozenset()
+
+    def authorize_user(self, user_id: int) -> None:
+        self._authorized_users |= {user_id}
+        with open(os.path.join('storage', 'tg_authorized.json'), 'w', encoding='utf-8') as f:
+            json.dump(tuple(self._authorized_users), f, indent=2)
+
+    def deauthorize_user(self, user_id: int) -> None:
+        self._authorized_users -= {user_id}
+        with open(os.path.join('storage', 'tg_authorized.json'), 'w', encoding='utf-8') as f:
+            json.dump(tuple(self._authorized_users), f, indent=2)
 
     async def start(self) -> None:
         commands = [
