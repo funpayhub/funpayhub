@@ -9,6 +9,7 @@ from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
 from funpayhub.app.dispatching import FunPayStartEvent
 from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
+import asyncio
 
 
 if TYPE_CHECKING:
@@ -53,6 +54,16 @@ class FunPay:
             mdwr.log_new_message_middleware,
         )
         self._dispatcher.connect_routers(*ALL_ROUTERS)
+
+    async def _offers_raise_loop(self) -> None:
+        while True:
+            try:
+                profile_page = await self.bot.get_profile_page(self.bot.userid)
+                ...
+            except:
+                pass
+
+            await asyncio.sleep(600)
 
     @property
     def hub(self) -> FunPayHub:
