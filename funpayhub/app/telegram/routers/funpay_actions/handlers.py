@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import asyncio
 
-from aiogram import Bot, Dispatcher
-from aiogram.types import Message, CallbackQuery, ReactionTypePaid, ReactionTypeEmoji
+from io import BytesIO
+from typing import TYPE_CHECKING
+
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, CallbackQuery, ReactionTypeEmoji
 from aiogram.filters import StateFilter
 from funpaybotengine import Bot as FPBot
 
@@ -17,13 +20,16 @@ from ... import states, callbacks as cbs
 from .router import router
 
 
+if TYPE_CHECKING:
+    from funpayhub.app.telegram.main import Telegram
+
+
 @router.callback_query(cbs.SendMessage.filter())
 async def set_sending_message_state(
     query: CallbackQuery,
     callback_data: cbs.SendMessage,
     tg_ui: UIRegistry,
-    dispatcher: Dispatcher,
-    bot: Bot,
+    state: FSMContext,
 ):
     menu_context = SendMessageMenuContext(
         menu_id=MenuIds.send_funpay_message,
@@ -33,17 +39,15 @@ async def set_sending_message_state(
         menu_page=callback_data.menu_page,
         view_page=callback_data.view_page,
     )
-    menu = await tg_ui.build_menu(menu_context, {})
+    menu = await tg_ui.build_menu(menu_context)
     if callback_data.set_state:
         msg = await query.message.answer(
             text=menu.text,
             reply_markup=menu.total_keyboard(convert=True),
         )
 
-        context = utils.get_context(dispatcher, bot, query)
-        await context.clear()
-        await context.set_state(states.SendingFunpayMessage.__identifier__)
-        await context.set_data(
+        await state.set_state(states.SendingFunpayMessage.__identifier__)
+        await state.set_data(
             {'data': states.SendingFunpayMessage(message=msg, to=callback_data.to)},
         )
         await query.answer()
@@ -52,32 +56,34 @@ async def set_sending_message_state(
 
 
 @router.message(StateFilter(states.SendingFunpayMessage.identifier))
-async def send_funpay_message(
-    message: Message,
-    dispatcher: Dispatcher,
-    bot: Bot,
-    fp_bot: FPBot,
-):
-    context = utils.get_context(dispatcher, bot, message)
-    data: SendingFunpayMessage = (await context.get_data())['data']
-
+async def send_funpay_message(message: Message, fp_bot: FPBot, tg: Telegram, state: FSMContext):
+    data: SendingFunpayMessage = (await state.get_data())['data']
     asyncio.create_task(utils.delete_message(data.message))
+    await state.clear()
 
-    await context.clear()
+    image = None
+    text = message.text
+    if message.photo:
+        file = await tg.bot.get_file(message.photo[-1].file_id)
+        buffer = BytesIO()
+        await tg.bot.download_file(file.file_path, destination=buffer)
+        image = buffer
+        text = None
 
     result = False
     try:
         await fp_bot.send_message(
             chat_id=data.to,
-            text=message.text,
+            text=text,
+            image=image
         )
         result = True
-    except:
-        pass
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
 
     if result:
         await message.react(reaction=[ReactionTypeEmoji(emoji='👍')], is_big=True)
     else:
-        reaction = ReactionTypePaid()
-        await message.react(reaction=[ReactionTypeEmoji(emoji='💩'), reaction], is_big=True)
-    # todo: formatting
+        await message.react(reaction=[ReactionTypeEmoji(emoji='💩')], is_big=True)
+    # todo: execute $formatters
