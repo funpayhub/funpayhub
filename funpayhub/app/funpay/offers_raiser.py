@@ -163,6 +163,7 @@ class OffersRaiser2:
         self._categories_to_raise: dict[int, _CategoryInfo] = {}
         self._lock = asyncio.Lock()
         self._running = False
+        self._main_task = None
 
     async def _get_category_to_raise(self) -> _CategoryInfo | None:
         curr_time = asyncio.get_event_loop().time()
@@ -184,11 +185,12 @@ class OffersRaiser2:
                 ).next_raise
                 to_sleep = next_raise - asyncio.get_event_loop().time()
                 self._awake_event.clear()
-                tasks = [
-                    asyncio.create_task(self._awake_event.wait()),
-                    asyncio.create_task(asyncio.sleep(to_sleep if to_sleep > 0 else 0))
-                ]
+
             await asyncio.sleep(2)
+            tasks = [
+                asyncio.create_task(self._awake_event.wait()),
+                asyncio.create_task(asyncio.sleep(to_sleep if to_sleep > 0 else 0))
+            ]
             done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
             for i in pending:
                 i.cancel()
