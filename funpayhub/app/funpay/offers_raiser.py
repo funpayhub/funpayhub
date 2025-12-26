@@ -13,6 +13,7 @@ from funpaybotengine.exceptions.session_exceptions import (
 )
 
 from funpayhub.loggers import offers_raiser as logger
+from functools import partial
 
 
 class OffersRaiser:
@@ -48,16 +49,29 @@ class OffersRaiser:
     def __init__(self, bot: Bot) -> None:
         self._tasks: dict[int, asyncio.Task] = {}
         self._bot = bot
-        self._lock = asyncio.Lock()
+        self._modifying_lock = asyncio.Lock()
         self._requesting_lock = asyncio.Lock()
+
+    async def _raise_category_until_complete(self, category: Category) -> None:
+        while True:
+            try:
+                # Искусственное замедление запроса, чтобы не превысить rate-лимиты FunPay.
+                await asyncio.sleep(2)
+                await self._bot.raise_offers(category.id)
+                return
+            except RateLimitExceededError:
+                logger.warning(
+                    'Ошибка 429 при попытке поднятия лотов категории %r. Ожидаю %r сек.',
+                    category.name, 8
+                )
+                await asyncio.sleep(8)
 
     async def _raising_loop(self, category: Category) -> None:
         logger.info('Цикл поднятия лотов для категории %r запущен.', category.name)
         while True:
             try:
                 async with self._requesting_lock:
-                    await asyncio.sleep(2)
-                    await self._bot.raise_offers(category.id)
+                    await self._raise_category_until_complete(category)
                     logger.info(
                         'Лоты категории %r успешно поднятия. Следующая попытка через %r.',
                         category.name,
@@ -65,6 +79,10 @@ class OffersRaiser:
                     )
                 await asyncio.sleep(3600)
             except UnauthorizedError:
+                logger.error(
+                    'Не удалось поднять лоты категории %r: аккаунт не авторизован.',
+                    category.name
+                )
                 return
             except RaiseOffersError as e:
                 wait_time = e.wait_time or 1800
@@ -75,17 +93,11 @@ class OffersRaiser:
                 )
                 await asyncio.sleep(wait_time)
                 continue
-            except (RateLimitExceededError, FunPayServerError) as e:
-                if isinstance(e, RateLimitExceededError):
-                    logger.warning(
-                        'Ошибка 429 при попытке поднятия лотов категории %r.',
-                        category.name,
-                    )
-                else:
-                    logger.warning(
-                        'Серверная ошибка при попытке поднятия лотов категории %r.',
-                        category.name,
-                    )
+            except FunPayServerError:
+                logger.warning(
+                    'Серверная ошибка при попытке поднятия лотов категории %r.',
+                    category.name,
+                )
                 await asyncio.sleep(10)
                 continue
             except Exception:
@@ -119,19 +131,22 @@ class OffersRaiser:
             )
 
     async def start_raising_loop(self, category_id: int) -> None:
-        async with self._lock:
+        async with self._modifying_lock:
             if task := self._tasks.get(category_id):
                 task.cancel()
                 with suppress(asyncio.CancelledError):
                     await task
 
             category = await self._bot.storage.get_category(category_id)
-            new_task = asyncio.create_task(self._wrapped_raising_loop(category))
-            new_task.add_done_callback(lambda t: self._on_task_done(category, t))
+            new_task = asyncio.create_task(
+                self._wrapped_raising_loop(category),
+                name=f'offers_raiser:{category.id}'
+            )
+            new_task.add_done_callback(partial(self._on_task_done, category))
             self._tasks[category_id] = new_task
 
     async def stop_raising_loop(self, category_id: int) -> None:
-        async with self._lock:
+        async with self._modifying_lock:
             task = self._tasks.get(category_id)
             if task:
                 task.cancel()
@@ -139,7 +154,7 @@ class OffersRaiser:
                     await task
 
     async def stop_all_raising_loops(self) -> None:
-        async with self._lock:
+        async with self._modifying_lock:
             tasks = list(self._tasks.values())
             for task in tasks:
                 task.cancel()
