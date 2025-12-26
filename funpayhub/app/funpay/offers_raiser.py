@@ -13,7 +13,6 @@ from funpaybotengine.exceptions.session_exceptions import (
 )
 
 from funpayhub.loggers import offers_raiser as logger
-from dataclasses import dataclass
 
 
 class OffersRaiser:
@@ -57,6 +56,7 @@ class OffersRaiser:
         while True:
             try:
                 async with self._requesting_lock:
+                    await asyncio.sleep(2)
                     await self._bot.raise_offers(category.id)
                     logger.info(
                         'Лоты категории %r успешно поднятия. Следующая попытка через %r.',
@@ -149,68 +149,3 @@ class OffersRaiser:
 
     def is_raising(self, category_id: int) -> bool:
         return category_id in self._tasks
-
-
-@dataclass
-class _CategoryInfo:
-    category: Category
-    next_raise: float
-
-
-class OffersRaiser2:
-    def __init__(self, bot: Bot) -> None:
-        self._awake_event = asyncio.Event()
-        self._categories_to_raise: dict[int, _CategoryInfo] = {}
-        self._lock = asyncio.Lock()
-        self._running = False
-        self._main_task = None
-
-    async def _get_category_to_raise(self) -> _CategoryInfo | None:
-        curr_time = asyncio.get_event_loop().time()
-        for v in self._categories_to_raise.values():
-            if v.next_raise < curr_time:
-                return v
-        return None
-
-    async def _main_loop(self) -> None:
-        logger.info('Цикл поднятия лотов запущен.')
-        while self._running:
-            async with self._lock:
-                category_to_raise = await self._get_category_to_raise()
-                if category_to_raise:
-                    print('raising category')
-                    # todo: real raising and setting i.next_raise
-                next_raise = min(
-                    self._categories_to_raise.values(), key=lambda i: i.next_raise
-                ).next_raise
-                to_sleep = next_raise - asyncio.get_event_loop().time()
-                self._awake_event.clear()
-
-            await asyncio.sleep(2)
-            tasks = [
-                asyncio.create_task(self._awake_event.wait()),
-                asyncio.create_task(asyncio.sleep(to_sleep if to_sleep > 0 else 0))
-            ]
-            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-            for i in pending:
-                i.cancel()
-                with suppress(asyncio.CancelledError):
-                    await i
-
-    async def start_raising_loop(self, category_id: int) -> None:
-        # grab lock
-        # add category
-        # set event
-        # leave lock
-        ...
-
-    async def stop_raising_loop(self, category_id: int) -> None:
-        # grab lock
-        # remove category
-        # set event
-        # leave lock
-        ...
-
-    async def stop_all_raising_loops(self) -> None: ...
-
-    def is_raising(self, category_id: int) -> bool: ...
