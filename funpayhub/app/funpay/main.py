@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from funpaybotengine import Bot, Dispatcher, AioHttpSession
+from funpaybotengine import Bot, Dispatcher
+from funpaybotengine.types.pages import ProfilePage
 
 from funpayhub.app.funpay import middlewares as mdwr
 from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
 from funpayhub.app.dispatching import FunPayStartEvent
 from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
-import asyncio
+from funpayhub.app.funpay.offers_raiser import OffersRaiser
 
 
 if TYPE_CHECKING:
@@ -35,15 +36,17 @@ class FunPay:
         for i in FORMATTERS_LIST:
             self._text_formatters.add_formatter(i)
 
-        session = AioHttpSession(proxy=proxy, default_headers=headers)
-        self._bot = Bot(golden_key=bot_token, session=session)
+        self._bot = Bot(golden_key=bot_token, proxy=proxy, default_headers=headers)
 
+        self._profile_page: ProfilePage | None = None
+        self._offers_raiser = OffersRaiser(self._bot)
         self._dispatcher = Dispatcher(workflow_data=workflow_data)
         self.setup_dispatcher()
 
     async def start(self):
         try:
             await self._bot.update()
+            await self.profile(update=True)
         except Exception:
             pass
         await self.hub.dispatcher.event_entry(FunPayStartEvent())
@@ -55,15 +58,12 @@ class FunPay:
         )
         self._dispatcher.connect_routers(*ALL_ROUTERS)
 
-    async def _offers_raise_loop(self) -> None:
-        while True:
-            try:
-                profile_page = await self.bot.get_profile_page(self.bot.userid)
-                ...
-            except:
-                pass
-
-            await asyncio.sleep(600)
+    async def profile(self, update: bool = False) -> ProfilePage:
+        if not self._profile_page or update:
+            if not self._bot.initialized:
+                await self._bot.update()
+            self._profile_page = await self._bot.get_profile_page(self._bot.userid)
+        return self._profile_page
 
     @property
     def hub(self) -> FunPayHub:
@@ -80,3 +80,7 @@ class FunPay:
     @property
     def dispatcher(self) -> Dispatcher:
         return self._dispatcher
+
+    @property
+    def offers_raiser(self) -> OffersRaiser:
+        return self._offers_raiser

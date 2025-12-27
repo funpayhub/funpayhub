@@ -9,10 +9,12 @@ from funpayhub.app.dispatching import Router
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import MenuContext
+from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
 
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
+    from funpayhub.app.funpay.main import FunPay
 
 router = Router()
 
@@ -63,3 +65,10 @@ async def edit_start_notifications(tg_ui: UIRegistry, hub: FunPayHub):
             await i.edit_text(text=menu.text, reply_markup=menu.total_keyboard(True))
         except:
             continue
+
+
+@router.on_funpay_start(lambda properties: properties.toggles.auto_raise.value)
+async def start_auto_raise(fp: FunPay):
+    categories = await get_profile_raisable_categories(await fp.profile(), fp.bot)
+    for category_id in categories:
+        await fp.offers_raiser.start_raising_loop(category_id)

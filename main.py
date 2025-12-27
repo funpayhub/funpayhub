@@ -34,11 +34,11 @@ dictConfig(
         },
         'loggers': {
             'funpaybotengine.session': {
-                'level': logging.DEBUG,
+                'level': logging.INFO,
                 'handlers': ['console'],
             },
             'funpaybotengine.runner': {
-                'level': logging.DEBUG,
+                'level': logging.INFO,
                 'handlers': ['console'],
             },
             'eventry.dispatcher': {
@@ -74,6 +74,10 @@ dictConfig(
                 'handlers': ['console'],
             },
             'funpayhub.telegram_ui': {
+                'level': logging.DEBUG,
+                'handlers': ['console'],
+            },
+            'funpayhub.offers_raiser': {
                 'level': logging.DEBUG,
                 'handlers': ['console'],
             },
