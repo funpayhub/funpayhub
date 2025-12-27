@@ -1,16 +1,19 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
 
 from funpaybotengine import Bot, Dispatcher
+from funpaybotengine.types import Category
 from funpaybotengine.types.pages import ProfilePage
 
 from funpayhub.app.funpay import middlewares as mdwr
 from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
-from funpayhub.app.dispatching import FunPayStartEvent
+from funpayhub.app.dispatching import FunPayStartEvent, OffersRaisedEvent
 from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 from funpayhub.app.funpay.offers_raiser import OffersRaiser
+from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
 
 
 if TYPE_CHECKING:
@@ -64,6 +67,21 @@ class FunPay:
                 await self._bot.update()
             self._profile_page = await self._bot.get_profile_page(self._bot.userid)
         return self._profile_page
+
+    async def start_raising_profile_offers(self) -> None:
+        categories = await get_profile_raisable_categories(await self.profile(), self.bot)
+        total_categories = (await self.bot.storage.get_categories())[100:]
+        for i in total_categories:
+            categories.add(i.id)
+        for category_id in categories:
+            await self.offers_raiser.start_raising_loop(category_id, on_raise=self._on_raise)
+
+    async def stop_raising_profile_offers(self) -> None:
+        await self.offers_raiser.stop_all_raising_loops()
+
+    async def _on_raise(self, category: Category) -> None:
+        event = OffersRaisedEvent(category=category)
+        asyncio.create_task(self.hub.dispatcher.event_entry(event))
 
     @property
     def hub(self) -> FunPayHub:

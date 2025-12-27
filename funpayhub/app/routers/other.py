@@ -2,19 +2,21 @@ from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING
+from html import escape
 
 from aiogram.types import Message
+from funpayparsers.types import Category
 
 from funpayhub.app.dispatching import Router
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import MenuContext
-from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
 
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
     from funpayhub.app.funpay.main import FunPay
+    from funpayhub.app.telegram.main import Telegram
 
 router = Router()
 
@@ -69,6 +71,10 @@ async def edit_start_notifications(tg_ui: UIRegistry, hub: FunPayHub):
 
 @router.on_funpay_start(lambda properties: properties.toggles.auto_raise.value)
 async def start_auto_raise(fp: FunPay):
-    categories = await get_profile_raisable_categories(await fp.profile(), fp.bot)
-    for category_id in categories:
-        await fp.offers_raiser.start_raising_loop(category_id)
+    await fp.start_raising_profile_offers()
+
+
+@router.on_offers_raised(lambda properties: properties.telegram.notifications.offers_raised.value)
+async def send_offers_raised_notification(category: Category, tg: Telegram):
+    text = f'🔺 Все лоты категории <b>{escape(category.full_name)}</b> успешно подняты.'
+    await tg.send_notification('offers_raised', text)

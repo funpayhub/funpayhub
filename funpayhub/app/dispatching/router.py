@@ -16,6 +16,7 @@ _events = {
     'parameter_attached': events.ParameterAttachedEvent,
     'telegram_start': events.TelegramStartEvent,
     'funpay_start': events.FunPayStartEvent,
+    'offers_raised': events.OffersRaisedEvent,
 }
 
 
@@ -23,6 +24,7 @@ class Router(BaseRouter):
     on_parameter_value_changed: HandlerManager
     on_properties_attached: HandlerManager
     on_parameter_attached: HandlerManager
+    on_offers_raised: HandlerManager
     on_telegram_start: HandlerManager
     on_funpay_start: HandlerManager
 

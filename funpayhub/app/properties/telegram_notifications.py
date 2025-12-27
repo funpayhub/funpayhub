@@ -30,11 +30,11 @@ class TelegramNotificationsProperties(Properties):
             ),
         )
 
-        self.lots_raised: ListParameter[str] = self.attach_parameter(
+        self.offers_raised: ListParameter[str] = self.attach_parameter(
             ListParameter(
-                id='lots_raised',
-                name='$telegram_notifications.lots_raised:name',
-                description='$telegram_notifications.lots_raised:description',
+                id='offers_raised',
+                name='$telegram_notifications.offers_raised:name',
+                description='$telegram_notifications.offers_raised:description',
                 default_value=[],
             ),
         )

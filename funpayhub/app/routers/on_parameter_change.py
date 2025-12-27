@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 from funpayhub.lib.properties import ChoiceParameter, ToggleParameter
 from funpayhub.lib.translater import Translater
 from funpayhub.app.dispatching import Router
-from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
 
 
 if TYPE_CHECKING:
@@ -29,8 +28,6 @@ async def change_language(parameter: ChoiceParameter, translater: Translater):
 )
 async def start_stop_auto_raise(parameter: ToggleParameter, fp: FunPay):
     if not parameter.value:
-        await fp.offers_raiser.stop_all_raising_loops()
+        await fp.stop_raising_profile_offers()
     else:
-        categories = await get_profile_raisable_categories(await fp.profile(), fp.bot)
-        for category_id in categories:
-            await fp.offers_raiser.start_raising_loop(category_id)
+        await fp.start_raising_profile_offers()
