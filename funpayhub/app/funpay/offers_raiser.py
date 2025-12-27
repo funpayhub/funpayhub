@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+from typing import Any
+from functools import partial
 from contextlib import suppress
+from collections.abc import Callable, Awaitable
 
 from funpaybotengine import Bot
 from funpaybotengine.types import Category
@@ -13,7 +16,9 @@ from funpaybotengine.exceptions.session_exceptions import (
 )
 
 from funpayhub.loggers import offers_raiser as logger
-from functools import partial
+
+
+type RaiseCallback = Callable[[Category], Awaitable[Any]]
 
 
 class OffersRaiser:
@@ -62,11 +67,16 @@ class OffersRaiser:
             except RateLimitExceededError:
                 logger.warning(
                     'Ошибка 429 при попытке поднятия лотов категории %r. Ожидаю %r сек.',
-                    category.name, 8
+                    category.name,
+                    8,
                 )
                 await asyncio.sleep(8)
 
-    async def _raising_loop(self, category: Category) -> None:
+    async def _raising_loop(
+        self,
+        category: Category,
+        on_raise: RaiseCallback | None = None,
+    ) -> None:
         logger.info('Цикл поднятия лотов для категории %r запущен.', category.name)
         while True:
             try:
@@ -77,11 +87,14 @@ class OffersRaiser:
                         category.name,
                         3600,
                     )
+                    if on_raise is not None:
+                        with suppress(Exception):
+                            await on_raise(category)
                 await asyncio.sleep(3600)
             except UnauthorizedError:
                 logger.error(
                     'Не удалось поднять лоты категории %r: аккаунт не авторизован.',
-                    category.name
+                    category.name,
                 )
                 return
             except RaiseOffersError as e:
@@ -108,9 +121,13 @@ class OffersRaiser:
                 )
                 return
 
-    async def _wrapped_raising_loop(self, category: Category) -> None:
+    async def _wrapped_raising_loop(
+        self,
+        category: Category,
+        on_raise: RaiseCallback | None,
+    ) -> None:
         try:
-            await self._raising_loop(category)
+            await self._raising_loop(category, on_raise)
         except asyncio.CancelledError:
             logger.info('Цикл поднятия лотов категории %r остановлен.', category.name)
             raise
@@ -130,7 +147,11 @@ class OffersRaiser:
                 task.get_name(),
             )
 
-    async def start_raising_loop(self, category_id: int) -> None:
+    async def start_raising_loop(
+        self,
+        category_id: int,
+        on_raise: RaiseCallback | None = None,
+    ) -> None:
         async with self._modifying_lock:
             if task := self._tasks.get(category_id):
                 task.cancel()
@@ -139,8 +160,8 @@ class OffersRaiser:
 
             category = await self._bot.storage.get_category(category_id)
             new_task = asyncio.create_task(
-                self._wrapped_raising_loop(category),
-                name=f'offers_raiser:{category.id}'
+                self._wrapped_raising_loop(category, on_raise),
+                name=f'offers_raiser:{category.id}',
             )
             new_task.add_done_callback(partial(self._on_task_done, category))
             self._tasks[category_id] = new_task
