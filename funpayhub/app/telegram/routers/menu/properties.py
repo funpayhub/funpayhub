@@ -49,6 +49,7 @@ async def open_custom_menu(
     data: dict[str, Any],
     callback_data: cbs.OpenMenu,
 ):
+    # todo: menu context from data
     ctx = MenuContext(
         menu_id=callback_data.menu_id,
         menu_page=callback_data.menu_page,
@@ -114,7 +115,7 @@ async def clear(
         )
 
 
-@r.message(Command('start'))
+@r.message(Command('settings'))
 async def send_menu(
     message: Message,
     properties: FunPayHubProperties,

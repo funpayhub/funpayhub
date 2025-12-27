@@ -70,9 +70,6 @@ class FunPay:
 
     async def start_raising_profile_offers(self) -> None:
         categories = await get_profile_raisable_categories(await self.profile(), self.bot)
-        total_categories = (await self.bot.storage.get_categories())[100:]
-        for i in total_categories:
-            categories.add(i.id)
         for category_id in categories:
             await self.offers_raiser.start_raising_loop(category_id, on_raise=self._on_raise)
 
