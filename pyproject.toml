@@ -1,12 +1,12 @@
 [project]
 name = "funpayhub"
-version = "0.1.0dev1"
+version = "0.1.1"
 description = "FunPay bot."
 requires-python = ">=3.13"
 
 dependencies = [
-    "aiogram>=3.22.0",
-    "pydantic",
+    "aiogram~=3.22.0",
+    "funpaybotengine~=0.1.7",
     "tomli-w>=1.2.0",
 ]
 
@@ -54,6 +54,10 @@ docs = [
 [build-system]
 requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools]
+packages = ['funpayhub']
 
 
 [tool.mypy]
