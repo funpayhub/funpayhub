@@ -9,7 +9,10 @@ from argparse import Namespace, ArgumentParser
 
 parser = ArgumentParser(prog='FunPayHub')
 parser.add_argument(
-    '-s', '--safe', action='store_true', help='Run FunPayHub in safe mode (without plugins).'
+    '-s',
+    '--safe',
+    action='store_true',
+    help='Run FunPayHub in safe mode (without plugins).',
 )
 original_args = parser.parse_args()
 

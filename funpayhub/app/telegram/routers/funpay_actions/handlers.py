@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-
-from io import BytesIO
 from typing import TYPE_CHECKING
+from io import BytesIO
 
-from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ReactionTypeEmoji
 from aiogram.filters import StateFilter
 from funpaybotengine import Bot as FPBot
+from aiogram.fsm.context import FSMContext
 
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.app.telegram.states import SendingFunpayMessage
@@ -75,11 +74,12 @@ async def send_funpay_message(message: Message, fp_bot: FPBot, tg: Telegram, sta
         await fp_bot.send_message(
             chat_id=data.to,
             text=text,
-            image=image
+            image=image,
         )
         result = True
-    except Exception as e:
+    except Exception:
         import traceback
+
         print(traceback.format_exc())
 
     if result:

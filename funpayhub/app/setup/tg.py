@@ -210,9 +210,8 @@ async def setup_user_agent_and_open_golden_key_menu(
         MenuContext(
             menu_id='fph:setup_golden_key',
             trigger=msg,
-            data={'callback_data': new_callback}
+            data={'callback_data': new_callback},
         ),
     )
 
     await golden_key_menu.reply_to(msg)
-
