@@ -94,6 +94,9 @@ async def check_session(bot: Bot):
 
 
 async def main():
+    import sys
+
+    print(sys.argv)
     props = FunPayHubProperties()
     await props.load()
     app = FunPayHub(properties=props)
