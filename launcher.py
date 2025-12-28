@@ -32,6 +32,30 @@ def namespace_to_argv(ns: Namespace) -> list[str]:
     return argv
 
 
+def safe_restart() -> None:
+    global launch_args
+
+    new_args = deepcopy(original_args)
+    new_args.safe = True
+    launch_args = namespace_to_argv(new_args)
+
+
+def non_safe_restart() -> None:
+    global launch_args
+
+    new_args = deepcopy(original_args)
+    new_args.safe = False
+    launch_args = namespace_to_argv(new_args)
+
+
+ACTIONS = {
+    0: lambda: sys.exit(0),
+    1: lambda: True,
+    2: safe_restart,
+    3: non_safe_restart,
+}
+
+
 while True:
     result = subprocess.run(
         [
@@ -42,19 +66,8 @@ while True:
         env=os.environ.copy(),
     )
 
-    if result.returncode == 0:  # standard exit
-        sys.exit(0)
-    elif result.returncode == 1:  # restart
-        continue
-    elif result.returncode == 2:  # safe restart
-        new_args = deepcopy(original_args)
-        new_args.safe = True
-        launch_args = namespace_to_argv(new_args)
-        continue
-    elif result.returncode == 3:  # non-safe restart
-        new_args = deepcopy(original_args)
-        new_args.safe = False
-        launch_args = namespace_to_argv(new_args)
+    if result.returncode in ACTIONS:
+        ACTIONS[result.returncode]()
         continue
     else:
         sys.exit(result.returncode)
