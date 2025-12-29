@@ -83,21 +83,11 @@ async def check_session(bot: Bot):
 
 
 async def main():
-    import sys
-
-    print(sys.argv)
     props = FunPayHubProperties()
     await props.load()
     app = FunPayHub(properties=props)
     print(app.instance_id)
     # await check_session(app.funpay.bot)
-
-    for logger_name in LOGGERS:
-        logger = logging.getLogger(logger_name)
-        for handler in logger.handlers:
-            print(handler)
-            handler.flush()
-
     result = input()
     if result != 'start':
         sys.exit(0)
@@ -106,4 +96,6 @@ async def main():
 
 
 if __name__ == '__main__':
+    logger = logging.getLogger('funpayhub.main')
+    logger.info(f'{" Я родился ":-^50}')
     asyncio.run(main())
