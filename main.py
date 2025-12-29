@@ -10,6 +10,7 @@ from funpaybotengine import Bot
 
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
+from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter
 
 
 load_dotenv()
@@ -21,16 +22,19 @@ dictConfig(
         'disable_existing_loggers': False,
         'handlers': {
             'console': {
-                'formatter': 'brief',
+                'formatter': 'console_formatter',
                 'level': logging.DEBUG,
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
             },
         },
         'formatters': {
-            'brief': {
+            'file_formatter': {
                 'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             },
+            'console_formatter': {
+                '()': ConsoleLoggerFormatter,
+            }
         },
         'loggers': {
             'funpaybotengine.session': {

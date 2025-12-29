@@ -4,25 +4,43 @@ import re
 import sys
 import logging
 import colorama
-from datetime import datetime
+from colorama import Fore, Back, Style
 
 
 COLORS = {
-    logging.DEBUG: [colorama.Fore.BLACK, colorama.Style.BRIGHT],
-    logging.INFO: [colorama.Fore.GREEN],
-    logging.WARNING: [colorama.Fore.YELLOW],
-    logging.ERROR: [colorama.Fore.RED],
-    logging.CRITICAL: [colorama.Fore.WHITE, colorama.Back.RED]
+    logging.DEBUG: [Fore.BLACK, Style.BRIGHT],
+    logging.INFO: [Fore.GREEN],
+    logging.WARNING: [Fore.YELLOW],
+    logging.ERROR: [Fore.RED],
+    logging.CRITICAL: [Fore.WHITE, Back.RED]
 }
 
+
 RESET_RE = re.compile(r'(?<!\$)\$RESET')
+ESC_RE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
 class ConsoleLoggerFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
-        time_str = self.formatTime(record, '%d.%m.%y %H:%M:%S')
-        color_str = ''.join(COLORS.get(record.levelno, []))
-        text = RESET_RE.sub(color_str, str(record.msg))
-        return f'{colorama.Style.RESET_ALL}{color_str}{time_str} - {text}{colorama.Style.RESET_ALL}'
+        time_str = self.formatTime(record, '%H:%M:%S')
+        time_str = f'{Fore.BLACK + Style.BRIGHT}{time_str}'
+        color = ''.join(COLORS.get(record.levelno, []))
+        text = RESET_RE.sub(f'{Style.RESET_ALL}{color}', str(record.msg))
+        text = (
+            f'{Style.RESET_ALL}{time_str} {record.taskName+' ' if record.taskName else ''}'
+            f'{color}{record.levelname} > {text}{Style.RESET_ALL}'
+        )
+
+        if record.exc_info:
+            exc_text = self.formatException(record.exc_info)
+            exc_text = f'{Style.RESET_ALL + Fore.RED + Style.DIM}{exc_text}{Style.RESET_ALL}'
+            text += '\n' + exc_text
+        return text
+
+
+class FileLoggerFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        text = RESET_RE.sub(super().format(record), str(record.msg))
+        return ESC_RE.sub('', str(text))
 
 
 if __name__ == '__main__':
@@ -41,3 +59,8 @@ if __name__ == '__main__':
     logger.warning('Warning Log')
     logger.error('Error Log')
     logger.critical('Critical Log')
+
+    try:
+        1 / 0
+    except:
+        logger.error('Some error occurred', exc_info=True)
