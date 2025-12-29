@@ -24,7 +24,7 @@ class ConsoleLoggerFormatter(logging.Formatter):
         time_str = self.formatTime(record, '%H:%M:%S')
         time_str = f'{Fore.BLACK + Style.BRIGHT}{time_str}'
         color = ''.join(COLORS.get(record.levelno, []))
-        text = RESET_RE.sub(f'{Style.RESET_ALL}{color}', str(record.msg))
+        text = RESET_RE.sub(f'{Style.RESET_ALL}{color}', str(record.getMessage()))
         text = (
             f'{Style.RESET_ALL}{time_str} {record.taskName+' ' if record.taskName else ''}'
             f'{color}{record.levelname} > {text}{Style.RESET_ALL}'
@@ -39,7 +39,7 @@ class ConsoleLoggerFormatter(logging.Formatter):
 
 class FileLoggerFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
-        text = RESET_RE.sub(super().format(record), str(record.msg))
+        text = RESET_RE.sub('', super().format(record))
         return ESC_RE.sub('', str(text))
 
 

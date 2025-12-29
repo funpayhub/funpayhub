@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os.path
 import sys
 import asyncio
 import logging
@@ -16,77 +17,61 @@ from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter
 load_dotenv()
 
 
+os.makedirs('logs', exist_ok=True)
+
+
+LOGGERS = [
+    'funpaybotengine.session',
+    'funpaybotengine.runner',
+    'eventry.dispatcher',
+    'eventry.router',
+    'aiogram.dispatcher',
+    'aiogram.event',
+    'aiogram.middlewares',
+    'aiogram.webhook',
+    'aiogram.scene',
+    'funpayhub.main',
+    'funpayhub.telegram_ui',
+    'funpayhub.offers_raiser'
+]
+
+
 dictConfig(
     config={
         'version': 1,
         'disable_existing_loggers': False,
-        'handlers': {
-            'console': {
-                'formatter': 'console_formatter',
-                'level': logging.DEBUG,
-                'class': 'logging.StreamHandler',
-                'stream': sys.stdout,
-            },
-        },
+
         'formatters': {
             'file_formatter': {
-                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                '()': FileLoggerFormatter,
+                'fmt': '%(asctime)s %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] %(message)s',
+                'datefmt': '%d.%m.%Y %H:%M:%S',
             },
             'console_formatter': {
                 '()': ConsoleLoggerFormatter,
             }
         },
-        'loggers': {
-            'funpaybotengine.session': {
+
+        'handlers': {
+            'console': {
+                'formatter': 'console_formatter',
                 'level': logging.INFO,
-                'handlers': ['console'],
+                'class': 'logging.StreamHandler',
+                'stream': sys.stdout,
             },
-            'funpaybotengine.runner': {
-                'level': logging.INFO,
-                'handlers': ['console'],
-            },
-            'eventry.dispatcher': {
-                'level': logging.DEBUG,
-                'handlers': ['console'],
-            },
-            'eventry.router': {
-                'level': logging.DEBUG,
-                'handlers': ['console'],
-            },
-            'aiogram.dispatcher': {
-                'level': logging.DEBUG,
-                'handlers': ['console'],
-            },
-            'aiogram.event': {
-                'level': logging.DEBUG,
-                'handlers': ['console'],
-            },
-            'aiogram.middlewares': {
-                'level': logging.DEBUG,
-                'handlers': ['console'],
-            },
-            'aiogram.webhook': {
-                'level': logging.DEBUG,
-                'handlers': ['console'],
-            },
-            'aiogram.scene': {
-                'level': logging.DEBUG,
-                'handlers': ['console'],
-            },
-            'funpayhub.main': {
-                'level': logging.DEBUG,
-                'handlers': ['console'],
-            },
-            'funpayhub.telegram_ui': {
-                'level': logging.DEBUG,
-                'handlers': ['console'],
-            },
-            'funpayhub.offers_raiser': {
-                'level': logging.DEBUG,
-                'handlers': ['console'],
-            },
+
+            'file': {
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': os.path.join('logs', 'fph.log'),
+                'encoding': 'utf-8',
+                'backupCount': 100,
+                'maxBytes': 19 * 1024 * 1024,
+                'formatter': 'file_formatter',
+                'level': logging.DEBUG
+            }
         },
-    },
+        'loggers': {i: {'level': logging.DEBUG, 'handlers': ['console', 'file']} for i in LOGGERS},
+    }
 )
 
 
@@ -106,6 +91,13 @@ async def main():
     app = FunPayHub(properties=props)
     print(app.instance_id)
     # await check_session(app.funpay.bot)
+
+    for logger_name in LOGGERS:
+        logger = logging.getLogger(logger_name)
+        for handler in logger.handlers:
+            print(handler)
+            handler.flush()
+
     result = input()
     if result != 'start':
         sys.exit(0)
