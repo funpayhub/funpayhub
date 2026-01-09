@@ -11,7 +11,7 @@ from funpaybotengine import Bot
 
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
-from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter
+from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter, ColorizedLogRecord
 
 
 load_dotenv()
@@ -55,7 +55,7 @@ dictConfig(
         'handlers': {
             'console': {
                 'formatter': 'console_formatter',
-                'level': logging.INFO,
+                'level': logging.DEBUG,
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
             },
@@ -73,6 +73,8 @@ dictConfig(
         'loggers': {i: {'level': logging.DEBUG, 'handlers': ['console', 'file']} for i in LOGGERS},
     }
 )
+
+logging.setLogRecordFactory(ColorizedLogRecord)
 
 
 async def check_session(bot: Bot):

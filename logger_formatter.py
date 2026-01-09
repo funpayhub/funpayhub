@@ -5,29 +5,93 @@ import sys
 import logging
 import colorama
 from colorama import Fore, Back, Style
+from mypy.types import Any
 
 
 COLORS = {
-    logging.DEBUG: [Fore.BLACK, Style.BRIGHT],
-    logging.INFO: [Fore.GREEN],
+    logging.DEBUG: [Fore.WHITE, Style.DIM],
+    logging.INFO: [Fore.GREEN, Style.BRIGHT],
     logging.WARNING: [Fore.YELLOW],
     logging.ERROR: [Fore.RED],
     logging.CRITICAL: [Fore.WHITE, Back.RED]
 }
 
 
+EMOJIS = {
+    logging.DEBUG: '🔎',
+    logging.INFO: '📘',
+    logging.WARNING: '⚠️',
+    logging.ERROR: '❌',
+    logging.CRITICAL: '🔥'
+}
+
+
 RESET_RE = re.compile(r'(?<!\$)\$RESET')
 ESC_RE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+
+
+class ColorizedLogRecord(logging.LogRecord):
+    PERCENT_RE = re.compile(
+        r'%'
+        r'(?P<mapping_key>\([a-zA-Z0-9_]+\))?'
+        r'(?P<conversion_flag>[#0\-+ ])*'
+        r'(?P<minimal_width>([0-9]+)|\*)?'
+        r'(?P<precision>\.([0-9]+)|\*)?'
+        r'(?P<length>[hlL])?'
+        r'(?P<conversion_type>[diouxXeEfFgGcrsa])')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def getColorizedMessage(self) -> str:
+        msg = str(self.msg)
+        if not self.args:
+            return msg
+
+        shift = 0
+        for index, match in enumerate(self.PERCENT_RE.finditer(msg)):
+            if index > len(self.args) - 1:
+                return msg
+            arg = self.args[index]
+            matched_str = match.group()
+            new_str = self._colorize(matched_str, match, arg)
+            diff = len(new_str) - len(matched_str)
+            msg = msg[:match.start()+shift] + new_str + msg[match.end()+shift:]
+            shift += diff
+        return msg
+
+    def _colorize(self, s: str, m: re.Match, v: Any) -> str:
+        if isinstance(v, bool):
+            return Style.RESET_ALL + (Fore.GREEN if v else Fore.RED) + Style.BRIGHT + (s % v) + '$RESET'
+        elif isinstance(v, (int, float)):
+            return Style.RESET_ALL + Fore.CYAN + Style.BRIGHT + (s % v) + '$RESET'
+        elif isinstance(v, str):
+            return Style.RESET_ALL + Fore.GREEN + Style.BRIGHT + (s % v) + '$RESET'
+        else:
+            return s % v
+
+
+def colorize_string(match: re.Match) -> str:
+    return f'{Style.RESET_ALL}{Fore.CYAN}{match.group(0)}$RESET'
+
+def colorize_equasion(match: re.Match) -> str:
+    return (f'{Style.RESET_ALL}'
+            f'{Fore.GREEN+Style.BRIGHT}{match.group("key")}{Style.RESET_ALL}'
+            f'{match.group("sep").strip()} '
+            f'{Fore.CYAN}{match.group("value")}{Style.RESET_ALL}')
 
 class ConsoleLoggerFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         time_str = self.formatTime(record, '%H:%M:%S')
-        time_str = f'{Fore.BLACK + Style.BRIGHT}{time_str}'
+        time_str = f'{Fore.WHITE + Style.DIM}{time_str}{Style.RESET_ALL}'
         color = ''.join(COLORS.get(record.levelno, []))
-        text = RESET_RE.sub(f'{Style.RESET_ALL}{color}', str(record.getMessage()))
+
+        text = record.getColorizedMessage() if isinstance(record, ColorizedLogRecord) else record.getMessage()
+        text = RESET_RE.sub(f'{Style.RESET_ALL}', text)
         text = (
-            f'{Style.RESET_ALL}{time_str} {record.taskName+' ' if record.taskName else ''}'
-            f'{color}{record.levelname} > {text}{Style.RESET_ALL}'
+            f'{Style.RESET_ALL}'
+            f'{EMOJIS[record.levelno]} {time_str} [{color}{record.levelname:^9}{Style.RESET_ALL}] {text}'
+            f'{Style.RESET_ALL}'
         )
 
         if record.exc_info:

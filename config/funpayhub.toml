@@ -1,0 +1,63 @@
+setup_completed = false
+message_templates = []
+
+[toggles]
+auto_delivery = true
+auto_restock = true
+auto_response = true
+auto_raise = true
+
+[general]
+language = "ru"
+proxy = ""
+user_agent = ""
+golden_key = ""
+runner_request_interval = 5.0
+
+[telegram.general]
+token = ""
+password = ""
+authorized_users = [
+    5991368886,
+]
+
+[telegram.appearance]
+menu_entries_amount = 10
+
+[telegram.appearance.new_message_appearance]
+show_mine = true
+show_if_mine_only = true
+show_by_bot = true
+show_by_bot_only = true
+show_through_bot = true
+show_trough_bot_only = true
+
+[review_reply.five_stars]
+reply_in_review = false
+reply_in_chat = false
+review_reply_text = ""
+chat_reply_text = ""
+
+[review_reply.four_stars]
+reply_in_review = false
+reply_in_chat = false
+review_reply_text = ""
+chat_reply_text = ""
+
+[review_reply.three_stars]
+reply_in_review = false
+reply_in_chat = false
+review_reply_text = ""
+chat_reply_text = ""
+
+[review_reply.two_stars]
+reply_in_review = false
+reply_in_chat = false
+review_reply_text = ""
+chat_reply_text = ""
+
+[review_reply.one_stars]
+reply_in_review = false
+reply_in_chat = false
+review_reply_text = ""
+chat_reply_text = ""
