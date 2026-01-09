@@ -21,12 +21,13 @@ EMOJIS = {
     logging.DEBUG: '🔎',
     logging.INFO: '📘',
     logging.WARNING: '⚠️',
-    logging.ERROR: '❌',
+    logging.ERROR: '‼️',
     logging.CRITICAL: '🔥'
 }
 
 
-RESET_RE = re.compile(r'(?<!\$)\$RESET')
+RESET_MARKER = '\uE000'
+RESET_RE = re.compile(rf'((?<!\$)\$RESET)|({RESET_MARKER})')
 ESC_RE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
 
@@ -62,23 +63,14 @@ class ColorizedLogRecord(logging.LogRecord):
 
     def _colorize(self, s: str, m: re.Match, v: Any) -> str:
         if isinstance(v, bool):
-            return Style.RESET_ALL + (Fore.GREEN if v else Fore.RED) + Style.BRIGHT + (s % v) + '$RESET'
+            return Style.RESET_ALL + (Fore.GREEN if v else Fore.RED) + Style.BRIGHT + (s % v) + RESET_MARKER
         elif isinstance(v, (int, float)):
-            return Style.RESET_ALL + Fore.CYAN + Style.BRIGHT + (s % v) + '$RESET'
+            return Style.RESET_ALL + Fore.CYAN + Style.BRIGHT + (s % v) + RESET_MARKER
         elif isinstance(v, str):
-            return Style.RESET_ALL + Fore.GREEN + Style.BRIGHT + (s % v) + '$RESET'
+            return Style.RESET_ALL + Fore.GREEN + Style.BRIGHT + (s % v) + RESET_MARKER
         else:
-            return s % v
+            return Style.RESET_ALL + Fore.YELLOW + (s % v) + RESET_MARKER
 
-
-def colorize_string(match: re.Match) -> str:
-    return f'{Style.RESET_ALL}{Fore.CYAN}{match.group(0)}$RESET'
-
-def colorize_equasion(match: re.Match) -> str:
-    return (f'{Style.RESET_ALL}'
-            f'{Fore.GREEN+Style.BRIGHT}{match.group("key")}{Style.RESET_ALL}'
-            f'{match.group("sep").strip()} '
-            f'{Fore.CYAN}{match.group("value")}{Style.RESET_ALL}')
 
 class ConsoleLoggerFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
