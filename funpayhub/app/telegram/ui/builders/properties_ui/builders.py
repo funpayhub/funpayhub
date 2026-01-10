@@ -368,10 +368,10 @@ class AddCommandButtonModification(MenuModification):
     async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
         return ctx.entry.matches_path(['auto_response'])
 
-    async def modify(self, ctx: EntryMenuContext, menu: Menu) -> Menu:
+    async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
         menu.footer_keyboard.add_callback_button(
             button_id='add_command',
-            text='$add_command',
+            text=translater.translate('$add_command'),
             callback_data=cbs.AddCommand(
                 history=ctx.callback_data.as_history() if ctx.callback_data is not None else [],
             ).pack(),

@@ -35,14 +35,14 @@ class ControlMenuBuilder(MenuBuilder):
             ),
             Button.callback_button(
                 button_id='update',
-                text=translater.translate('$update'),
+                text=translater.translate('$check_updates'),
                 callback_data=cbs.Dummy().pack(),
                 row=True,
             ),
         )
 
         return Menu(
-            text='$control_menu_text',
+            text=translater.translate('$control_ui_desc'),
             main_keyboard=main_keyboard,
             finalizer=StripAndNavigationFinalizer(),
         )

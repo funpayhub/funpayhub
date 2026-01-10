@@ -45,8 +45,7 @@ dictConfig(
         'formatters': {
             'file_formatter': {
                 '()': FileLoggerFormatter,
-                'fmt': '%(asctime)s %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] %(message)s',
-                'datefmt': '%d.%m.%Y %H:%M:%S',
+                'fmt': '%(created).3f %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] %(message)s',
             },
             'console_formatter': {
                 '()': ConsoleLoggerFormatter,
