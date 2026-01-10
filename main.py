@@ -31,7 +31,8 @@ LOGGERS = [
     'aiogram.webhook',
     'aiogram.scene',
     'funpayhub.main',
-    'funpayhub.telegram_ui',
+    'funpayhub.telegram',
+    'funpayhub.telegram.ui',
     'funpayhub.offers_raiser'
 ]
 
@@ -55,7 +56,7 @@ dictConfig(
         'handlers': {
             'console': {
                 'formatter': 'console_formatter',
-                'level': logging.DEBUG,
+                'level': logging.INFO,
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
             },

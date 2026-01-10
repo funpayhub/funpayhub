@@ -9,6 +9,7 @@ from collections.abc import Callable, Awaitable
 
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery, TelegramObject
+from funpayhub.loggers import telegram as logger
 
 from funpayhub.app.properties import FunPayHubProperties
 
@@ -20,16 +21,18 @@ class IsAuthorizedMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: dict[str, Any],
     ):
-        if isinstance(event, Message):
-            from_id = event.from_user.id
-        elif isinstance(event, CallbackQuery):
-            from_id = event.from_user.id
-        else:
+        if not isinstance(event, (Message, CallbackQuery)):
             return await handler(event, data)
 
+        from_user = event.from_user
         properties: FunPayHubProperties = data['properties']
 
-        if from_id not in properties.telegram.general.authorized_users.value:
+        if from_user.id not in properties.telegram.general.authorized_users.value:
+            logger.warning(
+                'Пользователь %s (%d) пытается получить доступ к Telegram боту!',
+                from_user.username,
+                from_user.id,
+            )
             return None
 
         return await handler(event, data)
