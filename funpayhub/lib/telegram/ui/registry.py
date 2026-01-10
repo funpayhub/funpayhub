@@ -115,7 +115,7 @@ class UIRegistry:
         try:
             builder = self.get_menu_builder(context.menu_id)
         except KeyError:
-            logger.error(f'Menu {context.menu_id!r} not found.')
+            logger.error(f'Menu %s not found.', context.menu_id)
             raise  # todo: custom error
 
         if not isinstance(context, builder.builder.context_type):
