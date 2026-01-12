@@ -7,7 +7,7 @@ import ctypes
 
 def elevate_if_needed() -> None:
     if os.name != "nt":
-        return  # не Windows — пропускаем
+        return
 
     try:
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -30,6 +30,27 @@ TO_MOVE = {
     'updater.py',
     'pyproject.toml'
 }
+
+
+def install_dependencies() -> None:
+    if not os.path.exists('pyproject.toml'):
+        sys.exit(1)
+
+    result = subprocess.run([
+        sys.executable, '-m', 'ensurepip', '--upgrade'
+    ])
+
+    result = subprocess.run([
+        sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip'
+    ])
+
+    project_path = os.path.abspath(os.path.dirname(__file__))
+    result = subprocess.run([
+        sys.executable, '-m', 'pip', 'install', '-U', project_path
+    ])
+
+
+install_dependencies()
 
 
 if os.path.exists('releases/current') or os.path.exists('releases/bootstrap'):
