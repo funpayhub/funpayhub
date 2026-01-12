@@ -7,6 +7,7 @@ import polib
 
 BASE_DIR = 'funpayhub/locales'
 
+
 for root, _, files in os.walk(BASE_DIR):
     for file in files:
         if file.endswith('.po'):
