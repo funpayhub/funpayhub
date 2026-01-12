@@ -5,10 +5,25 @@ import subprocess
 import ctypes
 
 
-def elevate_if_needed() -> None:
-    if os.name != "nt":
-        return
+IS_WINDOWS = os.name == 'nt'
 
+RELEASES_PATH = os.path.abspath(os.path.join('releases'))
+BOOTSTRAP_PATH = os.path.join(RELEASES_PATH, 'bootstrap')
+LAUNCHER_PATH = os.path.join(BOOTSTRAP_PATH, 'launcher.py')
+CURRENT_RELEASE_PATH = os.path.join(RELEASES_PATH, 'current')
+LOCALES_PATH = os.path.join(CURRENT_RELEASE_PATH, 'locales')
+
+TO_MOVE = {
+    'funpayhub',
+    'locales',
+    'app.py',
+    'launcher.py',
+    'updater.py',
+    'pyproject.toml'
+}
+
+
+def elevate() -> None:
     try:
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
     except:
@@ -20,20 +35,16 @@ def elevate_if_needed() -> None:
         sys.exit(0)
 
 
-elevate_if_needed()
+if IS_WINDOWS:
+    elevate()
 
 
 if os.name == 'nt':
     os.system('title FunPay Hub: 1st launch')
 
 
-TO_MOVE = {
-    'funpayhub',
-    'app.py',
-    'launcher.py',
-    'updater.py',
-    'pyproject.toml'
-}
+if os.path.exists('releases/current') or os.path.exists('releases/bootstrap'):
+    sys.exit(1)
 
 
 def install_dependencies() -> None:
@@ -57,41 +68,41 @@ def install_dependencies() -> None:
 install_dependencies()
 
 
-if os.path.exists('releases/current') or os.path.exists('releases/bootstrap'):
-    sys.exit(1)
-
-
 try:
-    os.makedirs('releases/bootstrap', exist_ok=True)
+    os.makedirs(BOOTSTRAP_PATH, exist_ok=True)
 except:
     sys.exit(2)
 
 try:
     for path in TO_MOVE:
         if not os.path.exists(path):
+            print(f'No file found at {path}')
             raise FileNotFoundError(path)
 
-        os.rename(path, os.path.join('releases/bootstrap', path))
+        os.rename(path, os.path.join(BOOTSTRAP_PATH, path))
 except:
-    if os.path.exists(os.path.join('releases', 'bootstrap')):
-        shutil.rmtree('releases/bootstrap')
+    if os.path.exists(os.path.join(BOOTSTRAP_PATH)):
+        for path in os.listdir(BOOTSTRAP_PATH):
+            os.rename(path, '.')
+        shutil.rmtree(RELEASES_PATH)
     sys.exit(3)
 
 
-os.symlink(
-    os.path.abspath(os.path.join('releases', 'bootstrap')),
-    os.path.join('releases', 'current'),
-    target_is_directory=True
-)
+os.symlink(BOOTSTRAP_PATH, CURRENT_RELEASE_PATH, target_is_directory=True)
 
 
 env = os.environ.copy()
-env["PYTHONPATH"] = os.path.join('releases/current') + os.pathsep + env.get("PYTHONPATH", "")
-env["FPH_LOCALES"] = os.path.abspath(os.path.join('releases', 'current', 'funpayhub', 'locales'))
-subprocess.Popen(
-    [sys.executable, 'releases/current/launcher.py'],
-    stdout=None,
-    stderr=None,
-    stdin=None,
-    env=env
-)
+env["PYTHONPATH"] = os.pathsep.join([CURRENT_RELEASE_PATH, env.get("PYTHONPATH", "")])
+env["FPH_LOCALES"] = LOCALES_PATH
+
+
+if IS_WINDOWS:
+    subprocess.Popen(
+        [sys.executable, LAUNCHER_PATH],
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+        stdin=sys.stdin,
+        env=env
+    )
+else:
+    os.execv(sys.executable, [sys.executable, LAUNCHER_PATH])
