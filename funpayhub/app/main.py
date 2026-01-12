@@ -41,7 +41,8 @@ class FunPayHub:
         self._properties = properties
 
         self._translater = Translater()
-        self._translater.add_translations('funpayhub/locales')
+        if 'FPH_LOCALES' in os.environ:
+            self._translater.add_translations(os.environ['FPH_LOCALES'])
 
         self._funpay = FunPay(
             self,

@@ -56,11 +56,19 @@ ACTIONS = {
 }
 
 
+app_path = os.path.join(
+    os.path.dirname(
+        os.path.abspath(__file__)
+    ),
+    'app.py'
+)
+
+
 while True:
     result = subprocess.run(
         [
             sys.executable,
-            'main.py',
+            app_path,
             *launch_args,
         ],
         env=os.environ.copy(),

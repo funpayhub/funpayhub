@@ -12,6 +12,10 @@ from funpaybotengine import Bot
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter, ColorizedLogRecord
+import colorama
+
+
+colorama.just_fix_windows_console()
 
 
 load_dotenv()
@@ -55,7 +59,7 @@ dictConfig(
         'handlers': {
             'console': {
                 'formatter': 'console_formatter',
-                'level': logging.INFO,
+                'level': logging.DEBUG,
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
             },
