@@ -23,6 +23,10 @@ def elevate_if_needed() -> None:
 elevate_if_needed()
 
 
+if os.name == 'nt':
+    os.system('title FunPay Hub: 1st launch')
+
+
 TO_MOVE = {
     'funpayhub',
     'app.py',
@@ -84,4 +88,10 @@ os.symlink(
 env = os.environ.copy()
 env["PYTHONPATH"] = os.path.join('releases/current') + os.pathsep + env.get("PYTHONPATH", "")
 env["FPH_LOCALES"] = os.path.abspath(os.path.join('releases', 'current', 'funpayhub', 'locales'))
-subprocess.run([sys.executable, 'releases/current/launcher.py'], env=env)
+subprocess.Popen(
+    [sys.executable, 'releases/current/launcher.py'],
+    stdout=None,
+    stderr=None,
+    stdin=None,
+    env=env
+)
