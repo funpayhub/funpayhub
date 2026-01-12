@@ -1,15 +1,7 @@
 setup_completed = false
 message_templates = [
-    "Ну привет",
     "Ну привет2",
-    "Ну привет3",
     "Ну привет4",
-    "Ну привет 5",
-    "Ну привет 6",
-    "Ну привет 7",
-    "Ну привет 8",
-    "Ну привет 9",
-    "Ну привет 10",
     "Ну привет 11",
 ]
 
@@ -34,7 +26,7 @@ authorized_users = [
 ]
 
 [telegram.appearance]
-menu_entries_amount = 10
+menu_entries_amount = 7
 
 [telegram.appearance.new_message_appearance]
 show_mine = true

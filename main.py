@@ -11,7 +11,7 @@ from funpaybotengine import Bot
 
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
-from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter, ColorizedLogRecord
+from funpayhub.logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter, ColorizedLogRecord
 
 
 load_dotenv()
