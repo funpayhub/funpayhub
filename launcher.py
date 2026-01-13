@@ -68,7 +68,9 @@ RELEASES_PATH = Path(os.environ['RELEASES_PATH']).absolute() if 'RELEASES_PATH' 
 APP_PATH = Path(__file__).parent / 'app.py'
 
 logger.info('FunPay Hub launcher is in game!')
+logger.info('Working dir: %s', os.getcwd())
 logger.info('RELEASES_PATH: %s', RELEASES_PATH)
+logger.info('PYTHONPATH: %r', os.environ.get('PYTHONPATH'))
 
 
 def elevate() -> None:
