@@ -16,6 +16,9 @@ from funpayhub.app.telegram.states import AddingListItem, ChangingParameterValue
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
+from funpayhub.app.telegram.ui.builders.context import UpdateMenuContext, InstallUpdateMenuContext
+from updater import check_updates, download_update
+import sys
 
 from .router import router as r
 from ...ui.ids import MenuIds
@@ -65,6 +68,63 @@ async def open_custom_menu(
     else:
         await menu.apply_to(query.message)
 
+# TEMP
+@r.callback_query(cbs.CheckForUpdates.filter())
+async def check_for_updates(
+    query: CallbackQuery,
+    tg_ui: UIRegistry,
+    data: dict[str, Any],
+):
+    try:
+        update = await check_updates()
+    except:
+        return  # todo
+
+    ctx = UpdateMenuContext(
+        menu_id=MenuIds.update,
+        trigger=query,
+        update_info=update,
+    )
+
+    menu = await tg_ui.build_menu(ctx, data | {'query': query})
+    await menu.reply_to(query.message)
+    await query.answer()
+
+
+@r.callback_query(cbs.DownloadUpdate.filter())
+async def download_upd(
+    query: CallbackQuery,
+    tg_ui: UIRegistry,
+    data: dict[str, Any],
+    callback_data: cbs.DownloadUpdate,
+    fph: FunPayHub
+):
+    await download_update(callback_data.url)
+    ctx = InstallUpdateMenuContext(
+        menu_id=MenuIds.install_update,
+        trigger=query,
+        instance_id=fph.instance_id
+    )
+
+    menu = await tg_ui.build_menu(ctx, data | {'query': query})
+    await menu.apply_to(query.message)
+
+
+@r.callback_query(cbs.InstallUpdate.filter())
+async def install_upd(
+    query: CallbackQuery,
+    tg_ui: UIRegistry,
+    data: dict[str, Any],
+    callback_data: cbs.InstallUpdate,
+    fph: FunPayHub,
+):
+    if callback_data.instance_id != fph.instance_id:
+        await query.answer('Wrong instance ID', show_alert=True) # todo
+        return
+
+    sys.exit(1)  # todo
+
+
 
 @r.callback_query(cbs.OpenEntryMenu.filter())
 async def open_entry_menu(
@@ -84,8 +144,6 @@ async def open_entry_menu(
     )
     menu = await tg_ui.build_menu(ctx, data | {'query': query})
     await menu.apply_to(query.message)
-
-
 # TEMP
 
 

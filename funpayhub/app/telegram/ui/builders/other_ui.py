@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.translater import Translater
@@ -8,10 +8,12 @@ from funpayhub.lib.telegram.ui import KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
 from funpayhub.app.telegram.callbacks import OpenEntryMenu
-
+from ..premade import StripAndNavigationFinalizer
+from .context import UpdateMenuContext, InstallUpdateMenuContext
 
 if TYPE_CHECKING:
     from funpayhub.app.funpay.main import FunPay
+    from funpayhub.app import FunPayHub
 
 
 class AddCommandMenuBuilder(MenuBuilder):
@@ -79,4 +81,53 @@ class FunPaySuccessfulStartNotificationMenuBuilder(MenuBuilder):
         return Menu(
             text=text,
             main_keyboard=kb,
+        )
+
+
+class UpdateMenuBuilder(MenuBuilder):
+    id = MenuIds.update
+    context_type = UpdateMenuContext
+
+    async def build(self, ctx: UpdateMenuContext, translater: Translater) -> Menu:
+        menu = Menu(finalizer=StripAndNavigationFinalizer())
+        if ctx.update_info is None:
+            menu.text = translater.translate('$no_updates_available')
+            return menu
+
+        menu.text = f"""{translater.translate('$new_update_available')}
+
+{ctx.update_info.title}
+
+{ctx.update_info.description}"""
+
+        menu.main_keyboard = KeyboardBuilder()
+        menu.main_keyboard.add_callback_button(
+            button_id='download_update',
+            text=translater.translate('$download_update'),
+            callback_data=cbs.DownloadUpdate(url=ctx.update_info.url).pack(),
+        )
+
+        return menu
+
+
+class InstallUpdateMenuBuilder(MenuBuilder):
+    id = MenuIds.install_update
+    context_type = InstallUpdateMenuContext
+
+    async def build(
+        self,
+        ctx: InstallUpdateMenuContext,
+        translater: Translater,
+        fph: FunPayHub
+    ) -> Menu:
+        kb = KeyboardBuilder()
+        kb.add_callback_button(
+            button_id='install_update',
+            text='$install_update',
+            callback_data=cbs.InstallUpdate(instance_id=fph.instance_id).pack_compact()
+        )
+
+        return Menu(
+            text=translater.translate('$install_update_text'),
+            main_keyboard=kb
         )

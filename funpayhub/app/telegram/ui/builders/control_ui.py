@@ -36,7 +36,7 @@ class ControlMenuBuilder(MenuBuilder):
             Button.callback_button(
                 button_id='update',
                 text=translater.translate('$check_updates'),
-                callback_data=cbs.Dummy().pack(),
+                callback_data=cbs.CheckForUpdates().pack_compact(),
                 row=True,
             ),
         )

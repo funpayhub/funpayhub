@@ -22,6 +22,8 @@ class MenuIds:
 
     start_notification = 'fph:start_notification'
     successful_funpay_start_notification = 'fph:successful_funpay_start_notification'
+    update = 'fph:update_menu'
+    install_update = 'fph:install_update'
 
 
 class ButtonIds:

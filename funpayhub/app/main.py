@@ -18,6 +18,7 @@ from funpayhub.app.dispatching import (
 )
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
+from pathlib import Path
 
 # plugins
 from funpayhub.plugins.exec_plugin import Plugin
@@ -42,7 +43,12 @@ class FunPayHub:
 
         self._translater = Translater()
         if 'FPH_LOCALES' in os.environ:
-            self._translater.add_translations(os.environ['FPH_LOCALES'])
+            locales_path = Path(os.environ['FPH_LOCALES'])
+        else:
+            locales_path = Path(__file__).parent.parent.parent / 'locales'
+
+        if locales_path.exists(follow_symlinks=True):
+            self._translater.add_translations(locales_path.absolute())
 
         self._funpay = FunPay(
             self,
