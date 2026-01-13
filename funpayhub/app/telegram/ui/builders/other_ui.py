@@ -118,13 +118,13 @@ class InstallUpdateMenuBuilder(MenuBuilder):
         self,
         ctx: InstallUpdateMenuContext,
         translater: Translater,
-        fph: FunPayHub
+        hub: FunPayHub
     ) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='install_update',
             text='$install_update',
-            callback_data=cbs.InstallUpdate(instance_id=fph.instance_id).pack_compact()
+            callback_data=cbs.InstallUpdate(instance_id=hub.instance_id).pack_compact()
         )
 
         return Menu(

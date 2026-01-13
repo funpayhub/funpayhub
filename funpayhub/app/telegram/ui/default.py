@@ -25,6 +25,7 @@ MENU_BUILDERS = [
     other_ui.StartNotificationMenuBuilder,
     other_ui.FunPaySuccessfulStartNotificationMenuBuilder,
     other_ui.UpdateMenuBuilder,
+    other_ui.InstallUpdateMenuBuilder,
     control_ui.ControlMenuBuilder,
 ]
 

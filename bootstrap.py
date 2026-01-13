@@ -66,7 +66,8 @@ def install_dependencies() -> None:
     ])
 
 
-install_dependencies()
+if '--skip-pip' not in sys.argv:
+    install_dependencies()
 
 
 try:
@@ -95,6 +96,7 @@ os.symlink(BOOTSTRAP_PATH, CURRENT_RELEASE_PATH, target_is_directory=True)
 env = os.environ.copy()
 env["PYTHONPATH"] = os.pathsep.join([CURRENT_RELEASE_PATH, env.get("PYTHONPATH", "")])
 env["FPH_LOCALES"] = LOCALES_PATH
+env["RELEASES_PATH"] = RELEASES_PATH
 
 
 if IS_WINDOWS:

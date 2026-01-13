@@ -17,7 +17,7 @@ from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 from funpayhub.app.telegram.ui.builders.context import UpdateMenuContext, InstallUpdateMenuContext
-from updater import check_updates, download_update
+from updater import check_updates, download_update, install_update
 import sys
 
 from .router import router as r
@@ -97,13 +97,13 @@ async def download_upd(
     tg_ui: UIRegistry,
     data: dict[str, Any],
     callback_data: cbs.DownloadUpdate,
-    fph: FunPayHub
+    hub: FunPayHub
 ):
     await download_update(callback_data.url)
     ctx = InstallUpdateMenuContext(
         menu_id=MenuIds.install_update,
         trigger=query,
-        instance_id=fph.instance_id
+        instance_id=hub.instance_id
     )
 
     menu = await tg_ui.build_menu(ctx, data | {'query': query})
@@ -113,15 +113,14 @@ async def download_upd(
 @r.callback_query(cbs.InstallUpdate.filter())
 async def install_upd(
     query: CallbackQuery,
-    tg_ui: UIRegistry,
-    data: dict[str, Any],
     callback_data: cbs.InstallUpdate,
-    fph: FunPayHub,
+    hub: FunPayHub,
 ):
-    if callback_data.instance_id != fph.instance_id:
+    if callback_data.instance_id != hub.instance_id:
         await query.answer('Wrong instance ID', show_alert=True) # todo
         return
 
+    install_update('.update.zip')
     sys.exit(1)  # todo
 
 

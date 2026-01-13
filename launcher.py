@@ -12,6 +12,7 @@ import ctypes
 
 IS_WINDOWS = os.name == 'nt'
 RELEASES_PATH = Path(os.environ.get('RELEASES_PATH', Path(__file__).parent)).absolute()
+print(f'{RELEASES_PATH=}')
 
 
 def elevate() -> None:
@@ -73,10 +74,12 @@ def non_safe_restart() -> None:
 
 def update() -> None:
     if not (RELEASES_PATH / '.update').exists(follow_symlinks=True):
+        print('no update path')
         return
     install_dependencies(RELEASES_PATH / '.update')
     apply_update(RELEASES_PATH / '.update')
     launcher_path = RELEASES_PATH / 'current' / 'launcher.py'
+    print(f'{launcher_path=}')
 
     if IS_WINDOWS:
         subprocess.Popen(
@@ -94,7 +97,7 @@ def update() -> None:
 
 ACTIONS = {
     0: lambda: sys.exit(0),
-    1: lambda: True,
+    1: update,
     2: safe_restart,
     3: non_safe_restart,
 }
