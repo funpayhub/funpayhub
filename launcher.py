@@ -5,7 +5,7 @@ import sys
 import subprocess
 from copy import deepcopy
 from argparse import Namespace, ArgumentParser
-from .updater import install_dependencies, apply_update
+from updater import install_dependencies, apply_update
 from pathlib import Path
 import ctypes
 
