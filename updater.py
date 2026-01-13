@@ -104,7 +104,7 @@ def install_dependencies(update_path: Path) -> None:
     ])
 
 
-def apply_update(update_path: Path) -> None:
+def apply_update(update_path: Path) -> Version:
     install_dependencies(update_path)
     with open(update_path / 'pyproject.toml', 'r') as src:
         pyproject = tomllib.loads(src.read())
@@ -114,6 +114,7 @@ def apply_update(update_path: Path) -> None:
     current = update_path.parent / 'current'
     current.unlink(missing_ok=True)
     os.symlink(update_path.parent / version, current, target_is_directory=True)
+    return Version(version)
 
 
 

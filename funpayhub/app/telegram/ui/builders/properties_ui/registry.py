@@ -7,7 +7,7 @@ __all__ = ['EntriesUIRegistry']
 from typing import TYPE_CHECKING, Type
 from dataclasses import replace
 
-from funpayhub.loggers import telegram_ui as logger
+from loggers import telegram_ui as logger
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
 from funpayhub.lib.properties.base import Entry
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
@@ -72,8 +72,9 @@ class _EntriesUIRegistry:
             raise KeyError(f'Menu builder for entry of type {entry_type!r} already exists.')
         self._menus[entry_type] = menu_builder_id
         logger.info(
-            f'Menu builder {menu_builder_id} assigned as menu builder for entries '
-            f'of type {entry_type!r}.',
+            f'Menu builder %s assigned as menu builder for entries of type %r.',
+            menu_builder_id,
+            entry_type,
         )
 
 

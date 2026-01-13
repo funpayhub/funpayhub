@@ -34,21 +34,14 @@ class FunPayHub:
     def __init__(
         self,
         properties: FunPayHubProperties,
+        translater: Translater | None = None,
     ):
         self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
         self._workflow_data = WorkflowData
         self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
         self.setup_dispatcher()
         self._properties = properties
-
-        self._translater = Translater()
-        if 'FPH_LOCALES' in os.environ:
-            locales_path = Path(os.environ['FPH_LOCALES'])
-        else:
-            locales_path = Path(__file__).parent.parent.parent / 'locales'
-
-        if locales_path.exists(follow_symlinks=True):
-            self._translater.add_translations(locales_path.absolute())
+        self._translater = translater or Translater()
 
         self._funpay = FunPay(
             self,

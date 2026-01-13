@@ -9,7 +9,7 @@ from dataclasses import field, dataclass
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
-from funpayhub.loggers import telegram_ui as logger
+from loggers import telegram_ui as logger
 
 from .types import (
     Menu,

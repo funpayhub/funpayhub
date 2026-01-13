@@ -8,11 +8,15 @@ from argparse import Namespace, ArgumentParser
 from updater import install_dependencies, apply_update
 from pathlib import Path
 import ctypes
+from loggers import launcher as logger
 
+
+logger.info('FunPay Hub launcher is in game!')
 
 IS_WINDOWS = os.name == 'nt'
-RELEASES_PATH = Path(os.environ.get('RELEASES_PATH', Path(__file__).parent)).absolute()
-print(f'{RELEASES_PATH=}')
+RELEASES_PATH = Path(os.environ['RELEASES_PATH']).absolute() if 'RELEASES_PATH' in os.environ else None
+
+logger.info('RELEASES_PATH: %s', RELEASES_PATH)
 
 
 def elevate() -> None:
@@ -28,6 +32,7 @@ def elevate() -> None:
 
 
 if IS_WINDOWS:
+    logger.info('Running under windows: need elevation.')
     elevate()
 
 
@@ -42,6 +47,7 @@ original_args = parser.parse_args()
 
 
 launch_args = sys.argv[1:]
+logger.info('Original launch args: %s', launch_args)
 
 
 def namespace_to_argv(ns: Namespace) -> list[str]:
@@ -57,6 +63,7 @@ def namespace_to_argv(ns: Namespace) -> list[str]:
 
 
 def safe_restart() -> None:
+    logger.info('Restarting FunPayHub in safe mode.')
     global launch_args
 
     new_args = deepcopy(original_args)
@@ -65,6 +72,7 @@ def safe_restart() -> None:
 
 
 def non_safe_restart() -> None:
+    logger.info('Restarting FunPayHub in non-safe mode.')
     global launch_args
 
     new_args = deepcopy(original_args)
@@ -73,14 +81,21 @@ def non_safe_restart() -> None:
 
 
 def update() -> None:
-    if not (RELEASES_PATH / '.update').exists(follow_symlinks=True):
-        print('no update path')
-        return
-    install_dependencies(RELEASES_PATH / '.update')
-    apply_update(RELEASES_PATH / '.update')
-    launcher_path = RELEASES_PATH / 'current' / 'launcher.py'
-    print(f'{launcher_path=}')
+    logger.info('Applying FunPayHub update.')
 
+    if not RELEASES_PATH:
+        logger.error('%s environment variable not set. Unable to apply update.', 'RELEASES_PATH')
+        return
+
+    if not (RELEASES_PATH / '.update').exists(follow_symlinks=True):
+        logger.error('Update path %s does not exists. Unable to apply update.', RELEASES_PATH)
+        return
+
+    install_dependencies(RELEASES_PATH / '.update')
+    new_version = apply_update(RELEASES_PATH / '.update')
+    launcher_path = RELEASES_PATH / 'current' / 'launcher.py'
+
+    logger.info('FunPay Hub update %s applied successfully. Launching new process...', new_version)
     if IS_WINDOWS:
         subprocess.Popen(
             [sys.executable, launcher_path, *launch_args],
@@ -120,6 +135,7 @@ while True:
         ],
         env=os.environ.copy(),
     )
+    logger.info('FunPayHub process ended with return code %d.', result.returncode)
 
     if result.returncode in ACTIONS:
         ACTIONS[result.returncode]()

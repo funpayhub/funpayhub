@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from funpaybotengine.types import Message
 
-from funpayhub.loggers import main as logger
+from loggers import main as logger
 from funpayhub.lib.translater import Translater
 
 

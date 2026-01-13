@@ -15,7 +15,7 @@ from funpaybotengine.exceptions.session_exceptions import (
     RateLimitExceededError,
 )
 
-from funpayhub.loggers import offers_raiser as logger
+from loggers import offers_raiser as logger
 
 
 type RaiseCallback = Callable[[Category], Awaitable[Any]]
