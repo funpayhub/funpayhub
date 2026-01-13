@@ -13,8 +13,9 @@ from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter, Colori
 import logging
 from logging.config import dictConfig
 
-
-# ------ Logging -----
+# ---------------------------------------------
+# |               Logging setup               |
+# ---------------------------------------------
 LOGGERS = [logger.name]
 
 dictConfig(
@@ -58,12 +59,14 @@ dictConfig(
 logging.setLogRecordFactory(ColorizedLogRecord)
 
 
-
-logger.info('FunPay Hub launcher is in game!')
-
+# ---------------------------------------------
+# |                   Hooks                   |
+# ---------------------------------------------
 IS_WINDOWS = os.name == 'nt'
 RELEASES_PATH = Path(os.environ['RELEASES_PATH']).absolute() if 'RELEASES_PATH' in os.environ else None
+APP_PATH = Path(__file__).parent / 'app.py'
 
+logger.info('FunPay Hub launcher is in game!')
 logger.info('RELEASES_PATH: %s', RELEASES_PATH)
 
 
@@ -92,10 +95,9 @@ parser.add_argument(
     help='Run FunPayHub in safe mode (without plugins).',
 )
 original_args = parser.parse_args()
-
+logger.info('Original launch args: %s', original_args)
 
 launch_args = sys.argv[1:]
-logger.info('Original launch args: %s', launch_args)
 
 
 def namespace_to_argv(ns: Namespace) -> list[str]:
@@ -139,6 +141,7 @@ def update() -> None:
         logger.error('Update path %s does not exists. Unable to apply update.', RELEASES_PATH)
         return
 
+    # todo: try except
     install_dependencies(RELEASES_PATH / '.update')
     new_version = apply_update(RELEASES_PATH / '.update')
     launcher_path = RELEASES_PATH / 'current' / 'launcher.py'
@@ -158,6 +161,9 @@ def update() -> None:
 
 
 
+# ---------------------------------------------
+# |                 Main loop                 |
+# ---------------------------------------------
 ACTIONS = {
     0: lambda: sys.exit(0),
     1: update,
@@ -165,28 +171,21 @@ ACTIONS = {
     3: non_safe_restart,
 }
 
-
-app_path = os.path.join(
-    os.path.dirname(
-        os.path.abspath(__file__)
-    ),
-    'app.py'
-)
-
-
 while True:
-    result = subprocess.run(
-        [
-            sys.executable,
-            app_path,
-            *launch_args,
-        ],
-        env=os.environ.copy(),
-    )
-    logger.info('FunPayHub process ended with return code %d.', result.returncode)
+    logger.info('Launching FunPayHub with args: %s', launch_args)
+
+    try:
+        result = subprocess.run([sys.executable, APP_PATH, *launch_args],
+            env=os.environ.copy(),
+        )
+    except OSError:
+        logger.critical(f'An error occurred while launching FunPayHub.', exc_info=True)
+        sys.exit(-1)
 
     if result.returncode in ACTIONS:
+        logger.info('FunPayHub process ended with return code %d.', result.returncode)
         ACTIONS[result.returncode]()
         continue
     else:
+        logger.error('FunPayHub process ended with unknoen return code %d.', result.returncode)
         sys.exit(result.returncode)
