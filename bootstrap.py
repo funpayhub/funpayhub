@@ -13,6 +13,7 @@ LAUNCHER_PATH = os.path.join(BOOTSTRAP_PATH, 'launcher.py')
 CURRENT_RELEASE_PATH = os.path.join(RELEASES_PATH, 'current')
 LOCALES_PATH = os.path.join(CURRENT_RELEASE_PATH, 'locales')
 
+
 TO_MOVE = {
     'funpayhub',
     'locales',

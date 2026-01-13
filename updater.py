@@ -2,10 +2,13 @@ import aiohttp
 from aiohttp import ClientSession
 from packaging.version import Version
 from dataclasses import dataclass
-import os
 import zipfile
 from pathlib import Path
 import shutil
+import subprocess
+import sys
+import tomllib
+import os
 
 
 REPO = 'funpayhub/funpayhub'
@@ -84,6 +87,36 @@ def install_update(update_archive: str) -> None:
                 shutil.copyfileobj(src, dst)
 
 
+def install_dependencies(update_path: Path) -> None:
+    if not os.path.exists(update_path / 'pyproject.toml'):
+        return
+
+    result = subprocess.run([
+        sys.executable, '-m', 'ensurepip', '--upgrade'
+    ])
+
+    result = subprocess.run([
+        sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip'
+    ])
+
+    result = subprocess.run([
+        sys.executable, '-m', 'pip', 'install', '-U', update_path
+    ])
+
+
+def apply_update(update_path: Path) -> None:
+    install_dependencies(update_path)
+    with open(update_path / 'pyproject.toml', 'r') as src:
+        pyproject = tomllib.loads(src.read())
+    version = pyproject['project']['version']
+    update_path.rename(update_path.parent / version)
+
+    current = update_path.parent / 'current'
+    current.unlink(missing_ok=True)
+    os.symlink(update_path.parent / version, current, target_is_directory=True)
+
+
+
 async def main():
     update = await check_updates()
     if not update:
@@ -91,6 +124,8 @@ async def main():
 
     await download_update(update.url)
     install_update('.update.zip')
+    install_dependencies(UPDATE_PATH)
+    apply_update(UPDATE_PATH)
 
 
 if __name__ == '__main__':
