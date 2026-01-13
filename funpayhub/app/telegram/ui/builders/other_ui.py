@@ -10,6 +10,7 @@ from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuConte
 from funpayhub.app.telegram.callbacks import OpenEntryMenu
 from ..premade import StripAndNavigationFinalizer
 from .context import UpdateMenuContext, InstallUpdateMenuContext
+import html
 
 if TYPE_CHECKING:
     from funpayhub.app.funpay.main import FunPay
@@ -94,11 +95,16 @@ class UpdateMenuBuilder(MenuBuilder):
             menu.text = translater.translate('$no_updates_available')
             return menu
 
+        desc = html.escape(ctx.update_info.description)
+        if len(desc) > 3000:
+            desc = (desc[:3000] + '...' + '\n\n' + translater.translate('$full_changelog') +
+                    ': https://github.com/funpayhub/funpayhub/releases/latest')
+
         menu.text = f"""{translater.translate('$new_update_available')}
 
-{ctx.update_info.title}
+<b>{html.escape(ctx.update_info.title)}</b>
 
-{ctx.update_info.description}"""
+{desc}"""
 
         menu.main_keyboard = KeyboardBuilder()
         menu.main_keyboard.add_callback_button(
@@ -123,7 +129,7 @@ class InstallUpdateMenuBuilder(MenuBuilder):
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='install_update',
-            text='$install_update',
+            text=translater.translate('$install_update'),
             callback_data=cbs.InstallUpdate(instance_id=hub.instance_id).pack_compact()
         )
 
