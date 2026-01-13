@@ -5,7 +5,7 @@ import sys
 import logging
 import colorama
 from colorama import Fore, Back, Style
-from mypy.types import Any
+from typing import Any
 
 
 COLORS = {

@@ -5,7 +5,7 @@ import os
 import polib
 
 
-BASE_DIR = 'funpayhub/locales'
+BASE_DIR = 'locales'
 
 
 for root, _, files in os.walk(BASE_DIR):

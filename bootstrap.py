@@ -22,6 +22,8 @@ TO_MOVE = {
     'updater.py',
     'loggers.py',
     'logger_formatter.py',
+    'exit_codes.py',
+    'requirements.txt',
     'pyproject.toml'
 }
 

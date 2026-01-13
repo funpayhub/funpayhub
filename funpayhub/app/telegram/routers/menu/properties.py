@@ -18,6 +18,7 @@ from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 from funpayhub.app.telegram.ui.builders.context import UpdateMenuContext, InstallUpdateMenuContext
 from updater import check_updates, download_update, install_update
+from exit_codes import UPDATE
 import sys
 
 from .router import router as r
@@ -27,6 +28,7 @@ from ...ui.ids import MenuIds
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
     from funpayhub.app.properties.properties import FunPayHubProperties
+    from funpayhub.lib.translater import Translater
 
 
 async def _delete_message(msg: Message):
@@ -74,12 +76,13 @@ async def check_for_updates(
     query: CallbackQuery,
     tg_ui: UIRegistry,
     data: dict[str, Any],
-    hub: FunPayHub
+    hub: FunPayHub,
+    translater: Translater,
 ):
     try:
         update = await check_updates(hub.properties.version.value)
     except:
-        await query.answer('$error_fetching_updates', show_alert=True)
+        await query.answer(translater.translate('$error_fetching_updates'), show_alert=True)
         return
 
     ctx = UpdateMenuContext(
@@ -99,12 +102,13 @@ async def download_upd(
     tg_ui: UIRegistry,
     data: dict[str, Any],
     callback_data: cbs.DownloadUpdate,
-    hub: FunPayHub
+    hub: FunPayHub,
+    translater: Translater,
 ):
     try:
         await download_update(callback_data.url)
     except:
-        await query.answer('$error_downloading_update', show_alert=True)
+        await query.answer(translater.translate('$error_downloading_update'), show_alert=True)
         return
 
     ctx = InstallUpdateMenuContext(
@@ -122,20 +126,20 @@ async def install_upd(
     query: CallbackQuery,
     callback_data: cbs.InstallUpdate,
     hub: FunPayHub,
+    translater: Translater,
 ):
     if callback_data.instance_id != hub.instance_id:
-        await query.answer('Wrong instance ID', show_alert=True) # todo
+        await query.answer(translater.translate('$wrong_update_instance_id'), show_alert=True)
         return
 
     try:
         install_update('.update.zip')
     except:
-        await query.answer('$error_installing_update', show_alert=True)
+        await query.answer(translater.translate('$error_unpacking_update'), show_alert=True)
         return
 
-    await query.message.edit_text('$installing_update')
-    sys.exit(1)  # todo
-
+    await query.message.edit_text(translater.translate('$installing_update'))
+    sys.exit(UPDATE) # todo
 
 
 @r.callback_query(cbs.OpenEntryMenu.filter())

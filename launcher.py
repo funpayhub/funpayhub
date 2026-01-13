@@ -12,6 +12,7 @@ from loggers import launcher as logger
 from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter, ColorizedLogRecord
 import logging
 from logging.config import dictConfig
+import exit_codes
 
 # ---------------------------------------------
 # |               Logging setup               |
@@ -168,10 +169,10 @@ def update() -> None:
 # |                 Main loop                 |
 # ---------------------------------------------
 ACTIONS = {
-    0: lambda: sys.exit(0),
-    1: update,
-    2: safe_restart,
-    3: non_safe_restart,
+    exit_codes.SHUTDOWN: lambda: sys.exit(0),
+    exit_codes.UPDATE: update,
+    exit_codes.RESTART_SAFE: safe_restart,
+    exit_codes.RESTART_NON_SAFE: non_safe_restart,
 }
 
 while True:
