@@ -9,10 +9,11 @@ import subprocess
 import sys
 import tomllib
 import os
+from loggers import updater as logger
+import asyncio
 
 
 REPO = 'funpayhub/funpayhub'
-CURRENT_VERSION = Version('0.1.2')
 UPDATE_EXCLUDE = ['config', 'logs', 'plugins', 'storage']
 RELEASES_PATH = Path(os.environ.get('RELEASES_PATH', 'releases'))
 UPDATE_PATH = RELEASES_PATH / '.update'
@@ -26,24 +27,39 @@ class UpdateInfo:
     url: str
 
 
-async def check_updates() -> UpdateInfo | None:
-    async with ClientSession() as s:
-        result = await s.get(
-            f'https://api.github.com/repos/{REPO}/releases',
-            headers={'Accept': 'application/vnd.github+json'}
-        )
-        data = await result.json()
+async def check_updates(current_version: Version | str) -> UpdateInfo | None:
+    if isinstance(current_version, str):
+        current_version = Version(current_version)
+
+    logger.info('Fetching releases...')
+
+    try:
+        async with ClientSession() as s:
+            result = await s.get(
+                f'https://api.github.com/repos/{REPO}/releases',
+                headers={'Accept': 'application/vnd.github+json'}
+            )
+            data = await result.json()
+    except:
+        logger.error('An error occurred while fetching releases.', exc_info=True)
+        raise
 
     if not data:
+        logger.info('No releases available.')
         return None
 
     latest = data[0]
     latest_version = latest['tag_name'].replace('v', '').strip()
     if not latest_version:
-        print('No new version available.')
+        logger.info('No releases available.')
         return None
 
     latest_version = Version(latest_version)
+    if latest_version <= current_version:
+        logger.info('No releases available.')
+        return None
+
+    logger.info('New release %s available.', str(latest_version))
     return UpdateInfo(
         version=latest_version,
         title=latest['name'],
@@ -53,25 +69,31 @@ async def check_updates() -> UpdateInfo | None:
 
 
 
-async def _download_update(url: str) -> None:
+async def _download_update(url: str, dst: str) -> None:
     async with ClientSession() as s:
         async with s.get(url) as response:
             response.raise_for_status()
-            with open('.update.zip', 'wb') as f:
+            with open(dst, 'wb') as f:
                 async for chunk in response.content.iter_chunked(1024):
                     f.write(chunk)
 
 
-async def download_update(url: str) -> None:
+async def download_update(url: str, dst: str = '.update.zip') -> None:
+    logger.info('Downloading update from %s', url)
     try:
-        await _download_update(url)
+        await _download_update(url, dst)
     except aiohttp.ClientResponseError as e:
-        print(e.status)
+        logger.error('Unexpected status code while downloading update: %d.', e.status)
+        raise
     except asyncio.TimeoutError:
-        print('timeout')
+        logger.error('Timeout error while downloading updated.')
+        raise
+    except Exception as e:
+        logger.error('Unexpected error while downloading an updated.', exc_info=True)
+        raise
 
 
-def install_update(update_archive: str) -> None:
+def _install_update(update_archive: str) -> None:
     if os.path.exists(UPDATE_PATH):
         shutil.rmtree(UPDATE_PATH)
     os.makedirs(UPDATE_PATH, exist_ok=True)
@@ -85,6 +107,15 @@ def install_update(update_archive: str) -> None:
             os.makedirs(new_path.parent, exist_ok=True)
             with zip.open(info.filename, 'r') as src, open(new_path, 'wb') as dst:
                 shutil.copyfileobj(src, dst)
+
+
+def install_update(update_archive: str) -> None:
+    logger.info('Installing update to %s ...', UPDATE_PATH)
+    try:
+        _install_update(update_archive)
+    except:
+        logger.error('Unexpected error while installing update to %s.', UPDATE_PATH, exc_info=True)
+        raise
 
 
 def install_dependencies(update_path: Path) -> None:
@@ -115,20 +146,3 @@ def apply_update(update_path: Path) -> Version:
     current.unlink(missing_ok=True)
     os.symlink(update_path.parent / version, current, target_is_directory=True)
     return Version(version)
-
-
-
-async def main():
-    update = await check_updates()
-    if not update:
-        return
-
-    await download_update(update.url)
-    install_update('.update.zip')
-    install_dependencies(UPDATE_PATH)
-    apply_update(UPDATE_PATH)
-
-
-if __name__ == '__main__':
-    import asyncio
-    asyncio.run(main())

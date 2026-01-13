@@ -74,11 +74,13 @@ async def check_for_updates(
     query: CallbackQuery,
     tg_ui: UIRegistry,
     data: dict[str, Any],
+    hub: FunPayHub
 ):
     try:
-        update = await check_updates()
+        update = await check_updates(hub.properties.version.value)
     except:
-        return  # todo
+        await query.answer('$error_fetching_updates', show_alert=True)
+        return
 
     ctx = UpdateMenuContext(
         menu_id=MenuIds.update,
@@ -99,7 +101,12 @@ async def download_upd(
     callback_data: cbs.DownloadUpdate,
     hub: FunPayHub
 ):
-    await download_update(callback_data.url)
+    try:
+        await download_update(callback_data.url)
+    except:
+        await query.answer('$error_downloading_update', show_alert=True)
+        return
+
     ctx = InstallUpdateMenuContext(
         menu_id=MenuIds.install_update,
         trigger=query,
@@ -120,7 +127,13 @@ async def install_upd(
         await query.answer('Wrong instance ID', show_alert=True) # todo
         return
 
-    install_update('.update.zip')
+    try:
+        install_update('.update.zip')
+    except:
+        await query.answer('$error_installing_update', show_alert=True)
+        return
+
+    await query.message.edit_text('$installing_update')
     sys.exit(1)  # todo
 
 

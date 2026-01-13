@@ -74,6 +74,7 @@ logging.setLogRecordFactory(ColorizedLogRecord)
 
 
 launcher = getLogger('funpayhub.launcher')
+updater = getLogger('funpayhub.updater')
 main = getLogger('funpayhub.main')
 telegram = getLogger('funpayhub.telegram')
 telegram_ui = getLogger('funpayhub.telegram.ui')
