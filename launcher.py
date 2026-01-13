@@ -9,6 +9,54 @@ from updater import install_dependencies, apply_update
 from pathlib import Path
 import ctypes
 from loggers import launcher as logger
+from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter, ColorizedLogRecord
+import logging
+from logging.config import dictConfig
+
+
+# ------ Logging -----
+LOGGERS = [logger.name]
+
+dictConfig(
+    config={
+        'version': 1,
+        'disable_existing_loggers': False,
+
+        'formatters': {
+            'file_formatter': {
+                '()': FileLoggerFormatter,
+                'fmt': '%(created).3f %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] %(message)s',
+            },
+            'console_formatter': {
+                '()': ConsoleLoggerFormatter,
+            }
+        },
+
+        'handlers': {
+            'console': {
+                'formatter': 'console_formatter',
+                'level': logging.DEBUG,
+                'class': 'logging.StreamHandler',
+                'stream': sys.stdout,
+            },
+
+            'file': {
+                'class': 'logging.handlers.TimedRotatingFileHandler',
+                'filename': os.path.join('logs', 'launcher.log'),
+                'encoding': 'utf-8',
+                'when': 'D',
+                'interval': 1,
+                'backupCount': 10,
+                'formatter': 'file_formatter',
+                'level': logging.DEBUG
+            }
+        },
+        'loggers': {i: {'level': logging.DEBUG, 'handlers': ['console', 'file']} for i in LOGGERS},
+    }
+)
+
+logging.setLogRecordFactory(ColorizedLogRecord)
+
 
 
 logger.info('FunPay Hub launcher is in game!')
