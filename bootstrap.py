@@ -20,6 +20,8 @@ TO_MOVE = {
     'app.py',
     'launcher.py',
     'updater.py',
+    'loggers.py',
+    'logger_formatter.py',
     'pyproject.toml'
 }
 
