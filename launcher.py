@@ -17,6 +17,7 @@ from logging.config import dictConfig
 # |               Logging setup               |
 # ---------------------------------------------
 LOGGERS = [logger.name]
+os.makedirs('logs', exist_ok=True)
 
 dictConfig(
     config={
