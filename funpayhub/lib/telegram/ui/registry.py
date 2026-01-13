@@ -88,7 +88,7 @@ class UIRegistry:
         if builder.id in self._menus and not overwrite:
             raise KeyError(f'Menu {builder.id!r} already exists.')
 
-        logger.info(f'Adding menu builder %s to registry...', builder.id)
+        logger.info('Adding menu builder %s to registry...', builder.id)
         self._menus[builder.id] = _MenuBuilder(builder())
 
     def add_menu_modification(
@@ -115,7 +115,7 @@ class UIRegistry:
         try:
             builder = self.get_menu_builder(context.menu_id)
         except KeyError:
-            logger.error(f'Menu %s not found.', context.menu_id)
+            logger.error('Menu %s not found.', context.menu_id)
             raise  # todo: custom error
 
         if not isinstance(context, builder.builder.context_type):
@@ -124,7 +124,7 @@ class UIRegistry:
                 f'not {type(context)!r}.',
             )
 
-        logger.info(f'Building menu %s.', context.menu_id)
+        logger.info('Building menu %s.', context.menu_id)
 
         # create new workflow data object and replace 'data' key
 
@@ -145,7 +145,7 @@ class UIRegistry:
         if builder.id in self._buttons and not overwrite:
             raise KeyError(f'Button {builder.id!r} already exists.')
 
-        logger.info(f'Adding button builder %s to registry...', builder.id)
+        logger.info('Adding button builder %s to registry...', builder.id)
         self._buttons[builder.id] = _ButtonBuilder(builder())
 
     def add_button_modification(
@@ -183,7 +183,7 @@ class UIRegistry:
                 f'not {type(context)!r}.',
             )
 
-        logger.info(f'Building button %s.', context.button_id)
+        logger.info('Building button %s.', context.button_id)
 
         return await builder.build(
             context,

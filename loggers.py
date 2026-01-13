@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from logging import getLogger
-import colorama
-import logging
-from logging.config import dictConfig
-from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter, ColorizedLogRecord
 import os
 import sys
+import logging
+from logging import getLogger
+from logging.config import dictConfig
+
+import colorama
+
+from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLoggerFormatter
 
 
 colorama.just_fix_windows_console()
@@ -29,7 +31,7 @@ LOGGERS = [
     'funpayhub.main',
     'funpayhub.telegram',
     'funpayhub.telegram.ui',
-    'funpayhub.offers_raiser'
+    'funpayhub.offers_raiser',
 ]
 
 
@@ -37,7 +39,6 @@ dictConfig(
     config={
         'version': 1,
         'disable_existing_loggers': False,
-
         'formatters': {
             'file_formatter': {
                 '()': FileLoggerFormatter,
@@ -45,9 +46,8 @@ dictConfig(
             },
             'console_formatter': {
                 '()': ConsoleLoggerFormatter,
-            }
+            },
         },
-
         'handlers': {
             'console': {
                 'formatter': 'console_formatter',
@@ -55,7 +55,6 @@ dictConfig(
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
             },
-
             'file': {
                 'class': 'logging.handlers.RotatingFileHandler',
                 'filename': os.path.join('logs', 'fph.log'),
@@ -63,11 +62,11 @@ dictConfig(
                 'backupCount': 100,
                 'maxBytes': 19 * 1024 * 1024,
                 'formatter': 'file_formatter',
-                'level': logging.DEBUG
-            }
+                'level': logging.DEBUG,
+            },
         },
         'loggers': {i: {'level': logging.DEBUG, 'handlers': ['console', 'file']} for i in LOGGERS},
-    }
+    },
 )
 
 logging.setLogRecordFactory(ColorizedLogRecord)

@@ -1,16 +1,20 @@
+from __future__ import annotations
+
+import os
+import sys
+import shutil
+import asyncio
+import tomllib
+import zipfile
+import subprocess
+from dataclasses import dataclass
+from pathlib import Path
+
 import aiohttp
 from aiohttp import ClientSession
 from packaging.version import Version
-from dataclasses import dataclass
-import zipfile
-from pathlib import Path
-import shutil
-import subprocess
-import sys
-import tomllib
-import os
+
 from loggers import updater as logger
-import asyncio
 
 
 REPO = 'funpayhub/funpayhub'
@@ -37,7 +41,7 @@ async def check_updates(current_version: Version | str) -> UpdateInfo | None:
         async with ClientSession() as s:
             result = await s.get(
                 f'https://api.github.com/repos/{REPO}/releases',
-                headers={'Accept': 'application/vnd.github+json'}
+                headers={'Accept': 'application/vnd.github+json'},
             )
             data = await result.json()
     except:
@@ -64,9 +68,8 @@ async def check_updates(current_version: Version | str) -> UpdateInfo | None:
         version=latest_version,
         title=latest['name'],
         description=latest['body'],
-        url=latest['zipball_url']
+        url=latest['zipball_url'],
     )
-
 
 
 async def _download_update(url: str, dst: str) -> None:
@@ -88,7 +91,7 @@ async def download_update(url: str, dst: str = '.update.zip') -> None:
     except asyncio.TimeoutError:
         logger.error('Timeout error while downloading updated.')
         raise
-    except Exception as e:
+    except Exception:
         logger.error('Unexpected error while downloading an updated.', exc_info=True)
         raise
 
@@ -122,17 +125,36 @@ def install_dependencies(update_path: Path) -> None:
     if not os.path.exists(update_path / 'pyproject.toml'):
         return
 
-    result = subprocess.run([
-        sys.executable, '-m', 'ensurepip', '--upgrade'
-    ])
+    result = subprocess.run(
+        [
+            sys.executable,
+            '-m',
+            'ensurepip',
+            '--upgrade',
+        ],
+    )
 
-    result = subprocess.run([
-        sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip'
-    ])
+    result = subprocess.run(
+        [
+            sys.executable,
+            '-m',
+            'pip',
+            'install',
+            '--upgrade',
+            'pip',
+        ],
+    )
 
-    result = subprocess.run([
-        sys.executable, '-m', 'pip', 'install', '-U', update_path
-    ])
+    result = subprocess.run(
+        [
+            sys.executable,
+            '-m',
+            'pip',
+            'install',
+            '-U',
+            update_path,
+        ],
+    )
 
 
 def apply_update(update_path: Path) -> Version:

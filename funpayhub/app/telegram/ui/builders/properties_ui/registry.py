@@ -56,10 +56,9 @@ class _EntriesUIRegistry:
         self._buttons[entry_type] = button_builder_id
 
         logger.info(
-            f'Button builder %s assigned as button builder for entries '
-            f'of type %s.',
+            'Button builder %s assigned as button builder for entries of type %s.',
             button_builder_id,
-            entry_type
+            entry_type,
         )
 
     def add_menu_builder(
@@ -72,7 +71,7 @@ class _EntriesUIRegistry:
             raise KeyError(f'Menu builder for entry of type {entry_type!r} already exists.')
         self._menus[entry_type] = menu_builder_id
         logger.info(
-            f'Menu builder %s assigned as menu builder for entries of type %r.',
+            'Menu builder %s assigned as menu builder for entries of type %r.',
             menu_builder_id,
             entry_type,
         )

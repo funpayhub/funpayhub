@@ -84,6 +84,8 @@ async def open_entry_menu(
     )
     menu = await tg_ui.build_menu(ctx, data | {'query': query})
     await menu.apply_to(query.message)
+
+
 # TEMP
 
 

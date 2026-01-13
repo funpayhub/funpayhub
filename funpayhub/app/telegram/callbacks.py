@@ -142,10 +142,12 @@ class MuteChat(CallbackData, identifier='mute_chat'):
 
 
 # Other
-class AddCommand(CallbackData, identifier='add_command'): pass
+class AddCommand(CallbackData, identifier='add_command'):
+    pass
 
 
-class CheckForUpdates(CallbackData, identifier='check_for_updates'): pass
+class CheckForUpdates(CallbackData, identifier='check_for_updates'):
+    pass
 
 
 class DownloadUpdate(CallbackData, identifier='download_update'):

@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import os
 import sys
+import ctypes
+import logging
 import subprocess
 from copy import deepcopy
-from argparse import Namespace, ArgumentParser
-from updater import install_dependencies, apply_update
 from pathlib import Path
-import ctypes
-from loggers import launcher as logger
-from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter, ColorizedLogRecord
-import logging
+from argparse import Namespace, ArgumentParser
 from logging.config import dictConfig
+
 import exit_codes
+from loggers import launcher as logger
+from updater import apply_update, install_dependencies
+from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLoggerFormatter
+
 
 # ---------------------------------------------
 # |               Logging setup               |
@@ -24,7 +26,6 @@ dictConfig(
     config={
         'version': 1,
         'disable_existing_loggers': False,
-
         'formatters': {
             'file_formatter': {
                 '()': FileLoggerFormatter,
@@ -32,9 +33,8 @@ dictConfig(
             },
             'console_formatter': {
                 '()': ConsoleLoggerFormatter,
-            }
+            },
         },
-
         'handlers': {
             'console': {
                 'formatter': 'console_formatter',
@@ -42,7 +42,6 @@ dictConfig(
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
             },
-
             'file': {
                 'class': 'logging.handlers.TimedRotatingFileHandler',
                 'filename': os.path.join('logs', 'launcher.log'),
@@ -51,11 +50,11 @@ dictConfig(
                 'interval': 1,
                 'backupCount': 10,
                 'formatter': 'file_formatter',
-                'level': logging.DEBUG
-            }
+                'level': logging.DEBUG,
+            },
         },
         'loggers': {i: {'level': logging.DEBUG, 'handlers': ['console', 'file']} for i in LOGGERS},
-    }
+    },
 )
 
 logging.setLogRecordFactory(ColorizedLogRecord)
@@ -65,7 +64,9 @@ logging.setLogRecordFactory(ColorizedLogRecord)
 # |                   Hooks                   |
 # ---------------------------------------------
 IS_WINDOWS = os.name == 'nt'
-RELEASES_PATH = Path(os.environ['RELEASES_PATH']).absolute() if 'RELEASES_PATH' in os.environ else None
+RELEASES_PATH = (
+    Path(os.environ['RELEASES_PATH']).absolute() if 'RELEASES_PATH' in os.environ else None
+)
 APP_PATH = Path(__file__).parent / 'app.py'
 
 logger.info('FunPay Hub launcher is in game!')
@@ -81,8 +82,8 @@ def elevate() -> None:
         is_admin = False
 
     if not is_admin:
-        params = " ".join([f'"{arg}"' for arg in sys.argv])
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, params, None, 1)
+        params = ' '.join([f'"{arg}"' for arg in sys.argv])
+        ctypes.windll.shell32.ShellExecuteW(None, 'runas', sys.executable, params, None, 1)
         sys.exit(0)
 
 
@@ -157,12 +158,11 @@ def update() -> None:
             stdout=sys.stdout,
             stderr=sys.stderr,
             stdin=sys.stdin,
-            env=os.environ
+            env=os.environ,
         )
     else:
         os.execv(sys.executable, [sys.executable, launcher_path, *launch_args])
     sys.exit(0)
-
 
 
 # ---------------------------------------------
@@ -179,11 +179,12 @@ while True:
     logger.info('Launching FunPayHub with args: %s', launch_args)
 
     try:
-        result = subprocess.run([sys.executable, APP_PATH, *launch_args],
+        result = subprocess.run(
+            [sys.executable, APP_PATH, *launch_args],
             env=os.environ.copy(),
         )
     except OSError:
-        logger.critical(f'An error occurred while launching FunPayHub.', exc_info=True)
+        logger.critical('An error occurred while launching FunPayHub.', exc_info=True)
         sys.exit(-1)
 
     if result.returncode in ACTIONS:

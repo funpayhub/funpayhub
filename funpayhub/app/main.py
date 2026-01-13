@@ -18,7 +18,6 @@ from funpayhub.app.dispatching import (
 )
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
-from pathlib import Path
 
 # plugins
 from funpayhub.plugins.exec_plugin import Plugin

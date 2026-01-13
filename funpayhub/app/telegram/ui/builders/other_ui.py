@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+import html
+from typing import TYPE_CHECKING
 
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.translater import Translater
@@ -8,13 +9,14 @@ from funpayhub.lib.telegram.ui import KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
 from funpayhub.app.telegram.callbacks import OpenEntryMenu
-from ..premade import StripAndNavigationFinalizer
+
 from .context import UpdateMenuContext, InstallUpdateMenuContext
-import html
+from ..premade import StripAndNavigationFinalizer
+
 
 if TYPE_CHECKING:
-    from funpayhub.app.funpay.main import FunPay
     from funpayhub.app import FunPayHub
+    from funpayhub.app.funpay.main import FunPay
 
 
 class AddCommandMenuBuilder(MenuBuilder):
@@ -97,8 +99,13 @@ class UpdateMenuBuilder(MenuBuilder):
 
         desc = html.escape(ctx.update_info.description)
         if len(desc) > 3000:
-            desc = (desc[:3000] + '...' + '\n\n' + translater.translate('$full_changelog') +
-                    ': https://github.com/funpayhub/funpayhub/releases/latest')
+            desc = (
+                desc[:3000]
+                + '...'
+                + '\n\n'
+                + translater.translate('$full_changelog')
+                + ': https://github.com/funpayhub/funpayhub/releases/latest'
+            )
 
         menu.text = f"""{translater.translate('$new_update_available')}
 
@@ -124,16 +131,16 @@ class InstallUpdateMenuBuilder(MenuBuilder):
         self,
         ctx: InstallUpdateMenuContext,
         translater: Translater,
-        hub: FunPayHub
+        hub: FunPayHub,
     ) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='install_update',
             text=translater.translate('$install_update'),
-            callback_data=cbs.InstallUpdate(instance_id=hub.instance_id).pack_compact()
+            callback_data=cbs.InstallUpdate(instance_id=hub.instance_id).pack_compact(),
         )
 
         return Menu(
             text=translater.translate('$install_update_text'),
-            main_keyboard=kb
+            main_keyboard=kb,
         )

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import field, dataclass
 from typing import TYPE_CHECKING
+from dataclasses import field, dataclass
 
 from funpaybotengine.types import Message
 
 from funpayhub.lib.telegram.ui import MenuContext
+
 
 if TYPE_CHECKING:
     from updater import UpdateInfo

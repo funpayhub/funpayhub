@@ -3,9 +3,10 @@ from __future__ import annotations
 import re
 import sys
 import logging
-import colorama
-from colorama import Fore, Back, Style
 from typing import Any
+
+import colorama
+from colorama import Back, Fore, Style
 
 
 COLORS = {
@@ -13,7 +14,7 @@ COLORS = {
     logging.INFO: [Fore.GREEN, Style.BRIGHT],
     logging.WARNING: [Fore.YELLOW],
     logging.ERROR: [Fore.RED],
-    logging.CRITICAL: [Fore.WHITE, Back.RED]
+    logging.CRITICAL: [Fore.WHITE, Back.RED],
 }
 
 
@@ -22,11 +23,11 @@ EMOJIS = {
     logging.INFO: '📘',
     logging.WARNING: '⚠️',
     logging.ERROR: '‼️',
-    logging.CRITICAL: '🔥'
+    logging.CRITICAL: '🔥',
 }
 
 
-RESET_MARKER = '\uE000'
+RESET_MARKER = '\ue000'
 RESET_RE = re.compile(rf'((?<!\$)\$RESET)|({RESET_MARKER})')
 ESC_RE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
@@ -39,7 +40,8 @@ class ColorizedLogRecord(logging.LogRecord):
         r'(?P<minimal_width>([0-9]+)|\*)?'
         r'(?P<precision>\.([0-9]+)|\*)?'
         r'(?P<length>[hlL])?'
-        r'(?P<conversion_type>[diouxXeEfFgGcrsa])')
+        r'(?P<conversion_type>[diouxXeEfFgGcrsa])',
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -57,19 +59,24 @@ class ColorizedLogRecord(logging.LogRecord):
             matched_str = match.group()
             new_str = self._colorize(matched_str, match, arg)
             diff = len(new_str) - len(matched_str)
-            msg = msg[:match.start()+shift] + new_str + msg[match.end()+shift:]
+            msg = msg[: match.start() + shift] + new_str + msg[match.end() + shift :]
             shift += diff
         return msg
 
     def _colorize(self, s: str, m: re.Match, v: Any) -> str:
         if isinstance(v, bool):
-            return Style.RESET_ALL + (Fore.GREEN if v else Fore.RED) + Style.BRIGHT + (s % v) + RESET_MARKER
-        elif isinstance(v, (int, float)):
+            return (
+                Style.RESET_ALL
+                + (Fore.GREEN if v else Fore.RED)
+                + Style.BRIGHT
+                + (s % v)
+                + RESET_MARKER
+            )
+        if isinstance(v, (int, float)):
             return Style.RESET_ALL + Fore.CYAN + Style.BRIGHT + (s % v) + RESET_MARKER
-        elif isinstance(v, str):
+        if isinstance(v, str):
             return Style.RESET_ALL + Fore.GREEN + Style.BRIGHT + (s % v) + RESET_MARKER
-        else:
-            return Style.RESET_ALL + Fore.YELLOW + (s % v) + RESET_MARKER
+        return Style.RESET_ALL + Fore.YELLOW + (s % v) + RESET_MARKER
 
 
 class ConsoleLoggerFormatter(logging.Formatter):
@@ -78,7 +85,11 @@ class ConsoleLoggerFormatter(logging.Formatter):
         time_str = f'{Fore.WHITE + Style.DIM}{time_str}{Style.RESET_ALL}'
         color = ''.join(COLORS.get(record.levelno, []))
 
-        text = record.getColorizedMessage() if isinstance(record, ColorizedLogRecord) else record.getMessage()
+        text = (
+            record.getColorizedMessage()
+            if isinstance(record, ColorizedLogRecord)
+            else record.getMessage()
+        )
         text = RESET_RE.sub(f'{Style.RESET_ALL}', text)
         text = (
             f'{Style.RESET_ALL}'
