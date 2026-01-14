@@ -49,9 +49,11 @@ class StartNotificationMenuBuilder(MenuBuilder):
     id = MenuIds.start_notification
     context_type = MenuContext
 
-    async def build(self, ctx: MenuContext, translater: Translater) -> Menu:
+    async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub) -> Menu:
         return Menu(
-            text=translater.translate('$start_notification_text'),
+            text=translater.translate('$start_notification_text').format(
+                version=hub.properties.version.value
+            ),
         )
 
 
@@ -143,4 +145,41 @@ class InstallUpdateMenuBuilder(MenuBuilder):
         return Menu(
             text=translater.translate('$install_update_text'),
             main_keyboard=kb,
+        )
+
+
+class MainMenuBuilder(MenuBuilder):
+    id = MenuIds.main_menu
+    context_type = MenuContext
+
+    async def build(
+        self,
+        ctx: MenuContext,
+        translater: Translater,
+        hub: FunPayHub,
+    ):
+        history = ctx.callback_data.as_history() if ctx.callback_data is not None else []
+
+        kb = KeyboardBuilder()
+        kb.add_callback_button(
+            button_id='settings',
+            text=translater.translate('$props:name'),
+            callback_data=cbs.OpenEntryMenu(path=[], history=history).pack()
+        )
+
+        kb.add_callback_button(
+            button_id='open_control_ui',
+            text=translater.translate('$control_ui'),
+            callback_data=cbs.OpenMenu(menu_id=MenuIds.control, history=history).pack(),
+        )
+
+        kb.add_callback_button(
+            button_id='open_formatters_list',
+            text=translater.translate('$open_formatters_list'),
+            callback_data=cbs.OpenMenu(menu_id=MenuIds.formatters_list, history=history).pack(),
+        )
+
+        return Menu(
+            text=f'🐙 <b><u>FunPay Hub v{hub.properties.version.value}</u></b>',
+            main_keyboard=kb
         )

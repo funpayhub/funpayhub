@@ -72,7 +72,7 @@ class FormatterListMenuBuilder(MenuBuilder):
                 callback_data=cbs.OpenMenu(
                     menu_id=MenuIds.formatters_list,
                     data={'by_category': not bool(ctx.data.get('by_category'))},
-                    history=[callback_data.pack_history()] if callback_data is not None else [],
+                    history=callback_data.history if callback_data is not None else [],
                 ).pack(),
             )
 

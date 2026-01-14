@@ -303,17 +303,6 @@ class PropertiesMenuModification(MenuModification):
     ) -> Menu:
         history = ctx.callback_data.as_history() if ctx.callback_data is not None else []
 
-        menu.main_keyboard.add_callback_button(
-            button_id='open_formatters_list',
-            text=translater.translate('$open_formatters_list'),
-            callback_data=cbs.OpenMenu(menu_id=MenuIds.formatters_list, history=history).pack(),
-        )
-        menu.main_keyboard.add_callback_button(
-            button_id='open_control_ui',
-            text=translater.translate('$control_ui'),
-            callback_data=cbs.OpenMenu(menu_id=MenuIds.control, history=history).pack(),
-        )
-
         menu.main_keyboard.insert(
             1,
             [

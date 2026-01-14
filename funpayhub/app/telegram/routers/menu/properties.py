@@ -6,7 +6,7 @@ from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update, Message, CallbackQuery
-from aiogram.filters import Command, StateFilter
+from aiogram.filters import Command, StateFilter, CommandStart
 from aiogram.fsm.context import FSMContext
 
 import funpayhub.app.telegram.callbacks as cbs
@@ -86,6 +86,20 @@ async def open_entry_menu(
     await menu.apply_to(query.message)
 
 
+@r.message(CommandStart())
+@r.message(Command('menu'))
+async def send_menu(
+    message: Message,
+    tg_ui: UIRegistry,
+    data: dict[str, Any],
+) -> None:
+    ctx = MenuContext(
+        menu_id=MenuIds.main_menu,
+        trigger=message,
+        data={'callback_data': cbs.OpenMenu(menu_id=MenuIds.main_menu)},
+    )
+
+    await (await tg_ui.build_menu(ctx, data)).reply_to(message)
 # TEMP
 
 

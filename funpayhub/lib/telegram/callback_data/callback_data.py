@@ -337,7 +337,7 @@ def find_args_end(text: str, start_pos: int = 0) -> int:
                                                   start_pos          конец аргументов (return 58)
     """
     if text[start_pos] != '!':
-        raise ValueError('Invalid start position.')
+        raise ValueError(f'Invalid start position {start_pos} @ {text}')
 
     # Если символ после `!` - не `{` - значит у callback data нет параметров, только идентификатор
     if text[start_pos + 1] != '{':

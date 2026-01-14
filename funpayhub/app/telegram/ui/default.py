@@ -21,6 +21,7 @@ MENU_BUILDERS = [
     notifications_ui.NotificationsMenuBuilder,
     message_ui.NewMessageNotificationMenuBuilder,
     message_ui.SendMessageMenuBuilder,
+    other_ui.MainMenuBuilder,
     other_ui.AddCommandMenuBuilder,
     other_ui.StartNotificationMenuBuilder,
     other_ui.FunPaySuccessfulStartNotificationMenuBuilder,

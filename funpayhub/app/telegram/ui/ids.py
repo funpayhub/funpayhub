@@ -2,6 +2,7 @@ from __future__ import annotations
 
 
 class MenuIds:
+    main_menu = 'fph:main_menu'
     properties_entry = 'fph:properties_entry'
     param_value_manual_input = 'fph:param_value_manual_input'
     formatters_list = 'fph:formatters_list'
