@@ -156,3 +156,7 @@ class DownloadUpdate(CallbackData, identifier='download_update'):
 
 class InstallUpdate(CallbackData, identifier='install_update'):
     instance_id: str
+
+
+class ShutDown(CallbackData, identifier='shutdown'):
+    exit_code: int

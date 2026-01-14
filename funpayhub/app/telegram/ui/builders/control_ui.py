@@ -6,6 +6,7 @@ from funpayhub.lib.telegram.ui import Menu, Button, MenuContext
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import MenuBuilder, KeyboardBuilder
 from funpayhub.app.telegram.ui.premade import StripAndNavigationFinalizer
+import exit_codes
 
 
 class ControlMenuBuilder(MenuBuilder):
@@ -18,21 +19,21 @@ class ControlMenuBuilder(MenuBuilder):
             Button.callback_button(
                 button_id='shutdown',
                 text=translater.translate('$shutdown'),
-                callback_data=cbs.Dummy().pack(),
+                callback_data=cbs.ShutDown(exit_code=exit_codes.SHUTDOWN).pack(),
                 row=True,
             ),
             Button.callback_button(
                 button_id='restart',
                 text=translater.translate('$restart'),
-                callback_data=cbs.Dummy().pack(),
+                callback_data=cbs.ShutDown(exit_code=exit_codes.RESTART).pack(),
                 row=True,
             ),
             Button.callback_button(
                 button_id='restart_safe',
                 text=translater.translate('$restart_safe'),
-                callback_data=cbs.Dummy().pack(),
+                callback_data=cbs.ShutDown(exit_code=exit_codes.RESTART_SAFE).pack(),
                 row=True,
-            ),
+            ),  # todo: depends on safe mode
             Button.callback_button(
                 button_id='update',
                 text=translater.translate('$check_updates'),

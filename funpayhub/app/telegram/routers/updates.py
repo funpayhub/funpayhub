@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
@@ -8,7 +7,7 @@ from aiogram.types import CallbackQuery
 
 import funpayhub.app.telegram.callbacks as cbs
 from updater import check_updates, install_update, download_update
-from exit_codes import UPDATE
+import exit_codes
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.ui.builders.context import UpdateMenuContext, InstallUpdateMenuContext
@@ -90,4 +89,4 @@ async def install_upd(
         return
 
     await query.message.edit_text(translater.translate('$installing_update'))
-    sys.exit(UPDATE)  # todo: shutdown
+    await hub.shutdown(exit_codes.UPDATE)

@@ -1,4 +1,9 @@
 from __future__ import annotations
+from utils import set_exception_hook
+
+
+set_exception_hook()
+
 
 import os
 import sys
@@ -14,10 +19,11 @@ import exit_codes
 from loggers import launcher as logger, updater as updater_logger
 from updater import apply_update, install_dependencies
 from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLoggerFormatter
-from utils import set_exception_hook
+
+import colorama
 
 
-set_exception_hook()
+colorama.just_fix_windows_console()
 
 
 # ---------------------------------------------
@@ -176,6 +182,7 @@ def update() -> None:
 ACTIONS = {
     exit_codes.SHUTDOWN: lambda: sys.exit(0),
     exit_codes.UPDATE: update,
+    exit_codes.RESTART: lambda: True,
     exit_codes.RESTART_SAFE: safe_restart,
     exit_codes.RESTART_NON_SAFE: non_safe_restart,
 }

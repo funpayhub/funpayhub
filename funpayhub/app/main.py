@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 import random
 import string
 import asyncio
@@ -73,7 +74,6 @@ class FunPayHub:
 
         self._running_lock = asyncio.Lock()
         self._stopping_lock = asyncio.Lock()
-        self._stop: asyncio.Future[int] = asyncio.Future()
 
     def setup_dispatcher(self):
         self._dispatcher.connect_routers(*ROUTERS)
@@ -106,10 +106,9 @@ class FunPayHub:
 
             return self._stop.result()
 
-    async def stop(self, code: int) -> None:
-        if self._stopping_lock.locked() or not self._running_lock.locked():
-            raise RuntimeError('Already stopped')
-        self._stop.set_result(code)
+    async def shutdown(self, code: int) -> None:
+        # TODO: graceful shutdown
+        sys.exit(code)
 
     async def load_plugins(self):
         pl = Plugin()
