@@ -1,77 +1,7 @@
-from __future__ import annotations
-
-import os
-import sys
-import logging
 from logging import getLogger
-from logging.config import dictConfig
-
-import colorama
-
-from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLoggerFormatter
 
 
-colorama.just_fix_windows_console()
-
-
-os.makedirs('logs', exist_ok=True)
-
-
-LOGGERS = [
-    'funpayhub.launcher',
-    'funpaybotengine.session',
-    'funpaybotengine.runner',
-    'eventry.dispatcher',
-    'eventry.router',
-    'aiogram.dispatcher',
-    'aiogram.event',
-    'aiogram.middlewares',
-    'aiogram.webhook',
-    'aiogram.scene',
-    'funpayhub.main',
-    'funpayhub.telegram',
-    'funpayhub.telegram.ui',
-    'funpayhub.offers_raiser',
-]
-
-
-dictConfig(
-    config={
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'file_formatter': {
-                '()': FileLoggerFormatter,
-                'fmt': '%(created).3f %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] %(message)s',
-            },
-            'console_formatter': {
-                '()': ConsoleLoggerFormatter,
-            },
-        },
-        'handlers': {
-            'console': {
-                'formatter': 'console_formatter',
-                'level': logging.DEBUG,
-                'class': 'logging.StreamHandler',
-                'stream': sys.stdout,
-            },
-            'file': {
-                'class': 'logging.handlers.RotatingFileHandler',
-                'filename': os.path.join('logs', 'fph.log'),
-                'encoding': 'utf-8',
-                'backupCount': 100,
-                'maxBytes': 19 * 1024 * 1024,
-                'formatter': 'file_formatter',
-                'level': logging.DEBUG,
-            },
-        },
-        'loggers': {i: {'level': logging.DEBUG, 'handlers': ['console', 'file']} for i in LOGGERS},
-    },
-)
-
-logging.setLogRecordFactory(ColorizedLogRecord)
-
-
+bootstrap = getLogger('funpayhub.bootstrap')
 launcher = getLogger('funpayhub.launcher')
 updater = getLogger('funpayhub.updater')
 main = getLogger('funpayhub.main')

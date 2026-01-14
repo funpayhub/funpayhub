@@ -5,6 +5,52 @@ import sys
 import ctypes
 import shutil
 import subprocess
+import logging
+from logging.config import dictConfig
+from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter
+from loggers import bootstrap as logger
+from pathlib import Path
+
+
+# ---------------------------------------------
+# |               Logging setup               |
+# ---------------------------------------------
+LOGGERS = [logger.name]
+
+dictConfig(
+    config={
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'file_formatter': {
+                '()': FileLoggerFormatter,
+                'fmt': '%(created).3f %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] '
+                       '%(message)s',
+            },
+            'console_formatter': {
+                '()': ConsoleLoggerFormatter,
+                'colorized': False,
+            },
+        },
+        'handlers': {
+            'console': {
+                'formatter': 'console_formatter',
+                'level': logging.DEBUG,
+                'class': 'logging.StreamHandler',
+                'stream': sys.stdout,
+            },
+            'file': {
+                'class': 'logging.handlers.FileHandler',
+                'filename': os.path.join('logs', 'bootstrap.log'),
+                'encoding': 'utf-8',
+                'mode': 'w',
+                'formatter': 'file_formatter',
+                'level': logging.DEBUG,
+            },
+        },
+        'loggers': {i: {'level': logging.DEBUG, 'handlers': ['console', 'file']} for i in LOGGERS},
+    },
+)
 
 
 IS_WINDOWS = os.name == 'nt'
@@ -51,44 +97,45 @@ if os.name == 'nt':
 
 
 if os.path.exists('releases/current') or os.path.exists('releases/bootstrap'):
+    logger.error(
+        "FunPay Hub is already bootstrapped. "
+        "If this is not the case, remove the 'releases/' directory and try again."
+    )
     sys.exit(1)
 
 
 def install_dependencies() -> None:
-    if not os.path.exists('pyproject.toml'):
+    if not os.path.exists('requirements.txt'):
+        logger.warning('requirements.txt not found. Skipping dependencies installation.')
+
+    try:
+        result = subprocess.run([sys.executable, '-m', 'ensurepip', '--upgrade'])
+        if result.returncode != 0:
+            logger.critical('An error occurred while installing pip.')
+            sys.exit(result.returncode)
+    except:
+        logger.critical('An error occurred while installing pip.', exc_info=True)
         sys.exit(1)
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            '-m',
-            'ensurepip',
-            '--upgrade',
-        ],
-    )
+    try:
+        result = subprocess.run([sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip'])
+        if result.returncode != 0:
+            logger.critical('An error occurred while updating pip.')
+            sys.exit(result.returncode)
+    except:
+        logger.critical('An error occurred while updating pip.', exc_info=True)
+        sys.exit(1)
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            '-m',
-            'pip',
-            'install',
-            '--upgrade',
-            'pip',
-        ],
-    )
+    requirements_path = Path(__file__).parent / 'requirements.txt'
 
-    project_path = os.path.abspath(os.path.dirname(__file__))
-    result = subprocess.run(
-        [
-            sys.executable,
-            '-m',
-            'pip',
-            'install',
-            '-U',
-            project_path,
-        ],
-    )
+    try:
+        result = subprocess.run([sys.executable, '-m', 'pip', 'install', '-rU', requirements_path])
+        if result.returncode != 0:
+            logger.critical('An error occurred while installing dependencies.')
+            sys.exit(result.returncode)
+    except:
+        logger.critical('An error occurred while installing dependencies.', exc_info=True)
+        sys.exit(1)
 
 
 if '--skip-pip' not in sys.argv:
@@ -98,26 +145,28 @@ if '--skip-pip' not in sys.argv:
 try:
     os.makedirs(BOOTSTRAP_PATH, exist_ok=True)
 except:
+    logger.critical('Unable to create bootstrap directory.', exc_info=True)
     sys.exit(2)
+
 
 try:
     for path in TO_MOVE:
         if not os.path.exists(path):
-            print(f'No file found at {path}')
+            logger.critical('Unable to locate %s.', path)
             raise FileNotFoundError(path)
-
         os.rename(path, os.path.join(BOOTSTRAP_PATH, path))
 except:
+    logger.critical('An error occurred while moving release files.', exc_info=True)
     if os.path.exists(os.path.join(BOOTSTRAP_PATH)):
         for path in os.listdir(BOOTSTRAP_PATH):
             os.rename(path, '.')
         shutil.rmtree(RELEASES_PATH)
     sys.exit(3)
 
-
 os.symlink(BOOTSTRAP_PATH, CURRENT_RELEASE_PATH, target_is_directory=True)
 
 
+logger.info('FunPay Hub successfully installed! Launching...')
 env = os.environ.copy()
 env['PYTHONPATH'] = os.pathsep.join([CURRENT_RELEASE_PATH, env.get('PYTHONPATH', '')])
 env['FPH_LOCALES'] = LOCALES_PATH

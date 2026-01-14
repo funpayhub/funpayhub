@@ -11,7 +11,7 @@ from argparse import Namespace, ArgumentParser
 from logging.config import dictConfig
 
 import exit_codes
-from loggers import launcher as logger
+from loggers import launcher as logger, updater as updater_logger
 from updater import apply_update, install_dependencies
 from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLoggerFormatter
 
@@ -19,7 +19,7 @@ from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLog
 # ---------------------------------------------
 # |               Logging setup               |
 # ---------------------------------------------
-LOGGERS = [logger.name]
+LOGGERS = [logger.name, updater_logger.name]
 os.makedirs('logs', exist_ok=True)
 
 dictConfig(
@@ -29,7 +29,8 @@ dictConfig(
         'formatters': {
             'file_formatter': {
                 '()': FileLoggerFormatter,
-                'fmt': '%(created).3f %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] %(message)s',
+                'fmt': '%(created).3f %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] '
+                       '%(message)s',
             },
             'console_formatter': {
                 '()': ConsoleLoggerFormatter,
