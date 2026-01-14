@@ -70,6 +70,7 @@ LOCALES_PATH = os.path.join(CURRENT_RELEASE_PATH, 'locales')
 TO_MOVE = {
     'funpayhub',
     'locales',
+    'tests',
     'app.py',
     'launcher.py',
     'updater.py',
