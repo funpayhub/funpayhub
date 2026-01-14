@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from utils import set_exception_hook
 
 
@@ -15,12 +16,12 @@ from pathlib import Path
 from argparse import Namespace, ArgumentParser
 from logging.config import dictConfig
 
+import colorama
+
 import exit_codes
-from loggers import launcher as logger, updater as updater_logger
+from loggers import updater as updater_logger, launcher as logger
 from updater import apply_update, install_dependencies
 from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLoggerFormatter
-
-import colorama
 
 
 colorama.just_fix_windows_console()
@@ -40,7 +41,7 @@ dictConfig(
             'file_formatter': {
                 '()': FileLoggerFormatter,
                 'fmt': '%(created).3f %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] '
-                       '%(message)s',
+                '%(message)s',
             },
             'console_formatter': {
                 '()': ConsoleLoggerFormatter,

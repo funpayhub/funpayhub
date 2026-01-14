@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING, Any
 from aiogram import Router
 from aiogram.types import CallbackQuery
 
+import exit_codes
 import funpayhub.app.telegram.callbacks as cbs
 from updater import check_updates, install_update, download_update
-import exit_codes
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 from funpayhub.app.telegram.ui.builders.context import UpdateMenuContext, InstallUpdateMenuContext

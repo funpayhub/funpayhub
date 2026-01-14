@@ -4,13 +4,14 @@ import os
 import sys
 import ctypes
 import shutil
-import subprocess
 import logging
-from logging.config import dictConfig
-from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter
-from loggers import bootstrap as logger
+import subprocess
 from pathlib import Path
+from logging.config import dictConfig
+
 from utils import set_exception_hook
+from loggers import bootstrap as logger
+from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter
 
 
 set_exception_hook()
@@ -29,7 +30,7 @@ dictConfig(
             'file_formatter': {
                 '()': FileLoggerFormatter,
                 'fmt': '%(created).3f %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] '
-                       '%(message)s',
+                '%(message)s',
             },
             'console_formatter': {
                 '()': ConsoleLoggerFormatter,
@@ -83,7 +84,7 @@ TO_MOVE = {
 def exit(code: int) -> None:
     if IS_WINDOWS and sys.stdin.isatty():
         try:
-            input("\nPress Enter to exit...")
+            input('\nPress Enter to exit...')
         except EOFError:
             pass
     sys.exit(code)
@@ -111,8 +112,8 @@ if os.name == 'nt':
 
 if os.path.exists('releases/current') or os.path.exists('releases/bootstrap'):
     logger.error(
-        "FunPay Hub is already bootstrapped. "
-        "If this is not the case, remove the 'releases/' directory and try again."
+        'FunPay Hub is already bootstrapped. '
+        "If this is not the case, remove the 'releases/' directory and try again.",
     )
     exit(1)
 
@@ -142,7 +143,9 @@ def install_dependencies() -> None:
     requirements_path = Path(__file__).parent / 'requirements.txt'
 
     try:
-        result = subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', requirements_path, '-U'])
+        result = subprocess.run(
+            [sys.executable, '-m', 'pip', 'install', '-r', requirements_path, '-U']
+        )
         if result.returncode != 0:
             logger.critical('An error occurred while installing dependencies.')
             exit(result.returncode)

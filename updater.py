@@ -125,7 +125,7 @@ def install_dependencies(update_path: Path) -> None:
     if not os.path.exists(update_path / 'pyproject.toml'):
         return
 
-    result = subprocess.run(
+    subprocess.run(
         [
             sys.executable,
             '-m',
@@ -134,7 +134,7 @@ def install_dependencies(update_path: Path) -> None:
         ],
     )
 
-    result = subprocess.run(
+    subprocess.run(
         [
             sys.executable,
             '-m',
@@ -146,7 +146,7 @@ def install_dependencies(update_path: Path) -> None:
     )
 
     if (update_path / 'requirements.txt').exists(follow_symlinks=True):
-        result = subprocess.run(
+        subprocess.run(
             [
                 sys.executable,
                 '-m',

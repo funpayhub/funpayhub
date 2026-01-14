@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import exit_codes
 from funpayhub.app.telegram import callbacks as cbs
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import Menu, Button, MenuContext
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import MenuBuilder, KeyboardBuilder
 from funpayhub.app.telegram.ui.premade import StripAndNavigationFinalizer
-import exit_codes
 
 
 class ControlMenuBuilder(MenuBuilder):

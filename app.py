@@ -1,22 +1,22 @@
 from __future__ import annotations
 
+import os
 import sys
 import asyncio
+import logging
 import os.path
 from pathlib import Path
+from logging.config import dictConfig
 
 import colorama
 from load_dotenv import load_dotenv
 from funpaybotengine import Bot
 
+from utils import set_exception_hook
+from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLoggerFormatter
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
-import logging
-from logging.config import dictConfig
-from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter, ColorizedLogRecord
-import os
-from utils import set_exception_hook
 
 
 set_exception_hook()
@@ -54,7 +54,7 @@ dictConfig(
             'file_formatter': {
                 '()': FileLoggerFormatter,
                 'fmt': '%(created).3f %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] '
-                       '%(message)s',
+                '%(message)s',
             },
             'console_formatter': {
                 '()': ConsoleLoggerFormatter,
