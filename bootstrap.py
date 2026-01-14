@@ -76,6 +76,7 @@ TO_MOVE = {
     'loggers.py',
     'logger_formatter.py',
     'exit_codes.py',
+    'utils.py',
     'requirements.txt',
     'pyproject.toml',
 }
