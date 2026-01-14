@@ -145,16 +145,17 @@ def install_dependencies(update_path: Path) -> None:
         ],
     )
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            '-m',
-            'pip',
-            'install',
-            '-U',
-            update_path,
-        ],
-    )
+    if (update_path / 'requirements.txt').exists(follow_symlinks=True):
+        result = subprocess.run(
+            [
+                sys.executable,
+                '-m',
+                'pip',
+                'install',
+                '-U',
+                update_path,
+            ],
+        )
 
 
 def apply_update(update_path: Path) -> Version:

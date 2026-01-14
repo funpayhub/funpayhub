@@ -14,6 +14,10 @@ import exit_codes
 from loggers import launcher as logger, updater as updater_logger
 from updater import apply_update, install_dependencies
 from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLoggerFormatter
+from utils import set_exception_hook
+
+
+set_exception_hook()
 
 
 # ---------------------------------------------

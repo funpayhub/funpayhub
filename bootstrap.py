@@ -10,6 +10,10 @@ from logging.config import dictConfig
 from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter
 from loggers import bootstrap as logger
 from pathlib import Path
+from utils import set_exception_hook
+
+
+set_exception_hook()
 
 
 # ---------------------------------------------
@@ -40,7 +44,7 @@ dictConfig(
                 'stream': sys.stdout,
             },
             'file': {
-                'class': 'logging.handlers.FileHandler',
+                'class': 'logging.FileHandler',
                 'filename': os.path.join('logs', 'bootstrap.log'),
                 'encoding': 'utf-8',
                 'mode': 'w',
@@ -76,6 +80,15 @@ TO_MOVE = {
 }
 
 
+def exit(code: int) -> None:
+    if IS_WINDOWS and sys.stdin.isatty():
+        try:
+            input("\nPress Enter to exit...")
+        except EOFError:
+            pass
+    sys.exit(code)
+
+
 def elevate() -> None:
     try:
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -101,7 +114,7 @@ if os.path.exists('releases/current') or os.path.exists('releases/bootstrap'):
         "FunPay Hub is already bootstrapped. "
         "If this is not the case, remove the 'releases/' directory and try again."
     )
-    sys.exit(1)
+    exit(1)
 
 
 def install_dependencies() -> None:
@@ -112,30 +125,30 @@ def install_dependencies() -> None:
         result = subprocess.run([sys.executable, '-m', 'ensurepip', '--upgrade'])
         if result.returncode != 0:
             logger.critical('An error occurred while installing pip.')
-            sys.exit(result.returncode)
+            exit(result.returncode)
     except:
         logger.critical('An error occurred while installing pip.', exc_info=True)
-        sys.exit(1)
+        exit(1)
 
     try:
         result = subprocess.run([sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip'])
         if result.returncode != 0:
             logger.critical('An error occurred while updating pip.')
-            sys.exit(result.returncode)
+            exit(result.returncode)
     except:
         logger.critical('An error occurred while updating pip.', exc_info=True)
-        sys.exit(1)
+        exit(1)
 
     requirements_path = Path(__file__).parent / 'requirements.txt'
 
     try:
-        result = subprocess.run([sys.executable, '-m', 'pip', 'install', '-rU', requirements_path])
+        result = subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', requirements_path, '-U'])
         if result.returncode != 0:
             logger.critical('An error occurred while installing dependencies.')
-            sys.exit(result.returncode)
+            exit(result.returncode)
     except:
         logger.critical('An error occurred while installing dependencies.', exc_info=True)
-        sys.exit(1)
+        exit(1)
 
 
 if '--skip-pip' not in sys.argv:
@@ -146,7 +159,7 @@ try:
     os.makedirs(BOOTSTRAP_PATH, exist_ok=True)
 except:
     logger.critical('Unable to create bootstrap directory.', exc_info=True)
-    sys.exit(2)
+    exit(2)
 
 
 try:
@@ -161,7 +174,7 @@ except:
         for path in os.listdir(BOOTSTRAP_PATH):
             os.rename(path, '.')
         shutil.rmtree(RELEASES_PATH)
-    sys.exit(3)
+    exit(3)
 
 os.symlink(BOOTSTRAP_PATH, CURRENT_RELEASE_PATH, target_is_directory=True)
 

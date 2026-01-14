@@ -16,6 +16,10 @@ import logging
 from logging.config import dictConfig
 from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter, ColorizedLogRecord
 import os
+from utils import set_exception_hook
+
+
+set_exception_hook()
 
 
 # ---------------------------------------------
