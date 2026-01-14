@@ -118,9 +118,9 @@ async def main():
     print(app.instance_id)
 
     # await check_session(app.funpay.bot)
-    result = input()
-    if result != 'start':
-        sys.exit(0)
+    # result = input()
+    # if result != 'start':
+    #     sys.exit(0)
 
     await app.load_plugins()
     await app.start()
