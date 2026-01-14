@@ -11,7 +11,6 @@ from logging.config import dictConfig
 
 from utils import set_exception_hook
 from loggers import bootstrap as logger
-from logger_formatter import FileLoggerFormatter, ConsoleLoggerFormatter
 
 
 set_exception_hook()
@@ -21,6 +20,7 @@ set_exception_hook()
 # |               Logging setup               |
 # ---------------------------------------------
 LOGGERS = [logger.name]
+os.makedirs('logs', exist_ok=True)
 
 dictConfig(
     config={
@@ -28,13 +28,12 @@ dictConfig(
         'disable_existing_loggers': False,
         'formatters': {
             'file_formatter': {
-                '()': FileLoggerFormatter,
                 'fmt': '%(created).3f %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] '
                 '%(message)s',
             },
             'console_formatter': {
-                '()': ConsoleLoggerFormatter,
-                'colorized': False,
+                'fmt': '[%(asctime)s] [%(levelname)s:9] %(message)s',
+                'datefmt': '%H:%M:%S',
             },
         },
         'handlers': {
@@ -145,7 +144,7 @@ def install_dependencies() -> None:
 
     try:
         result = subprocess.run(
-            [sys.executable, '-m', 'pip', 'install', '-r', requirements_path, '-U']
+            [sys.executable, '-m', 'pip', 'install', '-r', requirements_path, '-U'],
         )
         if result.returncode != 0:
             logger.critical('An error occurred while installing dependencies.')

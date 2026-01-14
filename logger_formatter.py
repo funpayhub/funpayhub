@@ -80,20 +80,15 @@ class ColorizedLogRecord(logging.LogRecord):
 
 
 class ConsoleLoggerFormatter(logging.Formatter):
-    def __init__(self, *args: Any, colorized: bool = True, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.colorized = colorized
-
     def format(self, record: logging.LogRecord) -> str:
         time_str = self.formatTime(record, '%H:%M:%S')
-        if self.colorized:
-            time_str = f'{Fore.WHITE + Style.DIM}{time_str}{Style.RESET_ALL}'
-        color = ''.join(COLORS.get(record.levelno, [])) if self.colorized else ''
-        reset = Style.RESET_ALL if self.colorized else ''
+        time_str = f'{Fore.WHITE + Style.DIM}{time_str}{Style.RESET_ALL}'
+        color = ''.join(COLORS.get(record.levelno, []))
+        reset = Style.RESET_ALL
 
         text = (
             record.getColorizedMessage()
-            if self.colorized and isinstance(record, ColorizedLogRecord)
+            if isinstance(record, ColorizedLogRecord)
             else record.getMessage()
         )
         text = RESET_RE.sub(reset, text)
@@ -104,8 +99,7 @@ class ConsoleLoggerFormatter(logging.Formatter):
 
         if record.exc_info:
             exc_text = self.formatException(record.exc_info)
-            if self.colorized:
-                exc_text = f'{Style.RESET_ALL + Fore.RED + Style.DIM}{exc_text}{Style.RESET_ALL}'
+            exc_text = f'{Style.RESET_ALL + Fore.RED + Style.DIM}{exc_text}{Style.RESET_ALL}'
             text += '\n' + exc_text
         return text
 
