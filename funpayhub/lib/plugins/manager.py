@@ -4,6 +4,7 @@ __all__ = ['PluginManager']
 
 
 from collections.abc import Callable, Awaitable
+from itertools import chain
 from typing import TYPE_CHECKING
 from types import MappingProxyType
 from pathlib import Path
@@ -21,7 +22,7 @@ from aiogram import Router as TGRouter, Dispatcher as TGDispatcher
 from funpayhub.lib.telegram.ui import MenuBuilder, MenuModification, ButtonBuilder, ButtonModification
 
 if TYPE_CHECKING:
-    from funpayhub.app.main import FunPayHub
+    from funpayhub.app.main import FunPayHub  # todo: lib depends from app :(
 
 
 class PluginManager:
@@ -62,6 +63,19 @@ class PluginManager:
 
         with open('disabled_plugins', 'w', encoding='utf-8') as f:
             f.write('\n'.join(self._disabled_plugins))
+
+    async def load_plugins(self):
+        paths = []
+        if self.DEV_PLUGINS_PATH.exists():
+            paths.append(self.DEV_PLUGINS_PATH)
+
+        if self.PLUGINS_PATH.exists():
+            paths.append(self.PLUGINS_PATH)
+
+        for i in chain(*paths):
+            if not i.isdir():
+                continue
+            self.load_plugin(i)
 
     def load_plugin(self, plugin_path: str | Path) -> None:
         module_name = Path(plugin_path).name

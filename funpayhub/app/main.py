@@ -19,11 +19,13 @@ from funpayhub.app.dispatching import (
 )
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
+import exit_codes
 
 # plugins
 from funpayhub.plugins.exec_plugin import Plugin
 
 from .workflow_data import WorkflowData
+from funpayhub.lib.plugins import PluginManager
 
 
 def random_part(length):
@@ -35,13 +37,22 @@ class FunPayHub:
         self,
         properties: FunPayHubProperties,
         translater: Translater | None = None,
+        safe_mode: bool = False,
     ):
         self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
+        self._safe_mode = safe_mode
         self._workflow_data = WorkflowData
         self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
         self.setup_dispatcher()
         self._properties = properties
         self._translater = translater or Translater()
+        self._plugin_manager = PluginManager(self)
+        if not safe_mode:
+            try:
+                self._plugin_manager.load_plugins()
+            except Exception as e:
+                sys.exit(exit_codes.RESTART_SAFE)
+                # todo: graceful shutdown for sync code.
 
         self._funpay = FunPay(
             self,
@@ -163,3 +174,7 @@ class FunPayHub:
     @property
     def instance_id(self) -> str:
         return self._instance_id
+
+    @property
+    def safe_mode(self) -> bool:
+        return self._safe_mode
