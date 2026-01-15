@@ -30,6 +30,7 @@ os.makedirs('logs', exist_ok=True)
 
 LOGGERS = [
     'funpayhub.launcher',
+    'funpayhub.updater',
     'funpaybotengine.session',
     'funpaybotengine.runner',
     'eventry.dispatcher',
