@@ -18,7 +18,7 @@ from .callbacks import SaveExecCode, SendExecFile
 
 
 if TYPE_CHECKING:
-    from funpayhub.plugins.exec_plugin.types import (
+    from exec_plugin.src.types import (
         ExecutionResult as ExecR,
         ExecutionResultsRegistry as ExecRReg,
     )
@@ -133,16 +133,10 @@ class ExecCodeMenuBuilder(MenuBuilder):
 
 
 # Main Menu Modification
-class MainPropsMenuModification(MenuModification):
-    id = 'exec:main_props_menu_modification'
+class MainMenuModification(MenuModification):
+    id = 'exec:main_menu_modification'
 
-    async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
-        return ctx.entry.matches_path([])
-
-    async def modify(self, ctx: EntryMenuContext, menu: Menu) -> Menu:
-        if not isinstance(ctx.entry, FunPayHubProperties):
-            return menu
-
+    async def modify(self, ctx: MenuContext, menu: Menu) -> Menu:
         menu.main_keyboard.add_callback_button(
             button_id='open_exec_registry',
             text='💻 Exec Registry',

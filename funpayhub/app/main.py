@@ -21,9 +21,6 @@ from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
 import exit_codes
 
-# plugins
-from funpayhub.plugins.exec_plugin import Plugin
-
 from .workflow_data import WorkflowData
 from funpayhub.lib.plugins import PluginManager
 
@@ -47,12 +44,6 @@ class FunPayHub:
         self._properties = properties
         self._translater = translater or Translater()
         self._plugin_manager = PluginManager(self)
-        if not safe_mode:
-            try:
-                self._plugin_manager.load_plugins()
-            except Exception as e:
-                sys.exit(exit_codes.RESTART_SAFE)
-                # todo: graceful shutdown for sync code.
 
         self._funpay = FunPay(
             self,
@@ -89,6 +80,18 @@ class FunPayHub:
     def setup_dispatcher(self):
         self._dispatcher.connect_routers(*ROUTERS)
 
+    async def load_plugins(self):
+        if self.safe_mode:
+            return None
+
+        try:
+            await self._plugin_manager.load_plugins()
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            sys.exit(exit_codes.RESTART_SAFE)
+            # todo: graceful shutdown for sync code.
+
     async def start(self) -> int:
         async def wait_future(fut: asyncio.Future) -> None:
             await fut
@@ -120,11 +123,6 @@ class FunPayHub:
     async def shutdown(self, code: int) -> None:
         # TODO: graceful shutdown
         sys.exit(code)
-
-    async def load_plugins(self):
-        pl = Plugin()
-        await pl.setup(self)
-        pass
 
     async def emit_parameter_changed_event(
         self,

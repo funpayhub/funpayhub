@@ -17,9 +17,20 @@ from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLog
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
+from argparse import ArgumentParser
 
 
 set_exception_hook()
+
+# move
+parser = ArgumentParser(prog='FunPayHub')
+parser.add_argument(
+    '-s',
+    '--safe',
+    action='store_true',
+    help='Run FunPayHub in safe mode (without plugins).',
+)
+original_args = parser.parse_args()
 
 
 # ---------------------------------------------
@@ -114,6 +125,7 @@ async def main():
     app = FunPayHub(
         properties=props,
         translater=translater,
+        safe_mode=original_args.safe
     )
 
     print(app.instance_id)

@@ -26,6 +26,7 @@ class PluginManifest(BaseModel):
     model_config = {
         'extra': 'allow',
         'frozen': True,
+        'arbitrary_types_allowed': True
     }
 
     manifest: Version
@@ -40,13 +41,15 @@ class PluginManifest(BaseModel):
     locales_path: list[str] = Field(default_factory=list)
 
     @field_validator('plugin_version', mode='before')
-    def convert_version(self, value: str | Version) -> Version:
+    @classmethod
+    def convert_version(cls, value: str | Version) -> Version:
         if isinstance(value, str):
             value = Version(value)
         return value
 
     @field_validator('hub_version', mode='before')
-    def convert_hub_version(self, value: str | SpecifierSet) -> SpecifierSet:
+    @classmethod
+    def convert_hub_version(cls, value: str | SpecifierSet) -> SpecifierSet:
         if isinstance(value, str):
             value = SpecifierSet(value)
         return value

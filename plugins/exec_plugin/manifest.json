@@ -1,0 +1,9 @@
+{
+  "manifest": 1,
+  "plugin_version": "1.0.0",
+  "hub_version": "~=0.1.3",
+  "plugin_id": "com.github.qvvonk.exec_plugin",
+  "name": "$exec_plugin_name",
+  "description": "$exec_plugin_description",
+  "entry_point": "src.plugin.ExecPlugin"
+}

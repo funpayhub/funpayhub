@@ -10,7 +10,7 @@ from .telegram.menus import (
     ExecCodeMenuBuilder,
     ExecListMenuBuilder,
     ExecOutputMenuBuilder,
-    MainPropsMenuModification,
+    MainMenuModification,
 )
 from .telegram.router import r as router
 from ...app.telegram.ui.ids import MenuIds
@@ -44,7 +44,7 @@ class Plugin:
         hub.telegram.ui_registry.add_menu_builder(ExecOutputMenuBuilder)
 
         hub.telegram.ui_registry.add_menu_modification(
-            MainPropsMenuModification,
+            MainMenuModification,
             MenuIds.properties_entry,
         )
 

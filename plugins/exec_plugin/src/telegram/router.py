@@ -16,7 +16,7 @@ from aiogram.filters import Command
 
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
-from funpayhub.plugins.exec_plugin.types import ExecutionResult, ExecutionResultsRegistry
+from exec_plugin.src.types import ExecutionResult, ExecutionResultsRegistry
 
 from .callbacks import SaveExecCode, SendExecFile
 

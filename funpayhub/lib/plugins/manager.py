@@ -72,8 +72,8 @@ class PluginManager:
         if self.PLUGINS_PATH.exists():
             paths.append(self.PLUGINS_PATH)
 
-        for i in chain(*paths):
-            if not i.isdir():
+        for i in chain(*[i.iterdir() for i in paths]):
+            if not i.is_dir():
                 continue
             self.load_plugin(i)
 
