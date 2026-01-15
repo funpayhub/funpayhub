@@ -4,18 +4,25 @@ from __future__ import annotations
 __all__ = [
     'PluginManifest',
     'Plugin',
-    'LoadedPlugin'
+    'LoadedPlugin',
 ]
 
 
-from pydantic import BaseModel, Field, field_validator
-from funpayhub.lib.properties import Properties
-from funpayhub.app.dispatching import Router
-from funpayhub.lib.telegram.ui import MenuBuilder, ButtonBuilder, MenuModification, ButtonModification
-from packaging.version import Version
-from packaging.specifiers import SpecifierSet
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
+
+from pydantic import Field, BaseModel, field_validator
+from packaging.version import Version
+from packaging.specifiers import SpecifierSet
+
+from funpayhub.lib.properties import Properties
+from funpayhub.app.dispatching import Router
+from funpayhub.lib.telegram.ui import (
+    MenuBuilder,
+    ButtonBuilder,
+    MenuModification,
+    ButtonModification,
+)
 
 
 if TYPE_CHECKING:
@@ -26,7 +33,7 @@ class PluginManifest(BaseModel):
     model_config = {
         'extra': 'allow',
         'frozen': True,
-        'arbitrary_types_allowed': True
+        'arbitrary_types_allowed': True,
     }
 
     manifest: int
@@ -59,7 +66,7 @@ class Plugin:
     def __init__(
         self,
         manifest: PluginManifest,
-        hub: FunPayHub
+        hub: FunPayHub,
     ) -> None:
         self._manifest = manifest
         self._hub = hub
@@ -111,13 +118,17 @@ class Plugin:
     async def setup_buttons(self) -> None:
         raise NotImplementedError()
 
-    async def menu_modifications(self) -> dict[str, type[MenuModification] | list[type[MenuModification]]]:
+    async def menu_modifications(
+        self,
+    ) -> dict[str, type[MenuModification] | list[type[MenuModification]]]:
         raise NotImplementedError()
 
     async def setup_menu_modifications(self) -> None:
         raise NotImplementedError()
 
-    async def button_modifications(self) -> dict[str, type[ButtonModification] | list[type[ButtonModification]]]:
+    async def button_modifications(
+        self,
+    ) -> dict[str, type[ButtonModification] | list[type[ButtonModification]]]:
         raise NotImplementedError()
 
     async def setup_button_modifications(self) -> None:

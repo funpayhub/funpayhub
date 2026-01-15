@@ -11,6 +11,7 @@ from funpayhub.app.telegram.ui.premade import (
     StripAndNavigationFinalizer,
     build_view_navigation_buttons,
 )
+
 from .callbacks import SaveExecCode, SendExecFile
 
 

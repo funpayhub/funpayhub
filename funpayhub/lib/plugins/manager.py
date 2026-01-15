@@ -1,26 +1,33 @@
 from __future__ import annotations
 
+
 __all__ = ['PluginManager']
 
 
-from collections.abc import Callable, Awaitable
-from itertools import chain
-from typing import TYPE_CHECKING
-from types import MappingProxyType
-from pathlib import Path
-from packaging.version import Version
-import sys
-from typing import Any
 import os
+import sys
+import json
 import keyword
 import importlib
+from typing import TYPE_CHECKING, Any
+from types import MappingProxyType
+from pathlib import Path
+from itertools import chain
 from contextlib import suppress
-from .types import PluginManifest, Plugin, LoadedPlugin
-from funpayhub.app.dispatching import Router as HUBRouter, Dispatcher as HUBDispatcher
-from funpaybotengine import Router as FPRouter, Dispatcher as FPDispatcher
+from collections.abc import Callable, Awaitable
+
 from aiogram import Router as TGRouter, Dispatcher as TGDispatcher
-from funpayhub.lib.telegram.ui import MenuBuilder, MenuModification, ButtonBuilder, ButtonModification
-import json
+from funpaybotengine import Router as FPRouter, Dispatcher as FPDispatcher
+from packaging.version import Version
+
+from funpayhub.app.dispatching import Router as HUBRouter, Dispatcher as HUBDispatcher
+from funpayhub.lib.telegram.ui import (
+    MenuBuilder,
+    ButtonBuilder,
+)
+
+from .types import Plugin, LoadedPlugin, PluginManifest
+
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub  # todo: lib depends from app :(
@@ -82,14 +89,15 @@ class PluginManager:
         module_name = Path(plugin_path).name
         if not module_name.isidentifier() or keyword.iskeyword(module_name):
             print(f'{module_name} is not a valid identifier.')
-            return # todo
+            return  # todo
 
         try:
             manifest = self._load_plugin_manifest(plugin_path)
         except:
             import traceback
+
             print(traceback.format_exc())
-            return # todo
+            return  # todo
 
         if manifest.plugin_id in self._disabled_plugins:
             print(f'{manifest.plugin_id} is disabled.')
@@ -97,18 +105,19 @@ class PluginManager:
 
         if manifest.plugin_id in self._plugins:
             print(f'{manifest.plugin_id} is already loaded.')
-            return # todo: log
+            return  # todo: log
 
         if Version(self.hub.properties.version.value) not in manifest.hub_version:
-            print(f'Not correct version')
-            return # todo
+            print('Not correct version')
+            return  # todo
 
         try:
             plugin_instance = self._load_entry_point(plugin_path, manifest)
         except:
             import traceback
+
             print(traceback.format_exc())
-            return # todo: log
+            return  # todo: log
 
         plugin = LoadedPlugin(manifest=manifest, plugin=plugin_instance)
         self._plugins[manifest.plugin_id] = plugin
@@ -139,7 +148,7 @@ class PluginManager:
             'setup_buttons': self._run_setup_buttons_step,
             'apply_button_modifications': self._apply_button_modifications,
             'setup_button_modifications': self._run_setup_button_modifications_step,
-            'post_setup': self._run_post_setup
+            'post_setup': self._run_post_setup,
         }
 
         for name, step in steps.items():
@@ -150,12 +159,12 @@ class PluginManager:
                     await step(plugin)
                 except:
                     # todo logging
-                    raise # todo PluginLoadError from e
+                    raise  # todo PluginLoadError from e
 
     def _load_entry_point(
         self,
         plugin_path: str | Path,
-        manifest: PluginManifest
+        manifest: PluginManifest,
     ) -> Plugin:
         plugin_module_name = Path(plugin_path).name
         module_name, class_name = manifest.entry_point.rsplit('.', 1)
@@ -170,7 +179,6 @@ class PluginManager:
             raise Exception()  # todo
 
         return plugin_class(manifest, self._hub)
-
 
     async def _run_pre_setup_step(self, plugin: LoadedPlugin) -> None:
         await self._run_general_step(plugin.plugin.pre_setup)
@@ -252,11 +260,15 @@ class PluginManager:
         if isinstance(menus, type) and issubclass(menus, MenuBuilder):
             menus = [menus]
         elif not isinstance(menus, list):
-            raise TypeError('Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.')
+            raise TypeError(
+                'Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.'
+            )
 
         for i in menus:
             if not isinstance(i, type) or not issubclass(i, MenuBuilder):
-                raise TypeError('Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.')
+                raise TypeError(
+                    'Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.'
+                )
 
             self.hub.telegram.ui_registry.add_menu_builder(i)
 
@@ -287,11 +299,15 @@ class PluginManager:
         if isinstance(buttons, type) and issubclass(buttons, ButtonBuilder):
             buttons = [buttons]
         elif not isinstance(buttons, list):
-            raise TypeError('Plugin.buttons must return a `ButtonBuilder` type or a list of `ButtonBuilder` types.')
+            raise TypeError(
+                'Plugin.buttons must return a `ButtonBuilder` type or a list of `ButtonBuilder` types.'
+            )
 
         for i in buttons:
             if not isinstance(i, type) or not issubclass(i, ButtonBuilder):
-                raise TypeError('Plugin.buttons must return a `ButtonBuilder` type or a list of `ButtonBuilder` types.')
+                raise TypeError(
+                    'Plugin.buttons must return a `ButtonBuilder` type or a list of `ButtonBuilder` types.'
+                )
 
             self.hub.telegram.ui_registry.add_button_builder(i)
 

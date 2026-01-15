@@ -6,6 +6,7 @@ import asyncio
 import logging
 import os.path
 from pathlib import Path
+from argparse import ArgumentParser
 from logging.config import dictConfig
 
 import colorama
@@ -17,7 +18,6 @@ from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLog
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
-from argparse import ArgumentParser
 
 
 set_exception_hook()
@@ -125,7 +125,7 @@ async def main():
     app = FunPayHub(
         properties=props,
         translater=translater,
-        safe_mode=original_args.safe
+        safe_mode=original_args.safe,
     )
 
     print(app.instance_id)

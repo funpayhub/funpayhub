@@ -7,7 +7,9 @@ import string
 import asyncio
 from typing import Any
 
+import exit_codes
 from funpayhub.app.routers import ROUTERS
+from funpayhub.lib.plugins import PluginManager
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties import Parameter, Properties, MutableParameter
 from funpayhub.lib.translater import Translater
@@ -19,10 +21,8 @@ from funpayhub.app.dispatching import (
 )
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
-import exit_codes
 
 from .workflow_data import WorkflowData
-from funpayhub.lib.plugins import PluginManager
 
 
 def random_part(length):
@@ -82,13 +82,14 @@ class FunPayHub:
 
     async def load_plugins(self):
         if self.safe_mode:
-            return None
+            return
 
         try:
             await self._plugin_manager.load_plugins()
             await self._plugin_manager.setup_plugins()
-        except Exception as e:
+        except Exception:
             import traceback
+
             print(traceback.format_exc())
             sys.exit(exit_codes.RESTART_SAFE)
             # todo: graceful shutdown for sync code.

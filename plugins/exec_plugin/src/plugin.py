@@ -1,14 +1,18 @@
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.lib.plugins import Plugin
-from .types import ExecutionResultsRegistry, ExecutionResult
+from __future__ import annotations
+
+import os
 import json
 from pathlib import Path
-import os
+
+from funpayhub.lib.plugins import Plugin
+from funpayhub.app.telegram.ui.ids import MenuIds
+
+from .types import ExecutionResult, ExecutionResultsRegistry
 from .telegram.menus import (
     ExecCodeMenuBuilder,
     ExecListMenuBuilder,
-    ExecOutputMenuBuilder,
     MainMenuModification,
+    ExecOutputMenuBuilder,
 )
 from .telegram.router import r as router
 

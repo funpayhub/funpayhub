@@ -52,7 +52,7 @@ class StartNotificationMenuBuilder(MenuBuilder):
     async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub) -> Menu:
         return Menu(
             text=translater.translate('$start_notification_text').format(
-                version=hub.properties.version.value
+                version=hub.properties.version.value,
             ),
         )
 
@@ -164,7 +164,7 @@ class MainMenuBuilder(MenuBuilder):
         kb.add_callback_button(
             button_id='settings',
             text=translater.translate('$props:name'),
-            callback_data=cbs.OpenEntryMenu(path=[], history=history).pack()
+            callback_data=cbs.OpenEntryMenu(path=[], history=history).pack(),
         )
 
         kb.add_callback_button(
@@ -181,5 +181,5 @@ class MainMenuBuilder(MenuBuilder):
 
         return Menu(
             text=f'🐙 <b><u>FunPay Hub v{hub.properties.version.value}</u></b>',
-            main_keyboard=kb
+            main_keyboard=kb,
         )
