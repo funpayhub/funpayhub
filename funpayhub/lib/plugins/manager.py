@@ -20,6 +20,7 @@ from aiogram import Router as TGRouter, Dispatcher as TGDispatcher
 from funpaybotengine import Router as FPRouter, Dispatcher as FPDispatcher
 from packaging.version import Version
 
+from loggers import plugins as logger
 from funpayhub.app.dispatching import Router as HUBRouter, Dispatcher as HUBDispatcher
 from funpayhub.lib.telegram.ui import (
     MenuBuilder,
@@ -45,6 +46,7 @@ class PluginManager:
         paths = [str(self.DEV_PLUGINS_PATH), str(self.PLUGINS_PATH)]
         for i in paths:
             if i not in sys.path:
+                logger.info('Adding %s to %s.', str(i), 'sys.path')
                 sys.path.append(i)
 
     def load_disabled_plugins(self, path: str) -> None:
@@ -82,50 +84,42 @@ class PluginManager:
 
         for i in chain(*[i.iterdir() for i in paths]):
             if not i.is_dir():
+                logger.debug('Ignoring %s: not a directory.', str(i))
                 continue
             self.load_plugin(i)
 
     def load_plugin(self, plugin_path: str | Path) -> None:
+        logger.info('Loading plugin %s.', str(plugin_path))
+
         module_name = Path(plugin_path).name
         if not module_name.isidentifier() or keyword.iskeyword(module_name):
-            print(f'{module_name} is not a valid identifier.')
-            return  # todo
+            logger.warning('Ignoring %s: not a valid plugin directory.', str(plugin_path))
+            return
 
-        try:
-            manifest = self._load_plugin_manifest(plugin_path)
-        except:
-            import traceback
-
-            print(traceback.format_exc())
-            return  # todo
+        logger.info('Loading manifest for %s.', str(plugin_path))
+        manifest = self._load_plugin_manifest(plugin_path)
 
         if manifest.plugin_id in self._disabled_plugins:
-            print(f'{manifest.plugin_id} is disabled.')
-            return  # todo: log
+            logger.info('Plugin %s is disabled. Skipping.', manifest.plugin_id)
+            return
 
         if manifest.plugin_id in self._plugins:
-            print(f'{manifest.plugin_id} is already loaded.')
-            return  # todo: log
+            logger.warning('Plugin %s is already loaded. Skipping.', manifest.plugin_id)
+            return
 
         if Version(self.hub.properties.version.value) not in manifest.hub_version:
-            print('Not correct version')
-            return  # todo
+            raise RuntimeError(
+                'FunPay Hub version mismatch. Expected: %s. Current: %s.'
+                % (manifest.hub_version, self.hub.properties.version.value),
+            )
 
-        try:
-            plugin_instance = self._load_entry_point(plugin_path, manifest)
-        except:
-            import traceback
-
-            print(traceback.format_exc())
-            return  # todo: log
+        logger.info('Loading entry point %s of %s.', manifest.entry_point, manifest.plugin_id)
+        plugin_instance = self._load_entry_point(plugin_path, manifest)
 
         plugin = LoadedPlugin(manifest=manifest, plugin=plugin_instance)
         self._plugins[manifest.plugin_id] = plugin
 
     def _load_plugin_manifest(self, plugin_path: str | Path) -> PluginManifest:
-        if not (plugin_path / 'manifest.json').exists():
-            raise FileNotFoundError()
-
         with open(plugin_path / 'manifest.json', 'r', encoding='utf-8') as f:
             return PluginManifest.model_validate(json.loads(f.read()))
 
@@ -153,13 +147,8 @@ class PluginManager:
 
         for name, step in steps.items():
             for plugin_id, plugin in self._plugins.items():
-                print(f'Running {name} for {plugin_id}')
-                # todo: logging
-                try:
-                    await step(plugin)
-                except:
-                    # todo logging
-                    raise  # todo PluginLoadError from e
+                logger.info('Running %s step for plugin %s.', name, plugin.manifest.plugin_id)
+                await step(plugin)
 
     def _load_entry_point(
         self,
@@ -173,10 +162,10 @@ class PluginManager:
         plugin_class: type[Plugin] | None = getattr(module, class_name, None)
 
         if plugin_class is None:
-            raise Exception()  # todo
+            raise RuntimeError(f'Unable to find {plugin_path} at {manifest}.')
 
         if not issubclass(plugin_class, Plugin):
-            raise Exception()  # todo
+            raise TypeError('Entry point must be a subclass of Plugin.')
 
         return plugin_class(manifest, self._hub)
 
@@ -261,13 +250,13 @@ class PluginManager:
             menus = [menus]
         elif not isinstance(menus, list):
             raise TypeError(
-                'Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.'
+                'Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.',
             )
 
         for i in menus:
             if not isinstance(i, type) or not issubclass(i, MenuBuilder):
                 raise TypeError(
-                    'Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.'
+                    'Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.',
                 )
 
             self.hub.telegram.ui_registry.add_menu_builder(i)
@@ -300,13 +289,13 @@ class PluginManager:
             buttons = [buttons]
         elif not isinstance(buttons, list):
             raise TypeError(
-                'Plugin.buttons must return a `ButtonBuilder` type or a list of `ButtonBuilder` types.'
+                'Plugin.buttons must return a `ButtonBuilder` type or a list of `ButtonBuilder` types.',
             )
 
         for i in buttons:
             if not isinstance(i, type) or not issubclass(i, ButtonBuilder):
                 raise TypeError(
-                    'Plugin.buttons must return a `ButtonBuilder` type or a list of `ButtonBuilder` types.'
+                    'Plugin.buttons must return a `ButtonBuilder` type or a list of `ButtonBuilder` types.',
                 )
 
             self.hub.telegram.ui_registry.add_button_builder(i)

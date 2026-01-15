@@ -6,6 +6,7 @@ from logging import getLogger
 bootstrap = getLogger('funpayhub.bootstrap')
 launcher = getLogger('funpayhub.launcher')
 updater = getLogger('funpayhub.updater')
+plugins = getLogger('funpayhub.plugins')
 main = getLogger('funpayhub.main')
 telegram = getLogger('funpayhub.telegram')
 telegram_ui = getLogger('funpayhub.telegram.ui')
