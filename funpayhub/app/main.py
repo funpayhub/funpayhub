@@ -8,6 +8,7 @@ import asyncio
 from typing import Any
 
 import exit_codes
+from loggers import plugins as plugins_logger
 from funpayhub.app.routers import ROUTERS
 from funpayhub.lib.plugins import PluginManager
 from funpayhub.app.properties import FunPayHubProperties
@@ -88,9 +89,7 @@ class FunPayHub:
             await self._plugin_manager.load_plugins()
             await self._plugin_manager.setup_plugins()
         except Exception:
-            import traceback
-
-            print(traceback.format_exc())
+            plugins_logger.critical('Failed to load plugins.', exc_info=True)
             sys.exit(exit_codes.RESTART_SAFE)
             # todo: graceful shutdown for sync code.
 
