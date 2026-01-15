@@ -50,11 +50,13 @@ class StartNotificationMenuBuilder(MenuBuilder):
     context_type = MenuContext
 
     async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub) -> Menu:
-        return Menu(
-            text=translater.translate('$start_notification_text').format(
-                version=hub.properties.version.value,
-            ),
+        text = translater.translate('$start_notification_text').format(
+            version=hub.properties.version.value,
         )
+
+        if hub.safe_mode:
+            text += '\n\n' + translater.translate('$safe_mode_enabled')
+        return Menu(text=text)
 
 
 class FunPaySuccessfulStartNotificationMenuBuilder(MenuBuilder):
