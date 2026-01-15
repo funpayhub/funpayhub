@@ -33,3 +33,8 @@ class UpdateMenuContext(MenuContext):
 @dataclass(kw_only=True)
 class InstallUpdateMenuContext(MenuContext):
     instance_id: str
+
+
+@dataclass(kw_only=True)
+class PluginMenuContext(MenuContext):
+    plugin_id: str

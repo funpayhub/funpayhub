@@ -74,6 +74,7 @@ class FunPayHub:
                 'tg_bot': self._telegram.bot,
                 'tg_dp': self.telegram.dispatcher,
                 'tg_ui': self.telegram.ui_registry,
+                'plugin_manager': self._plugin_manager,
             },
         )
 

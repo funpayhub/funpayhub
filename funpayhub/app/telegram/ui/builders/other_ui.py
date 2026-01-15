@@ -181,6 +181,12 @@ class MainMenuBuilder(MenuBuilder):
             callback_data=cbs.OpenMenu(menu_id=MenuIds.formatters_list, history=history).pack(),
         )
 
+        kb.add_callback_button(
+            button_id='open_plugins_list',
+            text=translater.translate('$plugins_list'),
+            callback_data=cbs.OpenMenu(menu_id=MenuIds.plugins_list, history=history).pack(),
+        )
+
         return Menu(
             text=f'🐙 <b><u>FunPay Hub v{hub.properties.version.value}</u></b>',
             main_keyboard=kb,

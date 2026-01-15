@@ -43,8 +43,8 @@ class PluginManifest(BaseModel):
     name: str
     description: str = Field(default='')
     entry_point: str = Field(pattern=r'^([a-zA-Z_][a-zA-Z0-9_]*\.)+[a-zA-Z_][a-zA-Z0-9_]*$')
+    author: PluginAuthor | None = Field(default=None)
     dependencies: list[str] = Field(default_factory=list)
-    plugin_dependencies: list[str] = Field(default_factory=list)
     locales_path: list[str] = Field(default_factory=list)
 
     @field_validator('plugin_version', mode='before')
@@ -60,6 +60,18 @@ class PluginManifest(BaseModel):
         if isinstance(value, str):
             value = SpecifierSet(value)
         return value
+
+
+class PluginAuthor(BaseModel):
+    model_config = {
+        'extra': 'allow',
+        'frozen': True,
+    }
+
+    name: str | None = Field(default=None)
+    mail: str | None = Field(default=None)
+    website: str | None = Field(default=None)
+    social: dict[str, str] | None = Field(default=None)
 
 
 class Plugin:

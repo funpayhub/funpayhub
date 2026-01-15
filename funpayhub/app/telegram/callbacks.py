@@ -160,3 +160,8 @@ class InstallUpdate(CallbackData, identifier='install_update'):
 
 class ShutDown(CallbackData, identifier='shutdown'):
     exit_code: int
+
+
+# Plugins
+class OpenPluginInfo(CallbackData, identifier='open_plugin_info'):
+    plugin_id: str
