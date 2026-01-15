@@ -30,7 +30,7 @@ class FunPayHubProperties(Properties):
                 id='version',
                 name='version',
                 description='version',
-                value='0.1.3',
+                value='0.2.0',
             ),
         )
         self.setup_completed = self.attach_parameter(
