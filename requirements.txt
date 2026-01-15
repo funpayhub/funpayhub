@@ -3,3 +3,4 @@ colorama~=0.4.6
 funpaybotengine~=0.1.7
 packaging~=25.0
 tomli-w~=1.2.0
+pydantic~=2.11.7
