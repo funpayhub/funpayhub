@@ -86,6 +86,7 @@ class FunPayHub:
 
         try:
             await self._plugin_manager.load_plugins()
+            await self._plugin_manager.setup_plugins()
         except Exception as e:
             import traceback
             print(traceback.format_exc())

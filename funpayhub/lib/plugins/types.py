@@ -29,7 +29,7 @@ class PluginManifest(BaseModel):
         'arbitrary_types_allowed': True
     }
 
-    manifest: Version
+    manifest: int
     plugin_version: Version
     hub_version: SpecifierSet
     plugin_id: str

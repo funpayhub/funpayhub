@@ -20,6 +20,7 @@ from funpayhub.app.dispatching import Router as HUBRouter, Dispatcher as HUBDisp
 from funpaybotengine import Router as FPRouter, Dispatcher as FPDispatcher
 from aiogram import Router as TGRouter, Dispatcher as TGDispatcher
 from funpayhub.lib.telegram.ui import MenuBuilder, MenuModification, ButtonBuilder, ButtonModification
+import json
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub  # todo: lib depends from app :(
@@ -80,29 +81,44 @@ class PluginManager:
     def load_plugin(self, plugin_path: str | Path) -> None:
         module_name = Path(plugin_path).name
         if not module_name.isidentifier() or keyword.iskeyword(module_name):
+            print(f'{module_name} is not a valid identifier.')
             return # todo
 
         try:
             manifest = self._load_plugin_manifest(plugin_path)
         except:
+            import traceback
+            print(traceback.format_exc())
             return # todo
 
         if manifest.plugin_id in self._disabled_plugins:
+            print(f'{manifest.plugin_id} is disabled.')
             return  # todo: log
 
         if manifest.plugin_id in self._plugins:
+            print(f'{manifest.plugin_id} is already loaded.')
             return # todo: log
 
         if Version(self.hub.properties.version.value) not in manifest.hub_version:
+            print(f'Not correct version')
             return # todo
 
         try:
             plugin_instance = self._load_entry_point(plugin_path, manifest)
         except:
+            import traceback
+            print(traceback.format_exc())
             return # todo: log
 
         plugin = LoadedPlugin(manifest=manifest, plugin=plugin_instance)
         self._plugins[manifest.plugin_id] = plugin
+
+    def _load_plugin_manifest(self, plugin_path: str | Path) -> PluginManifest:
+        if not (plugin_path / 'manifest.json').exists():
+            raise FileNotFoundError()
+
+        with open(plugin_path / 'manifest.json', 'r', encoding='utf-8') as f:
+            return PluginManifest.model_validate(json.loads(f.read()))
 
     async def setup_plugins(self):
         steps: dict[str, Callable[[LoadedPlugin], Awaitable[Any]]] = {
@@ -128,19 +144,13 @@ class PluginManager:
 
         for name, step in steps.items():
             for plugin_id, plugin in self._plugins.items():
+                print(f'Running {name} for {plugin_id}')
                 # todo: logging
                 try:
                     await step(plugin)
                 except:
                     # todo logging
                     raise # todo PluginLoadError from e
-
-    def _load_plugin_manifest(self, plugin_path: str | Path) -> PluginManifest:
-        if not (plugin_path / 'manifest.json').exists():
-            raise FileNotFoundError()
-
-        with open(plugin_path / 'manifest.json', 'r', encoding='utf-8') as f:
-            return PluginManifest.model_validate_json(f.read())
 
     def _load_entry_point(
         self,
@@ -260,6 +270,8 @@ class PluginManager:
             return
 
         for menu_id, modifications_list in modifications.items():
+            if not isinstance(modifications_list, list):
+                modifications_list = [modifications_list]
             for i in modifications_list:
                 self.hub.telegram.ui_registry.add_menu_modification(i, menu_id)
 
@@ -293,6 +305,8 @@ class PluginManager:
             return
 
         for button_id, modifications_list in modifications.items():
+            if not isinstance(modifications_list, list):
+                modifications_list = [modifications_list]
             for i in modifications_list:
                 self.hub.telegram.ui_registry.add_button_modification(i, button_id)
 
