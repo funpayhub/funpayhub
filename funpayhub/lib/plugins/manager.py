@@ -191,14 +191,32 @@ class PluginManager:
         except NotImplementedError:
             return
 
-        if issubclass(menus, MenuBuilder):
+        if isinstance(menus, type) and issubclass(menus, MenuBuilder):
             menus = [menus]
         elif not isinstance(menus, list):
             raise TypeError('Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.')
 
         for i in menus:
-            if not issubclass(menus, MenuBuilder):
+            if not isinstance(i, type) or not issubclass(i, MenuBuilder):
+                raise TypeError('Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.')
+
+            self.hub.telegram.ui_registry.add_menu_builder(i)
+
+    async def run_setup_menus_step(self, plugin: LoadedPlugin) -> None:
+        await self._run_general_step(plugin.plugin.setup_menus)
+
+    async def _apply_menu_modifications(self, plugin: LoadedPlugin) -> None:
+        try:
+            modifications = await plugin.plugin.menu_modifications()
+        except NotImplementedError:
+            return
+
+        for menu_id, modifications_list in modifications.items():
+            if not isinstance(i, type) or not issubclass(i, MenuModification):
                 ...
+
+    async def run_setup_menus_step(self, plugin: LoadedPlugin) -> None:
+        await self._run_general_step(plugin.plugin.setup_menus)
 
     async def _run_general_step(self, step: Callable[[], Awaitable[Any]]):
         with suppress(NotImplementedError):
