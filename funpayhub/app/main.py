@@ -5,10 +5,12 @@ import sys
 import random
 import string
 import asyncio
+import traceback
 from typing import Any
+from contextlib import suppress
 
 import exit_codes
-from loggers import plugins as plugins_logger
+from loggers import main as logger, plugins as plugins_logger
 from funpayhub.app.routers import ROUTERS
 from funpayhub.lib.plugins import PluginManager
 from funpayhub.app.properties import FunPayHubProperties
@@ -89,9 +91,16 @@ class FunPayHub:
             await self._plugin_manager.load_plugins()
             await self._plugin_manager.setup_plugins()
         except Exception:
-            plugins_logger.critical('Failed to load plugins.', exc_info=True)
+            plugins_logger.critical('Failed to load plugins. Creating crashlog.', exc_info=True)
+            with suppress(Exception):
+                await self.create_crash_log()
             sys.exit(exit_codes.RESTART_SAFE)
             # todo: graceful shutdown for sync code.
+
+    async def create_crash_log(self):
+        os.makedirs('logs', exist_ok=True)
+        with open('logs/crashlog.log', 'w', encoding='utf-8') as f:
+            f.write(traceback.format_exc())
 
     async def start(self) -> int:
         async def wait_future(fut: asyncio.Future) -> None:
@@ -123,6 +132,7 @@ class FunPayHub:
 
     async def shutdown(self, code: int) -> None:
         # TODO: graceful shutdown
+        logger.info('Shutting down FunPay Hub with exit code %d', code)
         sys.exit(code)
 
     async def emit_parameter_changed_event(
