@@ -8,15 +8,13 @@ __all__ = [
 ]
 
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 from dataclasses import dataclass
 
-from pydantic import Field, BaseModel, field_validator
+from pydantic import Field, BaseModel, field_validator, model_validator
 from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
-from funpayhub.lib.properties import Properties
-from funpayhub.app.dispatching import Router
 from funpayhub.lib.telegram.ui import (
     MenuBuilder,
     ButtonBuilder,
@@ -27,6 +25,10 @@ from funpayhub.lib.telegram.ui import (
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
+    from funpayhub.app.dispatching import Router as HubRouter
+    from funpaybotengine import Router as FPRouter
+    from aiogram import Router as TGRouter
+    from funpayhub.lib.properties import Properties
 
 
 class PluginManifest(BaseModel):
@@ -41,6 +43,7 @@ class PluginManifest(BaseModel):
     hub_version: SpecifierSet
     plugin_id: str
     name: str
+    repo: str | None = Field(default=None)
     description: str = Field(default='')
     entry_point: str = Field(pattern=r'^([a-zA-Z_][a-zA-Z0-9_]*\.)+[a-zA-Z_][a-zA-Z0-9_]*$')
     author: PluginAuthor | None = Field(default=None)
@@ -60,6 +63,26 @@ class PluginManifest(BaseModel):
         if isinstance(value, str):
             value = SpecifierSet(value)
         return value
+
+    @model_validator(mode='after')
+    def check_dependencies(self) -> Self:
+        if not self.model_extra:
+            return self
+
+        for k, v in self.model_extra.items():
+            if not k.startswith('description_'):
+                continue
+            if not isinstance(v, str) or len(v.strip()) == 0:
+                raise ValueError(f'{k} must be non-empty string.')
+        return self
+
+    def get_description(self, locale: str | None = None) -> str:
+        if locale is None:
+            return self.description
+
+        if f'description_{locale.lower()}' in self.model_extra:
+            return self.model_extra[f'description_{locale.lower()}']
+        return self.description
 
 
 class PluginAuthor(BaseModel):
@@ -100,19 +123,19 @@ class Plugin:
     async def setup_properties(self) -> None:
         raise NotImplementedError()
 
-    async def hub_routers(self) -> Router | list[Router]:
+    async def hub_routers(self) -> HubRouter | list[HubRouter]:
         raise NotImplementedError()
 
     async def setup_hub_routers(self) -> None:
         raise NotImplementedError()
 
-    async def funpay_routers(self) -> Router | list[Router]:
+    async def funpay_routers(self) -> FPRouter | list[FPRouter]:
         raise NotImplementedError()
 
     async def setup_funpay_routers(self) -> None:
         raise NotImplementedError()
 
-    async def telegram_routers(self) -> Router | list[Router]:
+    async def telegram_routers(self) -> TGRouter | list[TGRouter]:
         raise NotImplementedError()
 
     async def setup_telegram_routers(self) -> None:
@@ -153,5 +176,5 @@ class Plugin:
 @dataclass
 class LoadedPlugin:
     manifest: PluginManifest
-    plugin: Plugin
+    plugin: Plugin | None
     properties: Properties | None = None

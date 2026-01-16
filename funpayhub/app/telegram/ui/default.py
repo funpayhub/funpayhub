@@ -29,6 +29,7 @@ MENU_BUILDERS = [
     other_ui.InstallUpdateMenuBuilder,
     control_ui.ControlMenuBuilder,
     plugins_ui.PluginsListMenuBuilder,
+    plugins_ui.PluginInfoMenuBuilder
 ]
 
 

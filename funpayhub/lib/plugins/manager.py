@@ -97,10 +97,14 @@ class PluginManager:
             return
 
         logger.info('Loading manifest for %s.', str(plugin_path))
-        manifest = self._load_plugin_manifest(plugin_path)
-
-        if manifest.plugin_id in self._disabled_plugins:
-            logger.info('Plugin %s is disabled. Skipping.', manifest.plugin_id)
+        try:
+            manifest = self._load_plugin_manifest(plugin_path)
+        except:
+            logger.error(
+                f'Unable to load plugin manifest for %s. Skipping.',
+                str(plugin_path),
+                exc_info=True
+            )
             return
 
         if manifest.plugin_id in self._plugins:
@@ -113,8 +117,13 @@ class PluginManager:
                 % (manifest.hub_version, self.hub.properties.version.value),
             )
 
-        logger.info('Loading entry point %s of %s.', manifest.entry_point, manifest.plugin_id)
-        plugin_instance = self._load_entry_point(plugin_path, manifest)
+
+        if manifest.plugin_id in self._disabled_plugins:
+            logger.info('Plugin %s is disabled. Skipping.', manifest.plugin_id)
+            plugin_instance = None
+        else:
+            logger.info('Loading entry point %s of %s.', manifest.entry_point, manifest.plugin_id)
+            plugin_instance = self._load_entry_point(plugin_path, manifest)
 
         plugin = LoadedPlugin(manifest=manifest, plugin=plugin_instance)
         self._plugins[manifest.plugin_id] = plugin

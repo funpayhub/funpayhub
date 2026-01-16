@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from funpayhub.lib.telegram.callback_data import CallbackData
+from typing import Any
 
 
 class MenuPageable(BaseModel):
@@ -102,6 +103,7 @@ class ChooseParamValue(CallbackData, identifier='choose_param_value'):
 class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
     menu_id: str
     force_new_message: bool = False
+    context_data: dict[str, Any] = Field(default_factory=dict)
 
 
 class ToggleNotificationChannel(CallbackData, identifier='toggle_notification_channel'):
@@ -164,4 +166,13 @@ class ShutDown(CallbackData, identifier='shutdown'):
 
 # Plugins
 class OpenPluginInfo(CallbackData, identifier='open_plugin_info'):
+    plugin_id: str
+
+
+class SetPluginStatus(CallbackData, identifier='set_plugin_status'):
+    plugin_id: str
+    status: bool
+
+
+class RemovePlugin(CallbackData, identifier='remove_plugin'):
     plugin_id: str

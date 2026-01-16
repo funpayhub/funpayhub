@@ -50,15 +50,19 @@ async def open_custom_menu(
     callback_data: cbs.OpenMenu,
 ):
     # todo: menu context from data
-    ctx = MenuContext(
+    menu_builder = tg_ui.get_menu_builder(callback_data.menu_id)
+    ctx_class = menu_builder.builder.context_type
+    ctx_data = callback_data.model_dump(mode='python', exclude={'identifier'}) | callback_data.data
+    ctx_instance = ctx_class(
         menu_id=callback_data.menu_id,
         menu_page=callback_data.menu_page,
         view_page=callback_data.view_page,
         trigger=query,
-        data=callback_data.model_dump(mode='python', exclude={'identifier'}) | callback_data.data,
+        data=ctx_data,
+        **callback_data.context_data,
     )
 
-    menu = await tg_ui.build_menu(ctx, data | {'query': query})
+    menu = await tg_ui.build_menu(ctx_instance, data | {'query': query})
 
     if callback_data.force_new_message:
         await menu.reply_to(query.message)

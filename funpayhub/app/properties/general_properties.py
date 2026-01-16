@@ -26,7 +26,7 @@ class GeneralProperties(Properties):
                 choices=(
                     Choice('ru', '🇷🇺 Русский', 'ru'),
                     Choice('en', '🇬🇧 English', 'en'),
-                    Choice('uk', '🇺🇦 Українська', 'uk'),
+                    Choice('ua', '🇺🇦 Українська', 'ua'),
                     Choice('banana', '🍌 Bacunana', 'banana'),
                 ),
                 default_value='ru',

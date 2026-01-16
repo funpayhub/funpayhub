@@ -733,3 +733,21 @@ msgstr "⏳ Установка обновления ..."
 # ----------------------------------------------------
 msgid "$plugins_list"
 msgstr "🧩 Расширения"
+
+msgid "$plugin_author_website"
+msgstr "🌐 Вебсайт"
+
+msgid "$plugin_author"
+msgstr "👤 <b>Разработчик</b>"
+
+msgid "$plugin_repo"
+msgstr "⬛ <b>Репозиторий</b>"
+
+msgid "$deactivate_plugin"
+msgstr "🔴 Деактивировать"
+
+msgid "$activate_plugin"
+msgstr "🟢 Активировать"
+
+msgid "$remove_plugin"
+msgstr "🗑️ Удалить"
