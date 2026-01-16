@@ -37,7 +37,6 @@ async def set_plugin_status(
         return
 
     if callback_data.status:
-        print('ON')
         await plugin_manager.enable_plugin(plugin=callback_data.plugin_id)
     else:
         await plugin_manager.disable_plugin(plugin=callback_data.plugin_id)

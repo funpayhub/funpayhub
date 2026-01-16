@@ -16,6 +16,7 @@ from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.app.telegram.routers import ROUTERS
 from funpayhub.app.dispatching.events import TelegramStartEvent
 from funpayhub.app.telegram.middlewares import (
+    OopsMiddleware,
     UnpackMiddleware,
     AddDataMiddleware,
     IsAuthorizedMiddleware,
@@ -80,6 +81,7 @@ class Telegram:
                 continue
             o.outer_middleware(middleware)
 
+        self.dispatcher.callback_query.outer_middleware(OopsMiddleware())
         self.dispatcher.callback_query.outer_middleware(UnpackMiddleware())
 
         _is_authorized_middleware = IsAuthorizedMiddleware()
