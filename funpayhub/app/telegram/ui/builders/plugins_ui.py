@@ -32,7 +32,10 @@ class PluginsListMenuBuilder(MenuBuilder):
     ) -> Menu:
         keyboard = KeyboardBuilder()
         for i in plugin_manager._plugins.values():
-            prefix = '🔴 ' if i.manifest.plugin_id in plugin_manager.disabled_plugins else '🟢 '
+            prefix = '🔴' if i.manifest.plugin_id in plugin_manager.disabled_plugins else '🟢'
+            if not i.plugin:
+                prefix += '❌'
+            prefix += ' '
 
             keyboard.add_callback_button(
                 button_id=f'plugin_info:{i.manifest.plugin_id}',
@@ -64,7 +67,6 @@ class PluginInfoMenuBuilder(MenuBuilder):
         plugin_manager: PluginManager,
         properties: FunPayHubProperties
     ) -> Menu:
-        print(ctx.callback_data.history)
         plugin = plugin_manager._plugins[ctx.plugin_id]
         manifest = plugin.manifest
 

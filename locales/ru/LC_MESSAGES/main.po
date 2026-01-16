@@ -12,6 +12,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 
+# ----------------------------------------------------
+# ----------------- Telegram commands ----------------
+# ----------------------------------------------------
+msgid "$command:start:description"
+msgstr "Главное меню"
+
+msgid "$command:settings:description"
+msgstr "Меню настроек"
+
+msgid "$commands:help:description"
+msgstr "Режим справки"
+
+msgid "$commands:shutdown:description"
+msgstr "Выключить FunPay Hub"
+
+msgid "$commands:restart:description"
+msgstr "Перезапустить FunPay Hub"
+
+msgid "$commands:safe_mode:description"
+msgstr "Безопасный режим"
+
+msgid "$commands.standard_mode:description"
+msgstr "Стандартный режим"
+
+
 # Properties
 msgid "$props:name"
 msgstr "⚙️ Настройки"

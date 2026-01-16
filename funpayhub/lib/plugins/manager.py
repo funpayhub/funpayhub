@@ -80,7 +80,7 @@ class PluginManager:
 
     def is_enabled(self, plugin: RESOLVABLE) -> bool:
         plugin = _resolve_plugin_id(plugin)
-        return plugin in self.disabled_plugins
+        return plugin not in self.disabled_plugins
 
     async def load_plugins(self):
         paths = []

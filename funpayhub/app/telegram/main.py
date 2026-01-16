@@ -95,8 +95,13 @@ class Telegram:
         self.dispatcher.include_routers(router)
 
     def _setup_commands(self):
-        self._commands.create_command('settings', 'hub', True, '$command:start:description')
+        self._commands.create_command('start', 'hub', True, '$command:start:description')
+        self._commands.create_command('settings', 'hub', True, '$command:settings:description')
         self._commands.create_command('help', 'hub', True, '$commands:help:description')
+        self._commands.create_command('shutdown', 'hub', True, '$commands:shutdown:description')
+        self._commands.create_command('restart', 'hub', True, '$commands:restart:description')
+        self._commands.create_command('safe_mode', 'hub', True, '$commands:safe_mode:description')
+        self._commands.create_command('standard_mode', 'hub', True, '$commands.standard_mode:description')
 
     def _setup_ui_defaults(self):
         for m in default_ui.MENU_BUILDERS:
