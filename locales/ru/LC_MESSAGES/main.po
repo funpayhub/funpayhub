@@ -754,3 +754,21 @@ msgstr "🗑️ Удалить"
 
 msgid "$plugin_properties"
 msgstr "⚙️ Настройки"
+
+msgid "$plugin_not_found"
+msgstr "❌ Плагин не найден."
+
+msgid "$plugin_already_enabled"
+msgstr "❌ Плагин уже активирован."
+
+msgid "$plugin_already_disabled"
+msgstr "❌ Плагин уже деактивирован."
+
+msgid "$plugin_enabled"
+msgstr "✅ Плагин успешно активирован."
+
+msgid "$plugin_disabled"
+msgstr "✅ Плагин успешно деактивирован."
+
+msgid "$restart_required"
+msgstr "🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub."

@@ -34,12 +34,25 @@ if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub  # todo: lib depends from app :(
 
 
+type RESOLVABLE = Plugin | LoadedPlugin | PluginManifest | str
+
+
+def _resolve_plugin_id(_v: RESOLVABLE) -> str:
+    if isinstance(_v, str):
+        return _v
+    if isinstance(_v, (Plugin, LoadedPlugin)):
+        return _v.manifest.plugin_id
+    if isinstance(_v, PluginManifest):
+        return _v.plugin_id
+
+    raise TypeError(f'Unable to resolve plugin ID for {_v!r}')
+
+
 class PluginManager:
     PLUGINS_PATH = Path(os.getcwd()) / 'plugins'
     DEV_PLUGINS_PATH = Path(os.environ.get('PYTHONPATH', os.getcwd())) / 'plugins'
 
     def __init__(self, hub: FunPayHub):
-        self._disabled_plugins: set[str] = set()
         self._plugins: dict[str, LoadedPlugin] = {}
         self._hub = hub
 
@@ -49,38 +62,31 @@ class PluginManager:
                 logger.info('Adding %s to %s.', str(i), 'sys.path')
                 sys.path.append(i)
 
-    def load_disabled_plugins(self, path: str) -> None:
-        with open(path, 'r', encoding='utf-8') as f:
-            for i in f.read().splitlines():
-                if not i:
-                    continue
-                self._disabled_plugins.add(i)
-
-    def disable_plugin(self, plugin_id: str) -> None:
-        if not plugin_id:
+    async def disable_plugin(self, plugin: RESOLVABLE) -> None:
+        plugin = _resolve_plugin_id(plugin)
+        if not plugin:
             return
 
-        self._disabled_plugins.add(plugin_id)
+        if self.is_enabled(plugin):
+            await self.hub.properties.plugin_properties.disabled_plugins.add_item(plugin)
 
-        with open('disabled_plugins', 'w', encoding='utf-8') as f:
-            f.write('\n'.join(self._disabled_plugins))
-
-    def enable_plugin(self, plugin_id: str) -> None:
-        if not plugin_id:
+    async def enable_plugin(self, plugin: RESOLVABLE) -> None:
+        plugin = _resolve_plugin_id(plugin)
+        if not plugin:
             return
 
-        self._disabled_plugins.discard(plugin_id)
+        if not self.is_enabled(plugin):
+            await self.hub.properties.plugin_properties.disabled_plugins.remove_item(plugin)
 
-        with open('disabled_plugins', 'w', encoding='utf-8') as f:
-            f.write('\n'.join(self._disabled_plugins))
+    def is_enabled(self, plugin: RESOLVABLE) -> bool:
+        plugin = _resolve_plugin_id(plugin)
+        return plugin in self.disabled_plugins
 
     async def load_plugins(self):
         paths = []
-        if self.DEV_PLUGINS_PATH.exists():
-            paths.append(self.DEV_PLUGINS_PATH)
-
-        if self.PLUGINS_PATH.exists():
-            paths.append(self.PLUGINS_PATH)
+        for i in [self.DEV_PLUGINS_PATH, self.PLUGINS_PATH]:
+            if i.exists() and i not in paths:
+                paths.append(i)
 
         for i in chain(*[i.iterdir() for i in paths]):
             if not i.is_dir():
@@ -101,9 +107,9 @@ class PluginManager:
             manifest = self._load_plugin_manifest(plugin_path)
         except:
             logger.error(
-                f'Unable to load plugin manifest for %s. Skipping.',
+                'Unable to load plugin manifest for %s. Skipping.',
                 str(plugin_path),
-                exc_info=True
+                exc_info=True,
             )
             return
 
@@ -117,15 +123,18 @@ class PluginManager:
                 % (manifest.hub_version, self.hub.properties.version.value),
             )
 
-
-        if manifest.plugin_id in self._disabled_plugins:
+        if not self.is_enabled(manifest.plugin_id):
             logger.info('Plugin %s is disabled. Skipping.', manifest.plugin_id)
             plugin_instance = None
         else:
             logger.info('Loading entry point %s of %s.', manifest.entry_point, manifest.plugin_id)
             plugin_instance = self._load_entry_point(plugin_path, manifest)
 
-        plugin = LoadedPlugin(manifest=manifest, plugin=plugin_instance)
+        plugin = LoadedPlugin(
+            path=Path(plugin_path),
+            manifest=manifest,
+            plugin=plugin_instance,
+        )
         self._plugins[manifest.plugin_id] = plugin
 
     def _load_plugin_manifest(self, plugin_path: str | Path) -> PluginManifest:
@@ -156,6 +165,13 @@ class PluginManager:
 
         for name, step in steps.items():
             for plugin_id, plugin in self._plugins.items():
+                if not plugin.plugin:
+                    logger.info(
+                        'Plugin %s does not have a plugin instance. Skipping step %s.',
+                        plugin.manifest.plugin_id,
+                        name,
+                    )
+                    continue
                 logger.info('Running %s step for plugin %s.', name, plugin.manifest.plugin_id)
                 await step(plugin)
 
@@ -344,4 +360,4 @@ class PluginManager:
 
     @property
     def disabled_plugins(self) -> frozenset[str]:
-        return frozenset(self._disabled_plugins)
+        return frozenset(self.hub.properties.plugin_properties.disabled_plugins.value)

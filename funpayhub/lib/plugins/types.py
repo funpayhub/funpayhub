@@ -10,6 +10,7 @@ __all__ = [
 
 from typing import TYPE_CHECKING, Self
 from dataclasses import dataclass
+from pathlib import Path
 
 from pydantic import Field, BaseModel, field_validator, model_validator
 from packaging.version import Version
@@ -24,11 +25,12 @@ from funpayhub.lib.telegram.ui import (
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.main import FunPayHub
-    from funpayhub.app.dispatching import Router as HubRouter
-    from funpaybotengine import Router as FPRouter
     from aiogram import Router as TGRouter
+    from funpaybotengine import Router as FPRouter
+
+    from funpayhub.app.main import FunPayHub
     from funpayhub.lib.properties import Properties
+    from funpayhub.app.dispatching import Router as HubRouter
 
 
 class PluginManifest(BaseModel):
@@ -175,6 +177,7 @@ class Plugin:
 
 @dataclass
 class LoadedPlugin:
+    path: Path
     manifest: PluginManifest
     plugin: Plugin | None
     properties: Properties | None = None

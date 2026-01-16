@@ -3,8 +3,8 @@ from __future__ import annotations
 
 __all__ = ['ListParameter']
 
-
 from typing import Any
+from contextlib import suppress
 from collections.abc import Callable, Iterable, Awaitable
 
 from funpayhub.lib.properties.base import UNSET, _UNSET
@@ -35,11 +35,19 @@ class ListParameter[ItemType: ALLOWED_TYPES](MutableParameter[list[ItemType]]):
             flags=flags,
         )
 
-    async def add_item(self, item: ItemType) -> None:
+    async def add_item(self, item: ItemType, save: bool = True) -> None:
         self.value.append(item)
+        if save:
+            await self.save()
 
-    async def pop_item(self, index: int) -> ItemType:
-        return self.value.pop(index)
+    async def pop_item(self, index: int, save: bool = True) -> ItemType:
+        result = self.value.pop(index)
+        if save:
+            await self.save()
+        return result
 
-    async def remove_item(self, item: ItemType) -> None:
-        return self.value.remove(item)
+    async def remove_item(self, item: ItemType, save: bool = True) -> None:
+        with suppress(ValueError):
+            self.value.remove(item)
+            if save:
+                await self.save()

@@ -8,6 +8,7 @@ from .flags import ParameterFlags
 from .review_reply import ReviewReplyProperties
 from .auto_response import AutoResponseProperties
 from .global_toggles import TogglesProperties
+from .plugin_properties import PluginProperties
 from .general_properties import GeneralProperties
 from .telegram_properties import TelegramProperties
 from .auto_delivery_properties import AutoDeliveryProperties
@@ -56,10 +57,4 @@ class FunPayHubProperties(Properties):
                 default_value=[],
             ),
         )
-        self.plugin_properties = self.attach_properties(
-            Properties(
-                id='plugin_properties',
-                name='$props.plugin_properties:name',
-                description='$props:plugin_properties:description',
-            )
-        )
+        self.plugin_properties = self.attach_properties(PluginProperties())
