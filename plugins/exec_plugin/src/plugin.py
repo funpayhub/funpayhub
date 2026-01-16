@@ -15,9 +15,51 @@ from .telegram.menus import (
     ExecOutputMenuBuilder,
 )
 from .telegram.router import r as router
+from funpayhub.lib.properties import Properties
+from funpayhub.lib.properties.parameter import StringParameter, ToggleParameter, ListParameter
+
+
+class ExecPluginProperties(Properties):
+    def __init__(self):
+        super().__init__(
+            id='exec_plugin',
+            name='Exec plugin',
+            description='Настройки Exec plugin\'а.',
+            file='config/exec_plugin.toml'
+        )
+
+        self.attach_parameter(
+                ToggleParameter(
+                    id='test_toggle_parameter',
+                    name='Test Toggle Parameter',
+                    description='Test Toggle Parameter',
+                    default_value=False,
+            )
+        )
+
+        self.attach_parameter(
+            StringParameter(
+                id='test_string_parameter',
+                name='Test String Parameter',
+                description='Test String Parameter',
+                default_value='',
+            )
+        )
+
+        self.attach_parameter(
+            ListParameter(
+                id='test_list_parameter',
+                name='Test List Parameter',
+                description='Test List Parameter',
+                default_value=[],
+            )
+        )
 
 
 class ExecPlugin(Plugin):
+    async def properties(self) -> Properties:
+        return ExecPluginProperties()
+
     async def menus(self):
         return [ExecCodeMenuBuilder, ExecListMenuBuilder, ExecOutputMenuBuilder]
 

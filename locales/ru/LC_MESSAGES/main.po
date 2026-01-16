@@ -751,3 +751,6 @@ msgstr "🟢 Активировать"
 
 msgid "$remove_plugin"
 msgstr "🗑️ Удалить"
+
+msgid "$plugin_properties"
+msgstr "⚙️ Настройки"

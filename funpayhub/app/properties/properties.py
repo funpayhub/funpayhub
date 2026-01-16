@@ -56,3 +56,10 @@ class FunPayHubProperties(Properties):
                 default_value=[],
             ),
         )
+        self.plugin_properties = self.attach_properties(
+            Properties(
+                id='plugin_properties',
+                name='$props.plugin_properties:name',
+                description='$props:plugin_properties:description',
+            )
+        )

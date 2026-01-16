@@ -187,7 +187,7 @@ class PluginManager:
         except NotImplementedError:
             return
 
-        self.hub.properties.attach_properties(properties)
+        self.hub.properties.plugin_properties.attach_properties(properties)
         await self.hub.properties.load()
         self.plugins[plugin.manifest.plugin_id].properties = properties
 

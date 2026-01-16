@@ -120,6 +120,16 @@ class PluginInfoMenuBuilder(MenuBuilder):
 
         text = text.strip()
 
+        if plugin.properties:
+            keyboard.add_callback_button(
+                button_id='plugin_properties',
+                text=translater.translate('$plugin_properties'),
+                callback_data=cbs.OpenEntryMenu(
+                    path=plugin.properties.path,
+                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                ).pack()
+            )
+
         keyboard.add_callback_button(
             button_id='toggle_plugin_state',
             text=translater.translate('$activate_plugin') if manifest.plugin_id in plugin_manager.disabled_plugins else translater.translate('$deactivate_plugin'),
