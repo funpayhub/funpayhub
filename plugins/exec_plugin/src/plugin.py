@@ -28,7 +28,7 @@ class ExecPluginProperties(Properties):
             file='config/exec_plugin.toml'
         )
 
-        self.attach_parameter(
+        self.test_toggle = self.attach_parameter(
                 ToggleParameter(
                     id='test_toggle_parameter',
                     name='Test Toggle Parameter',
@@ -37,7 +37,7 @@ class ExecPluginProperties(Properties):
             )
         )
 
-        self.attach_parameter(
+        self.test_string = self.attach_parameter(
             StringParameter(
                 id='test_string_parameter',
                 name='Test String Parameter',
@@ -46,7 +46,7 @@ class ExecPluginProperties(Properties):
             )
         )
 
-        self.attach_parameter(
+        self.test_list = self.attach_parameter(
             ListParameter(
                 id='test_list_parameter',
                 name='Test List Parameter',
