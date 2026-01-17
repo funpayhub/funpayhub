@@ -1,12 +1,15 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 
 import re
 import sys
 import logging
-from typing import Any
 
 import colorama
 from colorama import Back, Fore, Style
+
+if TYPE_CHECKING:
+    from funpayhub.lib.translater import Translater
 
 
 COLORS = {
@@ -108,6 +111,21 @@ class FileLoggerFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         text = RESET_RE.sub('', super().format(record))
         return ESC_RE.sub('', str(text))
+
+
+
+class TranslateFilter(logging.Filter):
+    def __init__(self, translater: Translater, lang: str | None = None) -> None:
+        super().__init__()
+        self._translater = translater
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        msg = record.msg
+        if not isinstance(msg, str):
+            return True
+
+        record.msg = self._translater.translate(msg)
+        return True
 
 
 if __name__ == '__main__':

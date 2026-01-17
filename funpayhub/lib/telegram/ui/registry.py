@@ -180,7 +180,9 @@ class UIRegistry:
             raise KeyError(f'Button {button_id!r} already has a modification {modification.id!r}.')
         self._buttons[button_id].modifications[modification.id] = modification()
         logger.info(
-            f'Modification {modification.id!r} for button {button_id!r} has been added to registry.',
+            'Modification %s for button %s has been added to registry.',
+            modification.id,
+            button_id,
         )
 
     def get_button_builder(self, button_id: str) -> _ButtonBuilder:
@@ -195,7 +197,7 @@ class UIRegistry:
         try:
             builder = self.get_button_builder(context.button_id)
         except KeyError:
-            logger.error(f'Button {context.button_id!r} not found.')
+            logger.error('Button %s not found.', context.button_id)
             raise
 
         if not isinstance(context, builder.builder.context_type):

@@ -66,7 +66,8 @@ class OffersRaiser:
                 return
             except RateLimitExceededError:
                 logger.warning(
-                    'Ошибка 429 при попытке поднятия лотов категории %r. Ожидаю %r сек.',
+                    'An 429 error occurred while raising offers of category %s. '
+                    'Waiting for %d seconds.',
                     category.name,
                     8,
                 )
@@ -77,13 +78,13 @@ class OffersRaiser:
         category: Category,
         on_raise: RaiseCallback | None = None,
     ) -> None:
-        logger.info('Цикл поднятия лотов для категории %r запущен.', category.name)
+        logger.info('Offer raiser loop for category %s has been started.', category.name)
         while True:
             try:
                 async with self._requesting_lock:
                     await self._raise_category_until_complete(category)
                     logger.info(
-                        'Лоты категории %r успешно поднятия. Следующая попытка через %r.',
+                        'Offers of category %s has been raised. Next try in %d.',
                         category.name,
                         3600,
                     )
@@ -93,14 +94,14 @@ class OffersRaiser:
                 await asyncio.sleep(3600)
             except UnauthorizedError:
                 logger.error(
-                    'Не удалось поднять лоты категории %r: аккаунт не авторизован.',
+                    'Unable to raise offers of category %s: not authorized.',
                     category.name,
                 )
                 return
             except RaiseOffersError as e:
                 wait_time = e.wait_time or 1800
                 logger.info(
-                    'Не удалось поднять лоты категории %r: необходимо подождать %r.',
+                    'Unable to raise offers of category %s: need to wait for %d.',
                     category.name,
                     wait_time,
                 )
@@ -108,14 +109,14 @@ class OffersRaiser:
                 continue
             except FunPayServerError:
                 logger.warning(
-                    'Серверная ошибка при попытке поднятия лотов категории %r.',
+                    'A Server error occurred while raising offers of category %s.',
                     category.name,
                 )
                 await asyncio.sleep(10)
                 continue
             except Exception:
                 logger.error(
-                    'Произошла непредвиденная ошибка при попытке поднять лоты категории %r.',
+                    'An unexpected error occurred while raising offers of category %s.',
                     category.name,
                     exc_info=True,
                 )
@@ -129,20 +130,20 @@ class OffersRaiser:
         try:
             await self._raising_loop(category, on_raise)
         except asyncio.CancelledError:
-            logger.info('Цикл поднятия лотов категории %r остановлен.', category.name)
+            logger.info('Offer raising loop of category %s has been stopped.', category.name)
             raise
 
     def _on_task_done(self, category: Category, task: asyncio.Task) -> None:
         if category.id in self._tasks and self._tasks[category.id] is task:
             del self._tasks[category.id]
             logger.debug(
-                'Таска цикла поднятия лотов категории %r (%s) удалена из менеджера.',
+                'Offer raising loop task of category %s (%s) has been removed from manager.',
                 category.name,
                 task.get_name(),
             )
         else:
             logger.debug(
-                'Таска цикла поднятия лотов категории %r (%s) не была найдена в менеджере.',
+                'Offer raising loop task of category %s (%s) has not been found in manager.',
                 category.name,
                 task.get_name(),
             )

@@ -14,7 +14,12 @@ from load_dotenv import load_dotenv
 from funpaybotengine import Bot
 
 from utils import set_exception_hook
-from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLoggerFormatter
+from logger_conf import (
+    TranslateFilter,
+    ColorizedLogRecord,
+    FileLoggerFormatter,
+    ConsoleLoggerFormatter,
+)
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
@@ -36,6 +41,7 @@ original_args = parser.parse_args()
 # ---------------------------------------------
 # |               Logging setup               |
 # ---------------------------------------------
+translater = Translater()
 os.makedirs('logs', exist_ok=True)
 
 
@@ -74,12 +80,24 @@ dictConfig(
                 '()': ConsoleLoggerFormatter,
             },
         },
+        'filters': {
+            'translate': {
+                '()': TranslateFilter,
+                'translater': translater,
+            },
+            'translate_en': {
+                '()': TranslateFilter,
+                'translater': translater,
+                'lang': 'en',
+            },
+        },
         'handlers': {
             'console': {
                 'formatter': 'console_formatter',
                 'level': logging.DEBUG,
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
+                'filters': ['translate'],
             },
             'file': {
                 'class': 'logging.handlers.RotatingFileHandler',
@@ -89,6 +107,7 @@ dictConfig(
                 'maxBytes': 19 * 1024 * 1024,
                 'formatter': 'file_formatter',
                 'level': logging.DEBUG,
+                'filters': ['translate_en'],
             },
         },
         'loggers': {i: {'level': logging.DEBUG, 'handlers': ['console', 'file']} for i in LOGGERS},
@@ -116,7 +135,6 @@ async def main():
     props = FunPayHubProperties()
     await props.load()
 
-    translater = Translater()
     if 'FPH_LOCALES' in os.environ:
         locales_path = Path(os.environ['FPH_LOCALES'])
     else:

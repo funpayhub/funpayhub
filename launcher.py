@@ -21,7 +21,7 @@ import colorama
 import exit_codes
 from loggers import updater as updater_logger, launcher as logger
 from updater import apply_update, install_dependencies
-from logger_formatter import ColorizedLogRecord, FileLoggerFormatter, ConsoleLoggerFormatter
+from logger_conf import ColorizedLogRecord, FileLoggerFormatter, ConsoleLoggerFormatter
 
 
 colorama.just_fix_windows_console()
