@@ -1,5 +1,7 @@
+from collections.abc import Iterator
 from pathlib import Path
 from types import MappingProxyType
+from aiogram import Bot
 import json
 
 
@@ -54,3 +56,43 @@ class Registry:
     @property
     def path(self) -> Path:
         return self._path
+
+
+class BotRotater:
+    def __init__(self, tokens):
+        self._tokens = set(tokens)
+        self._bots = [Bot(token) for token in self._tokens]
+        self._current_bot_index = 0
+
+    def __next__(self) -> Bot:
+        if not self._bots:
+            raise StopIteration
+
+        if self._current_bot_index > len(self._bots) + 1:
+            self._current_bot_index = 0
+        bot = self._bots[0]
+        self._current_bot_index += 1
+        return bot
+
+    def __iter__(self) -> Iterator[Bot]:
+        return self
+
+    def add_bot(self, token: str) -> None:
+        if token in self._tokens:
+            raise ValueError('Bot with this token already exists.')
+        self._tokens.add(token)
+        self._bots.append(Bot(token))
+
+    def remove_bot(self, token: str) -> None:
+        if token not in self._tokens:
+            return
+        self._tokens.discart(token)
+        for i in self._bots:
+            if i.token == token:
+                self._bots.remove(i)
+
+    def next_bot(self) -> Bot:
+        return next(self)
+
+    def __len__(self) -> int:
+        return len(self._bots)

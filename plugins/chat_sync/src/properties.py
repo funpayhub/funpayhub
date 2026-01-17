@@ -14,7 +14,7 @@ class ChatSyncProperties(Properties):
             IntParameter(
                 id='sync_chat_id',
                 name='ID чата синхронизации',
-                description='',
+                description='ID чата с темами, в который будут присылаться сообщения.',
                 default_value=0
             )
         )
@@ -23,7 +23,7 @@ class ChatSyncProperties(Properties):
             ListParameter(
                 id='bot_tokens',
                 name='Токены Telegram ботов',
-                description='',
+                description='Токены Telegram ботов для отправки сообщений в темы.',
                 default_value=[]
             )
         )
