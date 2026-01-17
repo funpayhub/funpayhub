@@ -128,7 +128,7 @@ class Properties(Entry):
 
     def attach_properties[P: Properties](self, properties: P) -> P:
         if not isinstance(properties, Properties):
-            raise ValueError('Properties should be an instance of Properties.')
+            raise ValueError('Properties must be an instance of Properties.')
         if properties.id in self._entries:
             raise RuntimeError(f'Entry with ID {properties.id!r} already exists.')
         properties.parent = self

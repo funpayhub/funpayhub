@@ -16,16 +16,9 @@ from itertools import chain
 from contextlib import suppress
 from collections.abc import Callable, Awaitable
 
-from aiogram import Router as TGRouter, Dispatcher as TGDispatcher
-from funpaybotengine import Router as FPRouter, Dispatcher as FPDispatcher
 from packaging.version import Version
 
 from loggers import plugins as logger
-from funpayhub.app.dispatching import Router as HUBRouter, Dispatcher as HUBDispatcher
-from funpayhub.lib.telegram.ui import (
-    MenuBuilder,
-    ButtonBuilder,
-)
 
 from .types import Plugin, LoadedPlugin, PluginManifest
 
@@ -160,6 +153,10 @@ class PluginManager:
             'setup_buttons': self._run_setup_buttons_step,
             'apply_button_modifications': self._apply_button_modifications,
             'setup_button_modifications': self._run_setup_button_modifications_step,
+            'apply_commands': self._apply_commands,
+            'setup_commands': self._setup_commands,
+            'apply_formatters': self._apply_formatters,
+            'setup_formatters': self._setup_formatters,
             'post_setup': self._run_post_setup,
         }
 
@@ -195,12 +192,10 @@ class PluginManager:
         return plugin_class(manifest, self._hub)
 
     async def _run_pre_setup_step(self, plugin: LoadedPlugin) -> None:
-        await self._run_general_step(plugin.plugin.pre_setup)
+        await self._run_step(plugin.plugin.pre_setup)
 
     async def _apply_properties(self, plugin: LoadedPlugin) -> None:
-        try:
-            properties = await plugin.plugin.properties()
-        except NotImplementedError:
+        if (properties := await self._run_step(plugin.plugin.properties)) is None:
             return
 
         self.hub.properties.plugin_properties.attach_properties(properties)
@@ -208,130 +203,87 @@ class PluginManager:
         self.plugins[plugin.manifest.plugin_id].properties = properties
 
     async def _run_setup_properties_step(self, plugin: LoadedPlugin) -> None:
-        await self._run_general_step(plugin.plugin.setup_properties)
+        await self._run_step(plugin.plugin.setup_properties)
         await self.hub.properties.load()
 
     async def _apply_hub_routers(self, plugin: LoadedPlugin) -> None:
-        try:
-            routers = await plugin.plugin.hub_routers()
-        except NotImplementedError:
+        if (routers := await self._run_step(plugin.plugin.hub_routers)) is None:
             return
 
-        if isinstance(routers, HUBRouter):
+        if not isinstance(routers, list):
             routers = [routers]
-        elif isinstance(routers, HUBDispatcher):
-            raise TypeError('Plugin router cannot be a Dispatcher.')
-        elif not isinstance(routers, list):
-            raise TypeError('Plugin.hub_routers must return a `Router` or a list of `Router`.')
 
         self.hub.dispatcher.connect_routers(*routers)
 
     async def _run_setup_hub_routers_step(self, plugin: LoadedPlugin) -> None:
-        await self._run_general_step(plugin.plugin.setup_hub_routers)
+        await self._run_step(plugin.plugin.setup_hub_routers)
 
     async def _apply_funpay_routers(self, plugin: LoadedPlugin) -> None:
-        try:
-            routers = await plugin.plugin.funpay_routers()
-        except NotImplementedError:
+        if (routers := await self._run_step(plugin.plugin.funpay_routers)) is None:
             return
 
-        if isinstance(routers, FPRouter):
+        if not isinstance(routers, list):
             routers = [routers]
-        elif isinstance(routers, FPDispatcher):
-            raise TypeError('Plugin router cannot be a Dispatcher.')
-        elif not isinstance(routers, list):
-            raise TypeError('Plugin.hub_routers must return a `Router` or a list of `Router`.')
 
         self.hub.funpay.dispatcher.connect_routers(*routers)
 
     async def _run_setup_funpay_routers_step(self, plugin: LoadedPlugin) -> None:
-        await self._run_general_step(plugin.plugin.setup_funpay_routers)
+        await self._run_step(plugin.plugin.setup_funpay_routers)
 
     async def _apply_telegram_routers(self, plugin: LoadedPlugin) -> None:
-        try:
-            routers = await plugin.plugin.telegram_routers()
-        except NotImplementedError:
+        if (routers := await self._run_step(plugin.plugin.telegram_routers)) is None:
             return
 
-        if isinstance(routers, TGRouter):
+        if not isinstance(routers, list):
             routers = [routers]
-        elif isinstance(routers, TGDispatcher):
-            raise TypeError('Plugin router cannot be a Dispatcher.')
-        elif not isinstance(routers, list):
-            raise TypeError('Plugin.hub_routers must return a `Router` or a list of `Router`.')
 
         self.hub.telegram.dispatcher.include_routers(*routers)
 
     async def _run_setup_telegram_routers_step(self, plugin: LoadedPlugin) -> None:
-        await self._run_general_step(plugin.plugin.setup_telegram_routers)
+        await self._run_step(plugin.plugin.setup_telegram_routers)
 
     async def _apply_menus(self, plugin: LoadedPlugin) -> None:
-        try:
-            menus = await plugin.plugin.menus()
-        except NotImplementedError:
+        if (menus := await self._run_step(plugin.plugin.menus)) is None:
             return
 
-        if isinstance(menus, type) and issubclass(menus, MenuBuilder):
+        if not isinstance(menus, list):
             menus = [menus]
-        elif not isinstance(menus, list):
-            raise TypeError(
-                'Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.',
-            )
 
         for i in menus:
-            if not isinstance(i, type) or not issubclass(i, MenuBuilder):
-                raise TypeError(
-                    'Plugin.menus must return a `MenuBuilder` type or a list of `MenuBuilder` types.',
-                )
-
             self.hub.telegram.ui_registry.add_menu_builder(i)
 
     async def _run_setup_menus_step(self, plugin: LoadedPlugin) -> None:
-        await self._run_general_step(plugin.plugin.setup_menus)
+        await self._run_step(plugin.plugin.setup_menus)
 
     async def _apply_menu_modifications(self, plugin: LoadedPlugin) -> None:
-        try:
-            modifications = await plugin.plugin.menu_modifications()
-        except NotImplementedError:
+        if (modifications := await self._run_step(plugin.plugin.menu_modifications)) is None:
             return
 
         for menu_id, modifications_list in modifications.items():
             if not isinstance(modifications_list, list):
                 modifications_list = [modifications_list]
+
             for i in modifications_list:
                 self.hub.telegram.ui_registry.add_menu_modification(i, menu_id)
 
     async def _run_setup_menu_modifications_step(self, plugin: LoadedPlugin) -> None:
-        await self._run_general_step(plugin.plugin.setup_menu_modifications)
+        await self._run_step(plugin.plugin.setup_menu_modifications)
 
     async def _apply_buttons(self, plugin: LoadedPlugin) -> None:
-        try:
-            buttons = await plugin.plugin.buttons()
-        except NotImplementedError:
+        if (buttons := await self._run_step(plugin.plugin.buttons)) is None:
             return
 
-        if isinstance(buttons, type) and issubclass(buttons, ButtonBuilder):
+        if not isinstance(buttons, list):
             buttons = [buttons]
-        elif not isinstance(buttons, list):
-            raise TypeError(
-                'Plugin.buttons must return a `ButtonBuilder` type or a list of `ButtonBuilder` types.',
-            )
 
         for i in buttons:
-            if not isinstance(i, type) or not issubclass(i, ButtonBuilder):
-                raise TypeError(
-                    'Plugin.buttons must return a `ButtonBuilder` type or a list of `ButtonBuilder` types.',
-                )
-
             self.hub.telegram.ui_registry.add_button_builder(i)
 
     async def _run_setup_buttons_step(self, plugin: LoadedPlugin) -> None:
-        await self._run_general_step(plugin.plugin.setup_buttons)
+        await self._run_step(plugin.plugin.setup_buttons)
 
     async def _apply_button_modifications(self, plugin: LoadedPlugin) -> None:
-        try:
-            modifications = await plugin.plugin.button_modifications()
-        except NotImplementedError:
+        if (modifications := await self._run_step(plugin.plugin.button_modifications)) is None:
             return
 
         for button_id, modifications_list in modifications.items():
@@ -341,14 +293,41 @@ class PluginManager:
                 self.hub.telegram.ui_registry.add_button_modification(i, button_id)
 
     async def _run_setup_button_modifications_step(self, plugin: LoadedPlugin) -> None:
-        await self._run_general_step(plugin.plugin.setup_button_modifications)
+        await self._run_step(plugin.plugin.setup_button_modifications)
+
+    async def _apply_commands(self, plugin: LoadedPlugin) -> None:
+        if (result := await self._run_step(plugin.plugin.commands)) is None:
+            return
+
+        if not isinstance(result, list):
+            result = [result]
+
+        for i in result:
+            self.hub.telegram._commands.add_command(i)
+
+    async def _setup_commands(self, plugin: LoadedPlugin) -> None:
+        await self._run_step(plugin.plugin.setup_commands)
+
+    async def _apply_formatters(self, plugin: LoadedPlugin) -> None:
+        if (result := await self._run_step(plugin.plugin.formatters)) is None:
+            return
+
+        if not isinstance(result, list):
+            result = [result]
+
+        for i in result:
+            self.hub.funpay.text_formatters.add_formatter(i)
+
+    async def _setup_formatters(self, plugin: LoadedPlugin) -> None:
+        await self._run_step(plugin.plugin.setup_formatters)
 
     async def _run_post_setup(self, plugin: LoadedPlugin) -> None:
-        await self._run_general_step(plugin.plugin.post_setup)
+        await self._run_step(plugin.plugin.post_setup)
 
-    async def _run_general_step(self, step: Callable[[], Awaitable[Any]]):
+    async def _run_step[R: Any](self, step: Callable[[], Awaitable[R]]) -> R | None:
         with suppress(NotImplementedError):
-            await step()
+            return await step()
+        return None
 
     @property
     def hub(self) -> FunPayHub:

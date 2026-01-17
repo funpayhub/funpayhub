@@ -19,6 +19,8 @@ class CommandsRegistry:
         self._total_commands: ChainMap[str, Command] = ChainMap()
 
     def add_command(self, command: Command) -> None:
+        if not isinstance(command, Command):
+            raise ValueError('Command must be an instance of Command.')
         if command.command in self._total_commands:
             raise ValueError(f'Command {command.command!r} already exists.')
         if command.source not in self._commands:

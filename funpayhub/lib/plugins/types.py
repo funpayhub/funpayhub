@@ -16,13 +16,6 @@ from pydantic import Field, BaseModel, field_validator, model_validator
 from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
-from funpayhub.lib.telegram.ui import (
-    MenuBuilder,
-    ButtonBuilder,
-    MenuModification,
-    ButtonModification,
-)
-
 
 if TYPE_CHECKING:
     from aiogram import Router as TGRouter
@@ -31,6 +24,14 @@ if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
     from funpayhub.lib.properties import Properties
     from funpayhub.app.dispatching import Router as HubRouter
+    from funpayhub.lib.telegram.ui import (
+        MenuBuilder,
+        ButtonBuilder,
+        MenuModification,
+        ButtonModification,
+    )
+    from funpayhub.lib.hub.text_formatters import Formatter
+    from funpayhub.lib.telegram.commands_registry import Command
 
 
 class PluginManifest(BaseModel):
@@ -125,6 +126,12 @@ class Plugin:
     async def setup_properties(self) -> None:
         raise NotImplementedError()
 
+    async def formatters(self) -> type[Formatter] | list[type[Formatter]] | None:
+        raise NotImplementedError()
+
+    async def setup_formatters(self) -> None:
+        raise NotImplementedError()
+
     async def hub_routers(self) -> HubRouter | list[HubRouter]:
         raise NotImplementedError()
 
@@ -169,6 +176,12 @@ class Plugin:
         raise NotImplementedError()
 
     async def setup_button_modifications(self) -> None:
+        raise NotImplementedError()
+
+    async def commands(self) -> Command | list[Command] | None:
+        raise NotImplementedError()
+
+    async def setup_commands(self) -> None:
         raise NotImplementedError()
 
     async def post_setup(self) -> None:

@@ -85,6 +85,11 @@ class UIRegistry:
         self._workflow_data: dict[str, Any] = workflow_data if workflow_data is not None else {}
 
     def add_menu_builder(self, builder: Type[MenuBuilder[Any]], overwrite: bool = False) -> None:
+        if not isinstance(builder, type) or not issubclass(builder, MenuBuilder):
+            raise ValueError(
+                f'Menu builder must be a subclass of MenuBuilder, got {type(builder).__name__}.',
+            )
+
         if builder.id in self._menus and not overwrite:
             raise KeyError(f'Menu {builder.id!r} already exists.')
 
@@ -96,6 +101,11 @@ class UIRegistry:
         modification: Type[MenuModification[Any]],
         menu_id: str,
     ) -> None:
+        if not isinstance(modification, type) or not issubclass(modification, MenuModification):
+            raise ValueError(
+                f'Menu modification must be a subclass of MenuModification, '
+                f'got {type(modification).__name__}.',
+            )
         if menu_id not in self._menus:
             raise KeyError(f'Menu {menu_id!r} does not exist.')
         if modification.id in self._menus[menu_id].modifications:
@@ -142,6 +152,11 @@ class UIRegistry:
         builder: Type[ButtonBuilder[Any]],
         overwrite: bool = False,
     ) -> None:
+        if not isinstance(builder, type) or not issubclass(builder, ButtonBuilder):
+            raise ValueError(
+                f'Button builder must be a subclass of ButtonBuilder, '
+                f'got {type(builder).__name__}.',
+            )
         if builder.id in self._buttons and not overwrite:
             raise KeyError(f'Button {builder.id!r} already exists.')
 
@@ -153,6 +168,12 @@ class UIRegistry:
         modification: Type[ButtonModification[Any]],
         button_id: str,
     ) -> None:
+        if not isinstance(modification, type) or not issubclass(modification, ButtonModification):
+            raise ValueError(
+                f'Button modification must be a subclass of ButtonModification, '
+                f'got {type(modification).__name__}.',
+            )
+
         if button_id not in self._buttons:
             raise KeyError(f'Button {button_id!r} does not exist.')
         if modification.id in self._buttons[button_id].modifications:

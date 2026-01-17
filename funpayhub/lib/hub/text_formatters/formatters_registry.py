@@ -85,6 +85,11 @@ class FormattersRegistry:
 
         :param formatter: Класс форматтера.
         """
+        if not isinstance(formatter, type) or not issubclass(formatter, Formatter):
+            raise ValueError(
+                f'Formatter must be a subclass of Formatter, not {type(formatter).__name__}',
+            )
+
         if formatter.key in self._formatters:
             raise ValueError(f'Formatter with key {formatter.key!r} already exists.')
 
