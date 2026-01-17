@@ -51,7 +51,7 @@ class PluginManifest(BaseModel):
     entry_point: str = Field(pattern=r'^([a-zA-Z_][a-zA-Z0-9_]*\.)+[a-zA-Z_][a-zA-Z0-9_]*$')
     author: PluginAuthor | None = Field(default=None)
     dependencies: list[str] = Field(default_factory=list)
-    locales_path: list[str] = Field(default_factory=list)
+    locales_path: str | None = None
 
     @field_validator('plugin_version', mode='before')
     @classmethod

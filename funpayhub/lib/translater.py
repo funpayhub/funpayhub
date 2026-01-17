@@ -14,19 +14,30 @@ class Translater:
         self._catalogs: dict[str, list[gettext.GNUTranslations]] = defaultdict(list)
         self.current_language = language
 
-    def add_translations(self, path_to_locales: str | Path, domain: str = 'main') -> None:
+    def add_translations(self, path_to_locales: str | Path, skip_errors: bool = True) -> None:
         path = Path(path_to_locales)
         if not path.is_dir():
+            if not skip_errors:
+                raise ValueError('Path to locales must be a directory.')
             return
 
         for lang_dir in path.iterdir():
-            mo_path = lang_dir / 'LC_MESSAGES' / f'{domain}.mo'
-            if mo_path.exists():
+            lc_messages_path = lang_dir / 'LC_MESSAGES'
+            if not lc_messages_path.exists() or not lc_messages_path.is_dir():
+                continue
+
+            for mo_path in lc_messages_path.iterdir():
+                if not mo_path.is_file() or not mo_path.suffix == '.mo':
+                    continue
+
                 with mo_path.open('rb') as f:
                     tr = gettext.GNUTranslations(f)
                 self._catalogs[lang_dir.name].append(tr)
 
     def translate(self, key: str, language: str | None = None) -> str:
+        if not key:
+            return ''
+
         language = language or self.current_language
 
         for tr in self._catalogs.get(language, []):

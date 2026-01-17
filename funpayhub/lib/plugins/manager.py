@@ -48,6 +48,30 @@ class PluginManager:
     def __init__(self, hub: FunPayHub):
         self._plugins: dict[str, LoadedPlugin] = {}
         self._hub = hub
+        self._steps: dict[str, Callable[[LoadedPlugin], Awaitable[Any]]] = {
+            'pre_setup': self._run_pre_setup_step,
+            'apply_properties': self._apply_properties,
+            'setup_properties': self._run_setup_properties_step,
+            'apply_hub_routers': self._apply_hub_routers,
+            'setup_hub_routers': self._run_setup_hub_routers_step,
+            'apply_fp_routers': self._apply_funpay_routers,
+            'setup_fp_routers': self._run_setup_funpay_routers_step,
+            'apply_tg_routers': self._apply_telegram_routers,
+            'setup_tg_routers': self._run_setup_telegram_routers_step,
+            'apply_menus': self._apply_menus,
+            'setup_menus': self._run_setup_menus_step,
+            'apply_menu_modifications': self._apply_menu_modifications,
+            'setup_menu_modifications': self._run_setup_menu_modifications_step,
+            'apply_buttons': self._apply_buttons,
+            'setup_buttons': self._run_setup_buttons_step,
+            'apply_button_modifications': self._apply_button_modifications,
+            'setup_button_modifications': self._run_setup_button_modifications_step,
+            'apply_commands': self._apply_commands,
+            'setup_commands': self._setup_commands,
+            'apply_formatters': self._apply_formatters,
+            'setup_formatters': self._setup_formatters,
+            'post_setup': self._run_post_setup,
+        }
 
         paths = [str(self.DEV_PLUGINS_PATH), str(self.PLUGINS_PATH)]
         for i in paths:
@@ -135,32 +159,28 @@ class PluginManager:
             return PluginManifest.model_validate(json.loads(f.read()))
 
     async def setup_plugins(self):
-        steps: dict[str, Callable[[LoadedPlugin], Awaitable[Any]]] = {
-            'pre_setup': self._run_pre_setup_step,
-            'apply_properties': self._apply_properties,
-            'setup_properties': self._run_setup_properties_step,
-            'apply_hub_routers': self._apply_hub_routers,
-            'setup_hub_routers': self._run_setup_hub_routers_step,
-            'apply_fp_routers': self._apply_funpay_routers,
-            'setup_fp_routers': self._run_setup_funpay_routers_step,
-            'apply_tg_routers': self._apply_telegram_routers,
-            'setup_tg_routers': self._run_setup_telegram_routers_step,
-            'apply_menus': self._apply_menus,
-            'setup_menus': self._run_setup_menus_step,
-            'apply_menu_modifications': self._apply_menu_modifications,
-            'setup_menu_modifications': self._run_setup_menu_modifications_step,
-            'apply_buttons': self._apply_buttons,
-            'setup_buttons': self._run_setup_buttons_step,
-            'apply_button_modifications': self._apply_button_modifications,
-            'setup_button_modifications': self._run_setup_button_modifications_step,
-            'apply_commands': self._apply_commands,
-            'setup_commands': self._setup_commands,
-            'apply_formatters': self._apply_formatters,
-            'setup_formatters': self._setup_formatters,
-            'post_setup': self._run_post_setup,
-        }
+        for plugin_id, plugin in self._plugins.items():
+            if not plugin.manifest.locales_path:
+                logger.info(
+                    'Plugin %s does not have a locales path. Skipping locales installation.',
+                    plugin_id,
+                )
+                continue
 
-        for name, step in steps.items():
+            try:
+                logger.info('Loading locales for plugin %s.', plugin_id)
+                locales_path = Path(plugin.manifest.locales_path)
+                real_path = plugin.path / locales_path
+                self.hub.translater.add_translations(real_path)
+            except Exception:
+                logger.warning(
+                    'Unable to load locales for plugin %s. '
+                    'This will not stop plugin from setting up.',
+                    plugin_id,
+                    exc_info=True,
+                )
+
+        for name, step in self._steps.items():
             for plugin_id, plugin in self._plugins.items():
                 if not plugin.plugin:
                     logger.info(
