@@ -15,8 +15,7 @@ from funpaybotengine import Bot
 
 from utils import set_exception_hook
 from logger_conf import (
-    TranslateFilter,
-    ColorizedLogRecord,
+    HubLogMessage,
     FileLoggerFormatter,
     ConsoleLoggerFormatter,
 )
@@ -80,24 +79,12 @@ dictConfig(
                 '()': ConsoleLoggerFormatter,
             },
         },
-        'filters': {
-            'translate': {
-                '()': TranslateFilter,
-                'translater': translater,
-            },
-            'translate_en': {
-                '()': TranslateFilter,
-                'translater': translater,
-                'lang': 'en',
-            },
-        },
         'handlers': {
             'console': {
                 'formatter': 'console_formatter',
                 'level': logging.DEBUG,
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
-                'filters': ['translate'],
             },
             'file': {
                 'class': 'logging.handlers.RotatingFileHandler',
@@ -107,14 +94,18 @@ dictConfig(
                 'maxBytes': 19 * 1024 * 1024,
                 'formatter': 'file_formatter',
                 'level': logging.DEBUG,
-                'filters': ['translate_en'],
             },
         },
         'loggers': {i: {'level': logging.DEBUG, 'handlers': ['console', 'file']} for i in LOGGERS},
     },
 )
 
-logging.setLogRecordFactory(ColorizedLogRecord)
+
+def log_factory(*args, **kwargs) -> HubLogMessage:
+    return HubLogMessage(*args, translater=translater, **kwargs)
+
+
+logging.setLogRecordFactory(log_factory)
 colorama.just_fix_windows_console()
 
 

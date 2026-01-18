@@ -10,7 +10,7 @@ TRANSLATION_RE = re.compile(r'(?<!\$)\$[a-zA-Z0-9._\-:]+')
 
 
 class Translater:
-    def __init__(self, language: str = 'ru') -> None:
+    def __init__(self, language: str = 'en') -> None:
         self._catalogs: dict[str, list[gettext.GNUTranslations]] = defaultdict(list)
         self.current_language = language
 

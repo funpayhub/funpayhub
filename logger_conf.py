@@ -1,12 +1,13 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
 import re
 import sys
 import logging
+from typing import TYPE_CHECKING, Any
 
 import colorama
 from colorama import Back, Fore, Style
+
 
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater
@@ -35,7 +36,7 @@ RESET_RE = re.compile(rf'((?<!\$)\$RESET)|({RESET_MARKER})')
 ESC_RE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
 
-class ColorizedLogRecord(logging.LogRecord):
+class HubLogMessage(logging.LogRecord):
     PERCENT_RE = re.compile(
         r'%'
         r'(?P<mapping_key>\([a-zA-Z0-9_]+\))?'
@@ -46,11 +47,16 @@ class ColorizedLogRecord(logging.LogRecord):
         r'(?P<conversion_type>[diouxXeEfFgGcrsa])',
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, translater: Translater | None = None, **kwargs):
         super().__init__(*args, **kwargs)
+        self._translater = translater
 
-    def getColorizedMessage(self) -> str:
-        msg = str(self.msg)
+    def getColorizedMessage(self, language: str | None = None) -> str:
+        if self._translater:
+            msg = self._translater.translate(str(self.msg), language=language)
+        else:
+            msg = str(self.msg)
+
         if not self.args:
             return msg
 
@@ -91,7 +97,7 @@ class ConsoleLoggerFormatter(logging.Formatter):
 
         text = (
             record.getColorizedMessage()
-            if isinstance(record, ColorizedLogRecord)
+            if isinstance(record, HubLogMessage)
             else record.getMessage()
         )
         text = RESET_RE.sub(reset, text)
@@ -111,21 +117,6 @@ class FileLoggerFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         text = RESET_RE.sub('', super().format(record))
         return ESC_RE.sub('', str(text))
-
-
-
-class TranslateFilter(logging.Filter):
-    def __init__(self, translater: Translater, lang: str | None = None) -> None:
-        super().__init__()
-        self._translater = translater
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        msg = record.msg
-        if not isinstance(msg, str):
-            return True
-
-        record.msg = self._translater.translate(msg)
-        return True
 
 
 if __name__ == '__main__':
