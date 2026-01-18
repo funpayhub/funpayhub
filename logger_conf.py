@@ -108,7 +108,7 @@ class ConsoleLoggerFormatter(logging.Formatter):
 
         if record.exc_info:
             exc_text = self.formatException(record.exc_info)
-            exc_text = f'{Style.RESET_ALL + Fore.RED + Style.DIM}{exc_text}{Style.RESET_ALL}'
+            exc_text = f'{Style.RESET_ALL + Fore.RED + Style.BRIGHT}{exc_text}{Style.RESET_ALL}'
             text += '\n' + exc_text
         return text
 

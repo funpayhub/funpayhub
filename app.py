@@ -109,6 +109,12 @@ logging.setLogRecordFactory(log_factory)
 colorama.just_fix_windows_console()
 
 
+bablo = 228
+st = "$BAKS"
+logger = logging.getLogger('funpayhub.main')
+
+logger.info("my balance: $%d %s", bablo, st)
+
 # ---------------------------------------------
 # |                 App start                 |
 # ---------------------------------------------

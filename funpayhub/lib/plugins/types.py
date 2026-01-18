@@ -194,3 +194,4 @@ class LoadedPlugin:
     manifest: PluginManifest
     plugin: Plugin | None
     properties: Properties | None = None
+    error: Exception | None = None

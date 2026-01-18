@@ -33,7 +33,7 @@ class ProductsFile:
     async def add_products(self, products: Sequence[str]) -> None:
         self._create_products_file()
         async with self._lock:
-            with open(self._path, 'w', encoding='utf-8') as f:
+            with open(self._path, 'a', encoding='utf-8') as f:
                 f.write('\n' + '\n'.join(products))
             self._products_amount += len(products)
 
