@@ -85,7 +85,7 @@ class AutoResponseEntryProperties(Properties):
                 id='hooks',
                 name='$props.auto_response.*.hooks:name',
                 description='$props.auto_response.*.hooks:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 

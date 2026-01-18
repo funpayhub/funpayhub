@@ -17,7 +17,7 @@ class TelegramNotificationsProperties(Properties):
                 id='system',
                 name='$telegram_notifications.system:name',
                 description='$telegram_notifications.system:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 
@@ -26,7 +26,7 @@ class TelegramNotificationsProperties(Properties):
                 id='error',
                 name='$telegram_notifications.error:name',
                 description='$telegram_notifications.error:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 
@@ -35,7 +35,7 @@ class TelegramNotificationsProperties(Properties):
                 id='offers_raised',
                 name='$telegram_notifications.offers_raised:name',
                 description='$telegram_notifications.offers_raised:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 
@@ -44,7 +44,7 @@ class TelegramNotificationsProperties(Properties):
                 id='new_message',
                 name='$telegram_notifications.new_message:name',
                 description='$telegram_notifications.new_message:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 
@@ -53,7 +53,7 @@ class TelegramNotificationsProperties(Properties):
                 id='new_sale',
                 name='$telegram_notifications.new_sale:name',
                 description='$telegram_notifications.new_sale:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 
@@ -62,7 +62,7 @@ class TelegramNotificationsProperties(Properties):
                 id='sale_status_changed',
                 name='$telegram_notifications.sale_status_changed:name',
                 description='$telegram_notifications.sale_status_changed:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 
@@ -71,7 +71,7 @@ class TelegramNotificationsProperties(Properties):
                 id='review_1',
                 name='$telegram_notifications.review_1:name',
                 description='$telegram_notifications.review_1:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 
@@ -80,7 +80,7 @@ class TelegramNotificationsProperties(Properties):
                 id='review_2',
                 name='$telegram_notifications.review_2:name',
                 description='$telegram_notifications.review_2:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 
@@ -89,7 +89,7 @@ class TelegramNotificationsProperties(Properties):
                 id='review_3',
                 name='$telegram_notifications.review_3:name',
                 description='$telegram_notifications.review_3:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 
@@ -98,7 +98,7 @@ class TelegramNotificationsProperties(Properties):
                 id='review_4',
                 name='$telegram_notifications.review_4:name',
                 description='$telegram_notifications.review_4:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 
@@ -107,6 +107,6 @@ class TelegramNotificationsProperties(Properties):
                 id='review_5',
                 name='$telegram_notifications.review_5:name',
                 description='$telegram_notifications.review_5:description',
-                default_value=[],
+                default_factory=list,
             ),
         )

@@ -21,7 +21,7 @@ class ListParameter[ItemType: ALLOWED_TYPES](MutableParameter[list[ItemType]]):
         id: str,
         name: str,
         description: str,
-        default_value: list[ItemType],
+        default_factory: Callable[[], list[ItemType]],
         validator: Callable[[list[ItemType]], Awaitable[None]] | _UNSET = UNSET,
         flags: Iterable[Any] | None = None,
     ) -> None:
@@ -29,7 +29,7 @@ class ListParameter[ItemType: ALLOWED_TYPES](MutableParameter[list[ItemType]]):
             id=id,
             name=name,
             description=description,
-            default_value=default_value,
+            default_factory=default_factory,
             validator=validator,
             converter=lambda _: _,
             flags=flags,

@@ -11,6 +11,9 @@ if TYPE_CHECKING:
     from funpayhub.lib.properties import Properties
 
 
+_NOT_SET = object()
+
+
 class Parameter[ValueT](Entry):
     def __init__(
         self,
@@ -77,7 +80,8 @@ class MutableParameter[ValueT](Parameter[ValueT]):
         id: str,
         name: str,
         description: str,
-        default_value: ValueT,
+        default_value: ValueT | _NOT_SET = _NOT_SET,
+        default_factory: Callable[[], ValueT] | _NOT_SET = _NOT_SET,
         converter: Callable[[Any], ValueT],
         validator: Callable[[ValueT], Awaitable[None]] | _UNSET = UNSET,
         flags: Iterable[Any] | None = None,
@@ -100,23 +104,34 @@ class MutableParameter[ValueT](Parameter[ValueT]):
             принимает уже конвертированный объект и проверяет его валидность.
             Если значение невалидно, должна бросать `ValueError` с текстом ошибки.
         """
+        if default_value is _NOT_SET and default_factory is _NOT_SET:
+            raise ValueError(
+                'Expected exactly one of default_value or default_factory, but neither was provided.',
+            )
+        if default_value is not _NOT_SET and default_factory is not _NOT_SET:
+            raise ValueError(
+                'Expected exactly one of default_value or default_factory, but both were provided.',
+            )
+
         self._converter = converter
         self._validator = validator
         self._default_value = default_value
+        self._default_factory = default_factory
         self._changing_lock = Lock()
 
         super().__init__(
             id=id,
             name=name,
             description=description,
-            value=default_value,
+            value=self.default_value,
             flags=flags,
         )
 
     @property
     def default_value(self) -> ValueT:
-        """Значение параметра по умолчанию."""
-        return self._default_value
+        if self._default_value is not _NOT_SET:
+            return self._default_value
+        return self._default_factory()
 
     async def set_value(
         self,

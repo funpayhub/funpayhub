@@ -62,7 +62,7 @@ class TelegramGeneral(Properties):
                 id='authorized_users',
                 name='$props.telegram.general.authorized_users:name',
                 description='$props.telegram.general.authorized_users:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
 

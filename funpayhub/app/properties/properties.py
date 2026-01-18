@@ -54,7 +54,7 @@ class FunPayHubProperties(Properties):
                 id='message_templates',
                 name='$props.message_templates:names',
                 description='$props:message_templates:description',
-                default_value=[],
+                default_factory=list,
             ),
         )
         self.plugin_properties = self.attach_properties(PluginProperties())

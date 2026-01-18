@@ -27,6 +27,6 @@ class PluginProperties(Properties):
                 id='disabled_plugins',
                 name='$props:plugin_properties:disabled_plugins:name',
                 description='$props:plugin_properties:disabled_plugins:description',
-                default_value=[],  # <--- это супер плохо, надо починить
+                default_factory=list,
             ),
         )

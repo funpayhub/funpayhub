@@ -5,7 +5,9 @@ import json
 from pathlib import Path
 
 from funpayhub.lib.plugins import Plugin
+from funpayhub.lib.properties import Properties
 from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.lib.properties.parameter import ListParameter, StringParameter, ToggleParameter
 
 from .types import ExecutionResult, ExecutionResultsRegistry
 from .telegram.menus import (
@@ -15,8 +17,6 @@ from .telegram.menus import (
     ExecOutputMenuBuilder,
 )
 from .telegram.router import r as router
-from funpayhub.lib.properties import Properties
-from funpayhub.lib.properties.parameter import StringParameter, ToggleParameter, ListParameter
 
 
 class ExecPluginProperties(Properties):
@@ -24,17 +24,17 @@ class ExecPluginProperties(Properties):
         super().__init__(
             id='exec_plugin',
             name='Exec plugin',
-            description='Настройки Exec plugin\'а.',
-            file='config/exec_plugin.toml'
+            description="Настройки Exec plugin'а.",
+            file='config/exec_plugin.toml',
         )
 
         self.test_toggle = self.attach_parameter(
-                ToggleParameter(
-                    id='test_toggle_parameter',
-                    name='Test Toggle Parameter',
-                    description='Test Toggle Parameter',
-                    default_value=False,
-            )
+            ToggleParameter(
+                id='test_toggle_parameter',
+                name='Test Toggle Parameter',
+                description='Test Toggle Parameter',
+                default_value=False,
+            ),
         )
 
         self.test_string = self.attach_parameter(
@@ -43,7 +43,7 @@ class ExecPluginProperties(Properties):
                 name='Test String Parameter',
                 description='Test String Parameter',
                 default_value='',
-            )
+            ),
         )
 
         self.test_list = self.attach_parameter(
@@ -51,8 +51,8 @@ class ExecPluginProperties(Properties):
                 id='test_list_parameter',
                 name='Test List Parameter',
                 description='Test List Parameter',
-                default_value=[],
-            )
+                default_factory=list,
+            ),
         )
 
 
