@@ -4,6 +4,7 @@ from __future__ import annotations
 __all__ = ['PluginsListMenuBuilder']
 
 
+import html
 from typing import TYPE_CHECKING
 
 from funpayhub.app.telegram import callbacks as cbs
@@ -12,7 +13,6 @@ from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, KeyboardBu
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.premade import StripAndNavigationFinalizer
 from funpayhub.app.telegram.ui.builders.context import PluginMenuContext
-import html
 
 
 if TYPE_CHECKING:
@@ -45,7 +45,7 @@ class PluginsListMenuBuilder(MenuBuilder):
                     context_data={
                         'plugin_id': i.manifest.plugin_id,
                     },
-                    history=ctx.callback_data.as_history() if ctx.callback_data else []
+                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
                 ).pack(),
             )
 
@@ -65,7 +65,7 @@ class PluginInfoMenuBuilder(MenuBuilder):
         ctx: PluginMenuContext,
         translater: Translater,
         plugin_manager: PluginManager,
-        properties: FunPayHubProperties
+        properties: FunPayHubProperties,
     ) -> Menu:
         plugin = plugin_manager._plugins[ctx.plugin_id]
         manifest = plugin.manifest
@@ -74,19 +74,19 @@ class PluginInfoMenuBuilder(MenuBuilder):
             'name': [],
             'info': [],
             'social': [],
-            'description': []
+            'description': [],
         }
 
         keyboard = KeyboardBuilder()
 
         blocks['name'].append(
-            f'🧩 <b><u>{html.escape(manifest.name)} v{manifest.plugin_version}</u></b>'
+            f'🧩 <b><u>{html.escape(manifest.name)} v{manifest.plugin_version}</u></b>',
         )
         blocks['info'].append(f'🆔 <b>ID: {manifest.plugin_id}</b>')
 
         if manifest.repo:
             blocks['info'].append(
-                f'{translater.translate("$plugin_repo")}: {html.escape(manifest.repo)}'
+                f'{translater.translate("$plugin_repo")}: {html.escape(manifest.repo)}',
             )
 
         author_info = []
@@ -95,22 +95,26 @@ class PluginInfoMenuBuilder(MenuBuilder):
             if author.name:
                 author_info.append(f'<b>{html.escape(author.name)}</b>')
             if author.website:
-                author_info.append(f'<b><a href="{author.website}">{translater.translate("$plugin_author_website")}</a></b>')
+                author_info.append(
+                    f'<b><a href="{author.website}">{translater.translate("$plugin_author_website")}</a></b>',
+                )
 
         if author_info:
             blocks['info'].append(
-                f'{translater.translate("$plugin_author")}: {" | ".join(author_info)}'
+                f'{translater.translate("$plugin_author")}: {" | ".join(author_info)}',
             )
 
         if manifest.author and manifest.author.social:
             for name, link in manifest.author.social.items():
                 blocks['social'].append(
-                    f'<b><i>{html.escape(name)}:</i> {html.escape(link)}</b>'
+                    f'<b><i>{html.escape(name)}:</i> {html.escape(link)}</b>',
                 )
 
         if manifest.description:
             blocks['description'].append(
-                html.escape(manifest.get_description(locale=properties.general.language.real_value))
+                html.escape(
+                    manifest.get_description(locale=properties.general.language.real_value),
+                ),
             )
 
         text = ''
@@ -129,16 +133,18 @@ class PluginInfoMenuBuilder(MenuBuilder):
                 callback_data=cbs.OpenEntryMenu(
                     path=plugin.properties.path,
                     history=ctx.callback_data.as_history() if ctx.callback_data else [],
-                ).pack()
+                ).pack(),
             )
 
         keyboard.add_callback_button(
             button_id='toggle_plugin_state',
-            text=translater.translate('$activate_plugin') if manifest.plugin_id in plugin_manager.disabled_plugins else translater.translate('$deactivate_plugin'),
+            text=translater.translate('$activate_plugin')
+            if manifest.plugin_id in plugin_manager.disabled_plugins
+            else translater.translate('$deactivate_plugin'),
             callback_data=cbs.SetPluginStatus(
                 plugin_id=manifest.plugin_id,
                 status=manifest.plugin_id in plugin_manager.disabled_plugins,
-                history=ctx.callback_data.history if ctx.callback_data else []
+                history=ctx.callback_data.history if ctx.callback_data else [],
             ).pack(),
         )
 
@@ -147,12 +153,12 @@ class PluginInfoMenuBuilder(MenuBuilder):
             text=translater.translate('$remove_plugin'),
             callback_data=cbs.RemovePlugin(
                 plugin_id=manifest.plugin_id,
-                history=ctx.callback_data.history if ctx.callback_data else []
-            ).pack()
+                history=ctx.callback_data.history if ctx.callback_data else [],
+            ).pack(),
         )
 
         return Menu(
-            text = text,
+            text=text,
             main_keyboard=keyboard,
             finalizer=StripAndNavigationFinalizer(),
         )

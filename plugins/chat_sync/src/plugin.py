@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
 from funpayhub.lib.plugins import Plugin
+
 from .types import Registry, BotRotater
-from .funpay.router import router as chat_sync_fp_router
 from .properties import ChatSyncProperties
+from .funpay.router import router as chat_sync_fp_router
+
 
 if TYPE_CHECKING:
     from funpaybotengine import Router as FPRouter
-
 
 
 class ChatSyncPlugin(Plugin):
@@ -26,6 +28,8 @@ class ChatSyncPlugin(Plugin):
         return chat_sync_fp_router
 
     async def post_setup(self) -> None:
-        props: ChatSyncProperties = self.hub.properties.plugin_properties.get_properties(['chat_sync'])  # type: ignore
+        props: ChatSyncProperties = self.hub.properties.plugin_properties.get_properties(
+            ['chat_sync'],
+        )  # type: ignore
         self._rotater = BotRotater(tokens=props.bot_tokens.value)
         self.hub.workflow_data['chat_sync_rotater'] = self._rotater

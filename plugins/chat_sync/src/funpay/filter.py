@@ -1,12 +1,13 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
+
 from funpayhub.app.properties import FunPayHubProperties
 
 
 if TYPE_CHECKING:
-    from chat_sync.src.properties import ChatSyncProperties
     from chat_sync.src.types import BotRotater
-
+    from chat_sync.src.properties import ChatSyncProperties
 
 
 async def is_setup(properties: FunPayHubProperties, chat_sync_rotater: BotRotater) -> bool:

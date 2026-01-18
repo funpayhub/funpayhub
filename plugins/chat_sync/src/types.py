@@ -1,8 +1,11 @@
-from collections.abc import Iterator
-from pathlib import Path
-from types import MappingProxyType
-from aiogram import Bot
+from __future__ import annotations
+
 import json
+from types import MappingProxyType
+from pathlib import Path
+from collections.abc import Iterator
+
+from aiogram import Bot
 
 
 class Registry:
@@ -19,10 +22,12 @@ class Registry:
         self,
         funpay_chat_id: int,
         telegram_thread_id: int,
-        ovverride: bool = False
+        ovverride: bool = False,
     ) -> None:
         if funpay_chat_id not in self._fp_to_tg_pairs and not ovverride:
-            raise ValueError(f'{funpay_chat_id} already has a pair {self._fp_to_tg_pairs[funpay_chat_id]}.')
+            raise ValueError(
+                f'{funpay_chat_id} already has a pair {self._fp_to_tg_pairs[funpay_chat_id]}.',
+            )
 
         self._fp_to_tg_pairs[funpay_chat_id] = telegram_thread_id
         self._tg_to_fp_pairs.pop(telegram_thread_id, None)

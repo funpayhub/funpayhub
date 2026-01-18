@@ -13,9 +13,9 @@ from copy import copy
 from aiogram import Router
 from aiogram.types import Message, CallbackQuery, BufferedInputFile, InputMediaDocument
 from aiogram.filters import Command
+from exec_plugin.src.types import ExecutionResult, ExecutionResultsRegistry
 
 import funpayhub.app.telegram.callbacks as cbs
-from exec_plugin.src.types import ExecutionResult, ExecutionResultsRegistry
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
 
 from .callbacks import SaveExecCode, SendExecFile

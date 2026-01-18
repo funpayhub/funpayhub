@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import Field, BaseModel
 
 from funpayhub.lib.telegram.callback_data import CallbackData
-from typing import Any
 
 
 class MenuPageable(BaseModel):

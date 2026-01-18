@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from aiogram import Router
+from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
-from aiogram.types import CallbackQuery, Message
+
 import exit_codes
 import funpayhub.app.telegram.callbacks as cbs
 
