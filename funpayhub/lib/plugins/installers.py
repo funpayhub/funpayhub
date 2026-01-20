@@ -34,7 +34,7 @@ class PluginInstaller[T: Any](ABC):
     git-репозиторием и т.п., каждая реализация должна сама проверять, подходит ли ей
     переданный `source`.
     """
-    def __init__(self, plugins_directory: Path, source: T) -> None:
+    def __init__(self, plugins_directory: Path, source: T, *args: Any, **kwargs: Any) -> None:
         self._plugins_directory = plugins_directory
         self._source = source
 
@@ -141,6 +141,32 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
             raise FileNotFoundError(f'Source {self.source} does not exist.')
         if not self.source.is_file():
             raise ValueError(f'Source {self.source} is not a file.')
+
+
+class HTTPSPluginInstaller(PluginInstaller[str]):
+    def __init__(
+        self,
+        plugins_path: Path,
+        source: str,
+        installer_class: type[PluginInstaller] = ZipPluginInstaller,
+        installer_args: list[Any, ...] | None = None,
+        installer_kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(plugins_path, source)
+        self._installer_class = installer_class
+        self._installer_args = installer_args or ()
+        self._installer_kwargs = installer_kwargs or {}
+
+    async def install(self, overwrite: bool = False) -> Path:
+        # blah blah blah
+        installer_instance = self._installer_class(
+            self.plugins_directory,
+            'source',
+            *self._installer_args,
+            **self._installer_kwargs
+        )
+
+        await installer_instance.install(overwrite=overwrite)
 
 
 class Mover:
