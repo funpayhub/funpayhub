@@ -143,6 +143,8 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
 
         if root_name is None:
             raise PluginInstallationError('Invalid archive structure: archive is empty.')
+        if f'{root_name}/manifest.json' not in archive.namelist():
+            raise PluginInstallationError('Invalid archive structure: plugin manifest is missing.')
         return root_name
 
     def _check_archive_exists(self) -> None:
