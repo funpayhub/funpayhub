@@ -16,9 +16,14 @@ from itertools import chain
 from contextlib import suppress
 from collections.abc import Callable, Awaitable
 
+from aiogram import Router as AiogramRouter, BaseMiddleware
+from funpaybotengine import Router as FPBERouter
 from packaging.version import Version
+from eventry.asyncio.router import Router as EventryRouter
+from eventry.asyncio.middleware_manager import MiddlewareManagerTypes
 
 from loggers import plugins as logger
+from funpayhub.app.dispatching import Router as HubRouter
 
 from .types import Plugin, LoadedPlugin, PluginManifest
 from .installers import PluginInstaller
@@ -40,6 +45,57 @@ def _resolve_plugin_id(_v: RESOLVABLE) -> str:
         return _v.plugin_id
 
     raise TypeError(f'Unable to resolve plugin ID for {_v!r}')
+
+
+class PassPluginAiogramMiddleware(BaseMiddleware):
+    def __init__(self, plugin: LoadedPlugin):
+        self.plugin = plugin
+
+    async def __call__(self, handler: Any, event: Any, data: dict[str, Any]) -> Any:
+        data['plugin'] = self.plugin
+        return await handler(event, data)
+
+
+class PassPluginEventryMiddleware:
+    def __init__(self, plugin: LoadedPlugin):
+        self.plugin = plugin
+
+    async def __call__(self, data: dict[str, Any]) -> Any:
+        data['plugin'] = self.plugin
+        yield
+
+
+def setup_aiogram_router(plugin: LoadedPlugin, *routers: AiogramRouter) -> AiogramRouter:
+    wrapper_router = AiogramRouter(name=f'plugin_wrapper:{plugin.manifest.plugin_id}')
+    middleware = PassPluginAiogramMiddleware(plugin)
+    for i in wrapper_router.observers.values():
+        i.outer_middleware(middleware)
+
+    wrapper_router.include_routers(*routers)
+    return wrapper_router
+
+
+def setup_eventry_plugin_router(router: EventryRouter, plugin: LoadedPlugin) -> None:
+    middleware = PassPluginEventryMiddleware(plugin)
+    for i in router._managers_by_id.values():
+        manager = i.middleware_manager(MiddlewareManagerTypes.MANAGER_OUTER)
+        if not manager:
+            continue
+        manager.register_middleware(middleware)
+
+
+def setup_hub_router(plugin: LoadedPlugin, *routers: HubRouter) -> HubRouter:
+    wrapper_router = HubRouter(f'plugin_wrapper:{plugin.manifest.plugin_id}')
+    setup_eventry_plugin_router(wrapper_router, plugin)
+    wrapper_router.connect_routers(*routers)
+    return wrapper_router
+
+
+def setup_botengine_router(plugin: LoadedPlugin, *routers: FPBERouter) -> FPBERouter:
+    wrapper_router = FPBERouter(f'plugin_wrapper:{plugin.manifest.plugin_id}')
+    setup_eventry_plugin_router(wrapper_router, plugin)
+    wrapper_router.connect_routers(*routers)
+    return wrapper_router
 
 
 class PluginManager:
@@ -253,7 +309,7 @@ class PluginManager:
         if not isinstance(routers, list):
             routers = [routers]
 
-        self.hub.dispatcher.connect_routers(*routers)
+        self.hub.dispatcher.connect_router(setup_hub_router(plugin, *routers))
 
     async def _run_setup_hub_routers_step(self, plugin: LoadedPlugin) -> None:
         await self._run_step(plugin.plugin.setup_hub_routers)
@@ -265,7 +321,7 @@ class PluginManager:
         if not isinstance(routers, list):
             routers = [routers]
 
-        self.hub.funpay.dispatcher.connect_routers(*routers)
+        self.hub.funpay.dispatcher.connect_router(setup_botengine_router(plugin, *routers))
 
     async def _run_setup_funpay_routers_step(self, plugin: LoadedPlugin) -> None:
         await self._run_step(plugin.plugin.setup_funpay_routers)
@@ -277,7 +333,7 @@ class PluginManager:
         if not isinstance(routers, list):
             routers = [routers]
 
-        self.hub.telegram.dispatcher.include_routers(*routers)
+        self.hub.telegram.dispatcher.include_router(setup_aiogram_router(plugin, *routers))
 
     async def _run_setup_telegram_routers_step(self, plugin: LoadedPlugin) -> None:
         await self._run_step(plugin.plugin.setup_telegram_routers)
