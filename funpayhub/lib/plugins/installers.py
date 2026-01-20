@@ -6,6 +6,7 @@ from typing import Any
 from abc import ABC, abstractmethod
 from pathlib import Path, PurePosixPath
 from zipfile import ZipFile
+from urllib.parse import urlparse
 
 from aiogram import Bot
 from aiohttp import ClientSession
@@ -59,12 +60,11 @@ class PluginInstaller[T: Any](ABC):
         logger.info('Installing plugin from source %s ...', self._source)
         try:
             return await self.install(overwrite=overwrite)
-        except PluginInstallationError:
-            logger.error('Failed to install plugin from source %s.', exc_info=True)
-            raise
         except Exception as e:
-            logger.error('Failed to install plugin from source %s.', exc_info=True)
-            raise PluginInstallationError('Unable to install plugin. See logs.') from e
+            logger.error('Failed to install plugin from source %s.', self.source, exc_info=True)
+            if isinstance(e, PluginInstallationError):
+                raise
+            raise PluginInstallationError('See logs.') from e
 
 
 class ZipPluginInstaller(PluginInstaller[str | Path]):
@@ -94,10 +94,7 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
         with ZipFile(self.source) as zf:
             root = self._check_root(zf)
             if self._check_exists(root) and not overwrite:
-                raise PluginInstallationError(
-                    'Unable to install plugin: %s already exists.',
-                    self.plugins_directory / root,
-                )
+                raise PluginInstallationError('%s already exists.', self.plugins_directory / root)
 
             with Mover(self.plugins_directory / root):
                 zf.extractall(self.plugins_directory)
@@ -145,9 +142,7 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
             root_name = curr_root_name
 
         if root_name is None:
-            raise PluginInstallationError(
-                'Invalid archive structure: archive is empty.',
-            )
+            raise PluginInstallationError('Invalid archive structure: archive is empty.')
         return root_name
 
     def _check_archive_exists(self) -> None:
@@ -166,6 +161,13 @@ class HTTPSPluginInstaller(PluginInstaller[str]):
         installer_args: list[Any] | None = None,
         installer_kwargs: dict[str, Any] | None = None,
     ) -> None:
+        try:
+            parsed = urlparse(source)
+            if parsed.scheme not in ['https', 'http'] or not bool(parsed.netloc):
+                raise Exception
+        except Exception:
+            raise PluginInstallationError('Source %s is not a valid http URL.', source)
+
         super().__init__(plugins_path, source)
         self._installer_class = installer_class
         self._installer_args = installer_args or []

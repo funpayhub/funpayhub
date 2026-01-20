@@ -57,6 +57,12 @@ msgstr "Плагин %s не инстанцирован. Пропускаю эт
 msgid "Running %s step for plugin %s."
 msgstr "Выполняю этап %s для плагина %s."
 
+msgid "Installing plugin from source %s ..."
+msgstr "Устанавливаю плагин из источника %s ..."
+
+msgid "Failed to install plugin from source %s."
+msgstr "Не удалось устоановить плагин из источника %s."
+
 
 # ----------------------------------------------------
 # -------------------- Offer raiser ------------------

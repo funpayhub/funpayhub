@@ -181,5 +181,6 @@ class InstallPlugin(CallbackData, identifier='install_plugin'):
     mode: int
     """
     1 - from message
-    2 - from url
+    2 - from repository
+    3 - etc
     """  # todo

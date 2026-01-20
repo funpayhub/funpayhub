@@ -52,7 +52,7 @@ class PluginsListMenuBuilder(MenuBuilder):
         footer_keyboard = KeyboardBuilder()
         footer_keyboard.add_callback_button(
             button_id='open_installation_menu',
-            text='$install_plugin',
+            text=translater.translate('$install_plugin'),
             callback_data=cbs.OpenMenu(
                 menu_id=MenuIds.install_plugin,
                 history=ctx.callback_data.as_history() if ctx.callback_data else [],
@@ -187,12 +187,6 @@ class InstallPluginMenuBuilder(MenuBuilder):
                 button_id='install_plugin:1',
                 text=translater.translate('$install_plugin_from_zip'),
                 callback_data=cbs.InstallPlugin(mode=1).pack(),
-                row=True,
-            ),
-            Button.callback_button(
-                button_id='install_plugin:2',
-                text=translater.translate('$install_plugin_from_url'),
-                callback_data=cbs.InstallPlugin(mode=2).pack(),
                 row=True,
             ),
         )
