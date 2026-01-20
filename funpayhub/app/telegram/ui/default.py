@@ -30,6 +30,7 @@ MENU_BUILDERS = [
     control_ui.ControlMenuBuilder,
     plugins_ui.PluginsListMenuBuilder,
     plugins_ui.PluginInfoMenuBuilder,
+    plugins_ui.InstallPluginMenuBuilder,
 ]
 
 

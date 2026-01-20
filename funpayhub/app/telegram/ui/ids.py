@@ -28,6 +28,7 @@ class MenuIds:
 
     plugins_list = 'fph:plugins_list'
     plugin_info = 'fph:plugin_info'
+    install_plugin = 'fph:install_plugin'
 
 
 class ButtonIds:

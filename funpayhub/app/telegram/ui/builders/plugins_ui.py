@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 from funpayhub.app.telegram import callbacks as cbs
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, KeyboardBuilder
+from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.premade import StripAndNavigationFinalizer
 from funpayhub.app.telegram.ui.builders.context import PluginMenuContext
@@ -49,9 +49,20 @@ class PluginsListMenuBuilder(MenuBuilder):
                 ).pack(),
             )
 
+        footer_keyboard = KeyboardBuilder()
+        footer_keyboard.add_callback_button(
+            button_id='open_installation_menu',
+            text='$install_plugin',
+            callback_data=cbs.OpenMenu(
+                menu_id=MenuIds.install_plugin,
+                history=ctx.callback_data.as_history() if ctx.callback_data else [],
+            ).pack(),
+        )
+
         return Menu(
             text=translater.translate('$plugins_list'),
             main_keyboard=keyboard,
+            footer_keyboard=footer_keyboard,
             finalizer=StripAndNavigationFinalizer(),
         )
 
@@ -160,5 +171,34 @@ class PluginInfoMenuBuilder(MenuBuilder):
         return Menu(
             text=text,
             main_keyboard=keyboard,
+            finalizer=StripAndNavigationFinalizer(),
+        )
+
+
+class InstallPluginMenuBuilder(MenuBuilder):
+    id = MenuIds.install_plugin
+    context_type = MenuContext
+
+    async def build(self, ctx: MenuContext, translater: Translater):
+        kb = KeyboardBuilder()
+
+        kb.add_rows(
+            Button.callback_button(
+                button_id='install_plugin:1',
+                text=translater.translate('$install_plugin_from_zip'),
+                callback_data=cbs.InstallPlugin(mode=1).pack(),
+                row=True,
+            ),
+            Button.callback_button(
+                button_id='install_plugin:2',
+                text=translater.translate('$install_plugin_from_url'),
+                callback_data=cbs.InstallPlugin(mode=2).pack(),
+                row=True,
+            ),
+        )
+
+        return Menu(
+            text=translater.translate('$install_plugin_choice'),
+            main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )

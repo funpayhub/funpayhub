@@ -45,23 +45,12 @@ os.makedirs('logs', exist_ok=True)
 
 
 LOGGERS = [
-    'funpayhub.main',
-    'funpayhub.launcher',
-    'funpayhub.updater',
-    'funpayhub.plugins',
     'funpaybotengine.session',
     'funpaybotengine.runner',
     'eventry.dispatcher',
     'eventry.router',
-    'aiogram.dispatcher',
-    'aiogram.event',
-    'aiogram.middlewares',
-    'aiogram.webhook',
-    'aiogram.scene',
-    'funpayhub.main',
-    'funpayhub.telegram',
-    'funpayhub.telegram.ui',
-    'funpayhub.offers_raiser',
+    'aiogram',
+    'funpayhub',
 ]
 
 
@@ -80,9 +69,21 @@ dictConfig(
             },
         },
         'handlers': {
-            'console': {
+            'console_debug': {
                 'formatter': 'console_formatter',
                 'level': logging.DEBUG,
+                'class': 'logging.StreamHandler',
+                'stream': sys.stdout,
+            },
+            'console_info': {
+                'formatter': 'console_formatter',
+                'level': logging.INFO,
+                'class': 'logging.StreamHandler',
+                'stream': sys.stdout,
+            },
+            'console_warning': {
+                'formatter': 'console_formatter',
+                'level': logging.WARNING,
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
             },
@@ -96,7 +97,20 @@ dictConfig(
                 'level': logging.DEBUG,
             },
         },
-        'loggers': {i: {'level': logging.DEBUG, 'handlers': ['console', 'file']} for i in LOGGERS},
+        'loggers': {
+            'aiogram': {
+                'level': logging.DEBUG,
+                'handlers': ['console_warning', 'file'],
+            },
+            **{
+                i: {
+                    'level': logging.DEBUG,
+                    'handlers': ['console_debug', 'file'],
+                }
+                for i in LOGGERS
+                if i not in ['aiogram']
+            },
+        },
     },
 )
 

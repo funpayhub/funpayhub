@@ -175,3 +175,11 @@ class SetPluginStatus(CallbackData, identifier='set_plugin_status'):
 
 class RemovePlugin(CallbackData, identifier='remove_plugin'):
     plugin_id: str
+
+
+class InstallPlugin(CallbackData, identifier='install_plugin'):
+    mode: int
+    """
+    1 - from message
+    2 - from url
+    """  # todo
