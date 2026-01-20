@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from abc import ABC, abstractmethod
 from pathlib import Path, PurePosixPath
 from zipfile import ZipFile
-
-
-if TYPE_CHECKING:
-    from funpayhub.lib.plugins.manager import PluginManager
+from aiohttp import ClientSession
+import shutil
+import os
 
 
 class PluginInstallationError(Exception):
@@ -29,18 +28,19 @@ class PluginInstaller[T: Any](ABC):
     Если установка невозможна или завершилась ошибкой, установщик должен возбудить
     `PluginInstallationError`.
 
-    Каждый установщик должен при инициализации принимать объект менеджера и ссылку на ресурс.
-    Ссылкой на ресурс может быть что угодно, будь то путь до zip архива, URL адресом,
+    Каждый установщик должен при инициализации принимать путь до директории с плагинами,
+    куда необходимо установить плагин и ссылку на ресурс.
+    Ссылкой на ресурс может быть что угодно, будь то путь до ZIP архива, URL адресом,
     git-репозиторием и т.п., каждая реализация должна сама проверять, подходит ли ей
     переданный `source`.
     """
-    def __init__(self, manager: PluginManager, source: T) -> None:
-        self._manager = manager
+    def __init__(self, plugins_directory: Path, source: T) -> None:
+        self._plugins_directory = plugins_directory
         self._source = source
 
     @property
-    def manager(self) -> PluginManager:
-        return self._manager
+    def plugins_directory(self) -> Path:
+        return self._plugins_directory
 
     @property
     def source(self) -> T:
@@ -64,18 +64,34 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
 
     Архивы с иной структурой считаются некорректными и установке не подлежат.
     """
-    def __init__(self, manager: PluginManager, source: str | Path) -> None:
+    def __init__(self, plugins_path: Path, source: str | Path) -> None:
         if not isinstance(source, (str, Path)):
             raise ValueError('Source must be a string or a `pathlib.Path`.')
 
         source = Path(source)
-        super().__init__(manager, source)
-        self.check_exists()
+        super().__init__(plugins_path, source)
+        self._check_archive_exists()
 
     async def install(self, overwrite: bool = False) -> Path:
-        self.check_exists()
+        self._check_archive_exists()
         with ZipFile(self.source) as zf:
-            zip.extractall('plugins')
+            root = self._check_root(zf)
+            if self._check_exists(root) and not overwrite:
+                raise PluginInstallationError(
+                    'Unable to install plugin: %s already exists.',
+                    self.plugins_directory / root
+                )
+
+            try:
+                with Mover(self.plugins_directory / root):
+                    zf.extractall(self.plugins_directory)
+            except Exception as e:
+                raise PluginInstallationError('Unable to install plugin. See logs.') from e
+
+        return self.plugins_directory / root
+
+    def _check_exists(self, dir_name: str) -> bool:
+        return self.plugins_directory.exists() and dir_name in os.listdir(self.plugins_directory)
 
     def _check_root(self, archive: ZipFile) -> str:
         root_name = None
@@ -118,11 +134,62 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
             raise PluginInstallationError(
                 f'Invalid archive structure: archive is empty.'
             )
-
         return root_name
 
-    def check_exists(self) -> None:
+    def _check_archive_exists(self) -> None:
         if not self.source.exists():
             raise FileNotFoundError(f'Source {self.source} does not exist.')
         if not self.source.is_file():
             raise ValueError(f'Source {self.source} is not a file.')
+
+
+class Mover:
+    def __init__(self, path: Path) -> None:
+        self._path = path
+        self._temp_path: Path | None = None
+
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @property
+    def temp_path(self) -> Path | None:
+        return self._temp_path
+
+    def __enter__(self) -> Mover:
+        if not self.path.exists():
+            return self
+
+        index = 0
+        temp_name = self.path.parent / f'{self.path.parts[-1]}.old'
+        while True:
+            if not temp_name.exists():
+                break
+            index += 1
+            temp_name = self.path.parent / f'{self.path.parts[-1]}.old{index}'
+
+        self._temp_path = temp_name
+        os.rename(self.path, temp_name)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        if not self._temp_path:
+            return
+
+        if exc_type is None:
+            if self._temp_path.exists():
+                shutil.rmtree(self._temp_path)
+                self._temp_path = None
+            return
+
+        if self.path.exists():
+            if self.temp_path.exists():
+                shutil.rmtree(self.path)
+            self.temp_path.rename(self.path)
+
+        elif self.temp_path.exists():
+            shutil.rmtree(self.temp_path)
+
+        self._temp_path = None
+
+
