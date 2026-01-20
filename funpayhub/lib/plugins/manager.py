@@ -3,10 +3,10 @@ from __future__ import annotations
 
 __all__ = ['PluginManager']
 
-
 import os
 import sys
 import json
+import asyncio
 import keyword
 import importlib
 from typing import TYPE_CHECKING, Any
@@ -21,6 +21,7 @@ from packaging.version import Version
 from loggers import plugins as logger
 
 from .types import Plugin, LoadedPlugin, PluginManifest
+from .installers import PluginInstaller
 
 
 if TYPE_CHECKING:
@@ -79,6 +80,12 @@ class PluginManager:
                 logger.info('Adding %s to %s.', str(i), 'sys.path')
                 sys.path.append(i)
 
+        self._installation_lock = asyncio.Lock()
+
+    @property
+    def installation_lock(self) -> asyncio.Lock:
+        return self._installation_lock
+
     async def disable_plugin(self, plugin: RESOLVABLE) -> None:
         plugin = _resolve_plugin_id(plugin)
         if not plugin:
@@ -111,7 +118,7 @@ class PluginManager:
                 continue
             self.load_plugin(i)
 
-    def load_plugin(self, plugin_path: str | Path) -> None:
+    def load_plugin(self, plugin_path: str | Path, instantiate: bool = True) -> None:
         logger.info('Loading plugin %s.', str(plugin_path))
 
         module_name = Path(plugin_path).name
@@ -140,10 +147,10 @@ class PluginManager:
                 % (manifest.hub_version, self.hub.properties.version.value),
             )
 
+        plugin_instance = None
         if not self.is_enabled(manifest.plugin_id):
             logger.info('Plugin %s is disabled. Skipping.', manifest.plugin_id)
-            plugin_instance = None
-        else:
+        elif instantiate:
             logger.info('Loading entry point %s of %s.', manifest.entry_point, manifest.plugin_id)
             plugin_instance = self._load_entry_point(plugin_path, manifest)
 
@@ -153,6 +160,19 @@ class PluginManager:
             plugin=plugin_instance,
         )
         self._plugins[manifest.plugin_id] = plugin
+
+    async def install_plugin_from_source(
+        self,
+        installer_class: type[PluginInstaller],
+        source: Any,
+        overwrite: bool = False,
+        *args,
+        **kwargs,
+    ) -> None:
+        async with self.installation_lock:
+            installer = installer_class(self.PLUGINS_PATH, source, *args, **kwargs)
+            path_to_plugin = await installer.install_wrapped(overwrite=overwrite)
+            self.load_plugin(path_to_plugin, instantiate=False)
 
     def _load_plugin_manifest(self, plugin_path: str | Path) -> PluginManifest:
         with open(plugin_path / 'manifest.json', 'r', encoding='utf-8') as f:

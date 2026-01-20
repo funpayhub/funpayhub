@@ -177,9 +177,9 @@ class HTTPSPluginInstaller(PluginInstaller[str]):
             async with session.get(self.source) as resp:
                 resp.raise_for_status()
 
-            with open('storage/plugin', 'wb') as f:
-                async for chunk in resp.content.iter_chunked(1024 * 64):
-                    f.write(chunk)
+                with open('storage/plugin', 'wb') as f:
+                    async for chunk in resp.content.iter_chunked(1024 * 64):
+                        f.write(chunk)
 
         installer_instance = self._installer_class(
             self.plugins_directory,
