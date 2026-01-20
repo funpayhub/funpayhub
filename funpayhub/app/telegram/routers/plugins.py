@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import html
 import shutil
-import asyncio
 from typing import TYPE_CHECKING
 
 from aiogram import Bot, Router
@@ -80,7 +79,8 @@ async def set_plugin_status(
 
 
 @router.callback_query(
-    cbs.InstallPlugin.filter(), lambda _, callback_data: callback_data.mode == 1
+    cbs.InstallPlugin.filter(),
+    lambda _, callback_data: callback_data.mode == 1,
 )
 async def install_plugin(
     query: CallbackQuery,
@@ -101,7 +101,7 @@ async def install_plugin(
                     InlineKeyboardButton(
                         text=translater.translate('$clear_state'),
                         callback_data=cbs.Clear(delete_message=True).pack(),
-                    )
+                    ),
                 ],
             ],
         ),
@@ -149,17 +149,14 @@ async def install_plugin(
     await state.clear()
     await data.message.delete()
 
-    async def task():
-        try:
-            await plugin_manager.install_plugin_from_source(installer, source, *args, **kwargs)
-        except PluginInstallationError as e:
-            await message.answer(
-                translater.translate('$plugin_installation_error')
-                + '\n'
-                + html.escape(translater.translate(e.args[0]) % e.args[1:]),
-            )
-            return
+    try:
+        await plugin_manager.install_plugin_from_source(installer, source, *args, **kwargs)
+    except PluginInstallationError as e:
+        await message.answer(
+            translater.translate('$plugin_installation_error')
+            + '\n'
+            + html.escape(translater.translate(e.args[0]) % e.args[1:]),
+        )
+        return
 
-        await message.answer(translater.translate('$plugin_installed_successfully'))
-
-    asyncio.create_task(task())
+    await message.answer(translater.translate('$plugin_installed_successfully'))

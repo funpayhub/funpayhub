@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+from asyncio import Lock
 
 from aiogram import Router
 from aiogram.types import CallbackQuery
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
 
 
 router = r = Router(name='fph:updates')
+updating_lock = Lock()
 
 
 @r.callback_query(cbs.CheckForUpdates.filter())
@@ -55,11 +57,16 @@ async def download_upd(
     hub: FunPayHub,
     translater: Translater,
 ):
-    try:
-        await download_update(callback_data.url)
-    except:
-        await query.answer(translater.translate('$error_downloading_update'), show_alert=True)
+    if updating_lock.locked():
+        await query.answer(translater.translate('$update_installing_locked'), show_alert=True)
         return
+
+    async with updating_lock:
+        try:
+            await download_update(callback_data.url)
+        except:
+            await query.answer(translater.translate('$error_downloading_update'), show_alert=True)
+            return
 
     ctx = InstallUpdateMenuContext(
         menu_id=MenuIds.install_update,
@@ -82,11 +89,16 @@ async def install_upd(
         await query.answer(translater.translate('$wrong_update_instance_id'), show_alert=True)
         return
 
-    try:
-        install_update('.update.zip')
-    except:
-        await query.answer(translater.translate('$error_unpacking_update'), show_alert=True)
+    if updating_lock.locked():
+        await query.answer(translater.translate('$update_installing_locked'), show_alert=True)
         return
+
+    async with updating_lock:
+        try:
+            install_update('.update.zip')
+        except:
+            await query.answer(translater.translate('$error_unpacking_update'), show_alert=True)
+            return
 
     await query.message.edit_text(translater.translate('$installing_update'))
     await hub.shutdown(exit_codes.UPDATE)
