@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import os
+import shutil
 from typing import Any
 from abc import ABC, abstractmethod
 from pathlib import Path, PurePosixPath
 from zipfile import ZipFile
+
+from aiogram import Bot
 from aiohttp import ClientSession
-import shutil
-import os
+
+from loggers import plugins as logger
 
 
 class PluginInstallationError(Exception):
@@ -34,6 +38,7 @@ class PluginInstaller[T: Any](ABC):
     git-репозиторием и т.п., каждая реализация должна сама проверять, подходит ли ей
     переданный `source`.
     """
+
     def __init__(self, plugins_directory: Path, source: T, *args: Any, **kwargs: Any) -> None:
         self._plugins_directory = plugins_directory
         self._source = source
@@ -50,6 +55,17 @@ class PluginInstaller[T: Any](ABC):
     async def install(self, overwrite: bool = False) -> Path:
         pass
 
+    async def install_wrapped(self, overwrite: bool = False) -> Path:
+        logger.info('Installing plugin from source %s ...', self._source)
+        try:
+            return await self.install(overwrite=overwrite)
+        except PluginInstallationError:
+            logger.error('Failed to install plugin from source %s.', exc_info=True)
+            raise
+        except Exception as e:
+            logger.error('Failed to install plugin from source %s.', exc_info=True)
+            raise PluginInstallationError('Unable to install plugin. See logs.') from e
+
 
 class ZipPluginInstaller(PluginInstaller[str | Path]):
     """
@@ -64,6 +80,7 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
 
     Архивы с иной структурой считаются некорректными и установке не подлежат.
     """
+
     def __init__(self, plugins_path: Path, source: str | Path) -> None:
         if not isinstance(source, (str, Path)):
             raise ValueError('Source must be a string or a `pathlib.Path`.')
@@ -79,14 +96,11 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
             if self._check_exists(root) and not overwrite:
                 raise PluginInstallationError(
                     'Unable to install plugin: %s already exists.',
-                    self.plugins_directory / root
+                    self.plugins_directory / root,
                 )
 
-            try:
-                with Mover(self.plugins_directory / root):
-                    zf.extractall(self.plugins_directory)
-            except Exception as e:
-                raise PluginInstallationError('Unable to install plugin. See logs.') from e
+            with Mover(self.plugins_directory / root):
+                zf.extractall(self.plugins_directory)
 
         return self.plugins_directory / root
 
@@ -101,7 +115,7 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
                 raise PluginInstallationError(
                     'Invalid archive structure: archive contains absolute path %s, '
                     'which is not allowed. All paths must be relative.',
-                    path
+                    path,
                 )
 
             if len(path.parts) == 1 and not i.is_dir():
@@ -117,7 +131,7 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
                 raise PluginInstallationError(
                     'Invalid archive structure: the root directory name %s '
                     'is not a valid Python identifier. It must be suitable for imports.',
-                    curr_root_name
+                    curr_root_name,
                 )
 
             if root_name is not None and curr_root_name != root_name:
@@ -125,14 +139,14 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
                     'Invalid archive structure: expected all entries to be under '
                     'root directory %s, but found entry %s outside of it.',
                     root_name,
-                    path
+                    path,
                 )
 
             root_name = curr_root_name
 
         if root_name is None:
             raise PluginInstallationError(
-                f'Invalid archive structure: archive is empty.'
+                'Invalid archive structure: archive is empty.',
             )
         return root_name
 
@@ -149,24 +163,68 @@ class HTTPSPluginInstaller(PluginInstaller[str]):
         plugins_path: Path,
         source: str,
         installer_class: type[PluginInstaller] = ZipPluginInstaller,
-        installer_args: list[Any, ...] | None = None,
+        installer_args: list[Any] | None = None,
         installer_kwargs: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(plugins_path, source)
         self._installer_class = installer_class
-        self._installer_args = installer_args or ()
+        self._installer_args = installer_args or []
         self._installer_kwargs = installer_kwargs or {}
 
     async def install(self, overwrite: bool = False) -> Path:
-        # blah blah blah
+        os.makedirs('storage', exist_ok=True)
+        async with ClientSession() as session:
+            async with session.get(self.source) as resp:
+                resp.raise_for_status()
+
+            with open('storage/plugin', 'wb') as f:
+                async for chunk in resp.content.iter_chunked(1024 * 64):
+                    f.write(chunk)
+
         installer_instance = self._installer_class(
             self.plugins_directory,
-            'source',
+            Path('storage/plugin').absolute(),
             *self._installer_args,
-            **self._installer_kwargs
+            **self._installer_kwargs,
         )
 
-        await installer_instance.install(overwrite=overwrite)
+        return await installer_instance.install(overwrite=overwrite)
+
+
+class AiogramPluginInstaller(PluginInstaller[str]):
+    def __init__(
+        self,
+        plugins_path: Path,
+        source: str,
+        bot: Bot,
+        installer_class: type[PluginInstaller] = ZipPluginInstaller,
+        installer_args: list[Any] | None = None,
+        installer_kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(plugins_path, source)
+
+        self._bot = bot
+        self._installer_class = installer_class
+        self._installer_args = installer_args or []
+        self._installer_kwargs = installer_kwargs or {}
+
+    @property
+    def bot(self) -> Bot:
+        return self._bot
+
+    async def install(self, overwrite: bool = False) -> Path:
+        file = await self.bot.get_file(self.source)
+        os.makedirs('storage', exist_ok=True)
+        await self.bot.download_file(file.file_path, 'storage/plugin')
+
+        installer = self._installer_class(
+            self.plugins_directory,
+            Path('storage/plugin').absolute(),
+            *self._installer_args,
+            **self._installer_kwargs,
+        )
+
+        return await installer.install(overwrite=overwrite)
 
 
 class Mover:
@@ -217,5 +275,3 @@ class Mover:
             shutil.rmtree(self.temp_path)
 
         self._temp_path = None
-
-
