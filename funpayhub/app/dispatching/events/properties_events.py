@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from funpayhub.lib.properties import Parameter, Properties, MutableParameter
 
 
-class ParameterValueChangedEvent(HubEvent):
+class ParameterValueChangedEvent(HubEvent, name='fph:parameter_value_changed'):
     def __init__(self, param: MutableParameter):
         super().__init__()
         self.parameter = param
@@ -28,7 +28,7 @@ class ParameterValueChangedEvent(HubEvent):
         }
 
 
-class PropertiesAttachedEvent(HubEvent):
+class PropertiesAttachedEvent(HubEvent, name='fph:properties_attached'):
     def __init__(self, props: Properties):
         super().__init__()
         self.properties = props
@@ -40,7 +40,7 @@ class PropertiesAttachedEvent(HubEvent):
         }
 
 
-class ParameterAttachedEvent(HubEvent):
+class ParameterAttachedEvent(HubEvent, name='fph:parameter_attached'):
     def __init__(self, param: Parameter | MutableParameter):
         super().__init__()
         self.parameter = param

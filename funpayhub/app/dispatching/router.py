@@ -11,12 +11,12 @@ from .handler_manager import HandlerManager
 
 
 _events = {
-    'parameter_value_changed': events.ParameterValueChangedEvent,
-    'properties_attached': events.PropertiesAttachedEvent,
-    'parameter_attached': events.ParameterAttachedEvent,
-    'telegram_start': events.TelegramStartEvent,
-    'funpay_start': events.FunPayStartEvent,
-    'offers_raised': events.OffersRaisedEvent,
+    'parameter_value_changed',
+    'properties_attached',
+    'parameter_attached',
+    'telegram_start',
+    'funpay_start',
+    'offers_raised',
 }
 
 
@@ -32,8 +32,8 @@ class Router(BaseRouter):
         super().__init__(name=name or f'Router{id(self)}')
         self.set_default_handler_manager(HandlerManager(self, 'default', None))
 
-        for name, event in _events.items():
-            manager = self._add_handler_manager(HandlerManager(self, name, event))  # type: ignore
+        for name in _events:
+            manager = self._add_handler_manager(HandlerManager(self, f'on_{name}', f'fph:{name}'))
             setattr(self, f'on_{name}', manager)
 
     @property

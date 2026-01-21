@@ -5,10 +5,10 @@ from typing import Any
 from eventry.asyncio.event import ExtendedEvent
 
 
-class HubEvent(ExtendedEvent): ...
+class HubEvent(ExtendedEvent, name='__hub_event__'): ...
 
 
-class ErrorEvent(HubEvent):
+class ErrorEvent(HubEvent, name='fph:error'):
     def __init__(self, exception: Exception, event: HubEvent) -> None:
         self.exception = exception
         self.event = event

@@ -20,13 +20,13 @@ class HandlerManager(BaseHandlerManager[FilterType, HandlerType, MiddlewareType,
     def __init__(
         self,
         router: 'Router',
-        handler_manager_id: str,
-        event_type_filter: Type[HubEvent] | None,
+        name: str,
+        event_filter: str | None,
     ):
         super().__init__(
             router=router,
-            handler_manager_id=handler_manager_id,
-            event_type_filter=event_type_filter,
+            name=name,
+            event_filter=event_filter,
         )
 
         self._add_middleware_manager(MiddlewareManagerTypes.MANAGER_OUTER, MiddlewareManager())

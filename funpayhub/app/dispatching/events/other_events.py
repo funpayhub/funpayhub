@@ -14,17 +14,17 @@ from funpaybotengine.types import Category
 from .base import HubEvent
 
 
-class TelegramStartEvent(HubEvent):
+class TelegramStartEvent(HubEvent, name='fph:telegram_start'):
     def __init__(self) -> None:
         super().__init__()
 
 
-class FunPayStartEvent(HubEvent):
+class FunPayStartEvent(HubEvent, name='fph:funpay_start'):
     def __init__(self) -> None:
         super().__init__()
 
 
-class OffersRaisedEvent(HubEvent):
+class OffersRaisedEvent(HubEvent, name='fph:offers_raised'):
     def __init__(self, category: Category) -> None:
         super().__init__()
         self._category = category
