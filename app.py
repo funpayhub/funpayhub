@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+
+from utils import set_exception_hook
+set_exception_hook()
+
+
 import os
 import sys
 import asyncio
@@ -13,7 +18,6 @@ import colorama
 from load_dotenv import load_dotenv
 from funpaybotengine import Bot
 
-from utils import set_exception_hook
 from logger_conf import (
     HubLogMessage,
     FileLoggerFormatter,
@@ -22,9 +26,6 @@ from logger_conf import (
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
-
-
-set_exception_hook()
 
 # move
 parser = ArgumentParser(prog='FunPayHub')

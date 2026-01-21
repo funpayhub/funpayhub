@@ -206,4 +206,4 @@ while True:
         continue
     else:
         logger.error('FunPayHub process ended with unknoen return code %d.', result.returncode)
-        sys.exit(result.returncode)
+        raise Exception

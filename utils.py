@@ -17,12 +17,12 @@ def exit(code: int) -> None:
 
 
 def exception_hook(exc_type, exc, tb):
-    if IS_WINDOWS and sys.stdin.isatty():
+    sys.__excepthook__(exc_type, exc, tb)
+    if IS_WINDOWS:
         try:
             input('\nPress Enter to exit...')
         except EOFError:
             pass
-    sys.__excepthook__(exc_type, exc, tb)
 
 
 def set_exception_hook() -> None:

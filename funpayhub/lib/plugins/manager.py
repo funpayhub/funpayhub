@@ -77,7 +77,7 @@ def setup_aiogram_router(plugin: LoadedPlugin, *routers: AiogramRouter) -> Aiogr
 
 def setup_eventry_plugin_router(router: EventryRouter, plugin: LoadedPlugin) -> None:
     middleware = PassPluginEventryMiddleware(plugin)
-    for i in router._managers_by_id.values():
+    for i in router._handler_managers.values():
         manager = i.middleware_manager(MiddlewareManagerTypes.MANAGER_OUTER)
         if not manager:
             continue
