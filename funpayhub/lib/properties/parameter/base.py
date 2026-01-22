@@ -195,3 +195,18 @@ class MutableParameter[ValueT](Parameter[ValueT]):
                 '`Properties` instance.',
             )
         self.parent.save()
+
+    async def set_validator(
+        self,
+        validator: Callable[[ValueT], None],
+        validate: bool = False,
+    ) -> None:
+        self._validator = validator
+        if validate:
+            await self.validate(self.value)
+
+    async def set_converter(
+        self,
+        converter: Callable[[Any], ValueT],
+    ):
+        self._converter = converter

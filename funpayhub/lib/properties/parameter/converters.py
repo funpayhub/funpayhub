@@ -9,6 +9,8 @@ from typing import Any
 from json import JSONDecodeError
 from collections.abc import Iterable
 
+from funpayhub.lib.properties.exceptions import ConvertionError
+
 
 __all__ = [
     'bool_converter',
@@ -39,9 +41,7 @@ def bool_converter(value: Any) -> bool:
         try:
             value = str(value)
         except:
-            raise ValueError(
-                'Unable to convert value to bool',
-            )  # todo: использовать строку из перевода.
+            raise ConvertionError('Unable to convert %r to bool', value)
 
     values = {
         'true': True,
@@ -62,27 +62,21 @@ def int_converter(value: Any) -> int:
     try:
         return int(value)
     except ValueError:
-        raise ValueError(
-            f'Unable to convert value {value} to integer.',
-        )  # todo: использовать строку из перевода.
+        raise ConvertionError('Unable to convert value %r to integer.', value)
 
 
 def float_converter(value: Any) -> float:
     try:
         return float(value)
     except ValueError:
-        raise ValueError(
-            f'Unable to convert value {value} to float.',
-        )  # todo: использовать строку из перевода
+        raise ConvertionError('Unable to convert value %r to float.', value)
 
 
 def string_converter(value: Any) -> str:
     try:
         return str(value)
     except ValueError:
-        raise ValueError(
-            f'Unable to convert value {value} to string.',
-        )  # todo: использовать строку из перевода
+        raise ConvertionError('Unable to convert value %r to string.', value)
 
 
 def list_converter(value: Any) -> list[str]:
@@ -90,9 +84,9 @@ def list_converter(value: Any) -> list[str]:
         try:
             value = json.loads(value)
         except JSONDecodeError:
-            raise ValueError(f'Unable to convert string {value} to list.')
+            raise ConvertionError('Unable to convert string %r to list.', value)
 
     if isinstance(value, Iterable):
         return [i if isinstance(i, str) else str(i) for i in value]
 
-    raise ValueError(f'Unable to convert {value} to list of strings.')
+    raise ConvertionError('Unable to convert %r to list of strings.', value)

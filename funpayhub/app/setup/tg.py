@@ -2,15 +2,21 @@ from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING, Any
+from contextlib import suppress
 
-from aiogram import Router
-from aiogram.filters import StateFilter, Filter
-from aiogram.fsm.context import FSMContext
+from aiogram import Router, BaseMiddleware
 from aiogram.types import Message, CallbackQuery
-from aiogram import BaseMiddleware
+from aiogram.filters import Filter, StateFilter
+from funpaybotengine import Bot
+from aiogram.exceptions import TelegramBadRequest
+from aiogram.fsm.context import FSMContext
+from funpaybotengine.exceptions import BotUnauthenticatedError
 
-from funpayhub.lib.telegram.ui import UIRegistry, MenuContext, Menu
-
+import exit_codes
+from funpayhub.lib.core import TranslatableException
+from funpayhub.lib.translater import Translater
+from funpayhub.lib.telegram.ui import Menu, UIRegistry, MenuContext
+from funpayhub.lib.properties.exceptions import PropertiesError
 
 from . import states, callbacks as cbs
 from .ui import StepContext
@@ -30,8 +36,12 @@ setup_started = asyncio.Event()
 USE_NO_PROXY = False
 
 
+class StepError(TranslatableException):
+    pass
 
-class StepError(Exception): ...
+
+class Finished(Exception):
+    pass
 
 
 class CallbackStepMiddleware(BaseMiddleware):
@@ -44,6 +54,7 @@ class CallbackStepMiddleware(BaseMiddleware):
         callback_data: UnknownCallback = data['callback_data']
         if isinstance(callback_data, cbs.SetupStep):
             query, tg_ui, state = event, data['tg_ui'], data['state']
+
             menu = await next_menu(callback_data.step, query.message.chat.id, callback_data, tg_ui)
             await menu.apply_to(query.message)
             await next_state(callback_data.step, query.message, callback_data, state)
@@ -53,6 +64,8 @@ class MessageStepMiddleware(BaseMiddleware):
     async def __call__(self, handler, event: Message, data: dict[str, Any]):
         state: FSMContext = data['state']
         state_data: dict[str, Any] = await state.get_data()
+        translater: Translater = data['translater']
+        hub: FunPayHub = data['hub']
         if not state_data:
             await handler(event, data)
             return
@@ -64,26 +77,53 @@ class MessageStepMiddleware(BaseMiddleware):
 
         try:
             await handler(event, data)
-        except StepError:
+        except StepError as e:
+            await event.answer(e.format_args(translater.translate(e.message)))
             return
 
-
         fake_callback_data = cbs.SetupStep(
+            instance_id=hub.instance_id,
             step=state_data.step.name,
             action=-1,
             history=state_data.callback_data.as_history(),
         )
 
+        with suppress(TelegramBadRequest):
+            await state_data.message.delete()
+
         menu = await next_menu(
             step=state_data.step.name,
             chat_id=event.chat.id,
             callback_data=fake_callback_data,
-            reg=data['tg_ui']
+            reg=data['tg_ui'],
         )
 
-        await state_data.message.delete()
         msg = await menu.answer_to(state_data.message)
         await next_state(state_data.step.name, msg, fake_callback_data, state)
+
+
+class FinishedMiddleware(BaseMiddleware):
+    async def __call__(self, handler, event, data: dict[str, Any]):
+        msg: Message = event.message if isinstance(event, CallbackQuery) else event
+        hub: FunPayHub = data['hub']
+        translater: Translater = data['translater']
+
+        try:
+            await handler(event, data)
+        except Finished:
+            await msg.answer(translater.translate('$setup_finished'))
+            await hub.shutdown(exit_codes.RESTART)
+
+
+class CheckInstanceIDMiddleware(BaseMiddleware):
+    async def __call__(self, handler, event: CallbackQuery, data: dict[str, Any]):
+        hub: FunPayHub = data['hub']
+        callback_data: cbs.SetupStep = data['callback_data']
+
+        if callback_data.instnace_id != hub.instance_id:
+            return
+
+        await handler(event, data)
 
 
 class SetupStepFilter(Filter):
@@ -96,33 +136,45 @@ class SetupStepFilter(Filter):
 
         state = kwargs.get('state')
         return {
-            'state_data': (await state.get_data())['data']
+            'state_data': (await state.get_data())['data'],
         }
 
 
+router.callback_query.middleware(CheckInstanceIDMiddleware())
+router.callback_query.middleware(FinishedMiddleware())
 router.callback_query.middleware(CallbackStepMiddleware())
 router.message.middleware(MessageStepMiddleware())
+router.message.middleware(FinishedMiddleware())
 
 
-async def next_menu(step: str, chat_id: int, callback_data: cbs.SetupStep, reg: UIRegistry) -> Menu:
+async def next_menu(
+    step: str, chat_id: int, callback_data: cbs.SetupStep, reg: UIRegistry
+) -> Menu:
     next_step = get_next_step(step)
+    if next_step is None:
+        raise Finished()
 
     ctx = StepContext(
         step=next_step.name,
         chat_id=chat_id,
         menu_id='s2',
-        data={'callback_data': callback_data}
+        data={'callback_data': callback_data},
     )
     menu = await reg.build_menu(ctx)
     return menu
 
 
-async def next_state(step: str, message: Message, callback_data: cbs.SetupStep, fsm: FSMContext) -> None:
+async def next_state(
+    step: str, message: Message, callback_data: cbs.SetupStep, fsm: FSMContext
+) -> None:
     next_step = get_next_step(step)
+    if next_step is None:
+        raise Finished()
+
     state = states.EnteringStep(
         step=next_step,
         message=message,
-        callback_data=callback_data
+        callback_data=callback_data,
     )
 
     await fsm.clear()
@@ -147,13 +199,13 @@ async def start_setup(msg: Message, tg_ui: UIRegistry):
 
 @router.callback_query(
     cbs.SetupStep.filter(),
-    lambda _, callback_data: callback_data.step==cbs.Steps.language.name
+    lambda _, callback_data: callback_data.step == cbs.Steps.language.name,
 )
 async def run_language_step(
     query: CallbackQuery,
     callback_data: cbs.SetupStep,
     properties: FunPayHubProperties,
-    hub: FunPayHub
+    hub: FunPayHub,
 ):
     await properties.general.language.set_value(callback_data.lang)
     await hub.emit_parameter_changed_event(properties.general.language)
@@ -161,13 +213,13 @@ async def run_language_step(
 
 @router.callback_query(
     cbs.SetupStep.filter(),
-    lambda _, callback_data: callback_data.step==cbs.Steps.proxy.name
+    lambda _, callback_data: callback_data.step == cbs.Steps.proxy.name,
 )
 async def run_proxy_step(
     query: CallbackQuery,
     callback_data: cbs.SetupStep,
     properties: FunPayHubProperties,
-    hub: FunPayHub
+    hub: FunPayHub,
 ):
     if callback_data.action == 0:
         await properties.general.proxy.to_default()
@@ -177,13 +229,13 @@ async def run_proxy_step(
 
 @router.callback_query(
     cbs.SetupStep.filter(),
-    lambda _, callback_data: callback_data.step==cbs.Steps.user_agent.name
+    lambda _, callback_data: callback_data.step == cbs.Steps.user_agent.name,
 )
 async def run_user_agent_step(
     query: CallbackQuery,
     callback_data: cbs.SetupStep,
     properties: FunPayHubProperties,
-    hub: FunPayHub
+    hub: FunPayHub,
 ):
     if callback_data.action == 0:
         await properties.general.proxy.to_default()
@@ -193,32 +245,59 @@ async def run_user_agent_step(
 
 @router.callback_query(
     cbs.SetupStep.filter(),
-    lambda _, callback_data: callback_data.step==cbs.Steps.user_agent.name
+    lambda _, callback_data: callback_data.step == cbs.Steps.user_agent.name,
 )
 async def run_user_agent_step(query: CallbackQuery, callback_data: cbs.SetupStep):
     if callback_data.action == 0:
-        raise StepError()
+        raise StepError('How is it event possible?')
 
 
 @router.message(
     SetupStepFilter(),
-    lambda _, state_data: state_data.step==cbs.Steps.proxy
+    lambda _, state_data: state_data.step == cbs.Steps.proxy,
 )
 async def msg_run_proxy_step(
-    message: Message
+    message: Message,
+    properties: FunPayHubProperties,
 ):
-    if len(message.text) != 10:
-        await message.answer('[Прокси ошибка]')
-        raise StepError()
+    try:
+        await properties.general.proxy.set_value(message.text)
+    except PropertiesError as e:
+        raise StepError(e.message, *e.args)
 
 
 @router.message(
     SetupStepFilter(),
-    lambda _, state_data: state_data.step==cbs.Steps.user_agent
+    lambda _, state_data: state_data.step == cbs.Steps.user_agent,
 )
 async def msg_run_useragent_step(
-    message: Message
+    message: Message,
+    properties: FunPayHubProperties,
 ):
-    if not message.text.isnumeric():
-        await message.answer('[Юзер агент ошибка]')
-        raise StepError()
+    try:
+        properties.general.user_agent.set_value(message.text)
+    except PropertiesError as e:
+        raise StepError(e.message, *e.args)
+
+
+@router.message(
+    SetupStepFilter(),
+    lambda _, state_data: state_data.step == cbs.Steps.golden_key,
+)
+async def msg_run_golden_key_step(
+    message: Message,
+    properties: FunPayHubProperties,
+):
+    bot = Bot(golden_key=message.text, proxy=properties.general.proxy.value or None)
+
+    try:
+        await bot.update()
+    except BotUnauthenticatedError:
+        raise StepError('Invalid golden_key.')
+    except Exception:
+        raise StepError('An error occurred while checking golden_key. Chack logs.')
+
+    try:
+        properties.general.golden_key.set_value(message.text)
+    except PropertiesError as e:
+        raise StepError(e.message, *e.args)

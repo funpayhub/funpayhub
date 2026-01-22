@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from funpayhub.lib.properties import Parameter, Properties, ListParameter, ToggleParameter
+from funpayhub.lib.properties import Parameter, Properties, ListParameter
 
-from .flags import ParameterFlags
 from .review_reply import ReviewReplyProperties
 from .auto_response import AutoResponseProperties
 from .global_toggles import TogglesProperties
@@ -32,15 +31,6 @@ class FunPayHubProperties(Properties):
                 name='version',
                 description='version',
                 value='0.2.5',
-            ),
-        )
-        self.setup_completed = self.attach_parameter(
-            ToggleParameter(
-                id='setup_completed',
-                name='setup_completed',
-                description='setup_completed',
-                default_value=False,
-                flags=[ParameterFlags.HIDE],
             ),
         )
         self.toggles = self.attach_properties(TogglesProperties())

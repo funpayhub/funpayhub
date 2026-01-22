@@ -14,6 +14,7 @@ from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.telegram.ui import MenuContext
 from funpayhub.app.telegram.states import AddingListItem, ChangingParameterValue
 from funpayhub.lib.telegram.ui.registry import UIRegistry
+from funpayhub.lib.properties.exceptions import PropertiesError
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 
@@ -23,6 +24,7 @@ from ...ui.ids import MenuIds
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
+    from funpayhub.lib.translater import Translater
     from funpayhub.app.properties.properties import FunPayHubProperties
 
 
@@ -267,6 +269,7 @@ async def edit_parameter(
     bot: Bot,
     dispatcher: Dispatcher,
     hub: FunPayHub,
+    translater: Translater,
 ) -> None:
     await _delete_message(message)
 
@@ -276,10 +279,11 @@ async def edit_parameter(
     try:
         await data.parameter.set_value(new_value)
         await context.clear()
-    except ValueError as e:
+    except PropertiesError as e:
+        error_text = e.format_args(translater.translate(e.message))
         await data.message.edit_text(
             text=data.message.html_text
-            + f'\n\nНе удалось изменить значение параметра {data.parameter.name}:\n\n{str(e)}',
+            + f'\n\nНе удалось изменить значение параметра {data.parameter.name}:\n\n{error_text}',
             reply_markup=data.message.reply_markup,
         )
         return
@@ -376,6 +380,7 @@ async def edit_parameter(
     bot: Bot,
     dispatcher: Dispatcher,
     hub: FunPayHub,
+    translater: Translater,
 ) -> None:
     await _delete_message(message)
 
@@ -385,10 +390,11 @@ async def edit_parameter(
         await data.parameter.add_item(message.text)
         await data.parameter.save()
         await context.clear()
-    except ValueError as e:
+    except PropertiesError as e:
+        error_text = e.format_args(translater.translate(e.message))
         await data.message.edit_text(
             text=data.message.html_text
-            + f'\n\nНе удалось добавить элемент в список {data.parameter.name}:\n\n{str(e)}',
+            + f'\n\nНе удалось добавить элемент в список {data.parameter.name}:\n\n{error_text}',
             reply_markup=data.message.reply_markup,
         )
         return

@@ -1,13 +1,19 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+from dataclasses import dataclass
+
 from funpayhub.lib import Translater
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.app.telegram.callbacks import OpenMenu
 from funpayhub.app.telegram.ui.premade import StripAndNavigationFinalizer
-from dataclasses import dataclass
 
 from . import callbacks as cbs
+
+
+if TYPE_CHECKING:
+    from funpayhub.app.main import FunPayHub
 
 
 @dataclass
@@ -19,13 +25,16 @@ class SelectLanguageMenu(MenuBuilder):
     id = 's1'
     context_type = MenuContext
 
-    async def build(self, ctx: MenuContext, properties: FunPayHubProperties) -> Menu:
+    async def build(
+        self, ctx: MenuContext, properties: FunPayHubProperties, hub: FunPayHub
+    ) -> Menu:
         kb = KeyboardBuilder()
         for i in properties.general.language.choices.values():
             kb.add_callback_button(
                 button_id=f'set_setup_language:{i.value}',
                 text=i.name,
                 callback_data=cbs.SetupStep(
+                    instance_id=hub.instance_id,
                     step=list(cbs.Steps)[0].name,
                     action=0,
                     lang=i.value,
@@ -48,12 +57,14 @@ class SetupStepMenuBuilder(MenuBuilder):
         ctx: StepContext,
         properties: FunPayHubProperties,
         translater: Translater,
+        hub: FunPayHub,
     ) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
-            button_id=f'skip_step',
+            button_id='skip_step',
             text=f'$skip_{ctx.step}_setup',
             callback_data=cbs.SetupStep(
+                instance_id=hub.instance_id,
                 step=ctx.step,
                 action=0,
                 history=ctx.callback_data.as_history(),
@@ -65,6 +76,7 @@ class SetupStepMenuBuilder(MenuBuilder):
                 button_id='step_from_props',
                 text=f'$use_{ctx.step}_from_props',
                 callback_data=cbs.SetupStep(
+                    instance_id=hub.instance_id,
                     step=ctx.step,
                     action=1,
                     history=ctx.callback_data.as_history(),
