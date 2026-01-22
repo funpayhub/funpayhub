@@ -13,12 +13,13 @@ from funpayhub.lib.telegram.ui import UIRegistry, MenuContext, Menu
 
 
 from . import states, callbacks as cbs
-from ..properties import FunPayHubProperties
 from .ui import StepContext
-from ...lib.telegram.callback_data import UnknownCallback
+
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
+    from funpayhub.app.properties import FunPayHubProperties
+    from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
 setup_chat: int | None = None
@@ -51,20 +52,21 @@ class CallbackStepMiddleware(BaseMiddleware):
 class MessageStepMiddleware(BaseMiddleware):
     async def __call__(self, handler, event: Message, data: dict[str, Any]):
         state: FSMContext = data['state']
-
         state_data: dict[str, Any] = await state.get_data()
-        if state_data:
-            state_data: states.EnteringStep = state_data['data']
+        if not state_data:
+            await handler(event, data)
+            return
+
+        state_data: states.EnteringStep | None = state_data.get('data', None)
+        if state_data is None or not isinstance(state_data.callback_data, cbs.SetupStep):
+            await handler(event, data)
+            return
 
         try:
             await handler(event, data)
         except StepError:
             return
 
-        if not state_data:
-            return
-        if not isinstance(state_data.callback_data, cbs.SetupStep):
-            return
 
         fake_callback_data = cbs.SetupStep(
             step=state_data.step.name,
@@ -80,8 +82,8 @@ class MessageStepMiddleware(BaseMiddleware):
         )
 
         await state_data.message.delete()
-        await menu.answer_to(state_data.message)
-        await next_state(state_data.step.name, state_data.message, fake_callback_data, state)
+        msg = await menu.answer_to(state_data.message)
+        await next_state(state_data.step.name, msg, fake_callback_data, state)
 
 
 class SetupStepFilter(Filter):
