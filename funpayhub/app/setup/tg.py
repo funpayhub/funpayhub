@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING, Any
 from contextlib import suppress
 
@@ -13,6 +12,7 @@ from aiogram.fsm.context import FSMContext
 from funpaybotengine.exceptions import BotUnauthenticatedError
 
 import exit_codes
+from loggers import main as logger
 from funpayhub.lib.core import TranslatableException
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import Menu, UIRegistry, MenuContext
@@ -32,7 +32,7 @@ setup_chat: int | None = None
 
 
 router = Router()
-setup_started = asyncio.Event()
+setup_started = False
 USE_NO_PROXY = False
 
 
@@ -120,7 +120,7 @@ class CheckInstanceIDMiddleware(BaseMiddleware):
         hub: FunPayHub = data['hub']
         callback_data: cbs.SetupStep = data['callback_data']
 
-        if callback_data.instnace_id != hub.instance_id:
+        if callback_data.instance_id != hub.instance_id:
             return
 
         await handler(event, data)
@@ -197,9 +197,9 @@ def get_next_step(step: str) -> type[cbs.Steps] | None:
     return steps[next_step + 1]
 
 
-@router.message(lambda m, hub: m.text == hub.instance_id and not setup_started.is_set())
+@router.message(lambda m, hub: m.text == hub.instance_id and not setup_started)
 async def start_setup(msg: Message, tg_ui: UIRegistry):
-    setup_started.set()
+    setup_started = True
     await (await tg_ui.build_menu(MenuContext(menu_id='s1', trigger=msg))).answer_to(msg)
 
 
@@ -295,14 +295,16 @@ async def msg_run_golden_key_step(
     properties: FunPayHubProperties,
 ):
     bot = Bot(golden_key=message.text, proxy=properties.general.proxy.value or None)
+    if len(message.text) != 32:
+        raise StepError('Invalid golden key.')
 
     try:
         await bot.update()
     except BotUnauthenticatedError:
-        raise StepError('Invalid golden_key.')
+        raise StepError('Invalid golden key.')
     except Exception:
-        raise StepError('An error occurred while checking golden_key. Chack logs.')
-
+        logger.error('An error occurred while checking golden_key.', exc_info=True)
+        raise StepError('An error occurred while checking golden_key. Check logs.')
     try:
         properties.general.golden_key.set_value(message.text)
     except PropertiesError as e:

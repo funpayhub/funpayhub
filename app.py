@@ -19,6 +19,7 @@ import colorama
 from load_dotenv import load_dotenv
 from funpaybotengine import Bot
 
+from loggers import main as logger
 from logger_conf import (
     HubLogMessage,
     FileLoggerFormatter,
@@ -126,12 +127,6 @@ logging.setLogRecordFactory(log_factory)
 colorama.just_fix_windows_console()
 
 
-bablo = 228
-st = '$BAKS'
-logger = logging.getLogger('funpayhub.main')
-
-logger.info('my balance: $%d %s', bablo, st)
-
 # ---------------------------------------------
 # |                 App start                 |
 # ---------------------------------------------
@@ -162,14 +157,22 @@ async def main():
         safe_mode=original_args.safe,
     )
 
-    print(app.instance_id)
-
     # await check_session(app.funpay.bot)
     # result = input()
     # if result != 'start':
     #     sys.exit(0)
 
-    await app.load_plugins()
+    if not app.setup_completed:
+        if not sys.stdin.isatty():
+            sys.exit(1)  # todo: add log
+
+        logger.info(app.instance_id)
+        logger.info('Like do smth with it and press enter.')
+        input()
+
+    if app.setup_completed:
+        await app.load_plugins()
+
     await app.start()
 
 

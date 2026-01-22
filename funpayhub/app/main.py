@@ -39,8 +39,7 @@ class FunPayHub:
         translater: Translater | None = None,
         safe_mode: bool = False,
     ):
-        # self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
-        self._instance_id = 'AAAA'
+        self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
         self._safe_mode = safe_mode
         self._workflow_data = WorkflowData
         self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
@@ -189,3 +188,7 @@ class FunPayHub:
     @property
     def safe_mode(self) -> bool:
         return self._safe_mode
+
+    @property
+    def setup_completed(self) -> bool:
+        return bool(self.properties.general.golden_key.value)

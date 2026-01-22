@@ -9,7 +9,7 @@ from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
 
-from funpayhub.app.setup import MENUS, TG_ROUTERS
+from funpayhub.app.setup import TELEGRAM_SETUP_UI, TELEGRAM_SETUP_ROUTERS
 from funpayhub.lib.telegram import CommandsRegistry
 from funpayhub.lib.properties import ListParameter
 from funpayhub.app.telegram.ui import default as default_ui
@@ -25,7 +25,7 @@ from funpayhub.lib.telegram.ui.registry import UIRegistry
 
 
 if TYPE_CHECKING:
-    from funpayhub.app import FunPayHub
+    from funpayhub.app.main import FunPayHub
 
 
 class Telegram:
@@ -72,7 +72,10 @@ class Telegram:
         return self._hub
 
     def _setup_dispatcher(self):
-        self._dispatcher.include_routers(*TG_ROUTERS)  # todo: remove
+        if not self.hub.setup_completed:
+            self._dispatcher.include_routers(*TELEGRAM_SETUP_ROUTERS)
+            return
+
         self._dispatcher.include_routers(*ROUTERS)
 
         middleware = AddDataMiddleware()
@@ -112,7 +115,7 @@ class Telegram:
         for m in default_ui.MENU_BUILDERS:
             self.ui_registry.add_menu_builder(m)
 
-        for m in MENUS:
+        for m in TELEGRAM_SETUP_UI:
             self._ui_registry.add_menu_builder(m)
 
         for b in default_ui.BUTTON_BUILDERS:

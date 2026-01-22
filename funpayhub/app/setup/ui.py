@@ -63,21 +63,22 @@ class SetupStepMenuBuilder(MenuBuilder):
         hub: FunPayHub,
     ) -> Menu:
         kb = KeyboardBuilder()
-        kb.add_callback_button(
-            button_id='skip_step',
-            text=f'$skip_{ctx.step}_setup',
-            callback_data=cbs.SetupStep(
-                instance_id=hub.instance_id,
-                step=ctx.step,
-                action=0,
-                history=ctx.callback_data.as_history(),
-            ).pack(),
-        )
+        if ctx.step != cbs.Steps.golden_key.name:
+            kb.add_callback_button(
+                button_id='skip_step',
+                text=translater.translate(f'$skip_{ctx.step}_setup'),
+                callback_data=cbs.SetupStep(
+                    instance_id=hub.instance_id,
+                    step=ctx.step,
+                    action=0,
+                    history=ctx.callback_data.as_history(),
+                ).pack(),
+            )
 
         if ctx.data.get(f'{ctx.step}_props'):
             kb.add_callback_button(
                 button_id='step_from_props',
-                text=f'$use_{ctx.step}_from_props',
+                text=translater.translate(f'$use_{ctx.step}_from_props'),
                 callback_data=cbs.SetupStep(
                     instance_id=hub.instance_id,
                     step=ctx.step,

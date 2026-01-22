@@ -13,6 +13,7 @@ from .callbacks import Steps
 @dataclass
 class EnteringStep(State, identifier='EnteringStep'):
     step: type[Steps]
+    """Текущий этап."""
 
     message: Message
     """

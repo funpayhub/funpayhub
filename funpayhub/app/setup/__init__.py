@@ -3,11 +3,11 @@ from __future__ import annotations
 from . import tg, ui
 
 
-MENUS = [
+TELEGRAM_SETUP_UI = [
     ui.SelectLanguageMenu,
     ui.SetupStepMenuBuilder,
 ]
 
-TG_ROUTERS = [
+TELEGRAM_SETUP_ROUTERS = [
     tg.router,
 ]

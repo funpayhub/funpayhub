@@ -21,7 +21,7 @@ async def proxy_validator(value: str) -> None:
 
     if url.scheme not in ('http', 'https', 'socks5'):
         raise ValidationError(
-            'Unsupported scheme %s. Possible options: http, https, socks5',
+            'Unsupported scheme %s. Possible options: http, https, socks5.',
             url.scheme,
         )
 
