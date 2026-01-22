@@ -6,6 +6,7 @@ from aiogram.types import Message
 
 from funpayhub.app.telegram.states import State
 from funpayhub.lib.telegram.callback_data import UnknownCallback
+
 from .callbacks import Steps
 
 
@@ -22,7 +23,6 @@ class EnteringStep(State, identifier='EnteringStep'):
     Если пользователь отправил прокси вручную, данное сообщение будет удалено, а след. меню будет
     выслано новым сообщением.
     """
-
 
     callback_data: UnknownCallback
     """

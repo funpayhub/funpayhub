@@ -26,7 +26,10 @@ class SelectLanguageMenu(MenuBuilder):
     context_type = MenuContext
 
     async def build(
-        self, ctx: MenuContext, properties: FunPayHubProperties, hub: FunPayHub
+        self,
+        ctx: MenuContext,
+        properties: FunPayHubProperties,
+        hub: FunPayHub,
     ) -> Menu:
         kb = KeyboardBuilder()
         for i in properties.general.language.choices.values():

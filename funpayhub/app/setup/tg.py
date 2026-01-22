@@ -148,7 +148,10 @@ router.message.middleware(FinishedMiddleware())
 
 
 async def next_menu(
-    step: str, chat_id: int, callback_data: cbs.SetupStep, reg: UIRegistry
+    step: str,
+    chat_id: int,
+    callback_data: cbs.SetupStep,
+    reg: UIRegistry,
 ) -> Menu:
     next_step = get_next_step(step)
     if next_step is None:
@@ -165,7 +168,10 @@ async def next_menu(
 
 
 async def next_state(
-    step: str, message: Message, callback_data: cbs.SetupStep, fsm: FSMContext
+    step: str,
+    message: Message,
+    callback_data: cbs.SetupStep,
+    fsm: FSMContext,
 ) -> None:
     next_step = get_next_step(step)
     if next_step is None:

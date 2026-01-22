@@ -3,13 +3,11 @@ from __future__ import annotations
 
 __all__ = ('HandlerManager',)
 
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING
 
 from eventry.asyncio.default_types import FilterType, HandlerType, MiddlewareType
 from eventry.asyncio.handler_manager import HandlerManager as BaseHandlerManager
 from eventry.asyncio.middleware_manager import MiddlewareManager, MiddlewareManagerTypes
-
-from .events.base import HubEvent
 
 
 if TYPE_CHECKING:

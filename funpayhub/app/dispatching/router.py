@@ -6,7 +6,6 @@ __all__ = ['Router']
 
 from eventry.asyncio.router import Router as BaseRouter
 
-from . import events
 from .handler_manager import HandlerManager
 
 

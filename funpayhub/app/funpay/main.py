@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, ParamSpec, Type
+from typing import TYPE_CHECKING, Any, ParamSpec
+from collections.abc import Callable, Awaitable
 
 from funpaybotengine import Bot, Dispatcher
 from funpaybotengine.types import Category
 from funpaybotengine.types.pages import ProfilePage
-from collections.abc import Callable, Awaitable
 
 from funpayhub.app.funpay import middlewares as mdwr
 from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
@@ -15,8 +15,6 @@ from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 from funpayhub.app.funpay.offers_raiser import OffersRaiser
 from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
-from funpaybotengine.methods import FunPayMethod
-from io import BytesIO
 
 
 if TYPE_CHECKING:
@@ -101,7 +99,9 @@ class FunPay:
         while attempts:
             try:
                 return await method(*args, **kwargs)
-            except Exception as e:  # todo: method.execute should raise SomeFunPayBotEngineError from e
+            except (
+                Exception
+            ) as e:  # todo: method.execute should raise SomeFunPayBotEngineError from e
                 for i in raise_exceptions:
                     if isinstance(e, i):
                         raise
