@@ -44,7 +44,7 @@ async def check_for_updates(
     )
 
     menu = await tg_ui.build_menu(ctx, data | {'query': query})
-    await menu.reply_to(query.message)
+    await menu.answer_to(query.message)
     await query.answer()
 
 

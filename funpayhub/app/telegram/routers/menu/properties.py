@@ -65,7 +65,7 @@ async def open_custom_menu(
     menu = await tg_ui.build_menu(ctx_instance, data | {'query': query})
 
     if callback_data.force_new_message:
-        await menu.reply_to(query.message)
+        await menu.answer_to(query.message)
     else:
         await menu.apply_to(query.message)
 
@@ -103,7 +103,7 @@ async def send_menu(
         data={'callback_data': cbs.OpenMenu(menu_id=MenuIds.main_menu)},
     )
 
-    await (await tg_ui.build_menu(ctx, data)).reply_to(message)
+    await (await tg_ui.build_menu(ctx, data)).answer_to(message)
 
 
 # TEMP
@@ -149,7 +149,7 @@ async def send_menu(
         data={'callback_data': cbs.OpenEntryMenu(path=[])},
     )
 
-    await (await tg_ui.build_menu(ctx, data)).reply_to(message)
+    await (await tg_ui.build_menu(ctx, data)).answer_to(message)
 
 
 @r.callback_query(cbs.NextParamValue.filter())

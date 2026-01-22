@@ -5,8 +5,7 @@ from . import tg, ui
 
 MENUS = [
     ui.SelectLanguageMenu,
-    ui.EnterProxyMenu,
-    ui.EnterUserAgentMenu,
+    ui.SetupStepMenuBuilder
 ]
 
 TG_ROUTERS = [

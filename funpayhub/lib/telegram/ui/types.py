@@ -170,7 +170,7 @@ class Menu:
             inline_keyboard=[[button.obj for button in line] for line in total_keyboard],
         )
 
-    async def reply_to(self, msg: Message, /) -> Message:
+    async def answer_to(self, msg: Message, /) -> Message:
         return await msg.answer(text=self.text, reply_markup=self.total_keyboard(convert=True))
 
     async def apply_to(

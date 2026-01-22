@@ -67,7 +67,7 @@ async def exec_list_menu(message: Message, tg_ui: UIRegistry, data: dict[str, An
         trigger=message,
         data={'callback_data': cbs.OpenMenu(menu_id='exec_list')},
     )
-    await (await tg_ui.build_menu(context, data)).reply_to(message)
+    await (await tg_ui.build_menu(context, data)).answer_to(message)
 
 
 @r.message(Command('exec'))
@@ -113,7 +113,7 @@ async def execute_python_code(
         },
     )
 
-    await (await tg_ui.build_menu(context, data)).reply_to(message)
+    await (await tg_ui.build_menu(context, data)).answer_to(message)
 
 
 @r.callback_query(SendExecFile.filter())

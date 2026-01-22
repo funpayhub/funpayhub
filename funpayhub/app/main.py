@@ -39,7 +39,8 @@ class FunPayHub:
         translater: Translater | None = None,
         safe_mode: bool = False,
     ):
-        self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
+        # self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
+        self._instance_id = 'AAAA'
         self._safe_mode = safe_mode
         self._workflow_data = WorkflowData
         self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
