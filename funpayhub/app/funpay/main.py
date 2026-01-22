@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ParamSpec, Type
 
 from funpaybotengine import Bot, Dispatcher
 from funpaybotengine.types import Category
 from funpaybotengine.types.pages import ProfilePage
+from collections.abc import Callable, Awaitable
 
 from funpayhub.app.funpay import middlewares as mdwr
 from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
@@ -14,10 +15,15 @@ from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 from funpayhub.app.funpay.offers_raiser import OffersRaiser
 from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
+from funpaybotengine.methods import FunPayMethod
+from io import BytesIO
 
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
+
+
+P = ParamSpec('P')
 
 
 class FunPay:
@@ -79,6 +85,32 @@ class FunPay:
     async def _on_raise(self, category: Category) -> None:
         event = OffersRaisedEvent(category=category)
         asyncio.create_task(self.hub.dispatcher.event_entry(event))
+
+    async def try_method[P, R](
+        self,
+        method: Callable[P, Awaitable[R]],
+        *args: Any,
+        raise_exceptions: tuple[type[Exception], ...] = (),
+        attempts: int = 3,
+        delay: float = 1,
+        **kwargs: Any,
+    ) -> R:
+        if attempts <= 0:
+            raise ValueError(f'Attempts amount must be greater than zero, got {attempts}.')
+
+        while attempts:
+            try:
+                return await method(*args, **kwargs)
+            except Exception as e:  # todo: method.execute should raise SomeFunPayBotEngineError from e
+                for i in raise_exceptions:
+                    if isinstance(e, i):
+                        raise
+                await asyncio.sleep(delay)
+                attempts -= 1
+                if not attempts:
+                    raise
+        else:
+            raise
 
     @property
     def hub(self) -> FunPayHub:
