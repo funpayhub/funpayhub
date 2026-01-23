@@ -28,7 +28,6 @@ from funpayhub.app.telegram.main import Telegram
 from .dispatching.events.other_events import FunPayHubStoppedEvent
 
 from .workflow_data import WorkflowData
-from itertools import chain
 
 
 def random_part(length):
@@ -119,12 +118,21 @@ class FunPayHub:
 
         async with self._running_lock:
             tasks = [
-                # asyncio.create_task(self.funpay.start(), name='funpay'),
+                asyncio.create_task(self.funpay.start(), name='funpay'),
                 asyncio.create_task(self.telegram.start(), name='telegram'),
-                asyncio.create_task(wait_stop_signal()),
+                asyncio.create_task(wait_stop_signal(), name='stop_signal'),
             ]
 
-            await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+            while True:
+                need_to_stop = False
+                for i in done:
+                    if i.get_name() in ['telegram', 'stop_signal']:
+                        need_to_stop = True
+                if need_to_stop:
+                    break
+
+                done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
 
             try:
                 async with self._stopping_lock:

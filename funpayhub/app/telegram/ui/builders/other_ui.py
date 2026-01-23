@@ -3,6 +3,8 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
+from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedError
+
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import KeyboardBuilder
@@ -10,12 +12,12 @@ from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
 from funpayhub.app.telegram.callbacks import OpenEntryMenu
 
-from .context import UpdateMenuContext, InstallUpdateMenuContext
+from .context import UpdateMenuContext, InstallUpdateMenuContext, FunPayStartNotificationMenuContext
 from ..premade import StripAndNavigationFinalizer
 
 
 if TYPE_CHECKING:
-    from funpayhub.app import FunPayHub
+    from funpayhub.app.main import FunPayHub
     from funpayhub.app.funpay.main import FunPay
 
 
@@ -50,20 +52,6 @@ class StartNotificationMenuBuilder(MenuBuilder):
     context_type = MenuContext
 
     async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub) -> Menu:
-        text = translater.translate('$start_notification_text').format(
-            version=hub.properties.version.value,
-        )
-
-        if hub.safe_mode:
-            text += '\n\n' + translater.translate('$safe_mode_enabled')
-        return Menu(text=text)
-
-
-class FunPaySuccessfulStartNotificationMenuBuilder(MenuBuilder):
-    id = MenuIds.successful_funpay_start_notification
-    context_type = MenuContext
-
-    async def build(self, ctx: MenuContext, translater: Translater, fp: FunPay) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='main',
@@ -76,19 +64,42 @@ class FunPaySuccessfulStartNotificationMenuBuilder(MenuBuilder):
             text=translater.translate('$settings'),
             callback_data=OpenEntryMenu(path=[]).pack(),
         )
-        text = translater.translate('$funpay_successful_start_notification_text').format(
-            username=fp.bot.username,
-            user_id=fp.bot.userid,
-            active_sells=(await fp.profile()).header.sales,
-            active_purchases=(await fp.profile()).header.purchases,
-            rub_balance='123.45',
-            eur_balance='123.45',
-            usd_balance='123.45',
+
+        text = translater.translate('$start_notification_text').format(
+            version=hub.properties.version.value,
         )
-        return Menu(
-            text=text,
-            main_keyboard=kb,
-        )
+
+        if hub.safe_mode:
+            text += '\n\n' + translater.translate('$safe_mode_enabled')
+        return Menu(text=text)
+
+
+class FunPayStartNotificationMenuBuilder(MenuBuilder):
+    id = MenuIds.funpay_start_notification
+    context_type = FunPayStartNotificationMenuContext
+
+    async def build(
+        self,
+        ctx: FunPayStartNotificationMenuContext,
+        translater: Translater,
+        fp: FunPay
+    ) -> Menu:
+        if not ctx.error:
+            text = translater.translate('$funpay_successful_start_notification_text').format(
+                username=fp.bot.username,
+                user_id=fp.bot.userid,
+                active_sells=(await fp.profile()).header.sales,
+                active_purchases=(await fp.profile()).header.purchases,
+                rub_balance='123.45',
+                eur_balance='123.45',
+                usd_balance='123.45',
+            )
+        elif isinstance(ctx.error, (BotUnauthenticatedError, UnauthorizedError)):
+            text = translater.translate('$funpay_unauthenticated_start_notification_text')
+        else:
+            text = translater.translate('$funpay_unexpected_error_notification_text')
+
+        return Menu(text=text)
 
 
 class UpdateMenuBuilder(MenuBuilder):

@@ -5,12 +5,14 @@ from typing import TYPE_CHECKING
 from html import escape
 
 from aiogram.types import Message
-from funpayparsers.types import Category
+from funpaybotengine.types import Category
 
 from funpayhub.app.dispatching import Router
+from funpayhub.app.telegram.ui.builders.context import FunPayStartNotificationMenuContext
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import MenuContext
+from eventry.asyncio.filter import all_of
 
 
 if TYPE_CHECKING:
@@ -27,6 +29,7 @@ messages: list[Message] = []
 
 @router.on_telegram_start()
 async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub):
+    print('ВЫПОЛНЯЮ БЛЯДСКИЙ ХЭНДЛЕР')
     ctx = MenuContext(
         chat_id=-1,
         menu_id=MenuIds.start_notification,
@@ -57,10 +60,14 @@ async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub):
 
 
 @router.on_funpay_start(as_task=True)
-async def edit_start_notifications(tg_ui: UIRegistry, hub: FunPayHub):
+async def edit_start_notifications(error: Exception | None, tg_ui: UIRegistry, hub: FunPayHub):
     await sent_event.wait()
     for i in messages:
-        ctx = MenuContext(menu_id=MenuIds.successful_funpay_start_notification, trigger=i)
+        ctx = FunPayStartNotificationMenuContext(
+            menu_id=MenuIds.funpay_start_notification,
+            trigger=i,
+            error=error
+        )
         menu = await tg_ui.build_menu(ctx)
 
         try:
@@ -69,7 +76,12 @@ async def edit_start_notifications(tg_ui: UIRegistry, hub: FunPayHub):
             continue
 
 
-@router.on_funpay_start(lambda properties: properties.toggles.auto_raise.value)
+@router.on_funpay_start(
+    all_of(
+        lambda error: error is None,
+        lambda properties: properties.toggles.auto_raise.value
+    )
+)
 async def start_auto_raise(fp: FunPay):
     await fp.start_raising_profile_offers()
 

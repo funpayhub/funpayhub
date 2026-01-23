@@ -38,3 +38,8 @@ class InstallUpdateMenuContext(MenuContext):
 @dataclass(kw_only=True)
 class PluginMenuContext(MenuContext):
     plugin_id: str
+
+
+@dataclass(kw_only=True)
+class FunPayStartNotificationMenuContext(MenuContext):
+    error: Exception | None = None
