@@ -143,6 +143,7 @@ async def check_session(bot: Bot):
 async def main():
     props = FunPayHubProperties()
     await props.load()
+    translater.current_language = props.general.language.real_value
 
     if 'FPH_LOCALES' in os.environ:
         locales_path = Path(os.environ['FPH_LOCALES'])
