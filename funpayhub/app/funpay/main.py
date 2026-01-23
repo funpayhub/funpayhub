@@ -64,7 +64,6 @@ class FunPay:
         for i in range(10):
             logger.info('Trying to make a first request to FunPay...')
             try:
-                1 / 0
                 await self._bot.update()
                 await self.profile(update=True)
                 asyncio.create_task(self.hub.dispatcher.event_entry(FunPayStartEvent()))
