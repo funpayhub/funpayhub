@@ -29,7 +29,6 @@ messages: list[Message] = []
 
 @router.on_telegram_start()
 async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub):
-    print('ВЫПОЛНЯЮ БЛЯДСКИЙ ХЭНДЛЕР')
     ctx = MenuContext(
         chat_id=-1,
         menu_id=MenuIds.start_notification,

@@ -95,6 +95,7 @@ class FunPay:
                     exc_info=e
                 )
                 exception = e
+                break
 
         logger.error('Failed to make first request to FunPay.')
         await self.hub.dispatcher.event_entry(FunPayStartEvent(error=exception))

@@ -84,6 +84,7 @@ class FunPayHub:
         self._stopped_signal = asyncio.Event()
         self._running_lock = asyncio.Lock()
         self._stopping_lock = asyncio.Lock()
+        self._setup_completed = bool(self.properties.general.golden_key.value)
 
     def setup_dispatcher(self):
         self._dispatcher.connect_routers(*ROUTERS)
@@ -118,10 +119,11 @@ class FunPayHub:
 
         async with self._running_lock:
             tasks = [
-                asyncio.create_task(self.funpay.start(), name='funpay'),
                 asyncio.create_task(self.telegram.start(), name='telegram'),
                 asyncio.create_task(wait_stop_signal(), name='stop_signal'),
             ]
+            if self.setup_completed:
+                tasks.append(asyncio.create_task(self.funpay.start(), name='funpay'))
 
             done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
             while True:
@@ -228,4 +230,4 @@ class FunPayHub:
 
     @property
     def setup_completed(self) -> bool:
-        return bool(self.properties.general.golden_key.value)
+        return self._setup_completed
