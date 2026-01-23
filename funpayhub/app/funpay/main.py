@@ -15,6 +15,8 @@ from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 from funpayhub.app.funpay.offers_raiser import OffersRaiser
 from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
+from funpaybotengine.exceptions import BotUnauthenticatedError, UnauthorizedError, RateLimitExceededError, FunPayServerError
+from loggers import main as logger
 
 
 if TYPE_CHECKING:
@@ -51,13 +53,49 @@ class FunPay:
         self.setup_dispatcher()
 
     async def start(self):
-        try:
-            await self._bot.update()
-            await self.profile(update=True)
-        except Exception:
-            pass
-        await self.hub.dispatcher.event_entry(FunPayStartEvent())
+        await self._init_bot_engine()
         await self._bot.listen_events(self._dispatcher)
+
+    async def _init_bot_engine(self):
+        exception = None
+        for i in range(10):
+            logger.info('Trying to make a first request to FunPay...')
+            try:
+                await self._bot.update()
+                await self.profile(update=True)
+                asyncio.create_task(self.hub.dispatcher.event_entry(FunPayStartEvent()))
+                return
+            except (BotUnauthenticatedError, UnauthorizedError) as e:
+                logger.error(
+                    'An error occurred while making first request to FunPay: unauthenticated.',
+                )
+                exception = e
+                break
+
+            except (RateLimitExceededError, FunPayServerError) as e:
+                if isinstance(e, RateLimitExceededError):
+                    logger.warning(
+                        'An error occurred while making first request to FunPay: '
+                        'rate limit exceeded. Retrying in 5 seconds.',
+                    )
+                else:
+                    logger.warning(
+                        'An error occurred while making first request to FunPay: '
+                        'FunPay server error. Retrying in 5 seconds.'
+                    )
+
+                await asyncio.sleep(5)
+                exception = e
+            except Exception as e:
+                logger.error(
+                    'An error occurred while making first request to FunPay.',
+                    exc_info=e
+                )
+                exception = e
+
+
+        logger.error('Failed to make first request to FunPay.')
+        await self.hub.dispatcher.event_entry(FunPayStartEvent(error=exception))
 
     def setup_dispatcher(self):
         self.dispatcher.on_new_message.outer_middleware.register_middleware(

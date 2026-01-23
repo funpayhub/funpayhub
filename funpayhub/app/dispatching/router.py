@@ -16,6 +16,7 @@ _events = {
     'telegram_start',
     'funpay_start',
     'offers_raised',
+    'funpayhub_stopped'
 }
 
 
@@ -26,6 +27,7 @@ class Router(BaseRouter):
     on_offers_raised: HandlerManager
     on_telegram_start: HandlerManager
     on_funpay_start: HandlerManager
+    on_funpayhub_stopped: HandlerManager
 
     def __init__(self, name: str | None = None) -> None:
         super().__init__(name=name or f'Router{id(self)}')

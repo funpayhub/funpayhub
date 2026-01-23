@@ -173,7 +173,8 @@ async def main():
     if app.setup_completed:
         await app.load_plugins()
 
-    await app.start()
+    exit_code = await app.start()
+    sys.exit(exit_code)
 
 
 if __name__ == '__main__':

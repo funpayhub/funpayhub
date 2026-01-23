@@ -205,5 +205,5 @@ while True:
         ACTIONS[result.returncode]()
         continue
     else:
-        logger.error('FunPayHub process ended with unknoen return code %d.', result.returncode)
+        logger.error('FunPayHub process ended with unknown return code %d.', result.returncode)
         raise Exception

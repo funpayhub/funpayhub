@@ -6,6 +6,7 @@ import random
 import string
 import asyncio
 import traceback
+from asyncio import CancelledError
 from typing import Any
 from contextlib import suppress
 
@@ -24,8 +25,10 @@ from funpayhub.app.dispatching import (
 )
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
+from .dispatching.events.other_events import FunPayHubStoppedEvent
 
 from .workflow_data import WorkflowData
+from itertools import chain
 
 
 def random_part(length):
@@ -50,8 +53,8 @@ class FunPayHub:
 
         self._funpay = FunPay(
             self,
-            bot_token=os.environ.get('FPH_GOLDEN_KEY'),  # todo: or from properites
-            proxy=os.environ.get('FPH_FUNPAY_PROXY'),  # todo: or from properties
+            bot_token=self.properties.general.golden_key.value,
+            proxy=self.properties.general.proxy.value or None,
             headers=None,
             workflow_data=self.workflow_data,
         )
@@ -78,6 +81,8 @@ class FunPayHub:
             },
         )
 
+        self._stop_signal = asyncio.Future()
+        self._stopped_signal = asyncio.Event()
         self._running_lock = asyncio.Lock()
         self._stopping_lock = asyncio.Lock()
 
@@ -95,8 +100,7 @@ class FunPayHub:
             plugins_logger.critical('Failed to load plugins. Creating crashlog.', exc_info=True)
             with suppress(Exception):
                 await self.create_crash_log()
-            sys.exit(exit_codes.RESTART_SAFE)
-            # todo: graceful shutdown for sync code.
+            await self.shutdown(exit_codes.RESTART_SAFE)
 
     async def create_crash_log(self):
         os.makedirs('logs', exist_ok=True)
@@ -104,37 +108,62 @@ class FunPayHub:
             f.write(traceback.format_exc())
 
     async def start(self) -> int:
-        async def wait_future(fut: asyncio.Future) -> None:
-            await fut
+        if self._running_lock.locked():
+            raise RuntimeError('FunPayHub already running.')
+
+        async def wait_stop_signal() -> None:
+            await self._stop_signal
+
+        self._stop_signal = asyncio.Future()
+        self._stopped_signal.clear()
 
         async with self._running_lock:
-            self._stop = asyncio.Future()
-
             tasks = [
                 # asyncio.create_task(self.funpay.start(), name='funpay'),
                 asyncio.create_task(self.telegram.start(), name='telegram'),
-                asyncio.create_task(wait_future(self._stop)),
+                asyncio.create_task(wait_stop_signal()),
             ]
 
             await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
 
-            async with self._stopping_lock:
-                try:
-                    await self.funpay.bot.stop_listening()
-                except RuntimeError:
-                    pass
+            try:
+                async with self._stopping_lock:
+                    try:
+                        await self.funpay.bot.stop_listening()
+                    except RuntimeError:
+                        pass
 
-                try:
-                    await self.telegram.dispatcher.stop_polling()
-                except RuntimeError:
-                    pass
+                    try:
+                        await self.telegram.dispatcher.stop_polling()
+                    except RuntimeError:
+                        pass
 
-            return self._stop.result()
+                    await self.dispatcher.event_entry(FunPayHubStoppedEvent())
+            finally:
+                self._stopped_signal.set()
+                if self._stop_signal.done():
+                    return self._stop_signal.result()
+                return 1
 
-    async def shutdown(self, code: int) -> None:
-        # TODO: graceful shutdown
-        logger.info('Shutting down FunPay Hub with exit code %d', code)
-        sys.exit(code)
+
+    async def shutdown(self, code: int, error_ok: bool = False) -> None:
+        if not self._running_lock.locked():
+            if error_ok:
+                return
+            raise RuntimeError('FunPayHub is not running.')
+
+        if self._stopping_lock.locked():
+            if error_ok:
+                return
+            raise RuntimeError('FunPayHub is already stopping.')
+        if self._stop_signal.done():
+            if error_ok:
+                return
+            raise RuntimeError('FunPayHub is already stopped.')
+
+        logger.info('Shutting down FunPayHub with exit code %d.', code)
+        self._stop_signal.set_result(code)
+        await self._stopped_signal.wait()
 
     async def emit_parameter_changed_event(
         self,

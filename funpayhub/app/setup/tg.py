@@ -143,8 +143,8 @@ class SetupStepFilter(Filter):
 router.callback_query.middleware(CheckInstanceIDMiddleware())
 router.callback_query.middleware(FinishedMiddleware())
 router.callback_query.middleware(CallbackStepMiddleware())
-router.message.middleware(MessageStepMiddleware())
 router.message.middleware(FinishedMiddleware())
+router.message.middleware(MessageStepMiddleware())
 
 
 async def next_menu(
@@ -191,7 +191,7 @@ async def next_state(
 def get_next_step(step: str) -> type[cbs.Steps] | None:
     steps = list(cbs.Steps)
     next_step = steps.index(cbs.Steps[step])
-    if next_step >= len(step) - 1:
+    if next_step >= len(steps) - 1:
         return None
 
     return steps[next_step + 1]
@@ -281,7 +281,7 @@ async def msg_run_useragent_step(
     properties: FunPayHubProperties,
 ):
     try:
-        properties.general.user_agent.set_value(message.text)
+        await properties.general.user_agent.set_value(message.text)
     except PropertiesError as e:
         raise StepError(e.message, *e.args)
 
@@ -294,6 +294,14 @@ async def msg_run_golden_key_step(
     message: Message,
     properties: FunPayHubProperties,
 ):
+    if message.text == '__test_golden_key__':
+        await properties.general.golden_key.set_value(
+            message.text,
+            skip_converter=True,
+            skip_validator=True
+        )
+        return
+
     bot = Bot(golden_key=message.text, proxy=properties.general.proxy.value or None)
     if len(message.text) != 32:
         raise StepError('Invalid golden key.')
@@ -306,6 +314,6 @@ async def msg_run_golden_key_step(
         logger.error('An error occurred while checking golden_key.', exc_info=True)
         raise StepError('An error occurred while checking golden_key. Check logs.')
     try:
-        properties.general.golden_key.set_value(message.text)
+        await properties.general.golden_key.set_value(message.text)
     except PropertiesError as e:
         raise StepError(e.message, *e.args)
