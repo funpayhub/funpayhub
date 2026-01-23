@@ -42,7 +42,7 @@ class FunPayHub:
         safe_mode: bool = False,
     ):
         self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
-        self._setup_completed = bool(self.properties.general.golden_key.value)
+        self._setup_completed = bool(properties.general.golden_key.value)
         self._safe_mode = safe_mode
         self._workflow_data = WorkflowData
         self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
