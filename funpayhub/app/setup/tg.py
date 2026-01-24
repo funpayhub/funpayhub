@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 from contextlib import suppress
 
 from aiogram import Router, BaseMiddleware
+from aiogram.enums import ChatType
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Filter, StateFilter
 from funpaybotengine import Bot
@@ -29,10 +30,10 @@ if TYPE_CHECKING:
 
 
 setup_chat: int | None = None
+setup_user_id: int | None = None
 
 
 router = Router()
-setup_started = False
 USE_NO_PROXY = False
 
 
@@ -44,11 +45,18 @@ class Finished(Exception):
     pass
 
 
+class IgnoreOtherUsers(BaseMiddleware):
+    async def __call__(self, handler, event: Message | CallbackQuery, data: dict[str, Any]):
+        if setup_user_id and event.from_user.id != setup_user_id:
+            return
+        await handler(event, data)
+
+
 class CallbackStepMiddleware(BaseMiddleware):
     async def __call__(self, handler, event: CallbackQuery, data: dict[str, Any]):
         try:
             await handler(event, data)
-        except StepError:
+        except (StepError, PropertiesError):
             return
 
         callback_data: UnknownCallback = data['callback_data']
@@ -77,7 +85,7 @@ class MessageStepMiddleware(BaseMiddleware):
 
         try:
             await handler(event, data)
-        except StepError as e:
+        except (StepError, PropertiesError) as e:
             await event.answer(e.format_args(translater.translate(e.message)))
             return
 
@@ -111,6 +119,7 @@ class FinishedMiddleware(BaseMiddleware):
         try:
             await handler(event, data)
         except Finished:
+            hub.properties.save()
             await msg.answer(translater.translate('$setup_finished'))
             await hub.shutdown(exit_codes.RESTART)
 
@@ -140,9 +149,11 @@ class SetupStepFilter(Filter):
         }
 
 
+router.callback_query.outer_middleware(IgnoreOtherUsers())
 router.callback_query.middleware(CheckInstanceIDMiddleware())
 router.callback_query.middleware(FinishedMiddleware())
 router.callback_query.middleware(CallbackStepMiddleware())
+router.message.outer_middleware(IgnoreOtherUsers())
 router.message.middleware(FinishedMiddleware())
 router.message.middleware(MessageStepMiddleware())
 
@@ -197,9 +208,24 @@ def get_next_step(step: str) -> type[cbs.Steps] | None:
     return steps[next_step + 1]
 
 
-@router.message(lambda m, hub: m.text == hub.instance_id and not setup_started)
-async def start_setup(msg: Message, tg_ui: UIRegistry):
-    setup_started = True
+@router.message(lambda m, hub: m.text == hub.instance_id and not setup_user_id)
+async def start_setup(
+    msg: Message, tg_ui: UIRegistry, hub: FunPayHub, properties: FunPayHubProperties
+):
+    global setup_chat, setup_user_id
+    if msg.chat.type != ChatType.PRIVATE:
+        return
+
+    setup_chat = msg.chat.id
+    setup_user_id = msg.from_user.id
+
+    await properties.telegram.general.authorized_users.add_item(setup_user_id, save=False)
+    await hub.emit_parameter_changed_event(properties.telegram.general.authorized_users)
+
+    notifications_id = str(setup_chat) + '.None'
+    if notifications_id not in properties.telegram.notifications.system.value:
+        await properties.telegram.notifications.system.add_item(notifications_id, save=False)
+        await hub.emit_parameter_changed_event(properties.telegram.notifications.system)
     await (await tg_ui.build_menu(MenuContext(menu_id='s1', trigger=msg))).answer_to(msg)
 
 
@@ -213,7 +239,7 @@ async def run_language_step(
     properties: FunPayHubProperties,
     hub: FunPayHub,
 ):
-    await properties.general.language.set_value(callback_data.lang)
+    await properties.general.language.set_value(callback_data.lang, save=False)
     await hub.emit_parameter_changed_event(properties.general.language)
 
 
@@ -228,7 +254,7 @@ async def run_proxy_step(
     hub: FunPayHub,
 ):
     if callback_data.action == 0:
-        await properties.general.proxy.to_default()
+        await properties.general.proxy.to_default(save=False)
         await hub.emit_parameter_changed_event(properties.general.proxy)
         return
 
@@ -244,32 +270,33 @@ async def run_user_agent_step(
     hub: FunPayHub,
 ):
     if callback_data.action == 0:
-        await properties.general.proxy.to_default()
+        await properties.general.proxy.to_default(save=False)
         await hub.emit_parameter_changed_event(properties.general.user_agent)
         return
 
 
 @router.callback_query(
     cbs.SetupStep.filter(),
-    lambda _, callback_data: callback_data.step == cbs.Steps.user_agent.name,
+    lambda _, callback_data: callback_data.step == cbs.Steps.tg_password.name,
 )
-async def run_user_agent_step(query: CallbackQuery, callback_data: cbs.SetupStep):
+async def run_password_step(
+    query: CallbackQuery,
+    callback_data: cbs.SetupStep,
+    properties: FunPayHubProperties,
+    hub: FunPayHub,
+):
     if callback_data.action == 0:
-        raise StepError('How is it event possible?')
+        await properties.telegram.general.password.to_default(save=False)
+        await hub.emit_parameter_changed_event(properties.telegram.general.password)
 
 
 @router.message(
     SetupStepFilter(),
     lambda _, state_data: state_data.step == cbs.Steps.proxy,
 )
-async def msg_run_proxy_step(
-    message: Message,
-    properties: FunPayHubProperties,
-):
-    try:
-        await properties.general.proxy.set_value(message.text)
-    except PropertiesError as e:
-        raise StepError(e.message, *e.args)
+async def msg_run_proxy_step(message: Message, properties: FunPayHubProperties, hub: FunPayHub):
+    await properties.general.proxy.set_value(message.text, save=False)
+    await hub.emit_parameter_changed_event(properties.general.proxy)
 
 
 @router.message(
@@ -277,13 +304,10 @@ async def msg_run_proxy_step(
     lambda _, state_data: state_data.step == cbs.Steps.user_agent,
 )
 async def msg_run_useragent_step(
-    message: Message,
-    properties: FunPayHubProperties,
+    message: Message, properties: FunPayHubProperties, hub: FunPayHub
 ):
-    try:
-        await properties.general.user_agent.set_value(message.text)
-    except PropertiesError as e:
-        raise StepError(e.message, *e.args)
+    await properties.general.user_agent.set_value(message.text, save=False)
+    await hub.emit_parameter_changed_event(properties.general.user_agent)
 
 
 @router.message(
@@ -291,15 +315,16 @@ async def msg_run_useragent_step(
     lambda _, state_data: state_data.step == cbs.Steps.golden_key,
 )
 async def msg_run_golden_key_step(
-    message: Message,
-    properties: FunPayHubProperties,
+    message: Message, properties: FunPayHubProperties, hub: FunPayHub
 ):
     if message.text == '__test_golden_key__':
         await properties.general.golden_key.set_value(
             message.text,
             skip_converter=True,
-            skip_validator=True
+            skip_validator=True,
+            save=False,
         )
+        await hub.emit_parameter_changed_event(properties.general.golden_key)
         return
 
     bot = Bot(golden_key=message.text, proxy=properties.general.proxy.value or None)
@@ -313,7 +338,17 @@ async def msg_run_golden_key_step(
     except Exception:
         logger.error('An error occurred while checking golden_key.', exc_info=True)
         raise StepError('An error occurred while checking golden_key. Check logs.')
-    try:
-        await properties.general.golden_key.set_value(message.text)
-    except PropertiesError as e:
-        raise StepError(e.message, *e.args)
+
+    await properties.general.golden_key.set_value(message.text, save=False)
+    await hub.emit_parameter_changed_event(properties.general.golden_key)
+
+
+@router.message(
+    SetupStepFilter(),
+    lambda _, state_data: state_data.step == cbs.Steps.tg_password,
+)
+async def msg_run_tg_password_step(
+    message: Message, properties: FunPayHubProperties, hub: FunPayHub
+):
+    await properties.telegram.general.password.set_value(message.text, save=False)
+    await hub.emit_parameter_changed_event(properties.telegram.general.password)

@@ -10,6 +10,7 @@ class Steps(Enum):
     proxy = auto()
     user_agent = auto()
     golden_key = auto()
+    tg_password = auto()
 
 
 class SetupStep(CallbackData, identifier='s2'):
