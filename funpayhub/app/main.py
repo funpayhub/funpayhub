@@ -6,9 +6,11 @@ import random
 import string
 import asyncio
 import traceback
-from asyncio import CancelledError
 from typing import Any
 from contextlib import suppress
+
+from colorama import Fore, Style
+from aiogram.types import User
 
 import exit_codes
 from loggers import main as logger, plugins as plugins_logger
@@ -25,9 +27,10 @@ from funpayhub.app.dispatching import (
 )
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
-from .dispatching.events.other_events import FunPayHubStoppedEvent
 
+from .tty import INIT_SETUP_TEXT_EN, INIT_SETUP_TEXT_RU, box_messages
 from .workflow_data import WorkflowData
+from .dispatching.events.other_events import FunPayHubStoppedEvent
 
 
 def random_part(length):
@@ -42,6 +45,8 @@ class FunPayHub:
         safe_mode: bool = False,
     ):
         self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
+        logger.info('FunPay Hub initialized. Instance ID: %s', self._instance_id)
+
         self._setup_completed = bool(properties.general.golden_key.value)
         self._safe_mode = safe_mode
         self._workflow_data = WorkflowData
@@ -118,12 +123,23 @@ class FunPayHub:
         self._stopped_signal.clear()
 
         async with self._running_lock:
+            try:
+                me = await self.telegram.bot.get_me()
+            except Exception:
+                return exit_codes.TELEGRAM_ERROR
+
+            if not self.can_load_plugins:
+                if not sys.stdin.isatty() or not sys.stdout.isatty():
+                    return exit_codes.NOT_A_TTY
+
             tasks = [
                 asyncio.create_task(self.telegram.start(), name='telegram'),
                 asyncio.create_task(wait_stop_signal(), name='stop_signal'),
             ]
             if self.setup_completed:
                 tasks.append(asyncio.create_task(self.funpay.start(), name='funpay'))
+            else:
+                self._welcome_tty(me)
 
             done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
             while True:
@@ -136,6 +152,9 @@ class FunPayHub:
 
                 done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
 
+            exit_code = 1
+            if self._stop_signal.done:
+                exit_code = self._stop_signal.result()
             try:
                 async with self._stopping_lock:
                     try:
@@ -151,10 +170,8 @@ class FunPayHub:
                     await self.dispatcher.event_entry(FunPayHubStoppedEvent())
             finally:
                 self._stopped_signal.set()
-                if self._stop_signal.done():
-                    return self._stop_signal.result()
-                return 1
 
+            return exit_code
 
     async def shutdown(self, code: int, error_ok: bool = False) -> None:
         if not self._running_lock.locked():
@@ -174,6 +191,27 @@ class FunPayHub:
         logger.info('Shutting down FunPayHub with exit code %d.', code)
         self._stop_signal.set_result(code)
         await self._stopped_signal.wait()
+
+    def _welcome_tty(self, me: User):
+        print('\033[2J\033[H', end='')
+        print(
+            box_messages(
+                INIT_SETUP_TEXT_EN.format(
+                    setup_key=self._instance_id,
+                    bot_username=me.username,
+                ),
+                INIT_SETUP_TEXT_RU.format(
+                    setup_key=self._instance_id,
+                    bot_username=me.username,
+                ),
+            )
+        )
+        input(
+            f'{Fore.GREEN + Style.BRIGHT}'
+            f'Press ENTER to continue / Нажмите ENTER чтобы продолжить...'
+            f'{Style.RESET_ALL}',
+        )
+        print('\033[2J\033[H', end='')
 
     async def emit_parameter_changed_event(
         self,
@@ -231,3 +269,7 @@ class FunPayHub:
     @property
     def setup_completed(self) -> bool:
         return self._setup_completed
+
+    @property
+    def can_load_plugins(self) -> bool:
+        return not self.safe_mode and self.setup_completed

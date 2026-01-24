@@ -5,6 +5,7 @@ __all__ = [
     'TelegramStartEvent',
     'FunPayStartEvent',
     'OffersRaisedEvent',
+    'FunPayHubStoppedEvent',
 ]
 
 from typing import Any
@@ -32,7 +33,7 @@ class FunPayStartEvent(HubEvent, name='fph:funpay_start'):
     def event_context_injection(self) -> dict[str, Any]:
         return {
             'error': self._error,
-            **super().event_context_injection
+            **super().event_context_injection,
         }
 
 
@@ -51,5 +52,4 @@ class OffersRaisedEvent(HubEvent, name='fph:offers_raised'):
         return result | {'category': self.category}
 
 
-class FunPayHubStoppedEvent(HubEvent, name='fph:funpayhub_stopped'):
-    ...
+class FunPayHubStoppedEvent(HubEvent, name='fph:funpayhub_stopped'): ...

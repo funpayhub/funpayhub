@@ -17,9 +17,7 @@ from logging.config import dictConfig
 
 import colorama
 from load_dotenv import load_dotenv
-from funpaybotengine import Bot
 
-from loggers import main as logger
 from logger_conf import (
     HubLogMessage,
     FileLoggerFormatter,
@@ -133,13 +131,6 @@ colorama.just_fix_windows_console()
 load_dotenv()
 
 
-async def check_session(bot: Bot):
-    session: AioHttpSession = bot.session  # type: ignore
-    cs = await session.session()
-    async with cs:
-        print(await (await cs.get('https://ifconfig.me/ip')).text())
-
-
 async def main():
     props = FunPayHubProperties()
     await props.load()
@@ -158,20 +149,7 @@ async def main():
         safe_mode=original_args.safe,
     )
 
-    # await check_session(app.funpay.bot)
-    # result = input()
-    # if result != 'start':
-    #     sys.exit(0)
-
-    if not app.setup_completed:
-        if not sys.stdin.isatty():
-            sys.exit(1)  # todo: add log
-
-        logger.info(app.instance_id)
-        logger.info('Like do smth with it and press enter.')
-        input()
-
-    if app.setup_completed:
+    if app.can_load_plugins:
         await app.load_plugins()
 
     exit_code = await app.start()
