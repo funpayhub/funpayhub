@@ -177,6 +177,22 @@ def update() -> None:
     sys.exit(0)
 
 
+def not_a_tty() -> None:
+    logger.critical(
+        'Cannot start without a TTY: interactive input is required. '
+        'Please restart the application from a terminal.',
+    )
+    sys.exit(exit_codes.NOT_A_TTY)
+
+
+def telegram_error() -> None:
+    logger.critical(
+        'An error occurred while initializing the Telegram bot. '
+        'The token is most likely invalid. Please update the token and restart the application.',
+    )
+    sys.exit(exit_codes.TELEGRAM_ERROR)
+
+
 # ---------------------------------------------
 # |                 Main loop                 |
 # ---------------------------------------------
@@ -186,6 +202,8 @@ ACTIONS = {
     exit_codes.RESTART: lambda: True,
     exit_codes.RESTART_SAFE: safe_restart,
     exit_codes.RESTART_NON_SAFE: non_safe_restart,
+    exit_codes.NOT_A_TTY: not_a_tty,
+    exit_codes.TELEGRAM_ERROR: telegram_error,
 }
 
 while True:
