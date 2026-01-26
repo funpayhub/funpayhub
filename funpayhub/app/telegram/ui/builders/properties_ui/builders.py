@@ -63,7 +63,7 @@ class ChangeParamValueButtonBuilder(ButtonBuilder):
                 f'{str(ctx.entry.value)[:20] + ("..." if len(str(ctx.entry.value)) > 20 else "")}'
             )
         else:
-            val_str = '•' * 8
+            val_str = '•' * 8 if ctx.entry.value else ''
 
         return Button.callback_button(
             button_id=f'param_change:{ctx.entry.path}',

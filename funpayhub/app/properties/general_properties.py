@@ -39,7 +39,7 @@ class GeneralProperties(Properties):
                 name='$props.general.proxy:name',
                 description='$props.general.proxy:description',
                 default_value='',
-                flags=[ParameterFlags.HIDE_VALUE],
+                flags=[ParameterFlags.PROTECT_VALUE],
                 validator=proxy_validator,
             ),
         )
@@ -49,6 +49,7 @@ class GeneralProperties(Properties):
                 id='user_agent',
                 name='$props.general.user_agent:name',
                 description='$props.general.user_agent:description',
+                flags=[ParameterFlags.PROTECT_VALUE],
                 default_value='',
             ),
         )
@@ -59,7 +60,7 @@ class GeneralProperties(Properties):
                 name='$props.general.golden_key:name',
                 description='$props.general.golden_key:description',
                 default_value='',
-                flags=[ParameterFlags.HIDE_VALUE],
+                flags=[ParameterFlags.PROTECT_VALUE],
             ),
         )
 
