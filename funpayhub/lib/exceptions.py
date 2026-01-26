@@ -17,7 +17,7 @@ __all__ = [
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from products_file import GoodsSource
+    from goods_sources import GoodsSource
 
 
 class TranslatableException(Exception):

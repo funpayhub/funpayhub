@@ -59,7 +59,7 @@ class FileGoodsSource(GoodsSource):
         self._path = Path(source) if isinstance(source, str) else source
         self._goods_amount = 0
         self._lock = Lock()
-        self._source_id = f'File - {source}'
+        self._source_id = f'file://{source}'
 
     def _count_products(self) -> int:
         count = 0
@@ -154,15 +154,42 @@ class FileGoodsSource(GoodsSource):
 
 class GoodsSourcesManager:
     def __init__(self):
-        self._sources = {}
+        self._sources: dict[str, GoodsSource] = {}
 
     def get(self, source_id: str) -> GoodsSource | None:
         return self._sources.get(source_id)
 
-    def add_source(self, source: GoodsSource): ...
+    async def add_source(
+        self,
+        source_cls: type[GoodsSource],
+        source: Any,
+        *args,
+        **kwargs
+    ) -> GoodsSource:
+        source = source_cls(source, *args, **kwargs)
+        if source.source_id in self._sources:
+            raise ValueError(f'Source {source.source_id} already exists.')
 
-    def remove_source(self, source_id: str) -> None: ...
+        await source.load()
+        self._sources[source.source_id] = source
+        return source
 
-    async def get_goods(self, source_id: str, amount: int):
+    async def remove_source(self, source_id: str) -> None:
+        if source_id not in self._sources:
+            return
+
+        source = self._sources[source_id]
+        await source.remove()
+        del self._sources[source_id]
+
+    async def pop_goods(self, source_id: str, amount: int):
         source = self.get(source_id)
+        if source is None:
+            raise KeyError(f'Source {source_id} does not exist.')
         return await source.pop_goods(amount)
+
+    async def get_goods(self, source_id: str, amount: int, start: int = 0):
+        source = self.get(source_id)
+        if source is None:
+            raise KeyError(f'Source {source_id} does not exist.')
+        return await source.get_goods(amount, start)
