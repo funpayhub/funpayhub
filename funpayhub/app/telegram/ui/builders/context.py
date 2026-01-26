@@ -43,3 +43,8 @@ class PluginMenuContext(MenuContext):
 @dataclass(kw_only=True)
 class FunPayStartNotificationMenuContext(MenuContext):
     error: Exception | None = None
+
+
+@dataclass(kw_only=True)
+class GoodsInfoMenuContext(MenuContext):
+    source_id: str

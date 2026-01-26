@@ -193,6 +193,12 @@ class MainMenuBuilder(MenuBuilder):
         )
 
         kb.add_callback_button(
+            button_id='open_goods_sources_list',
+            text=translater.translate('$open_goods_sources_list'),
+            callback_data=cbs.OpenMenu(menu_id=MenuIds.goods_sources_list, history=history).pack(),
+        )
+
+        kb.add_callback_button(
             button_id='open_plugins_list',
             text=translater.translate('$plugins_list'),
             callback_data=cbs.OpenMenu(menu_id=MenuIds.plugins_list, history=history).pack(),

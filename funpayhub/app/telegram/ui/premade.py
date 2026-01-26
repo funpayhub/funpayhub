@@ -8,6 +8,7 @@ __all__ = [
 ]
 
 import math
+from typing import Literal
 
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
@@ -143,20 +144,24 @@ async def build_menu_navigation_buttons(
     return kb
 
 
-async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> KeyboardBuilder:
+async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int = -1) -> KeyboardBuilder:
     kb: KeyboardBuilder = KeyboardBuilder()
     callback_data = ctx.callback_data
-    if callback_data is None or total_pages < 2:
+
+    unknown_max_pages = total_pages == -1
+
+    if callback_data is None or (not unknown_max_pages and total_pages < 2):
         return kb
 
     page_amount_btn = Button.callback_button(
         button_id='menu_page_counter',
-        text=f'{ctx.view_page + (1 if total_pages else 0)} / {total_pages}',
+        text=f'{ctx.view_page + (1 if unknown_max_pages or total_pages else 0)}' +
+             (f' / {total_pages}' if not unknown_max_pages else ''),
         callback_data=cbs.ChangeViewPageManually(
             total_pages=total_pages,
             history=callback_data.as_history(),
         ).pack()
-        if total_pages > 1
+        if unknown_max_pages or total_pages > 1
         else cbs.Dummy().pack(),
     )
 
@@ -174,7 +179,7 @@ async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> K
         _nav_button(
             'next_view_page',
             '▶️',
-            ctx.view_page < total_pages - 1,
+            unknown_max_pages or ctx.view_page < total_pages - 1,
             callback_data,
             None,
             ctx.view_page + 1,
@@ -182,11 +187,12 @@ async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int) -> K
         _nav_button(
             'last_view_page',
             '⏩',
-            ctx.view_page < total_pages - 1,
+            not unknown_max_pages and ctx.view_page < total_pages - 1,
             callback_data,
             None,
             total_pages - 1,
         ),
     ]
+
     kb.insert(0, nav_kb)
     return kb

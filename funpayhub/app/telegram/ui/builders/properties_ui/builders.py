@@ -319,6 +319,29 @@ class PropertiesMenuModification(MenuModification):
         return menu
 
 
+class AutoDeliveryPropertiesMenuModification(MenuModification):
+    id = 'fph:auto_delivery_properties_menu_modification'
+
+    async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
+        return ctx.menu_id == MenuIds.properties_entry and ctx.entry.matches_path(['auto_delivery'])
+
+    async def modify(
+        self,
+        ctx: EntryMenuContext,
+        menu: Menu,
+        translater: Translater
+    ):
+        menu.main_keyboard.add_callback_button(
+            button_id='open_goods_sources_list',
+            text=translater.translate('$open_goods_sources_list'),
+            callback_data=cbs.OpenMenu(
+                menu_id=MenuIds.goods_sources_list,
+                history=ctx.callback_data.as_history() if ctx.callback_data is not None else [],
+            ).pack()
+        )
+        return menu
+
+
 class AddFormattersListButtonModification(MenuModification):
     id = 'fph:add_formatters_list_button_modification'
 

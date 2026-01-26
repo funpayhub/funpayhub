@@ -33,6 +33,7 @@ class MenuIds(StrEnum):
     install_plugin = 'fph:install_plugin'
 
     goods_sources_list = 'fph:goods_sources_list'
+    goods_source_info = 'fph:goods_source_info'
 
 
 class ButtonIds:

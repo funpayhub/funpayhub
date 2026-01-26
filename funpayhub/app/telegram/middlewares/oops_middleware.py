@@ -10,6 +10,7 @@ from collections.abc import Callable, Awaitable
 
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery, TelegramObject
+from aiogram.exceptions import TelegramRetryAfter
 
 from loggers import telegram as logger
 from funpayhub.lib.translater import Translater
@@ -31,6 +32,15 @@ class OopsMiddleware(BaseMiddleware):
 
         try:
             await handler(event, data)
+
+        except TelegramRetryAfter as e:
+            if isinstance(event, CallbackQuery):
+                await event.answer(
+                    translater.translate('$oops_ratelimit').format(e.retry_after),
+                    show_alert=True,
+                )
+                return
+
         except Exception:
             if isinstance(event, CallbackQuery):
                 await event.answer(translater.translate('$oops'), show_alert=True)

@@ -22,6 +22,7 @@ MENU_BUILDERS = [
     message_ui.NewMessageNotificationMenuBuilder,
     message_ui.SendMessageMenuBuilder,
     goods_ui.GoodsSourcesListMenuBuilder,
+    goods_ui.GoodsSourceInfoMenuBuilder,
     other_ui.MainMenuBuilder,
     other_ui.AddCommandMenuBuilder,
     other_ui.StartNotificationMenuBuilder,
@@ -47,6 +48,7 @@ MENU_MODIFICATIONS = {
     MenuIds.properties_entry: [
         properties_ui.PropertiesMenuModification,
         properties_ui.AddCommandButtonModification,
+        properties_ui.AutoDeliveryPropertiesMenuModification,
     ],
     MenuIds.param_value_manual_input: [
         properties_ui.AddFormattersListButtonModification,

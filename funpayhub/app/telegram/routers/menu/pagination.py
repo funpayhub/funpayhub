@@ -61,7 +61,7 @@ async def change_page_from_message(
     else:
         data: ChangingMenuPage = (await context.get_data())['data']
 
-    if new_page_index > data.max_pages - 1 or new_page_index < 0:
+    if data.max_pages != -1 and (new_page_index > data.max_pages - 1 or new_page_index < 0):
         return
 
     await context.clear()
