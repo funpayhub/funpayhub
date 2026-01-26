@@ -12,7 +12,11 @@ from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
 from funpayhub.app.telegram.callbacks import OpenEntryMenu
 
-from .context import UpdateMenuContext, InstallUpdateMenuContext, FunPayStartNotificationMenuContext
+from .context import (
+    UpdateMenuContext,
+    InstallUpdateMenuContext,
+    FunPayStartNotificationMenuContext,
+)
 from ..premade import StripAndNavigationFinalizer
 
 
@@ -82,7 +86,7 @@ class FunPayStartNotificationMenuBuilder(MenuBuilder):
         self,
         ctx: FunPayStartNotificationMenuContext,
         translater: Translater,
-        fp: FunPay
+        fp: FunPay,
     ) -> Menu:
         if not ctx.error:
             text = translater.translate('$funpay_successful_start_notification_text').format(
@@ -194,7 +198,7 @@ class MainMenuBuilder(MenuBuilder):
 
         kb.add_callback_button(
             button_id='open_goods_sources_list',
-            text=translater.translate('$open_goods_sources_list'),
+            text=translater.translate('$goods_sources_list'),
             callback_data=cbs.OpenMenu(menu_id=MenuIds.goods_sources_list, history=history).pack(),
         )
 

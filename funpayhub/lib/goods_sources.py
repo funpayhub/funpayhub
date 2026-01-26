@@ -5,7 +5,7 @@ from typing import Any
 from abc import ABC, abstractmethod
 from asyncio import Lock
 from pathlib import Path
-from collections.abc import Sequence, Iterator, KeysView, ValuesView
+from collections.abc import Iterator, KeysView, Sequence, ValuesView
 
 
 class NotEnoughProductsError(RuntimeError):
@@ -45,6 +45,14 @@ class GoodsSource(ABC):
     @property
     def display_id(self) -> str:
         return self.source_id
+
+    @property
+    def display_source(self) -> str:
+        return self.source_id
+
+    @property
+    def display_source_type(self) -> str:
+        return self.__class__.__name__
 
 
 class FileGoodsSource(GoodsSource):
@@ -157,6 +165,14 @@ class FileGoodsSource(GoodsSource):
     def display_id(self) -> str:
         return self._path.name
 
+    @property
+    def display_source(self) -> str:
+        return str(self._path.absolute())
+
+    @property
+    def display_source_type(self) -> str:
+        return '$txt_source_type'
+
 
 class GoodsSourcesManager:
     def __init__(self):
@@ -170,7 +186,7 @@ class GoodsSourcesManager:
         source_cls: type[GoodsSource],
         source: Any,
         *args,
-        **kwargs
+        **kwargs,
     ) -> GoodsSource:
         source = source_cls(source, *args, **kwargs)
         if source.source_id in self._sources:
