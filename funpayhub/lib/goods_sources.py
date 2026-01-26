@@ -5,7 +5,7 @@ from typing import Any
 from abc import ABC, abstractmethod
 from asyncio import Lock
 from pathlib import Path
-from collections.abc import Sequence
+from collections.abc import Sequence, Iterator, KeysView, ValuesView
 
 
 class NotEnoughProductsError(RuntimeError):
@@ -38,8 +38,8 @@ class GoodsSource(ABC):
     @abstractmethod
     def __len__(self) -> int: ...
 
-    @abstractmethod
     @property
+    @abstractmethod
     def source_id(self) -> str: ...
 
     @property
@@ -64,8 +64,9 @@ class FileGoodsSource(GoodsSource):
     def _count_products(self) -> int:
         count = 0
         with open(self._path, 'rb') as f:
-            for _ in f:
-                count += 1
+            for line in f:
+                if line.strip():
+                    count += 1
         return count
 
     def _create_file(self):
@@ -193,3 +194,18 @@ class GoodsSourcesManager:
         if source is None:
             raise KeyError(f'Source {source_id} does not exist.')
         return await source.get_goods(amount, start)
+
+    def __len__(self) -> int:
+        return len(self._sources)
+
+    def __getitem__(self, key: str) -> GoodsSource:
+        return self._sources[key]
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._sources)
+
+    def keys(self) -> KeysView[str]:
+        return self._sources.keys()
+
+    def values(self) -> ValuesView[GoodsSource]:
+        return self._sources.values()

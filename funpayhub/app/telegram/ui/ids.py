@@ -1,7 +1,9 @@
 from __future__ import annotations
+from enum import StrEnum, UNIQUE, verify
 
 
-class MenuIds:
+@verify(UNIQUE)
+class MenuIds(StrEnum):
     main_menu = 'fph:main_menu'
     properties_entry = 'fph:properties_entry'
     param_value_manual_input = 'fph:param_value_manual_input'
@@ -29,6 +31,8 @@ class MenuIds:
     plugins_list = 'fph:plugins_list'
     plugin_info = 'fph:plugin_info'
     install_plugin = 'fph:install_plugin'
+
+    goods_sources_list = 'fph:goods_sources_list'
 
 
 class ButtonIds:

@@ -149,9 +149,7 @@ async def main():
         safe_mode=original_args.safe,
     )
 
-    if app.can_load_plugins:
-        await app.load_plugins()
-
+    await app.setup()
     exit_code = await app.start()
     sys.exit(exit_code)
 

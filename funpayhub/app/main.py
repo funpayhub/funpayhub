@@ -27,10 +27,13 @@ from funpayhub.app.dispatching import (
 )
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
+from funpayhub.lib.goods_sources import GoodsSourcesManager, FileGoodsSource
+from pathlib import Path
 
 from .tty import INIT_SETUP_TEXT_EN, INIT_SETUP_TEXT_RU, box_messages
 from .workflow_data import WorkflowData
 from .dispatching.events.other_events import FunPayHubStoppedEvent
+from ..lib.exceptions import GoodsError
 
 
 def random_part(length):
@@ -49,12 +52,14 @@ class FunPayHub:
 
         self._setup_completed = bool(properties.general.golden_key.value)
         self._safe_mode = safe_mode
-        self._workflow_data = WorkflowData
-        self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
-        self.setup_dispatcher()
         self._properties = properties
         self._translater = translater or Translater()
+        self._goods_manager = GoodsSourcesManager()
         self._plugin_manager = PluginManager(self)
+
+        self._workflow_data = WorkflowData
+        self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
+        self._setup_dispatcher()
 
         self._funpay = FunPay(
             self,
@@ -83,6 +88,7 @@ class FunPayHub:
                 'tg_dp': self.telegram.dispatcher,
                 'tg_ui': self.telegram.ui_registry,
                 'plugin_manager': self._plugin_manager,
+                'goods_manager': self._goods_manager
             },
         )
 
@@ -91,10 +97,24 @@ class FunPayHub:
         self._running_lock = asyncio.Lock()
         self._stopping_lock = asyncio.Lock()
 
-    def setup_dispatcher(self):
+        self._setup_lock = asyncio.Lock()
+        self._setup = False
+
+    async def setup(self) -> None:
+        async with self._setup_lock:
+            if self._setup:
+                return
+
+            await self._load_file_goods_sources()
+            if self.can_load_plugins:
+                await self._load_plugins()
+
+            self._setup = True
+
+    def _setup_dispatcher(self):
         self._dispatcher.connect_routers(*ROUTERS)
 
-    async def load_plugins(self):
+    async def _load_plugins(self):
         if self.safe_mode:
             return
 
@@ -106,6 +126,33 @@ class FunPayHub:
             with suppress(Exception):
                 await self.create_crash_log()
             await self.shutdown(exit_codes.RESTART_SAFE)
+
+    async def _load_file_goods_sources(self):
+        logger.info('Loading goods files.')
+
+        base_path = Path('storage/goods')
+        if not base_path.exists():
+            return
+
+        for file in base_path.iterdir():
+            file: Path
+
+            if not file.is_file():
+                continue
+
+            if not file.suffix == '.txt':
+                continue
+
+            logger.info('Loading goods file %s.', file)
+
+            try:
+                await self._goods_manager.add_source(FileGoodsSource, file)
+            except GoodsError as e:
+                logger.error(
+                    f'An error occurred while loading goods file %s: %s',
+                    file,
+                    e.format_args(self.translater.translate(e.message))
+                )
 
     async def create_crash_log(self):
         os.makedirs('logs', exist_ok=True)
@@ -257,6 +304,10 @@ class FunPayHub:
     @property
     def dispatcher(self) -> HubDispatcher:
         return self._dispatcher
+
+    @property
+    def goods_managers(self) -> GoodsSourcesManager:
+        return self._goods_manager
 
     @property
     def instance_id(self) -> str:
