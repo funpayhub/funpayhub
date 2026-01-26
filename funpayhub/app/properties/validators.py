@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from yarl import URL
 
-from funpayhub.lib.properties.exceptions import ValidationError
+from funpayhub.lib.exceptions import ValidationError
 
 
 async def entries_validator(value: int) -> None:

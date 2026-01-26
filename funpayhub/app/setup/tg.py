@@ -14,10 +14,10 @@ from funpaybotengine.exceptions import BotUnauthenticatedError
 
 import exit_codes
 from loggers import main as logger
-from funpayhub.lib.core import TranslatableException
+from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import Menu, UIRegistry, MenuContext
-from funpayhub.lib.properties.exceptions import PropertiesError
+from funpayhub.lib.exceptions import PropertiesError
 
 from . import states, callbacks as cbs
 from .ui import StepContext

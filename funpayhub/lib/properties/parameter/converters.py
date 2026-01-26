@@ -9,7 +9,7 @@ from typing import Any
 from json import JSONDecodeError
 from collections.abc import Iterable
 
-from funpayhub.lib.properties.exceptions import ConvertionError
+from funpayhub.lib.exceptions import ConvertionError
 
 
 __all__ = [

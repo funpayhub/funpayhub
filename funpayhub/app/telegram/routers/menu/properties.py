@@ -14,7 +14,7 @@ from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.telegram.ui import MenuContext
 from funpayhub.app.telegram.states import AddingListItem, ChangingParameterValue
 from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.lib.properties.exceptions import PropertiesError
+from funpayhub.lib.exceptions import PropertiesError
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 

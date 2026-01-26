@@ -10,16 +10,10 @@ from urllib.parse import urlparse
 
 from aiogram import Bot
 from aiohttp import ClientSession
+from funpayhub.lib.exceptions import PluginInstallationError
 
 from loggers import plugins as logger
 
-
-class PluginInstallationError(Exception):
-    def __init__(self, message: str, *args):
-        super().__init__(message, *args)
-
-    def __str__(self) -> str:
-        return self.args[0] % self.args[1:]
 
 
 class PluginInstaller[T: Any](ABC):
