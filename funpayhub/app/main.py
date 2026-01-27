@@ -31,9 +31,9 @@ from funpayhub.lib.goods_sources import GoodsSourcesManager, FileGoodsSource
 from pathlib import Path
 
 from .tty import INIT_SETUP_TEXT_EN, INIT_SETUP_TEXT_RU, box_messages
-from .workflow_data import WorkflowData
-from .dispatching.events.other_events import FunPayHubStoppedEvent
-from ..lib.exceptions import GoodsError
+from funpayhub.app.workflow_data import WorkflowData
+from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
+from funpayhub.lib.exceptions import GoodsError
 
 
 def random_part(length):
@@ -88,7 +88,7 @@ class FunPayHub:
                 'tg_dp': self.telegram.dispatcher,
                 'tg_ui': self.telegram.ui_registry,
                 'plugin_manager': self._plugin_manager,
-                'goods_manager': self._goods_manager
+                'goods_manager': self._goods_manager,
             },
         )
 
