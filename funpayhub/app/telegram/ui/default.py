@@ -28,6 +28,7 @@ MENU_BUILDERS = [
     other_ui.StartNotificationMenuBuilder,
     other_ui.FunPayStartNotificationMenuBuilder,
     other_ui.UpdateMenuBuilder,
+    other_ui.StateMenuBuilder,
     other_ui.InstallUpdateMenuBuilder,
     control_ui.ControlMenuBuilder,
     plugins_ui.PluginsListMenuBuilder,

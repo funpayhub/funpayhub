@@ -102,3 +102,16 @@ class SendingFunpayMessage(State, identifier='fph:sending_funpay_message'):
 class SendingReviewReply(State, identifier='fph:sending_review_reply'):
     message: Message
     order_id: str
+
+
+# Goods
+@dataclass
+class UploadingGoods(State, identifier='fph:uploading_goods'):
+    source_id: str
+    message: Message
+
+
+@dataclass
+class RemovingGoods(State, identifier='fph:removing_goods'):
+    source_id: str
+    message: Message

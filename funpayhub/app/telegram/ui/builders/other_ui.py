@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import html
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedError
 
@@ -15,7 +15,7 @@ from funpayhub.app.telegram.callbacks import OpenEntryMenu
 from .context import (
     UpdateMenuContext,
     InstallUpdateMenuContext,
-    FunPayStartNotificationMenuContext,
+    FunPayStartNotificationMenuContext, StateUIContext,
 )
 from ..premade import StripAndNavigationFinalizer
 
@@ -211,4 +211,26 @@ class MainMenuBuilder(MenuBuilder):
         return Menu(
             text=f'🐙 <b><u>FunPay Hub v{hub.properties.version.value}</u></b>',
             main_keyboard=kb,
+        )
+
+
+class StateMenuBuilder(MenuBuilder):
+    id = MenuIds.state_menu
+    context_type = StateUIContext
+    
+    async def build(self, ctx: StateUIContext, translater: Translater) -> Menu:
+        kb = KeyboardBuilder()
+        kb.add_callback_button(
+            button_id='clear_state',
+            text=translater.translate('$clear_state'),
+            callback_data=cbs.Clear(
+                delete_message=ctx.delete_on_clear,
+                open_previous=ctx.open_previous_on_clear,
+                history=ctx.callback_data.history if ctx.callback_data is not None else [],
+            ).pack()
+        )
+        
+        return Menu(
+            text=ctx.text,
+            footer_keyboard=kb
         )

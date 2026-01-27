@@ -289,7 +289,7 @@ msgstr ""
 "🗳 Источник товаров <b><i>{goods_source_id}</i></b>.\n\n"
 "📊 Кол-во товаров: <b><i>{goods_amount}</i></b>.\n"
 "🧩 Тип источника: <b><i>{goods_source_type}</i></b>.\n"
-"🧭 Источник: <b><i>{goods_source}</i></b>."
+"🧭 Источник: <pre><code class=\"language-Источник\">{goods_source}</code></pre>"
 
 msgid "$goods_inline_text"
 msgstr "Товары"

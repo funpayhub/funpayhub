@@ -28,6 +28,12 @@ class GoodsSource(ABC):
 
     @abstractmethod
     async def get_goods(self, amount: int, start: int = 0) -> list[str]: ...
+    
+    @abstractmethod
+    async def set_goods(self, goods: list[str]) -> None: ...
+
+    @abstractmethod
+    async def remove_goods(self, from_index: int, amount: int) -> None: ...
 
     @abstractmethod
     async def unload(self) -> None: ...
@@ -126,8 +132,11 @@ class FileGoodsSource(GoodsSource):
             return result
 
     async def get_goods(self, amount: int, start: int = 0) -> list[str]:
-        if start < 0 or amount < 0:
+        if start < 0 or amount < -1:
             raise ValueError('Start must be greater than 0.')
+
+        if amount == -1:
+            amount = float('inf')
 
         if start > self._goods_amount:
             return []
@@ -143,12 +152,50 @@ class FileGoodsSource(GoodsSource):
                     except StopIteration:
                         break
 
-                for i in range(amount):
+                while amount:
                     try:
-                        result.append(next(f))
+                        result.append(next(f).replace('\n', ''))
+                        amount -= 1
                     except StopIteration:
                         break
         return result
+    
+    async def set_goods(self, goods: list[str]) -> None:
+        async with self._lock:
+            self._create_file()
+            amount = 0
+            with open(self._path, 'w', encoding='utf-8') as f:
+                for i in goods:
+                    i = i.replace('\n', '')
+                    if not i:
+                        continue
+                    f.write(i + '\n')
+                    amount += 1
+            self._goods_amount = amount
+
+    async def remove_goods(self, from_index: int, amount: int) -> None:
+        if amount < 1:
+            raise ValueError('Amount must be greater than 0.')
+
+        async with self._lock:
+            tmp = self._path.with_suffix('.tmp')
+            to_index = from_index + amount
+            new_amount = 0
+            current_product_index = 0
+            with (
+                self._path.open('r', encoding='utf-8') as fin,
+                tmp.open('w', encoding='utf-8') as fout
+            ):
+                for line in fin:
+                    if not line.replace('\n', ''):
+                        continue
+                    if not (from_index <= current_product_index < to_index):
+                        fout.write(line)
+                        new_amount += 1
+                    current_product_index += 1
+
+            tmp.replace(self._path)
+            self._goods_amount = new_amount
 
     def __len__(self) -> int:
         return self._goods_amount

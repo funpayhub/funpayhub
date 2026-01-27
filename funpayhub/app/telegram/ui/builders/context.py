@@ -48,3 +48,10 @@ class FunPayStartNotificationMenuContext(MenuContext):
 @dataclass(kw_only=True)
 class GoodsInfoMenuContext(MenuContext):
     source_id: str
+
+
+@dataclass(kw_only=True)
+class StateUIContext(MenuContext):
+    text: str
+    delete_on_clear: bool = True
+    open_previous_on_clear: bool = False

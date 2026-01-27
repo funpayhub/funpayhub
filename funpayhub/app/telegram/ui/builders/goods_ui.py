@@ -63,12 +63,18 @@ class GoodsSourceInfoMenuBuilder(MenuBuilder):
             Button.callback_button(
                 button_id='download_goods',
                 text=translater.translate('$download_goods'),
-                callback_data=cbs.Dummy().pack(),
+                callback_data=cbs.DownloadGoods(
+                    source_id=source.source_id,
+                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                ).pack(),
             ),
             Button.callback_button(
                 button_id='upload_goods',
                 text=translater.translate('$upload_goods'),
-                callback_data=cbs.Dummy().pack(),
+                callback_data=cbs.UploadGoods(
+                    source_id=source.source_id,
+                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                ).pack(),
             ),
         )
 
@@ -81,7 +87,10 @@ class GoodsSourceInfoMenuBuilder(MenuBuilder):
             Button.callback_button(
                 button_id='remove_goods',
                 text=translater.translate('$remove_goods'),
-                callback_data=cbs.Dummy().pack(),
+                callback_data=cbs.RemoveGoods(
+                    source_id=source.source_id,
+                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                ).pack(),
             ),
         )
 
