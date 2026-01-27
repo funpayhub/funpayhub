@@ -46,7 +46,9 @@ class GoodsSourcesListMenuBuilder(MenuBuilder):
         footer_kb.add_callback_button(
             button_id='add_text_source',
             text=translater.translate('$add_txt_goods_source'),
-            callback_data=cbs.Dummy().pack(),
+            callback_data=cbs.AddGoodsTxtSource(
+                history=ctx.callback_data.history if ctx.callback_data else []
+            ).pack(),
         )
 
         return Menu(

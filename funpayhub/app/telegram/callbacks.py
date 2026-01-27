@@ -210,3 +210,7 @@ class RemoveGoodsSource(CallbackData, identifier='remove_goods_source'):
 
 class ReloadGoodsSource(CallbackData, identifier='reload_goods_source'):
     source_id: str
+
+
+class AddGoodsTxtSource(CallbackData, identifier='add_goods_txt_source'):
+    ...

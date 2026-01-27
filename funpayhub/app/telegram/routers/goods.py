@@ -9,7 +9,6 @@ from typing import Any
 
 from funpayhub.app.telegram import callbacks as cbs
 from funpayhub.app.telegram.ui.builders.context import StateUIContext, GoodsInfoMenuContext
-from funpayhub.app.telegram.ui.builders.goods_ui import GoodsSourceInfoMenuBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.goods_sources import GoodsSourcesManager
 from funpayhub.lib.telegram.callback_data import UnknownCallback
@@ -99,6 +98,34 @@ async def reload_goods(
         await menu.apply_to(query.message)
     except TelegramBadRequest:
         pass
+
+
+@router.callback_query(cbs.AddGoodsTxtSource)
+async def set_adding_txt_source_state(
+    query: CallbackQuery,
+    translater: Translater,
+    state: FSMContext,
+    tg_ui: UIRegistry,
+    callback_data: cbs.AddGoodsTxtSource,
+):
+    ctx = StateUIContext(
+        menu_id=MenuIds.state_menu,
+        delete_on_clear=True,
+        text=translater.translate('$add_goods_txt_source_text'),
+        trigger=query
+    )
+    menu = await tg_ui.build_menu(ctx)
+    msg = await menu.answer_to(query.message)
+
+    state_obj = states.AddingGoodsTxtSource(
+        message=msg,
+        callback_data=callback_data,
+        callback_query=query
+    )
+
+    await state.set_state(state_obj.identifier)
+    await state.set_data({'data': state_obj})
+
 
 
 @router.callback_query(cbs.UploadGoods.filter())

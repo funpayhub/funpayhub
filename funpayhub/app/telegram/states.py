@@ -121,3 +121,10 @@ class RemovingGoods(State, identifier='fph:removing_goods'):
 class AddingGoods(State, identifier='fph:adding_goods'):
     source_id: str
     message: Message
+
+
+@dataclass
+class AddingGoodsTxtSource(State, identifier='fph:adding_goods_txt_source'):
+    message: Message
+    callback_data: UnknownCallback
+    callback_query: CallbackQuery
