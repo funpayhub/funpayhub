@@ -79,7 +79,7 @@ class FileGoodsSource(GoodsSource):
         count = 0
         with open(self._path, 'rb') as f:
             for line in f:
-                if line.strip():
+                if line.rstrip(b'\r\n'):
                     count += 1
         return count
 
@@ -117,7 +117,7 @@ class FileGoodsSource(GoodsSource):
                 # пустые строки.
                 f.write('\n')
                 for i in products:
-                    i = i.rstrip('\n')
+                    i = i.rstrip('\r\n')
                     if not i:
                         continue
                     f.write(i + '\n')
@@ -140,7 +140,7 @@ class FileGoodsSource(GoodsSource):
                 tmp.open('w', encoding='utf-8') as fout
             ):
                 for line in fin:
-                    line = line.rstrip('\n')
+                    line = line.rstrip('\r\n')
                     if not line:
                         continue
 
@@ -177,7 +177,7 @@ class FileGoodsSource(GoodsSource):
                 current_line = 0
                 while current_line < start:
                     try:
-                        line = next(f).rstrip('\n')
+                        line = next(f).rstrip('\r\n')
                         if not line:
                             continue
                         current_line += 1
@@ -186,7 +186,7 @@ class FileGoodsSource(GoodsSource):
 
                 while len(result) < amount:
                     try:
-                        line = next(f).rstrip('\n')
+                        line = next(f).rstrip('\r\n')
                         if not line:
                             continue
                         result.append(result)
@@ -202,7 +202,7 @@ class FileGoodsSource(GoodsSource):
 
             with tmp.open('w', encoding='utf-8') as f:
                 for i in goods:
-                    i = i.rstrip('\n')
+                    i = i.rstrip('\r\n')
                     if not i:
                         continue
                     f.write(i + '\n')
@@ -225,7 +225,7 @@ class FileGoodsSource(GoodsSource):
                 tmp.open('w', encoding='utf-8') as fout
             ):
                 for line in fin:
-                    if not line.replace('\n', ''):
+                    if not line.rstrip('\r\n'):
                         continue
                     if not (from_index <= current_product_index < to_index):
                         fout.write(line)
