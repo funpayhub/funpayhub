@@ -82,7 +82,10 @@ class GoodsSourceInfoMenuBuilder(MenuBuilder):
             Button.callback_button(
                 button_id='add_goods',
                 text=translater.translate('$add_goods'),
-                callback_data=cbs.Dummy().pack(),
+                callback_data=cbs.AddGoods(
+                    source_id=source.source_id,
+                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                ).pack(),
             ),
             Button.callback_button(
                 button_id='remove_goods',

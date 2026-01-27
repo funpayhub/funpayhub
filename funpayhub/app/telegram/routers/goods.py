@@ -182,7 +182,7 @@ async def add_goods_set_state(
         callback_data,
         state,
         tg_ui,
-        states.UploadingGoods,
+        states.AddingGoods,
         translater.translate('$add_goods_text')
     )
 

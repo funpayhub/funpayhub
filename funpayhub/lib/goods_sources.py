@@ -106,9 +106,15 @@ class FileGoodsSource(GoodsSource):
     async def add_goods(self, products: Sequence[str]) -> None:
         async with self._lock:
             self._create_file()
+            added_products = 0
             with open(self._path, 'a', encoding='utf-8') as f:
-                f.write('\n' + '\n'.join(products))
-            self._goods_amount += len(products)
+                for i in products:
+                    i = i.replace('\n', '')
+                    if not i:
+                        continue
+                    f.write(i + '\n')
+                    added_products += 1
+            self._goods_amount += added_products
 
     async def pop_goods(self, amount: int) -> list[str]:
         async with self._lock:
