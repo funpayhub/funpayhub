@@ -104,12 +104,20 @@ class FileGoodsSource(GoodsSource):
                 os.remove(self.path)
 
     async def add_goods(self, products: Sequence[str]) -> None:
+        if not len(products):
+            return
+
         async with self._lock:
             self._create_file()
             added_products = 0
             with open(self._path, 'a', encoding='utf-8') as f:
+                # На случай, если пользователь своими ручонками сам засуну товарный файл без
+                # пустой строки в конце.
+                # Все методы получения / удаления товаров и т.д., корректно обрабатывают
+                # пустые строки.
+                f.write('\n')
                 for i in products:
-                    i = i.replace('\n', '')
+                    i = i.rstrip('\n')
                     if not i:
                         continue
                     f.write(i + '\n')
@@ -117,24 +125,40 @@ class FileGoodsSource(GoodsSource):
             self._goods_amount += added_products
 
     async def pop_goods(self, amount: int) -> list[str]:
+        if amount < 1:
+            raise ValueError('Amount must be greater than 0.')
+
         async with self._lock:
             self._create_file()
+            tmp = self._path.with_suffix('.tmp')
+            result: list[str] = []
+            new_amount = 0
+            current_index = 0
 
-            if amount > len(self):
+            with (
+                self._path.open('r', encoding='utf-8') as fin,
+                tmp.open('w', encoding='utf-8') as fout
+            ):
+                for line in fin:
+                    line = line.rstrip('\n')
+                    if not line:
+                        continue
+
+                    if current_index < amount:
+                        result.append(line)
+                    else:
+                        fout.write(line + '\n')
+                        new_amount += 1
+
+                    current_index += 1
+
+            if len(result) < amount:
+                tmp.unlink(missing_ok=True)
+                self._goods_amount = current_index
                 raise NotEnoughProductsError()
 
-            with open(self.path, 'r', encoding='utf-8') as f:
-                products = f.read().splitlines()
-
-            result = products[:amount]
-            if len(products) < amount:
-                self._goods_amount = len(products)
-                raise NotEnoughProductsError()
-
-            with open(self.path, 'w', encoding='utf-8') as f:
-                f.write('\n'.join(products[amount:]))
-
-            self._goods_amount -= amount
+            tmp.replace(self._path)
+            self._goods_amount = new_amount
             return result
 
     async def get_goods(self, amount: int, start: int = 0) -> list[str]:
@@ -153,30 +177,38 @@ class FileGoodsSource(GoodsSource):
                 current_line = 0
                 while current_line < start:
                     try:
-                        next(f)
+                        line = next(f).rstrip('\n')
+                        if not line:
+                            continue
                         current_line += 1
                     except StopIteration:
                         break
 
-                while amount:
+                while len(result) < amount:
                     try:
-                        result.append(next(f).replace('\n', ''))
-                        amount -= 1
+                        line = next(f).rstrip('\n')
+                        if not line:
+                            continue
+                        result.append(result)
                     except StopIteration:
                         break
         return result
-    
+
     async def set_goods(self, goods: list[str]) -> None:
         async with self._lock:
             self._create_file()
+            tmp = self._path.with_suffix('.tmp')
             amount = 0
-            with open(self._path, 'w', encoding='utf-8') as f:
+
+            with tmp.open('w', encoding='utf-8') as f:
                 for i in goods:
-                    i = i.replace('\n', '')
+                    i = i.rstrip('\n')
                     if not i:
                         continue
                     f.write(i + '\n')
                     amount += 1
+
+            tmp.replace(self._path)
             self._goods_amount = amount
 
     async def remove_goods(self, from_index: int, amount: int) -> None:
