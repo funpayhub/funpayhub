@@ -189,7 +189,7 @@ class FileGoodsSource(GoodsSource):
                         line = next(f).rstrip('\r\n')
                         if not line:
                             continue
-                        result.append(result)
+                        result.append(line)
                     except StopIteration:
                         break
         return result
