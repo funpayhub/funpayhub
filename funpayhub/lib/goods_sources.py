@@ -21,6 +21,9 @@ class GoodsSource(ABC):
     async def load(self) -> None: ...
 
     @abstractmethod
+    async def reload(self) -> None: ...
+
+    @abstractmethod
     async def add_goods(self, products: Sequence[str]) -> None: ...
 
     @abstractmethod
@@ -94,6 +97,10 @@ class FileGoodsSource(GoodsSource):
             self._create_file()
         else:
             self._goods_amount = self._count_products()
+
+    async def reload(self) -> None:
+        async with self._lock:
+            await self.load()
 
     async def unload(self) -> None:
         return
@@ -262,6 +269,7 @@ class FileGoodsSource(GoodsSource):
 class GoodsSourcesManager:
     def __init__(self):
         self._sources: dict[str, GoodsSource] = {}
+        self._lock = Lock()
 
     def get(self, source_id: str) -> GoodsSource | None:
         return self._sources.get(source_id)
@@ -273,33 +281,37 @@ class GoodsSourcesManager:
         *args,
         **kwargs,
     ) -> GoodsSource:
-        source = source_cls(source, *args, **kwargs)
-        if source.source_id in self._sources:
-            raise ValueError(f'Source {source.source_id} already exists.')
+        async with self._lock:
+            source = source_cls(source, *args, **kwargs)
+            if source.source_id in self._sources:
+                raise ValueError(f'Source {source.source_id} already exists.')
 
-        await source.load()
-        self._sources[source.source_id] = source
-        return source
+            await source.load()
+            self._sources[source.source_id] = source
+            return source
 
     async def remove_source(self, source_id: str) -> None:
-        if source_id not in self._sources:
-            return
+        async with self._lock:
+            if source_id not in self._sources:
+                return
 
-        source = self._sources[source_id]
-        await source.remove()
-        del self._sources[source_id]
+            source = self._sources[source_id]
+            await source.remove()
+            del self._sources[source_id]
 
     async def pop_goods(self, source_id: str, amount: int):
-        source = self.get(source_id)
-        if source is None:
-            raise KeyError(f'Source {source_id} does not exist.')
-        return await source.pop_goods(amount)
+        async with self._lock:
+            source = self.get(source_id)
+            if source is None:
+                raise KeyError(f'Source {source_id} does not exist.')
+            return await source.pop_goods(amount)
 
     async def get_goods(self, source_id: str, amount: int, start: int = 0):
-        source = self.get(source_id)
-        if source is None:
-            raise KeyError(f'Source {source_id} does not exist.')
-        return await source.get_goods(amount, start)
+        async with self._lock:
+            source = self.get(source_id)
+            if source is None:
+                raise KeyError(f'Source {source_id} does not exist.')
+            return await source.get_goods(amount, start)
 
     def __len__(self) -> int:
         return len(self._sources)

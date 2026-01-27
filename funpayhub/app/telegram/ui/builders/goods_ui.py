@@ -97,6 +97,15 @@ class GoodsSourceInfoMenuBuilder(MenuBuilder):
             ),
         )
 
+        kb.add_callback_button(
+            button_id='reload_source',
+            text=translater.translate('$reload_goods_source'),
+            callback_data=cbs.ReloadGoodsSource(
+                source_id=source.source_id,
+                history=ctx.callback_data.as_history() if ctx.callback_data else [],
+            ).pack()
+        )
+
         goods_text, min_index, max_index = await self._generate_text(
             source, translater, ctx.view_page
         )

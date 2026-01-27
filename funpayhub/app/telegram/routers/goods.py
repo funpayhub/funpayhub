@@ -1,15 +1,18 @@
 import html
 
 from aiogram import Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from typing import Any
 
 from funpayhub.app.telegram import callbacks as cbs
-from funpayhub.app.telegram.ui.builders.context import StateUIContext
+from funpayhub.app.telegram.ui.builders.context import StateUIContext, GoodsInfoMenuContext
+from funpayhub.app.telegram.ui.builders.goods_ui import GoodsSourceInfoMenuBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.goods_sources import GoodsSourcesManager
+from funpayhub.lib.telegram.callback_data import UnknownCallback
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.lib.translater import Translater
 from funpayhub.app.telegram import states
@@ -64,6 +67,38 @@ async def download_goods(
         caption=f'<b>{html.escape(source.display_id)}</b>'
     )
     await query.answer()
+
+
+@router.callback_query(cbs.ReloadGoodsSource.filter())
+async def reload_goods(
+    query: CallbackQuery,
+    goods_manager: GoodsSourcesManager,
+    translater: Translater,
+    callback_data: cbs.ReloadGoodsSource,
+    tg_ui: UIRegistry,
+):
+    source = goods_manager.get(callback_data.source_id)
+    if source is None:
+        await query.answer(translater.translate('$goods_source_not_found'), show_alert=True)
+    await query.answer()
+
+
+    ctx = GoodsInfoMenuContext(
+        menu_id=MenuIds.goods_source_info,
+        trigger=query,
+        source_id=callback_data.source_id,
+    )
+    if callback_data.history:
+        fake_callback = UnknownCallback.parse(callback_data.history[-1])
+        fake_callback.history = callback_data.history[:-1]
+        ctx.data['callback_data'] = fake_callback
+
+    menu = await tg_ui.build_menu(ctx)
+
+    try:
+        await menu.apply_to(query.message)
+    except TelegramBadRequest:
+        pass
 
 
 @router.callback_query(cbs.UploadGoods.filter())

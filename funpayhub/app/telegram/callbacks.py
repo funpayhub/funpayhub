@@ -206,4 +206,7 @@ class RemoveGoods(CallbackData, identifier='remove_goods'):
 class RemoveGoodsSource(CallbackData, identifier='remove_goods_source'):
     source_id: str
     confirm: bool = False
-    
+
+
+class ReloadGoodsSource(CallbackData, identifier='reload_goods_source'):
+    source_id: str
