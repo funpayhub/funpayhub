@@ -115,3 +115,9 @@ class UploadingGoods(State, identifier='fph:uploading_goods'):
 class RemovingGoods(State, identifier='fph:removing_goods'):
     source_id: str
     message: Message
+
+
+@dataclass
+class AddingGoods(State, identifier='fph:adding_goods'):
+    source_id: str
+    message: Message

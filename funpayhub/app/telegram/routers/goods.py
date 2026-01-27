@@ -4,6 +4,7 @@ from aiogram import Router
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from typing import Any
 
 from funpayhub.app.telegram import callbacks as cbs
 from funpayhub.app.telegram.ui.builders.context import StateUIContext
@@ -19,6 +20,29 @@ import re
 
 
 r = router = Router(name='fph:goods')
+
+
+async def _set_state_with_menu(
+    query: Any,
+    callback_data: Any,
+    state: Any,
+    tg_ui: Any,
+    state_cls: Any,
+    text: Any,
+):
+    ctx = StateUIContext(
+        menu_id=MenuIds.state_menu,
+        delete_on_clear=True,
+        text=text,
+        trigger=query
+    )
+    menu = await tg_ui.build_menu(ctx)
+    msg = await menu.answer_to(query.message)
+
+    s = state_cls(source_id=callback_data.source_id, message=msg)
+    await state.set_state(s.identifier)
+    await state.set_data({'data': s})
+    await query.answer()
 
 
 @router.callback_query(cbs.DownloadGoods.filter())
@@ -50,19 +74,14 @@ async def upload_goods_set_state(
     tg_ui: UIRegistry,
     callback_data: cbs.UploadGoods,
 ):
-    ctx = StateUIContext(
-        menu_id=MenuIds.state_menu,
-        delete_on_clear=True,
-        text=translater.translate('$upload_goods_text'),
-        trigger=query
+    await _set_state_with_menu(
+        query,
+        callback_data,
+        state,
+        tg_ui,
+        states.UploadingGoods,
+        translater.translate('$upload_goods_text')
     )
-    menu = await tg_ui.build_menu(ctx)
-    msg = await menu.answer_to(query.message)
-    
-    s = states.UploadingGoods(source_id=callback_data.source_id, message=msg)
-    await state.set_state(s.identifier)
-    await state.set_data({'data': s})
-    await query.answer()
 
 
 @router.message(StateFilter(states.UploadingGoods.__identifier__))
@@ -77,7 +96,7 @@ async def upload_goods(
     await state.clear()
     await data.message.delete()
     source = goods_manager.get(data.source_id)
-    if not source:
+    if source is None:
         await message.reply(translater.translate('$goods_source_not_found'))
         return
     
@@ -99,33 +118,26 @@ async def upload_goods(
 
 
 @router.callback_query(cbs.RemoveGoods.filter())
-async def upload_goods_set_state(
+async def remove_goods_set_state(
     query: CallbackQuery,
     translater: Translater,
     state: FSMContext,
     tg_ui: UIRegistry,
     callback_data: cbs.UploadGoods,
 ):
-    ctx = StateUIContext(
-        menu_id=MenuIds.state_menu,
-        delete_on_clear=True,
-        text=translater.translate('$remove_goods_text'),
-        trigger=query
+    await _set_state_with_menu(
+        query,
+        callback_data,
+        state,
+        tg_ui,
+        states.RemovingGoods,
+        translater.translate('$remove_goods_text')
     )
-    menu = await tg_ui.build_menu(ctx)
-    msg = await menu.answer_to(query.message)
-
-    s = states.RemovingGoods(source_id=callback_data.source_id, message=msg)
-    await state.set_state(s.identifier)
-    await state.set_data({'data': s})
-    await query.answer()
 
 
 amount_re = re.compile(r'(\d+)-(\d+)')
-
-
 @router.message(StateFilter(states.RemovingGoods.identifier))
-async def upload_goods(
+async def remove_goods(
     message: Message,
     state: FSMContext,
     goods_manager: GoodsSourcesManager,
@@ -135,7 +147,7 @@ async def upload_goods(
     await state.clear()
     await data.message.delete()
     source = goods_manager.get(data.source_id)
-    if not source:
+    if source is None:
         await message.reply(translater.translate('$goods_source_not_found'))
         return
 
@@ -155,3 +167,54 @@ async def upload_goods(
 
     await source.remove_goods(start_index, amount)
     await message.answer(translater.translate('$goods_removed'))
+
+
+@router.callback_query(cbs.AddGoods.filter())
+async def add_goods_set_state(
+    query: CallbackQuery,
+    translater: Translater,
+    state: FSMContext,
+    tg_ui: UIRegistry,
+    callback_data: cbs.UploadGoods,
+):
+    await _set_state_with_menu(
+        query,
+        callback_data,
+        state,
+        tg_ui,
+        states.UploadingGoods,
+        translater.translate('$add_goods_text')
+    )
+
+
+@router.message(StateFilter(states.AddingGoods.identifier))
+async def upload_goods(
+    message: Message,
+    state: FSMContext,
+    tg_bot: TGBot,
+    goods_manager: GoodsSourcesManager,
+    translater: Translater,
+):
+    data: states.AddingGoods = (await state.get_data())['data']
+    await state.clear()
+    await data.message.delete()
+    source = goods_manager.get(data.source_id)
+    if source is None:
+        await message.reply(translater.translate('$goods_source_not_found'))
+        return
+
+    if message.document:
+        try:
+            io = BytesIO()
+            file = await tg_bot.get_file(message.document.file_id)
+            await tg_bot.download_file(file.file_path, io)
+            new_goods = io.getbuffer().tobytes().decode('utf-8').splitlines()
+        except:
+            await message.reply(translater.translate('$error_uploading_goods'))
+            return
+
+    else:
+        new_goods = message.text.split('\n')
+
+    await source.add_goods(new_goods)
+    await message.answer(translater.translate('$goods_added'))
