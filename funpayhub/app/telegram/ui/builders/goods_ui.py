@@ -42,9 +42,17 @@ class GoodsSourcesListMenuBuilder(MenuBuilder):
                 ).pack(),
             )
 
+        footer_kb = KeyboardBuilder()
+        footer_kb.add_callback_button(
+            button_id='add_text_source',
+            text=translater.translate('$add_txt_goods_source'),
+            callback_data=cbs.Dummy().pack(),
+        )
+
         return Menu(
             text=translater.translate('$goods_sources_list_text'),
             main_keyboard=kb,
+            footer_keyboard=footer_kb,
             finalizer=StripAndNavigationFinalizer(),
         )
 
@@ -54,7 +62,10 @@ class GoodsSourceInfoMenuBuilder(MenuBuilder):
     context_type = GoodsInfoMenuContext
 
     async def build(
-        self, ctx: GoodsInfoMenuContext, goods_manager: GoodsSourcesManager, translater: Translater
+        self,
+        ctx: GoodsInfoMenuContext,
+        goods_manager: GoodsSourcesManager,
+        translater: Translater,
     ) -> Menu:
         source = goods_manager[ctx.source_id]
         kb = KeyboardBuilder()
@@ -107,7 +118,9 @@ class GoodsSourceInfoMenuBuilder(MenuBuilder):
         )
 
         goods_text, min_index, max_index = await self._generate_text(
-            source, translater, ctx.view_page
+            source,
+            translater,
+            ctx.view_page,
         )
         text = translater.translate('$goods_info_text').format(
             goods_source_id=source.display_id,
