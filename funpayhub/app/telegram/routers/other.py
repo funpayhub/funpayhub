@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from aiogram import Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
+from funpayhub.lib.translater import Translater
 
 import exit_codes
 import funpayhub.app.telegram.callbacks as cbs
@@ -20,7 +21,9 @@ router = r = Router(name='fph:other')
 # Commands
 @router.message(Command('shutdown'))
 async def shutdown(message: Message, hub: FunPayHub):
-    await message.reply('$shutting_down')
+    await message.answer_animation(
+        'CAACAgIAAxkBAAIBgml58y4453QL1LPOC20gPjjdTi9cAALNiwACP73RS_9mGlmKls_5OAQ',
+    )
     await hub.shutdown(exit_codes.SHUTDOWN)
 
 
