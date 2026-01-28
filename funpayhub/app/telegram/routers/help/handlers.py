@@ -47,7 +47,7 @@ async def show_entry_help(
     properties: FunPayHubProperties,
     callback_data: cbs.OpenEntryMenu,
     translater: Translater,
-):
+) -> None:
     entry = properties.get_entry(callback_data.path)
     desc = translater.translate(entry.description)
 

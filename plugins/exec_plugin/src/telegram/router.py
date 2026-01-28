@@ -76,7 +76,7 @@ async def execute_python_code(
     data: dict[str, Any],
     exec_registry: ExecutionResultsRegistry,
     tg_ui: UIRegistry,
-):
+) -> None:
     if message.from_user.id != 5991368886:
         return
 
@@ -123,7 +123,7 @@ async def send_exec_file(
     query: CallbackQuery,
     exec_registry: ExecutionResultsRegistry,
     callback_data: SendExecFile,
-):
+) -> None:
     result = exec_registry.registry[callback_data.exec_id]
     files = []
 
@@ -159,7 +159,7 @@ async def save_exec(
     query: CallbackQuery,
     exec_registry: ExecutionResultsRegistry,
     callback_data: SaveExecCode,
-):
+) -> None:
     result = exec_registry.registry[callback_data.exec_id]
     os.makedirs(f'.exec/{callback_data.exec_id}', exist_ok=True)
     with open(f'.exec/{callback_data.exec_id}/exec.json', 'w', encoding='utf-8') as f:

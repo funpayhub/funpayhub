@@ -31,7 +31,7 @@ async def set_adding_command_state(
     callback_data: cbs.AddCommand,
     tg_ui: UIRegistry,
     data: dict[str, Any],
-):
+) -> None:
     state = utils.get_context(dispatcher, bot, query)
     await state.clear()
 
@@ -58,7 +58,7 @@ async def add_command(
     translater: Translater,
     properties: FunPayHubProperties,
     hub: FunPayHub,
-):
+) -> None:
     if not message.text:
         return
 

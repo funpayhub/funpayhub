@@ -50,7 +50,7 @@ async def open_custom_menu(
     tg_ui: UIRegistry,
     data: dict[str, Any],
     callback_data: cbs.OpenMenu,
-):
+) -> None:
     # todo: menu context from data
     menu_builder = tg_ui.get_menu_builder(callback_data.menu_id)
     ctx_class = menu_builder.builder.context_type
@@ -79,7 +79,7 @@ async def open_entry_menu(
     data: dict[str, Any],
     properties: FunPayHubProperties,
     callback_data: cbs.OpenEntryMenu,
-):
+) -> None:
     entry = properties.get_entry(callback_data.path)
     ctx = EntryMenuContext(
         menu_id=MenuIds.properties_entry,
@@ -162,7 +162,7 @@ async def next_param_value(
     dispatcher: Dispatcher,
     hub: FunPayHub,
     bot,
-):
+) -> None:
     try:
         param = properties.get_parameter(callback_data.path)
         await param.next_value(save=True)
@@ -188,7 +188,7 @@ async def choose_param_value(
     dispatcher: Dispatcher,
     hub: FunPayHub,
     bot,
-):
+) -> None:
     param = properties.get_parameter(callback_data.path)
     await param.set_value(callback_data.choice_id)
     asyncio.create_task(hub.emit_parameter_changed_event(param))
@@ -244,7 +244,7 @@ async def toggle_notification_channel(
     callback_data: cbs.ToggleNotificationChannel,
     dispatcher: Dispatcher,
     bot: Bot,
-):
+) -> None:
     chat_identifier = f'{query.message.chat.id}.{query.message.message_thread_id}'
     param: ListParameter[Any] = properties.telegram.notifications[callback_data.channel]
 
@@ -307,7 +307,7 @@ async def make_list_item_action(
     bot: Bot,
     dispatcher: Dispatcher,
     properties: FunPayHubProperties,
-):
+) -> None:
     if callback_data.action is None:
         await query.answer()
         return

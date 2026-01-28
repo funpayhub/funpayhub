@@ -22,7 +22,7 @@ async def set_changing_page_state(
     dp: Dispatcher,
     bot: Bot,
     type_: Literal['view', 'menu'],
-):
+) -> None:
     state = utils.get_context(dp, bot, query)
     await state.clear()
 
@@ -48,7 +48,7 @@ async def change_page_from_message(
     dp: Dispatcher,
     bot: Bot,
     type_: Literal['view', 'menu'],
-):
+) -> None:
     await utils.delete_message(message)
 
     if not message.text.isnumeric():
@@ -87,7 +87,7 @@ async def change_page(
     callback_data: cbs.ChangePageTo,
     dispatcher: Dispatcher,
     bot: Bot,
-):
+) -> None:
     old = CallbackData.parse(callback_data.history[-1])
     if callback_data.menu_page is not None:
         old.data['menu_page'] = callback_data.menu_page
@@ -107,7 +107,7 @@ async def manual_change_menu_page_activate(
     bot: Bot,
     dispatcher: Dispatcher,
     callback_data: cbs.ChangeMenuPageManually,
-):
+) -> None:
     await set_changing_page_state(query, callback_data, dispatcher, bot, 'menu')
 
 
@@ -117,7 +117,7 @@ async def manual_change_view_page_activate(
     bot: Bot,
     dispatcher: Dispatcher,
     callback_data: cbs.ChangeMenuPageManually,
-):
+) -> None:
     await set_changing_page_state(query, callback_data, dispatcher, bot, 'view')
 
 

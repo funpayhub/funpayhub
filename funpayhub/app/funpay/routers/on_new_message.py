@@ -30,7 +30,7 @@ async def process_command(
     fp_bot: Bot,
     command: AutoResponseEntryProperties,
     data: dict[str, Any],
-):
+) -> None:
     """
     Хэндлер ищет команду в списке команд и выполняет ее.
     """
@@ -60,7 +60,7 @@ async def send_new_message_notification(
     tg: Telegram,
     tg_ui: UIRegistry,
     data: dict[str, Any],
-):
+) -> None:
     msgs = []
     checked = []
     for i in events_stack:

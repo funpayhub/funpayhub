@@ -30,7 +30,7 @@ async def check_for_updates(
     data: dict[str, Any],
     hub: FunPayHub,
     translater: Translater,
-):
+) -> None:
     try:
         update = await check_updates(hub.properties.version.value)
     except:
@@ -56,7 +56,7 @@ async def download_upd(
     callback_data: cbs.DownloadUpdate,
     hub: FunPayHub,
     translater: Translater,
-):
+) -> None:
     if updating_lock.locked():
         await query.answer(translater.translate('$update_installing_locked'), show_alert=True)
         return
@@ -84,7 +84,7 @@ async def install_upd(
     callback_data: cbs.InstallUpdate,
     hub: FunPayHub,
     translater: Translater,
-):
+) -> None:
     if callback_data.instance_id != hub.instance_id:
         await query.answer(translater.translate('$wrong_update_instance_id'), show_alert=True)
         return

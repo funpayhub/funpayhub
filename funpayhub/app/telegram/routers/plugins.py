@@ -62,7 +62,7 @@ async def set_plugin_status(
     plugin_manager: PluginManager,
     translater: Translater,
     callback_data: cbs.RemovePlugin,
-):
+) -> None:
     # todo: move logic to plugin manager
     if callback_data.plugin_id not in plugin_manager._plugins:
         await query.answer(translater.translate('$plugin_not_found'), show_alert=True)
@@ -88,7 +88,7 @@ async def install_plugin(
     translater: Translater,
     callback_data: cbs.InstallPlugin,
     plugin_manager: PluginManager,
-):
+) -> None:
     if plugin_manager.installation_lock.locked():
         await query.answer(translater.translate('$plugin_installation_locked'), show_alert=True)
         return
@@ -124,7 +124,7 @@ async def install_plugin(
     translater: Translater,
     tg_bot: Bot,
     state: FSMContext,
-):
+) -> None:
     if plugin_manager.installation_lock.locked():
         await message.reply(translater.translate('$plugin_installation_locked'))
 

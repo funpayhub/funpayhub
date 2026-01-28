@@ -31,7 +31,7 @@ async def _set_state_and_send_state_ui(
     state: Any,
     state_cls: Any,
     text: str,
-):
+) -> None:
     ctx = StateUIContext(
         menu_id=MenuIds.state_menu,
         delete_on_clear=True,
@@ -51,7 +51,7 @@ async def _generate_and_send_new_goods_info(
     trigger: CallbackQuery | Message,
     source: GoodsSource,
     callback_data,
-):
+) -> None:
     context = GoodsInfoMenuContext(
         menu_id=MenuIds.goods_source_info,
         source_id=source.source_id,
@@ -151,7 +151,7 @@ async def upload_goods_set_state(
     translater: Translater,
     state: FSMContext,
     callback_data: cbs.UploadGoods | cbs.RemoveGoods | cbs.AddGoods,
-):
+) -> None:
     mapping = {
         cbs.UploadGoods: ('$upload_goods_text', states.UploadingGoods),
         cbs.RemoveGoods: ('$remove_goods_text', states.RemovingGoods),
@@ -193,7 +193,7 @@ async def remove_goods(
     message: Message,
     state: FSMContext,
     translater: Translater,
-):
+) -> None:
     data: states.RemovingGoods = (await state.get_data())['data']
     if (source := await _get_source(message, data.source_id)) is None:
         await _get_data_and_clear_state(state)
@@ -224,7 +224,7 @@ async def set_adding_txt_source_state(
     state: FSMContext,
     tg_ui: UIRegistry,
     callback_data: cbs.AddGoodsTxtSource,
-):
+) -> None:
     ctx = StateUIContext(
         menu_id=MenuIds.state_menu,
         delete_on_clear=True,
@@ -252,7 +252,7 @@ async def add_goods_txt_source(
     tg_ui: UIRegistry,
     tg_bot: TGBot,
     goods_manager: GoodsSourcesManager,
-):
+) -> None:
     data: states.AddingGoodsTxtSource = (await state.get_data())['data']
 
     if message.text:

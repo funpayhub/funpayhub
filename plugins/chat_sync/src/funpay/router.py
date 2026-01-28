@@ -34,7 +34,7 @@ async def sync_new_message(
     properties: FunPayHubProperties,
     events_stack: EventsStack,
     chat_sync_rotater: BotRotater,
-):
+) -> None:
     pl_props: ChatSyncProperties = properties.plugin_properties.get_properties['chat_sync']
     telegram_thread_id = chat_sync_registry.get_telegram_thread(message.chat_id)
     if telegram_thread_id is None:

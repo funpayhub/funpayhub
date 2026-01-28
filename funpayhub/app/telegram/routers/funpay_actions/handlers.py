@@ -29,7 +29,7 @@ async def set_sending_message_state(
     callback_data: cbs.SendMessage,
     tg_ui: UIRegistry,
     state: FSMContext,
-):
+) -> None:
     menu_context = SendMessageMenuContext(
         menu_id=MenuIds.send_funpay_message,
         funpay_chat_id=callback_data.to,
