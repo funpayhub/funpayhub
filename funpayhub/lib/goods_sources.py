@@ -31,7 +31,7 @@ class GoodsSource(ABC):
 
     @abstractmethod
     async def get_goods(self, amount: int, start: int = 0) -> list[str]: ...
-    
+
     @abstractmethod
     async def set_goods(self, goods: list[str]) -> None: ...
 
@@ -144,7 +144,7 @@ class FileGoodsSource(GoodsSource):
 
             with (
                 self._path.open('r', encoding='utf-8') as fin,
-                tmp.open('w', encoding='utf-8') as fout
+                tmp.open('w', encoding='utf-8') as fout,
             ):
                 for line in fin:
                     line = line.rstrip('\r\n')
@@ -229,7 +229,7 @@ class FileGoodsSource(GoodsSource):
             current_product_index = 0
             with (
                 self._path.open('r', encoding='utf-8') as fin,
-                tmp.open('w', encoding='utf-8') as fout
+                tmp.open('w', encoding='utf-8') as fout,
             ):
                 for line in fin:
                     if not line.rstrip('\r\n'):

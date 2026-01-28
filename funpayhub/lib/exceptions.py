@@ -16,6 +16,7 @@ __all__ = [
 
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from goods_sources import GoodsSource
 
@@ -37,8 +38,7 @@ class FunPayHubError(TranslatableException):
     pass
 
 
-class GoodsError(FunPayHubError):
-    ...
+class GoodsError(FunPayHubError): ...
 
 
 class NotEnoughGoodsError(FunPayHubError):
@@ -46,7 +46,7 @@ class NotEnoughGoodsError(FunPayHubError):
         super().__init__(
             'Not enough goods in source %s. Available amount: %d.',
             source.source_id,
-            len(source)
+            len(source),
         )
         self._source = source
 
@@ -55,17 +55,21 @@ class NotEnoughGoodsError(FunPayHubError):
         return self._source
 
 
-class PropertiesError(FunPayHubError): pass
+class PropertiesError(FunPayHubError):
+    pass
 
 
-class ValidationError(PropertiesError): pass
+class ValidationError(PropertiesError):
+    pass
 
 
-class ConvertionError(PropertiesError): pass
+class ConvertionError(PropertiesError):
+    pass
 
 
-class PluginError(FunPayHubError): pass
+class PluginError(FunPayHubError):
+    pass
 
 
-class PluginInstallationError(PluginError): pass
-
+class PluginInstallationError(PluginError):
+    pass

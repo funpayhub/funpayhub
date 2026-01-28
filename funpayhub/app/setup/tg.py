@@ -14,10 +14,9 @@ from funpaybotengine.exceptions import BotUnauthenticatedError
 
 import exit_codes
 from loggers import main as logger
-from funpayhub.lib.exceptions import TranslatableException
+from funpayhub.lib.exceptions import PropertiesError, TranslatableException
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import Menu, UIRegistry, MenuContext
-from funpayhub.lib.exceptions import PropertiesError
 
 from . import states, callbacks as cbs
 from .ui import StepContext
@@ -210,7 +209,10 @@ def get_next_step(step: str) -> type[cbs.Steps] | None:
 
 @router.message(lambda m, hub: m.text == hub.instance_id and not setup_user_id)
 async def start_setup(
-    msg: Message, tg_ui: UIRegistry, hub: FunPayHub, properties: FunPayHubProperties
+    msg: Message,
+    tg_ui: UIRegistry,
+    hub: FunPayHub,
+    properties: FunPayHubProperties,
 ):
     global setup_chat, setup_user_id
     if msg.chat.type != ChatType.PRIVATE:
@@ -304,7 +306,9 @@ async def msg_run_proxy_step(message: Message, properties: FunPayHubProperties, 
     lambda _, state_data: state_data.step == cbs.Steps.user_agent,
 )
 async def msg_run_useragent_step(
-    message: Message, properties: FunPayHubProperties, hub: FunPayHub
+    message: Message,
+    properties: FunPayHubProperties,
+    hub: FunPayHub,
 ):
     await properties.general.user_agent.set_value(message.text, save=False)
     await hub.emit_parameter_changed_event(properties.general.user_agent)
@@ -315,7 +319,9 @@ async def msg_run_useragent_step(
     lambda _, state_data: state_data.step == cbs.Steps.golden_key,
 )
 async def msg_run_golden_key_step(
-    message: Message, properties: FunPayHubProperties, hub: FunPayHub
+    message: Message,
+    properties: FunPayHubProperties,
+    hub: FunPayHub,
 ):
     if message.text == '__test_golden_key__':
         await properties.general.golden_key.set_value(
@@ -348,7 +354,9 @@ async def msg_run_golden_key_step(
     lambda _, state_data: state_data.step == cbs.Steps.tg_password,
 )
 async def msg_run_tg_password_step(
-    message: Message, properties: FunPayHubProperties, hub: FunPayHub
+    message: Message,
+    properties: FunPayHubProperties,
+    hub: FunPayHub,
 ):
     await properties.telegram.general.password.set_value(message.text, save=False)
     await hub.emit_parameter_changed_event(properties.telegram.general.password)

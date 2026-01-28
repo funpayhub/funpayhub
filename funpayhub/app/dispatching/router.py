@@ -16,7 +16,7 @@ _events = {
     'telegram_start',
     'funpay_start',
     'offers_raised',
-    'funpayhub_stopped'
+    'funpayhub_stopped',
 }
 
 

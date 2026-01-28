@@ -6,8 +6,15 @@ from collections.abc import Callable, Awaitable
 
 from funpaybotengine import Bot, Dispatcher
 from funpaybotengine.types import Category
+from funpaybotengine.exceptions import (
+    FunPayServerError,
+    UnauthorizedError,
+    RateLimitExceededError,
+    BotUnauthenticatedError,
+)
 from funpaybotengine.types.pages import ProfilePage
 
+from loggers import main as logger
 from funpayhub.app.funpay import middlewares as mdwr
 from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
 from funpayhub.app.dispatching import FunPayStartEvent, OffersRaisedEvent
@@ -15,8 +22,6 @@ from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 from funpayhub.app.funpay.offers_raiser import OffersRaiser
 from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
-from funpaybotengine.exceptions import BotUnauthenticatedError, UnauthorizedError, RateLimitExceededError, FunPayServerError
-from loggers import main as logger
 
 
 if TYPE_CHECKING:
@@ -84,7 +89,7 @@ class FunPay:
                 else:
                     logger.warning(
                         'An error occurred while making first request to FunPay: '
-                        'FunPay server error. Retrying in 5 seconds.'
+                        'FunPay server error. Retrying in 5 seconds.',
                     )
 
                 await asyncio.sleep(5)
@@ -92,7 +97,7 @@ class FunPay:
             except Exception as e:
                 logger.error(
                     'An error occurred while making first request to FunPay.',
-                    exc_info=e
+                    exc_info=e,
                 )
                 exception = e
                 break

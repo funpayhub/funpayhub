@@ -117,7 +117,7 @@ def box_messages(
             width <= 0,
             vertical_indent < 0,
             horizontal_indent < 0,
-        ]
+        ],
     ):
         raise ValueError('width, vertical_indent and horizontal_indent must be positive.')
 

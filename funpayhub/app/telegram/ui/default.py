@@ -1,7 +1,15 @@
 from __future__ import annotations
 
 from .ids import MenuIds
-from .builders import other_ui, control_ui, message_ui, plugins_ui, formatters_ui, notifications_ui, goods_ui
+from .builders import (
+    goods_ui,
+    other_ui,
+    control_ui,
+    message_ui,
+    plugins_ui,
+    formatters_ui,
+    notifications_ui,
+)
 from .builders.properties_ui import builders as properties_ui
 from .builders.properties_ui.registry import (
     PropertiesEntryMenuBuilder,

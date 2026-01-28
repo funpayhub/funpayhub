@@ -193,7 +193,7 @@ class DownloadGoods(CallbackData, identifier='download_goods'):
 
 class UploadGoods(CallbackData, identifier='upload_goods'):
     source_id: str
-    
+
 
 class AddGoods(CallbackData, identifier='add_goods'):
     source_id: str
@@ -212,5 +212,4 @@ class ReloadGoodsSource(CallbackData, identifier='reload_goods_source'):
     source_id: str
 
 
-class AddGoodsTxtSource(CallbackData, identifier='add_goods_txt_source'):
-    ...
+class AddGoodsTxtSource(CallbackData, identifier='add_goods_txt_source'): ...

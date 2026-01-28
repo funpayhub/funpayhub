@@ -7,6 +7,7 @@ import string
 import asyncio
 import traceback
 from typing import Any
+from pathlib import Path
 from contextlib import suppress
 
 from colorama import Fore, Style
@@ -17,6 +18,7 @@ from loggers import main as logger, plugins as plugins_logger
 from funpayhub.app.routers import ROUTERS
 from funpayhub.lib.plugins import PluginManager
 from funpayhub.app.properties import FunPayHubProperties
+from funpayhub.lib.exceptions import GoodsError
 from funpayhub.lib.properties import Parameter, Properties, MutableParameter
 from funpayhub.lib.translater import Translater
 from funpayhub.app.dispatching import (
@@ -27,13 +29,11 @@ from funpayhub.app.dispatching import (
 )
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
-from funpayhub.lib.goods_sources import GoodsSourcesManager, FileGoodsSource
-from pathlib import Path
+from funpayhub.app.workflow_data import WorkflowData
+from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
+from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 
 from .tty import INIT_SETUP_TEXT_EN, INIT_SETUP_TEXT_RU, box_messages
-from funpayhub.app.workflow_data import WorkflowData
-from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
-from funpayhub.lib.exceptions import GoodsError
 
 
 def random_part(length):
@@ -149,9 +149,9 @@ class FunPayHub:
                 await self._goods_manager.add_source(FileGoodsSource, file)
             except GoodsError as e:
                 logger.error(
-                    f'An error occurred while loading goods file %s: %s',
+                    'An error occurred while loading goods file %s: %s',
                     file,
-                    e.format_args(self.translater.translate(e.message))
+                    e.format_args(self.translater.translate(e.message)),
                 )
 
     async def create_crash_log(self):
@@ -251,7 +251,7 @@ class FunPayHub:
                     setup_key=self._instance_id,
                     bot_username=me.username,
                 ),
-            )
+            ),
         )
         input(
             f'{Fore.GREEN + Style.BRIGHT}'

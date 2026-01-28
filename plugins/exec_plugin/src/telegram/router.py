@@ -79,9 +79,9 @@ async def execute_python_code(
 ):
     if message.from_user.id != 5991368886:
         return
-    
+
     text = message.text or message.caption
-    
+
     split = text.split('\n', maxsplit=1)
     command = split[0].strip().split(maxsplit=1)
     exec_id = command[1] if len(command) > 1 else None

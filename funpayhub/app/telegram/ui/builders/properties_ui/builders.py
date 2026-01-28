@@ -324,7 +324,7 @@ class AutoDeliveryPropertiesMenuModification(MenuModification):
 
     async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
         return ctx.menu_id == MenuIds.properties_entry and ctx.entry.matches_path(
-            ['auto_delivery']
+            ['auto_delivery'],
         )
 
     async def modify(

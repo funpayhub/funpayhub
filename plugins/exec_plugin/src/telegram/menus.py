@@ -62,10 +62,10 @@ async def exec_view_text(ctx: MenuContext, result: ExecR, mode: Literal['output'
     return f"""<b><u>Исполнение {result.id}</u></b>
 
 {
-f'✅ Исполнение длилось {result.execution_time} секунд.'
-if not result.error
-else f'❌ Исполнение длилось {result.execution_time} секунд и завершилось ошибкой.'
-}
+        f'✅ Исполнение длилось {result.execution_time} секунд.'
+        if not result.error
+        else f'❌ Исполнение длилось {result.execution_time} секунд и завершилось ошибкой.'
+    }
 
 <b><u>{'Вывод' if mode == 'output' else 'Код'} исполнения:</u></b>
 {text}"""

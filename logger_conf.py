@@ -4,7 +4,6 @@ import re
 import sys
 import logging
 from typing import TYPE_CHECKING, Any
-from utils import IS_WINDOWS
 
 import colorama
 from colorama import Back, Fore, Style
@@ -21,7 +20,6 @@ COLORS = {
     logging.ERROR: [Fore.RED],
     logging.CRITICAL: [Fore.WHITE, Back.RED],
 }
-
 
 
 EMOJIS = {
@@ -108,7 +106,7 @@ class ConsoleLoggerFormatter(logging.Formatter):
             ESC_RE.sub('', text)
 
         text = (
-            f'{reset}{EMOJIS[record.levelno] if sys.stdout.isatty() else ''} {time_str} '
+            f'{reset}{EMOJIS[record.levelno] if sys.stdout.isatty() else ""} {time_str} '
             f'[{color}{record.levelname:^9}{reset}] '
             f'{text}{reset}'
         )

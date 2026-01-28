@@ -6,13 +6,13 @@ from html import escape
 
 from aiogram.types import Message
 from funpaybotengine.types import Category
+from eventry.asyncio.filter import all_of
 
 from funpayhub.app.dispatching import Router
-from funpayhub.app.telegram.ui.builders.context import FunPayStartNotificationMenuContext
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import MenuContext
-from eventry.asyncio.filter import all_of
+from funpayhub.app.telegram.ui.builders.context import FunPayStartNotificationMenuContext
 
 
 if TYPE_CHECKING:
@@ -65,7 +65,7 @@ async def edit_start_notifications(error: Exception | None, tg_ui: UIRegistry, h
         ctx = FunPayStartNotificationMenuContext(
             menu_id=MenuIds.funpay_start_notification,
             trigger=i,
-            error=error
+            error=error,
         )
         menu = await tg_ui.build_menu(ctx)
 
@@ -78,8 +78,8 @@ async def edit_start_notifications(error: Exception | None, tg_ui: UIRegistry, h
 @router.on_funpay_start(
     all_of(
         lambda error: error is None,
-        lambda properties: properties.toggles.auto_raise.value
-    )
+        lambda properties: properties.toggles.auto_raise.value,
+    ),
 )
 async def start_auto_raise(fp: FunPay):
     await fp.start_raising_profile_offers()

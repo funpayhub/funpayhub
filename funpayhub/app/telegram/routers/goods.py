@@ -1,25 +1,24 @@
+from __future__ import annotations
+
+import re
 import html
-
-from aiogram import Router
-from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import StateFilter
-from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
 from typing import Any
-
-from funpayhub.app.telegram import callbacks as cbs
-from funpayhub.app.telegram.ui.builders.context import StateUIContext, GoodsInfoMenuContext
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.lib.goods_sources import GoodsSourcesManager, FileGoodsSource, GoodsSource
-from funpayhub.lib.telegram.ui import UIRegistry
-from funpayhub.lib.translater import Translater
-from funpayhub.app.telegram import states
-from aiogram.types import BufferedInputFile
-from aiogram import Bot as TGBot
 from io import BytesIO
 from pathlib import Path
+
+from aiogram import Bot as TGBot, Router
+from aiogram.types import Message, CallbackQuery, BufferedInputFile
+from aiogram.filters import StateFilter
+from aiogram.exceptions import TelegramBadRequest
+from aiogram.fsm.context import FSMContext
+
+from funpayhub.app.telegram import states, callbacks as cbs
+from funpayhub.lib.translater import Translater
+from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.app.workflow_data import WorkflowData as wfd
-import re
+from funpayhub.lib.goods_sources import GoodsSource, FileGoodsSource, GoodsSourcesManager
+from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.telegram.ui.builders.context import StateUIContext, GoodsInfoMenuContext
 
 
 r = router = Router(name='fph:goods')
@@ -37,7 +36,7 @@ async def _set_state_and_send_state_ui(
         menu_id=MenuIds.state_menu,
         delete_on_clear=True,
         text=text,
-        trigger=query
+        trigger=query,
     )
     menu = await wfd.tg_ui_registry.build_menu(ctx)
     msg = await menu.answer_to(query.message)
@@ -51,7 +50,7 @@ async def _set_state_and_send_state_ui(
 async def _generate_and_send_new_goods_info(
     trigger: CallbackQuery | Message,
     source: GoodsSource,
-    callback_data
+    callback_data,
 ):
     context = GoodsInfoMenuContext(
         menu_id=MenuIds.goods_source_info,
@@ -60,12 +59,12 @@ async def _generate_and_send_new_goods_info(
         data={
             'callback_data': cbs.OpenMenu(
                 menu_id=MenuIds.goods_source_info,
-                history=callback_data.history[:-1], # SomeHistory -> OpenMenu (del) -> Action
+                history=callback_data.history[:-1],  # SomeHistory -> OpenMenu (del) -> Action
                 context_data={
                     'source_id': source.source_id,
-                }
-            )
-        }
+                },
+            ),
+        },
     )
     menu = await wfd.tg_ui_registry.build_menu(context)
 
@@ -87,7 +86,9 @@ async def _get_source(trigger: CallbackQuery | Message, source_id: str) -> Goods
     return source
 
 
-async def _get_data_and_clear_state(state: FSMContext, clear: bool = True, delete: bool = True) -> Any:
+async def _get_data_and_clear_state(
+    state: FSMContext, clear: bool = True, delete: bool = True
+) -> Any:
     data = (await state.get_data())['data']
     if clear:
         await state.clear()
@@ -115,7 +116,7 @@ async def download_goods(query: CallbackQuery, callback_data: cbs.DownloadGoods)
 
     await query.message.answer_document(
         BufferedInputFile('\n'.join(goods).encode('utf-8'), 'goods.txt'),
-        caption=f'<b>{html.escape(source.display_id)}</b>'
+        caption=f'<b>{html.escape(source.display_id)}</b>',
     )
     await query.answer()
 
@@ -130,7 +131,7 @@ async def reload_goods(query: CallbackQuery, callback_data: cbs.ReloadGoodsSourc
         history=callback_data.history,
         context_data={
             'source_id': source.source_id,
-        }
+        },
     )
 
     try:
@@ -176,13 +177,15 @@ async def upload_goods(message: Message, state: FSMContext, translater: Translat
 
     if isinstance(data, states.UploadingGoods):
         await source.set_goods(new_goods)
-    elif isinstance(data,states.AddingGoods):
+    elif isinstance(data, states.AddingGoods):
         await source.add_goods(new_goods)
 
     await _generate_and_send_new_goods_info(message, source, data.callback_data)
 
 
 amount_re = re.compile(r'(\d+)-(\d+)')
+
+
 @router.message(StateFilter(states.RemovingGoods.identifier))
 async def remove_goods(
     message: Message,
@@ -224,7 +227,7 @@ async def set_adding_txt_source_state(
         menu_id=MenuIds.state_menu,
         delete_on_clear=True,
         text=translater.translate('$add_goods_txt_source_text'),
-        trigger=query
+        trigger=query,
     )
     menu = await tg_ui.build_menu(ctx)
     msg = await menu.answer_to(query.message)
@@ -237,6 +240,7 @@ async def set_adding_txt_source_state(
 
 
 INVALID_CHARS = set('<>:"/\\|?*\0')
+
 
 @router.message(StateFilter(states.AddingGoodsTxtSource.identifier))
 async def add_goods_txt_source(
@@ -259,11 +263,11 @@ async def add_goods_txt_source(
     if not filename:
         await message.reply(translater.translate('$err_goods_txt_source_name_empty'))
         return
-    elif (
-        filename in ['.', '..'] or
-        filename.endswith((' ', '.')) or
-        any(c in INVALID_CHARS for c in filename) or
-        any(ord(c) < 32 for c in filename)
+    if (
+        filename in ['.', '..']
+        or filename.endswith((' ', '.'))
+        or any(c in INVALID_CHARS for c in filename)
+        or any(ord(c) < 32 for c in filename)
     ):
         await message.reply(translater.translate('$err_goods_txt_source_invalid_name'))
         return
@@ -298,10 +302,10 @@ async def add_goods_txt_source(
                 menu_id=MenuIds.goods_source_info,
                 history=data.callback_data.history,
                 context_data={
-                    'source_id': source.source_id
-                }
-            )
-        }
+                    'source_id': source.source_id,
+                },
+            ),
+        },
     )
     menu = await tg_ui.build_menu(context)
     await menu.answer_to(message)

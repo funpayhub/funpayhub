@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from contextlib import suppress
 
 from aiogram import Router
-from aiogram.exceptions import AiogramError
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
-from funpayhub.lib.translater import Translater
-from contextlib import suppress
+from aiogram.exceptions import AiogramError
 
 import exit_codes
 import funpayhub.app.telegram.callbacks as cbs
+from funpayhub.lib.translater import Translater
 
 
 if TYPE_CHECKING:
@@ -56,7 +56,9 @@ async def standard_mode(message: Message, hub: FunPayHub, translater: Translater
 
 
 @r.callback_query(cbs.ShutDown.filter())
-async def shutdown(query: CallbackQuery, hub: FunPayHub, callback_data: cbs.ShutDown, translater: Translater) -> None:
+async def shutdown(
+    query: CallbackQuery, hub: FunPayHub, callback_data: cbs.ShutDown, translater: Translater
+) -> None:
     texts = {
         exit_codes.SHUTDOWN: '$shutting_down',
         exit_codes.RESTART: '$restarting',
@@ -71,6 +73,7 @@ async def shutdown(query: CallbackQuery, hub: FunPayHub, callback_data: cbs.Shut
         pass
 
     await hub.shutdown(callback_data.exit_code)
+
 
 @r.startup()
 async def startup(hub: FunPayHub):
@@ -90,6 +93,5 @@ async def startup(hub: FunPayHub):
 
         await hub.telegram.bot.set_my_short_description(
             '🤖 Лучший бот для автоматизации продаж на FunPay!\n'
-            '💬 Чат проекта: https://t.me/funpay_hub'
+            '💬 Чат проекта: https://t.me/funpay_hub',
         )
-

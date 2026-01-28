@@ -1,5 +1,6 @@
 from __future__ import annotations
-from enum import StrEnum, UNIQUE, verify
+
+from enum import UNIQUE, StrEnum, verify
 
 
 @verify(UNIQUE)

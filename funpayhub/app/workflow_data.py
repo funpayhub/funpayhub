@@ -18,8 +18,8 @@ if TYPE_CHECKING:
     from funpayhub.app.funpay.main import FunPay
     from funpayhub.lib.telegram.ui import UIRegistry
     from funpayhub.app.telegram.main import Telegram
-    from funpayhub.lib.hub.text_formatters import FormattersRegistry
     from funpayhub.lib.goods_sources import GoodsSourcesManager
+    from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 
 class _WorkflowData(UserDict):

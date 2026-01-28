@@ -1,20 +1,24 @@
 from __future__ import annotations
 
+
 __all__ = [
     'State',
-    'StateFilter'
+    'StateFilter',
 ]
-from typing import TYPE_CHECKING, Any
 import warnings
+from typing import TYPE_CHECKING, Any
 
-from funpayhub.lib.core import classproperty
 from aiogram.types import TelegramObject
 from aiogram.filters import Filter
 from aiogram.dispatcher.middlewares.user_context import EventContext
+
+from funpayhub.lib.core import classproperty
+
 from .states_manager import STATES_MANAGER_KEY
 
+
 if TYPE_CHECKING:
-    from funpayhub.lib.telegram.fsm.states_manager import StatesManager
+    pass
 
 
 _STATES = set()
@@ -49,11 +53,12 @@ class StateFilter(Filter):
     """
     State filter
     """
-    __slots__ = ("states",)
+
+    __slots__ = ('states',)
 
     def __init__(self, *states: type[State]) -> None:
         if not states:
-            msg = "At least one state is required"
+            msg = 'At least one state is required'
             raise ValueError(msg)
 
         self.states = {i.identifier for i in states}
@@ -67,13 +72,13 @@ class StateFilter(Filter):
         self,
         obj: TelegramObject,
         event_context: EventContext,
-        **kwargs
+        **kwargs,
     ) -> bool | dict[str, Any]:
         fsm = kwargs[STATES_MANAGER_KEY]
         state = fsm.get_state(
             event_context.user_id,
             event_context.chat_id,
-            event_context.thread_id
+            event_context.thread_id,
         )
         if state is None:
             return False
@@ -82,5 +87,5 @@ class StateFilter(Filter):
             return False
 
         return {
-            'state_obj': state
+            'state_obj': state,
         }

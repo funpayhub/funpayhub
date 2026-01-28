@@ -8,7 +8,6 @@ __all__ = [
 ]
 
 import math
-from typing import Literal
 
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
@@ -144,7 +143,9 @@ async def build_menu_navigation_buttons(
     return kb
 
 
-async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int = -1) -> KeyboardBuilder:
+async def build_view_navigation_buttons(
+    ctx: MenuContext, total_pages: int = -1
+) -> KeyboardBuilder:
     kb: KeyboardBuilder = KeyboardBuilder()
     callback_data = ctx.callback_data
 
@@ -155,8 +156,8 @@ async def build_view_navigation_buttons(ctx: MenuContext, total_pages: int = -1)
 
     page_amount_btn = Button.callback_button(
         button_id='menu_page_counter',
-        text=f'{ctx.view_page + (1 if unknown_max_pages or total_pages else 0)}' +
-             (f' / {total_pages}' if not unknown_max_pages else ''),
+        text=f'{ctx.view_page + (1 if unknown_max_pages or total_pages else 0)}'
+        + (f' / {total_pages}' if not unknown_max_pages else ''),
         callback_data=cbs.ChangeViewPageManually(
             total_pages=total_pages,
             history=callback_data.as_history(),
