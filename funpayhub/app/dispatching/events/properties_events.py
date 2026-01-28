@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class ParameterValueChangedEvent(HubEvent, name='fph:parameter_value_changed'):
-    def __init__(self, param: MutableParameter) -> None:
+    def __init__(self, param: MutableParameter[Any]) -> None:
         super().__init__()
         self.parameter = param
 
