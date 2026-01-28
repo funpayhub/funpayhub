@@ -129,53 +129,41 @@ class FormattersRegistry:
         raise_on_error: bool = True,
     ) -> MessagesStack:
         """
-        Извлекает из переданного текста все вызовы форматтеров и выполняет их.
+        Форматирует текст, выполняя найденные форматтер-вызовы.
 
-        :param text: Исходный текст.
-        :param data: Словарь с данными, который будет передаваться в функции-форматтеры.
-        :return: `MessagesStack`.
+        Текст предварительно разбивается функцией `extract_calls` на обычные строковые
+        фрагменты и объекты `Invocation`. Каждый вызов форматтера либо заменяется
+        результатом его выполнения, либо (в случае ошибки / отсутствия форматтера)
+        вставляется в результат как исходная строка вызова.
         """
         if query is not None and not isinstance(query, CategoriesQuery):
             query = CategoriesExistsQuery(query)
 
-        parser = extract_calls(text)
+        parsed = extract_calls(text)
         result: list[str | Image] = []
-        first_iter = True
 
-        while True:
-            try:
-                call_name, args, call_start, call_end = parser.send(None if first_iter else text)
-                if first_iter:
-                    first_iter = False
-            except StopIteration:
-                append_or_concatenate(result, text)
-                return MessagesStack(result)
+        for part in parsed.split:
+            if isinstance(part, str):
+                result.append(part)
+                continue
 
-            append_or_concatenate(result, text[:call_start])
-            text = text[call_end + 1 :]
-
-            formatter_cls = self._formatters.get(call_name)
+            formatter_cls = self._formatters.get(part.name)
             if not formatter_cls or (query and not query(formatter_cls, self)):
+                result.append(part.string)
                 continue
 
             try:
-                formatter = formatter_cls(*args)
-                append_or_concatenate(result, await formatter(**data))
-            except:
+                formatter = formatter_cls(*part.args)
+                formatted = await formatter(**data)
+
+                if isinstance(formatted, list):
+                    result.extend(formatted)
+                else:
+                    result.append(formatted)
+
+            except Exception:
                 if raise_on_error:
                     raise
-                continue
+                result.append(part.string)
 
-
-def append_or_concatenate(to: list[Any], obj: FORMATTER_R) -> None:
-    if not to or isinstance(obj, list):
-        to.append(obj) if not isinstance(obj, list) else to.extend(obj)
-        return
-
-    if isinstance(obj, str):
-        if isinstance(to[-1], str):
-            to[-1] += obj
-        else:
-            to.append(obj)
-    else:
-        to.append(obj)
+        return MessagesStack(result)

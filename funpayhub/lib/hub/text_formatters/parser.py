@@ -2,109 +2,142 @@ from __future__ import annotations
 
 import re
 from typing import Any
-from collections.abc import Generator
+from dataclasses import field, dataclass
 
 
 KEY_RE = re.compile(r'(?<!\$)\$[a-zA-Zа-яА-Я0-9-_.]+')
 
 
-def extract_calls(text: str, /) -> Generator[tuple[str, list[Any], int, int], str | None, None]:
-    """
-    Извлекает из текста вызовы вида `$call_name<arg1, arg2, ...>` или `$call_name`.
+@dataclass
+class Invocation:
+    string: str
+    name: str
+    args: list[Any]
 
-    Синтаксис:
-    - Вызов начинается с символа `$`.
-    - Аргументы (необязательные) указываются в `<>` сразу после имени вызова.
+
+@dataclass
+class TextWithFormattersInvocations:
+    text: str
+    split: list[str | Invocation] = field(default_factory=list)
+
+    @property
+    def invocations(self) -> list[Invocation]:
+        return [i for i in self.split if isinstance(i, Invocation)]
+
+
+def extract_calls(text: str, /) -> TextWithFormattersInvocations:
+    """
+    Разбирает текст и извлекает форматтер-вызовы вида `$name` или `$name<args>`.
+
+    Входной текст разбивается на последовательность фрагментов, где каждый элемент —
+    либо обычная строка, либо объект `Invocation`, описывающий найденный вызов.
+    Порядок элементов полностью соответствует исходному тексту.
+
+    Формат вызова:
+    - Вызов начинается с символа `$`, за которым следует имя.
+    - Имя может содержать латиницу, кириллицу, цифры и символы `- _ .`.
+    - Сразу после имени может следовать список аргументов в угловых скобках `<...>`.
     - Аргументы разделяются запятой.
 
     Типизация аргументов:
-    - Целые числа конвертируются в `int`.
-    - Числа с плавающей точкой — в `float`.
-    - Значения `True`, `False`, `None` — в соответствующие типы Python.
-    - Все остальные аргументы остаются строками.
-    - Чтобы явно передать строку, используйте кавычки: `$call_name<"True">`.
-    - Для кавычек внутри строкового аргумента используйте экранирование `\"`:
-      `$call_name<"Текст с \"кавычками\".">`.
+    - `int` — для целых чисел.
+    - `float` — для чисел с плавающей точкой.
+    - `True`, `False`, `None` — конвертируются в соответствующие типы Python.
+    - Строковые аргументы могут быть заключены в двойные кавычки.
+    - Для передачи кавычек внутри строки используется экранирование `\"`.
 
     Экранирование:
-    - Чтобы указать символ `$`, используйте `$$`.
-      Например: `$$call_name` не будет извлечён, а `$call_name` — будет.
+    - Последовательность `$$` интерпретируется как литеральный символ `$`
+      и не считается началом вызова.
 
-    :param text: Строка, из которой необходимо извлечь вызовы.
-    :return: Генератор, выдающий кортежи `(имя_вызова, список_аргументов, индекс начала вызова, индекс конца вызова).`.
+    :param text: Исходная строка для разбора.
+    :return: Объект `TextWithFormattersInvocations`, содержащий исходный текст и
+             список фрагментов (`str` и `Invocation`) в порядке следования.
     """
-    finditer = KEY_RE.finditer(text)
 
-    while True:
-        try:
-            key = next(finditer)
-        except StopIteration:
-            return
+    result = TextWithFormattersInvocations(text)
+    pos = 0
 
-        start, end = key.start(), key.end() - 1
-        if len(text) <= end + 1 or text[end + 1] != '<':
-            new_text = yield text[start + 1 : end + 1], [], start, end
-            if new_text is not None:
-                text = new_text
-                finditer = KEY_RE.finditer(text)
-            continue
+    for m in KEY_RE.finditer(text):
+        start = m.start()
+        end = m.end()
 
-        args = []
-        args_gen = parse_args(text, end + 1)
-        while True:
-            try:
-                args.append(next(args_gen))
-            except StopIteration as e:
-                end_index = e.value
-                break
+        if start > pos:
+            result.split.append(text[pos:start])
 
-        new_text = yield text[start + 1 : end + 1], args, start, end_index
-        if new_text is not None:
-            text = new_text
-            finditer = KEY_RE.finditer(text)
+        name = m.group()[1:]
+        args: list[Any] = []
+        invocation_end = end
+
+        if end < len(text) and text[end] == '<':
+            args, close_index = parse_args(text, end)
+            invocation_end = close_index + 1
+
+        invocation_str = text[start:invocation_end]
+
+        result.split.append(
+            Invocation(
+                string=invocation_str,
+                name=name,
+                args=args,
+            ),
+        )
+
+        pos = invocation_end
+
+    if pos < len(text):
+        result.split.append(text[pos:])
+
+    return result
 
 
-def parse_args(text: str, args_start: int = 0) -> Generator[Any, None, int]:
+def parse_args(text: str, start: int) -> tuple[list[Any], int]:
     """
-    Находит конец списка аргументов вызова, а так же парсит сами аргументы.
+    Парсит аргументы вызова, начиная с символа `<`.
 
-    :param text: Оригинальный текст.
-    :param args_start: Индекс символа, с которого начинается список аргументов (индекс символа `<`).
-    :return: Генератор, выдающий конвертированные аргументы вызова.
+    :param text: Исходный текст.
+    :param start: Индекс символа `<`.
+    :return: Кортеж (args, end_index), где end_index — индекс символа `>`.
     """
+    if start >= len(text) or text[start] != '<':
+        raise ValueError('Expected <')
+
+    args: list[Any] = []
+    buf: list[str] = []
+    i = start + 1
     quote_opened = False
-    if text[args_start] != '<':
-        raise ValueError('Expected <')  # todo: parsing error
 
-    curr_arg_index = next_index = args_start + 1  # excluding '<'
+    while i < len(text):
+        ch = text[i]
 
-    while True:
-        index = next_index
-        next_index += 1
-
-        try:
-            sym = text[index]
-        except IndexError:
-            raise ValueError('Unexpected end of text')  # todo: parsing error
-
-        if sym == '"' and text[index - 1] != '\\':
+        if ch == '"' and (i == 0 or text[i - 1] != '\\'):
             quote_opened = not quote_opened
+            buf.append(ch)
 
-        elif sym == '<' and not quote_opened:
-            raise ValueError('Unexpected <')  # todo: parsing error
+        elif ch == '<' and not quote_opened:
+            raise ValueError('Unexpected <')
 
-        elif sym == '>' and not quote_opened:
-            if curr_arg_index == index:
-                return index
-            yield evaluate_type(text[curr_arg_index:index].strip())
-            return index
+        elif ch == '>' and not quote_opened:
+            if buf:
+                arg = ''.join(buf).strip()
+                if not arg:
+                    raise ValueError('Unexpected ,')
+                args.append(evaluate_type(arg))
+            return args, i
 
-        elif sym == ',' and not quote_opened:
-            if index == curr_arg_index:  # ,,
+        elif ch == ',' and not quote_opened:
+            arg = ''.join(buf).strip()
+            if not arg:
                 raise ValueError('Unexpected ,')
+            args.append(evaluate_type(arg))
+            buf.clear()
 
-            yield evaluate_type(text[curr_arg_index:index].strip())
-            curr_arg_index = index + 1
+        else:
+            buf.append(ch)
+
+        i += 1
+
+    raise ValueError('Unexpected end of text')
 
 
 def evaluate_type(arg: str) -> Any:
@@ -143,3 +176,9 @@ def evaluate_type(arg: str) -> Any:
         pass
 
     return arg
+
+
+if __name__ == '__main__':
+    text = 'Привет $foo<1, "bar", True, False, "True", ""True""> мир $$test $baz'
+    res = extract_calls(text)
+    print(res.split)
