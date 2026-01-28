@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import shutil
+from typing import Any
 
 import colorama
 from colorama import Fore, Style
@@ -18,15 +19,15 @@ def clear_len(s: str, /) -> int:
     return len(ESC_RE.sub('', s))
 
 
-def one_line_re(line_length: int, /) -> re.Pattern:
+def one_line_re(line_length: int, /) -> re.Pattern[Any]:
     return re.compile(rf'(?:(?:{_ESC_RE})*.(?:{_ESC_RE})*){{1,{line_length}}}')
 
 
-def collect_esc_codes(s: str, /):
+def collect_esc_codes(s: str, /) -> str:
     return ''.join(i.group() for i in ESC_RE.finditer(s))
 
 
-def wrap_word(s: str, pattern: re.Pattern) -> list[str]:
+def wrap_word(s: str, pattern: re.Pattern[Any]) -> list[str]:
     return [i.group() for i in pattern.finditer(s)]
 
 
@@ -38,18 +39,20 @@ def wrap_lines(s: str, line_len: int) -> list[str]:
 
     lines = []
 
-    def next_line():
+    current_line = ''
+    current_len = 0
+    first_loop = True
+
+    def next_line() -> None:
         nonlocal current_line, current_len, first_loop
         current_line = ''
         current_len = 0
         first_loop = True
 
     for line in s.splitlines():
+        next_line()
         words = line.split(' ')
-        current_line = ''
-        current_len = 0
         word_index = 0
-        first_loop = True
         while True:
             if word_index + 1 > len(words):
                 lines.append(current_line)
@@ -128,7 +131,7 @@ def box_messages(
             f'Current: {message_width} ({width=}, {horizontal_indent=}).',
         )
 
-    messages = [wrap_lines(i, message_width) for i in messages]
+    messages = [wrap_lines(i, message_width) for i in messages]  # type: ignore[assignment]
     max_message_len = max(*(clear_len(line) for msg in messages for line in msg))
     width = max_message_len + 2 + horizontal_indent * 2
 

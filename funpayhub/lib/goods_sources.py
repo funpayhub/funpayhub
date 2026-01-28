@@ -15,7 +15,7 @@ class NotEnoughProductsError(RuntimeError):
 
 class GoodsSource(ABC):
     @abstractmethod
-    def __init__(self, source: Any, *args, **kwargs) -> None: ...
+    def __init__(self, source: Any, *args: Any, **kwargs: Any) -> None: ...
 
     @abstractmethod
     async def load(self) -> None: ...
@@ -86,7 +86,7 @@ class FileGoodsSource(GoodsSource):
                     count += 1
         return count
 
-    def _create_file(self):
+    def _create_file(self) -> None:
         if not self.path.exists():
             self._path.parent.mkdir(parents=True, exist_ok=True)
             self._path.touch()
@@ -173,12 +173,12 @@ class FileGoodsSource(GoodsSource):
             raise ValueError('Start must be greater than 0.')
 
         if amount == -1:
-            amount = float('inf')
+            amount = float('inf')  # type: ignore[assignment]
 
         if start > self._goods_amount:
             return []
 
-        result = []
+        result: list[str] = []
         async with self._lock:
             with open(self.path, 'r', encoding='utf-8') as f:
                 current_line = 0
@@ -267,20 +267,20 @@ class FileGoodsSource(GoodsSource):
 
 
 class GoodsSourcesManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self._sources: dict[str, GoodsSource] = {}
         self._lock = Lock()
 
     def get(self, source_id: str) -> GoodsSource | None:
         return self._sources.get(source_id)
 
-    async def add_source(
+    async def add_source[S: GoodsSource](
         self,
-        source_cls: type[GoodsSource],
+        source_cls: type[S],
         source: Any,
-        *args,
-        **kwargs,
-    ) -> GoodsSource:
+        *args: Any,
+        **kwargs: Any,
+    ) -> S:
         async with self._lock:
             source = source_cls(source, *args, **kwargs)
             if source.source_id in self._sources:
@@ -299,14 +299,14 @@ class GoodsSourcesManager:
             await source.remove()
             del self._sources[source_id]
 
-    async def pop_goods(self, source_id: str, amount: int):
+    async def pop_goods(self, source_id: str, amount: int) -> list[str]:
         async with self._lock:
             source = self.get(source_id)
             if source is None:
                 raise KeyError(f'Source {source_id} does not exist.')
             return await source.pop_goods(amount)
 
-    async def get_goods(self, source_id: str, amount: int, start: int = 0):
+    async def get_goods(self, source_id: str, amount: int, start: int = 0) -> list[str]:
         async with self._lock:
             source = self.get(source_id)
             if source is None:

@@ -208,5 +208,5 @@ class MutableParameter[ValueT](Parameter[ValueT]):
     async def set_converter(
         self,
         converter: Callable[[Any], ValueT],
-    ):
+    ) -> None:
         self._converter = converter

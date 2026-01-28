@@ -47,7 +47,7 @@ class HubLogMessage(logging.LogRecord):
         r'(?P<conversion_type>[diouxXeEfFgGcrsa])',
     )
 
-    def __init__(self, *args, translater: Translater | None = None, **kwargs):
+    def __init__(self, *args: Any, translater: Translater | None = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._translater = translater
 
@@ -72,20 +72,22 @@ class HubLogMessage(logging.LogRecord):
             shift += diff
         return msg
 
-    def _colorize(self, s: str, m: re.Match, v: Any) -> str:
+    def _colorize(self, s: str, m: re.Match[Any], v: Any) -> str:
+        formatted = str(s % v)
+
         if isinstance(v, bool):
             return (
                 Style.RESET_ALL
                 + (Fore.GREEN if v else Fore.RED)
                 + Style.BRIGHT
-                + (s % v)
+                + formatted
                 + RESET_MARKER
             )
         if isinstance(v, (int, float)):
-            return Style.RESET_ALL + Fore.CYAN + Style.BRIGHT + (s % v) + RESET_MARKER
+            return Style.RESET_ALL + Fore.CYAN + Style.BRIGHT + formatted + RESET_MARKER
         if isinstance(v, str):
-            return Style.RESET_ALL + Fore.GREEN + Style.BRIGHT + (s % v) + RESET_MARKER
-        return Style.RESET_ALL + Fore.YELLOW + (s % v) + RESET_MARKER
+            return Style.RESET_ALL + Fore.GREEN + Style.BRIGHT + formatted + RESET_MARKER
+        return Style.RESET_ALL + Fore.YELLOW + formatted + RESET_MARKER
 
 
 class ConsoleLoggerFormatter(logging.Formatter):

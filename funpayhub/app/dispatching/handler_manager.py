@@ -3,7 +3,7 @@ from __future__ import annotations
 
 __all__ = ('HandlerManager',)
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from eventry.asyncio.default_types import FilterType, HandlerType, MiddlewareType
 from eventry.asyncio.handler_manager import HandlerManager as BaseHandlerManager
@@ -35,20 +35,35 @@ class HandlerManager(BaseHandlerManager[FilterType, HandlerType, MiddlewareType,
 
     @property
     def inner_middleware(self) -> MiddlewareManager:
-        return self.middleware_manager(MiddlewareManagerTypes.INNER_PER_HANDLER)
+        return cast(
+            MiddlewareManager,
+            self.middleware_manager(MiddlewareManagerTypes.INNER_PER_HANDLER),
+        )
 
     @property
     def outer_middleware(self) -> MiddlewareManager:
-        return self.middleware_manager(MiddlewareManagerTypes.OUTER_PER_HANDLER)
+        return cast(
+            MiddlewareManager,
+            self.middleware_manager(MiddlewareManagerTypes.OUTER_PER_HANDLER),
+        )
 
     @property
     def manager_outer(self) -> MiddlewareManager:
-        return self.middleware_manager(MiddlewareManagerTypes.MANAGER_OUTER)
+        return cast(
+            MiddlewareManager,
+            self.middleware_manager(MiddlewareManagerTypes.MANAGER_OUTER),
+        )
 
     @property
     def manager_inner(self) -> MiddlewareManager:
-        return self.middleware_manager(MiddlewareManagerTypes.MANAGER_INNER)
+        return cast(
+            MiddlewareManager,
+            self.middleware_manager(MiddlewareManagerTypes.MANAGER_INNER),
+        )
 
     @property
     def manager_handling_process(self) -> MiddlewareManager:
-        return self.middleware_manager(MiddlewareManagerTypes.HANDLING_PROCESS)
+        return cast(
+            MiddlewareManager,
+            self.middleware_manager(MiddlewareManagerTypes.HANDLING_PROCESS),
+        )

@@ -89,13 +89,20 @@ logger.info('PYTHONPATH: %r', os.environ.get('PYTHONPATH'))
 
 def elevate() -> None:
     try:
-        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0  # type: ignore[attr-defined]
     except:
         is_admin = False
 
     if not is_admin:
         params = ' '.join([f'"{arg}"' for arg in sys.argv])
-        ctypes.windll.shell32.ShellExecuteW(None, 'runas', sys.executable, params, None, 1)
+        ctypes.windll.shell32.ShellExecuteW(  # type: ignore[attr-defined]
+            None,
+            'runas',
+            sys.executable,
+            params,
+            None,
+            1,
+        )
         sys.exit(0)
 
 
@@ -173,7 +180,7 @@ def update() -> None:
             env=os.environ,
         )
     else:
-        os.execv(sys.executable, [sys.executable, launcher_path, *launch_args])
+        os.execv(sys.executable, [sys.executable, str(launcher_path), *launch_args])
     sys.exit(0)
 
 

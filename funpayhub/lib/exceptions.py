@@ -14,15 +14,15 @@ __all__ = [
 ]
 
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 
 if TYPE_CHECKING:
-    from goods_sources import GoodsSource
+    from funpayhub.lib.goods_sources import GoodsSource
 
 
 class TranslatableException(Exception):
-    def __init__(self, message: str, *args) -> None:
+    def __init__(self, message: str, *args: Any) -> None:
         super().__init__(message, *args)
         self.message = message
         self.args = args

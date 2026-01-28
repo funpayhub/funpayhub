@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import tomllib
-from typing import Any, NoReturn, override
+from typing import Any, NoReturn
 from types import MappingProxyType
 
 from funpayhub.lib.properties import Properties
@@ -89,12 +89,10 @@ class AutoResponseEntryProperties(Properties):
             ),
         )
 
-    @override
     @property
     def parent(self) -> AutoResponseProperties | None:
         return super().parent  # type: ignore
 
-    @override
     @parent.setter
     def parent(self, value: AutoResponseProperties) -> None:
         if not isinstance(value, AutoResponseProperties):
