@@ -28,35 +28,43 @@ async def shutdown(message: Message, hub: FunPayHub):
 
 
 @router.message(Command('restart'))
-async def restart(message: Message, hub: FunPayHub):
-    await message.reply('$shutting_down')
+async def restart(message: Message, hub: FunPayHub, translater: Translater):
+    await message.reply(translater.translate('$restarting'))
     await hub.shutdown(exit_codes.RESTART)
 
 
 @router.message(Command('safe_mode'))
-async def safe_mode(message: Message, hub: FunPayHub):
+async def safe_mode(message: Message, hub: FunPayHub, translater: Translater):
     if hub.safe_mode:
-        await message.reply('$already_in_safe_mode')
+        await message.reply(translater.translate('$already_in_safe_mode'))
         return
 
-    await message.reply('$shutting_down')
+    await message.reply(translater.translate('$restarting_in_safe_mode'))
     await hub.shutdown(exit_codes.RESTART_SAFE)
 
 
 @router.message(Command('standard_mode'))
-async def standard_mode(message: Message, hub: FunPayHub):
+async def standard_mode(message: Message, hub: FunPayHub, translater: Translater):
     if not hub.safe_mode:
-        await message.reply('$already_in_standard_mode')
+        await message.reply(translater.translate('$already_in_standard_mode'))
         return
 
-    await message.reply('$shutting_down')
+    await message.reply(translater.translate('$restarting_in_standard_mode'))
     await hub.shutdown(exit_codes.RESTART_NON_SAFE)
 
 
 @r.callback_query(cbs.ShutDown.filter())
-async def shutdown(query: CallbackQuery, hub: FunPayHub, callback_data: cbs.ShutDown) -> None:
+async def shutdown(query: CallbackQuery, hub: FunPayHub, callback_data: cbs.ShutDown, translater: Translater) -> None:
+    texts = {
+        exit_codes.SHUTDOWN: '$shutting_down',
+        exit_codes.RESTART: '$restarting',
+        exit_codes.RESTART_SAFE: '$restarting_in_safe_mode',
+        exit_codes.RESTART_NON_SAFE: '$restarting_in_standard_mode',
+    }
+    text = texts.get(callback_data.exit_code, '$shutting_down')
+
     try:
-        await query.answer(text='$shutting_down', show_alert=True)
+        await query.answer(text=translater.translate(text), show_alert=True)
     except:
         pass
 
