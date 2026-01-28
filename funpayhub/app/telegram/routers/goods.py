@@ -87,9 +87,10 @@ async def _get_source(trigger: CallbackQuery | Message, source_id: str) -> Goods
     return source
 
 
-async def _get_data_and_clear_state(state: FSMContext, delete: bool = True) -> Any:
+async def _get_data_and_clear_state(state: FSMContext, clear: bool = True, delete: bool = True) -> Any:
     data = (await state.get_data())['data']
-    await state.clear()
+    if clear:
+        await state.clear()
     if delete:
         await data.message.delete()
     return data
@@ -170,7 +171,7 @@ async def upload_goods(message: Message, state: FSMContext, translater: Translat
     try:
         new_goods = await _get_goods_from_message(message)
     except:
-        await message.reply(translater.translate('$error_fetching_goods'))
+        await message.reply(translater.translate('$err_fetching_goods'))
         return
 
     if isinstance(data, states.UploadingGoods):
@@ -188,8 +189,9 @@ async def remove_goods(
     state: FSMContext,
     translater: Translater,
 ):
-    data: states.RemovingGoods = await _get_data_and_clear_state(state)
+    data: states.RemovingGoods = (await state.get_data())['data']
     if (source := await _get_source(message, data.source_id)) is None:
+        await _get_data_and_clear_state(state)
         return
 
     start_index, amount = None, None
@@ -202,10 +204,10 @@ async def remove_goods(
             amount = end_index - start_index + 1
 
     if start_index is None or amount is None or start_index < 0:
-        await message.reply(translater.translate('$error_removing_goods_wrong_format'))
+        await message.reply(translater.translate('$err_removing_goods_wrong_format'))
         return
 
-
+    await _get_data_and_clear_state(state)
     await source.remove_goods(start_index, amount)
     await _generate_and_send_new_goods_info(message, source, data.callback_data)
 
