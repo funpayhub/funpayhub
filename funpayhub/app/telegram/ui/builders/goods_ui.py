@@ -47,7 +47,7 @@ class GoodsSourcesListMenuBuilder(MenuBuilder):
             button_id='add_text_source',
             text=translater.translate('$add_txt_goods_source'),
             callback_data=cbs.AddGoodsTxtSource(
-                history=ctx.callback_data.history if ctx.callback_data else []
+                history=ctx.callback_data.as_history() if ctx.callback_data else []
             ).pack(),
         )
 

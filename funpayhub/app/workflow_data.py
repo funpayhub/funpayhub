@@ -12,13 +12,14 @@ if TYPE_CHECKING:
     from aiogram import Bot as TGBot, Dispatcher as TGDispatcher
     from funpaybotengine import Bot as FPBot, Dispatcher as FPDispatcher
 
-    from funpayhub.app import FunPayHub
+    from funpayhub.app.main import FunPayHub
     from funpayhub.app.properties import FunPayHubProperties
     from funpayhub.lib.translater import Translater
     from funpayhub.app.funpay.main import FunPay
     from funpayhub.lib.telegram.ui import UIRegistry
     from funpayhub.app.telegram.main import Telegram
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
+    from funpayhub.lib.goods_sources import GoodsSourcesManager
 
 
 class _WorkflowData(UserDict):
@@ -109,6 +110,10 @@ class _WorkflowData(UserDict):
     @property
     def tg_ui_registry(self) -> UIRegistry:
         return self.data['tg_ui']
+
+    @property
+    def goods_manager(self) -> GoodsSourcesManager:
+        return self.data['goods_manager']
 
 
 WorkflowData = _WorkflowData()
