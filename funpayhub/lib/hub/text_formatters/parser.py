@@ -10,19 +10,40 @@ KEY_RE = re.compile(r'(?<!\$)\$[a-zA-Zа-яА-Я0-9-_.]+')
 
 @dataclass
 class Invocation:
+    """Представляет один вызов форматтера, найденный в тексте."""
+
     string: str
+    """Полное строковое представление вызова, включая `$` и аргументы. 
+    Примеры: `$formatter_call`, `$formatter_call<arg1, arg2>`."""
+
     name: str
+    """Имя форматтера без символа `$`. Пример: `formatter_call`."""
+
     args: list[Any]
+    """Список аргументов, переданных в вызов, конвертированных в соответствующие типы Python."""
 
 
 @dataclass
 class TextWithFormattersInvocations:
+    """Представляет текст с найденными вызовами форматтеров, разделённый на фрагменты."""
+
     text: str
+    """Исходная строка, из которой выполнялся парсинг."""
+
     split: list[str | Invocation] = field(default_factory=list)
+    """
+    Список фрагментов текста в порядке следования. 
+    Каждый элемент — либо строка, либо объект `Invocation`.
+    """
 
     @property
     def invocations(self) -> list[Invocation]:
+        """Возвращает список всех объектов `Invocation` в порядке следования."""
         return [i for i in self.split if isinstance(i, Invocation)]
+
+    @classmethod
+    def from_text(cls, text: str) -> TextWithFormattersInvocations:
+        return extract_calls(text)
 
 
 def extract_calls(text: str, /) -> TextWithFormattersInvocations:
@@ -176,9 +197,3 @@ def evaluate_type(arg: str) -> Any:
         pass
 
     return arg
-
-
-if __name__ == '__main__':
-    text = 'Привет $foo<1, "bar", True, False, "True", ""True""> мир $$test $baz'
-    res = extract_calls(text)
-    print(res.split)

@@ -131,10 +131,9 @@ class FormattersRegistry:
         """
         Форматирует текст, выполняя найденные форматтер-вызовы.
 
-        Текст предварительно разбивается функцией `extract_calls` на обычные строковые
-        фрагменты и объекты `Invocation`. Каждый вызов форматтера либо заменяется
-        результатом его выполнения, либо (в случае ошибки / отсутствия форматтера)
-        вставляется в результат как исходная строка вызова.
+        Если форматтер не найден, оставляется текст его вызова. Исключение не возбуждается.
+        Если форматтер не подходит по `query`,
+            оставляется текст его вызоыва. Исключние не возбуждается.
         """
         if query is not None and not isinstance(query, CategoriesQuery):
             query = CategoriesExistsQuery(query)
@@ -166,4 +165,14 @@ class FormattersRegistry:
                     raise
                 result.append(part.string)
 
-        return MessagesStack(result)
+        return MessagesStack(normalize_messages(result))
+
+
+def normalize_messages(items: list[str | Image]) -> list[str | Image]:
+    result = []
+    for item in items:
+        if isinstance(item, str) and result and isinstance(result[-1], str):
+            result[-1] += item
+        else:
+            result.append(item)
+    return result
