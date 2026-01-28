@@ -71,7 +71,7 @@ class Telegram:
     def hub(self) -> FunPayHub:
         return self._hub
 
-    def _setup_dispatcher(self):
+    def _setup_dispatcher(self) -> None:
         if not self.hub.setup_completed:
             self._dispatcher.include_routers(*TELEGRAM_SETUP_ROUTERS)
             return
@@ -97,7 +97,7 @@ class Telegram:
         self.dispatcher.callback_query.outer_middleware(NeedHelpMiddleware())
         self.dispatcher.include_routers(router)
 
-    def _setup_commands(self):
+    def _setup_commands(self) -> None:
         self._commands.create_command('start', 'hub', True, '$command:start:description')
         self._commands.create_command('settings', 'hub', True, '$command:settings:description')
         self._commands.create_command('help', 'hub', True, '$commands:help:description')
@@ -111,7 +111,7 @@ class Telegram:
             '$commands.standard_mode:description',
         )
 
-    def _setup_ui_defaults(self):
+    def _setup_ui_defaults(self) -> None:
         for m in default_ui.MENU_BUILDERS:
             self.ui_registry.add_menu_builder(m)
 

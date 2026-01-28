@@ -71,7 +71,7 @@ async def sync_new_message(
     )
 
 
-async def send_message_task(chat_id: int, thread_id: int, bot: TGBot, menu: Menu):
+async def send_message_task(chat_id: int, thread_id: int, bot: TGBot, menu: Menu) -> None:
     await bot.send_message(
         chat_id=chat_id,
         message_thread_id=thread_id,

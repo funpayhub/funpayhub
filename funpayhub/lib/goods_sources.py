@@ -69,7 +69,7 @@ class FileGoodsSource(GoodsSource):
     Представляет файл с товарами.
     """
 
-    def __init__(self, source: str | Path):
+    def __init__(self, source: str | Path) -> None:
         if not isinstance(source, (str, Path)):
             raise ValueError('Source must be a string or Path object.')
 

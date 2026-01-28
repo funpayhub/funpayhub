@@ -15,7 +15,7 @@ router = Router(name='fph:on_new_sale')
 
 
 @router.on_new_sale(lambda events_stack: events_stack.data.get('offers_info') is not None)
-async def prepare_offers_info(events_stack: EventsStack, fp: FunPay):
+async def prepare_offers_info(events_stack: EventsStack, fp: FunPay) -> None:
     """
     Данный хэндлер (который по сути должен быть миддлварью, (и в будущем будет)) собирает
     все события о новых продажах из events stack, сортирует их по категориям / подкатегориям и

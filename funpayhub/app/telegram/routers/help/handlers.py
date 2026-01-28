@@ -21,7 +21,7 @@ need_help = set()
 
 
 class NeedHelpMiddleware(BaseMiddleware):
-    async def __call__(self, handler, event: CallbackQuery, data):
+    async def __call__(self, handler, event: CallbackQuery, data) -> None:
         if event.from_user.id not in need_help:
             await handler(event, data)
             return
@@ -30,7 +30,7 @@ class NeedHelpMiddleware(BaseMiddleware):
 
 
 @router.message(Command('help'))
-async def help_command(message: Message):
+async def help_command(message: Message) -> None:
     if message.from_user.id in need_help:
         need_help.remove(message.from_user.id)
         await message.answer('Вы вышли из режима справки.')

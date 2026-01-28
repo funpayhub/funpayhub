@@ -57,10 +57,10 @@ class Image:
 
 
 class MessagesStack:
-    def __init__(self, entries: list[str | Image]):
+    def __init__(self, entries: list[str | Image]) -> None:
         self.entries = entries
 
-    async def send(self, bot: Bot, chat_id: int | str):
+    async def send(self, bot: Bot, chat_id: int | str) -> None:
         for entry in self.entries:
             if isinstance(entry, str):
                 await bot.send_message(chat_id=chat_id, text=entry)

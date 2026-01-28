@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from funpayhub.app.properties.properties import FunPayHubProperties
 
 
-async def _delete_message(msg: Message):
+async def _delete_message(msg: Message) -> None:
     with suppress(Exception):
         await msg.delete()
 

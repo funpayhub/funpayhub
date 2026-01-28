@@ -18,7 +18,7 @@ router = r = Router(name='fph:on_parameter_change_router')
     lambda parameter: parameter.matches_path(['general', 'language']),
     handler_id='fph:change_language',
 )
-async def change_language(parameter: ChoiceParameter, translater: Translater):
+async def change_language(parameter: ChoiceParameter, translater: Translater) -> None:
     translater.current_language = parameter.real_value
 
 
@@ -26,7 +26,7 @@ async def change_language(parameter: ChoiceParameter, translater: Translater):
     lambda parameter: parameter.matches_path(['toggles', 'auto_raise']),
     handler_id='fph:toggle_auto_raise',
 )
-async def start_stop_auto_raise(parameter: ToggleParameter, fp: FunPay):
+async def start_stop_auto_raise(parameter: ToggleParameter, fp: FunPay) -> None:
     if not parameter.value:
         await fp.stop_raising_profile_offers()
     else:

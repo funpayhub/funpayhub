@@ -19,7 +19,7 @@ class BadHashError(Exception):
 
 
 class HashinatorStorage:
-    def __init__(self, path: str | Path = 'storage/.hashes.db'):
+    def __init__(self, path: str | Path = 'storage/.hashes.db') -> None:
         self._path = Path(path)
         if not self._path.exists():
             self._path.parent.mkdir(parents=True, exist_ok=True)

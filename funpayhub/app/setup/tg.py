@@ -45,14 +45,16 @@ class Finished(Exception):
 
 
 class IgnoreOtherUsers(BaseMiddleware):
-    async def __call__(self, handler, event: Message | CallbackQuery, data: dict[str, Any]):
+    async def __call__(
+        self, handler: Any, event: Message | CallbackQuery, data: dict[str, Any]
+    ) -> None:
         if setup_user_id and event.from_user.id != setup_user_id:
             return
         await handler(event, data)
 
 
 class CallbackStepMiddleware(BaseMiddleware):
-    async def __call__(self, handler, event: CallbackQuery, data: dict[str, Any]):
+    async def __call__(self, handler: Any, event: CallbackQuery, data: dict[str, Any]) -> None:
         try:
             await handler(event, data)
         except (StepError, PropertiesError):
@@ -68,7 +70,7 @@ class CallbackStepMiddleware(BaseMiddleware):
 
 
 class MessageStepMiddleware(BaseMiddleware):
-    async def __call__(self, handler, event: Message, data: dict[str, Any]):
+    async def __call__(self, handler: Any, event: Message, data: dict[str, Any]) -> None:
         state: FSMContext = data['state']
         state_data: dict[str, Any] = await state.get_data()
         translater: Translater = data['translater']
@@ -110,7 +112,12 @@ class MessageStepMiddleware(BaseMiddleware):
 
 
 class FinishedMiddleware(BaseMiddleware):
-    async def __call__(self, handler, event, data: dict[str, Any]):
+    async def __call__(
+        self,
+        handler: Any,
+        event: Message | CallbackQuery,
+        data: dict[str, Any],
+    ) -> None:
         msg: Message = event.message if isinstance(event, CallbackQuery) else event
         hub: FunPayHub = data['hub']
         translater: Translater = data['translater']
@@ -124,7 +131,7 @@ class FinishedMiddleware(BaseMiddleware):
 
 
 class CheckInstanceIDMiddleware(BaseMiddleware):
-    async def __call__(self, handler, event: CallbackQuery, data: dict[str, Any]):
+    async def __call__(self, handler, event: CallbackQuery, data: dict[str, Any]) -> None:
         hub: FunPayHub = data['hub']
         callback_data: cbs.SetupStep = data['callback_data']
 
@@ -135,7 +142,7 @@ class CheckInstanceIDMiddleware(BaseMiddleware):
 
 
 class SetupStepFilter(Filter):
-    def __init__(self):
+    def __init__(self) -> None:
         self._filter = StateFilter(states.EnteringStep.identifier)
 
     async def __call__(self, obj, raw_state, **kwargs) -> bool | dict[str, Any]:
@@ -213,7 +220,7 @@ async def start_setup(
     tg_ui: UIRegistry,
     hub: FunPayHub,
     properties: FunPayHubProperties,
-):
+) -> None:
     global setup_chat, setup_user_id
     if msg.chat.type != ChatType.PRIVATE:
         return
@@ -240,7 +247,7 @@ async def run_language_step(
     callback_data: cbs.SetupStep,
     properties: FunPayHubProperties,
     hub: FunPayHub,
-):
+) -> None:
     await properties.general.language.set_value(callback_data.lang, save=False)
     await hub.emit_parameter_changed_event(properties.general.language)
 
@@ -254,7 +261,7 @@ async def run_proxy_step(
     callback_data: cbs.SetupStep,
     properties: FunPayHubProperties,
     hub: FunPayHub,
-):
+) -> None:
     if callback_data.action == 0:
         await properties.general.proxy.to_default(save=False)
         await hub.emit_parameter_changed_event(properties.general.proxy)
@@ -270,7 +277,7 @@ async def run_user_agent_step(
     callback_data: cbs.SetupStep,
     properties: FunPayHubProperties,
     hub: FunPayHub,
-):
+) -> None:
     if callback_data.action == 0:
         await properties.general.proxy.to_default(save=False)
         await hub.emit_parameter_changed_event(properties.general.user_agent)
@@ -286,7 +293,7 @@ async def run_password_step(
     callback_data: cbs.SetupStep,
     properties: FunPayHubProperties,
     hub: FunPayHub,
-):
+) -> None:
     if callback_data.action == 0:
         await properties.telegram.general.password.to_default(save=False)
         await hub.emit_parameter_changed_event(properties.telegram.general.password)
@@ -296,7 +303,9 @@ async def run_password_step(
     SetupStepFilter(),
     lambda _, state_data: state_data.step == cbs.Steps.proxy,
 )
-async def msg_run_proxy_step(message: Message, properties: FunPayHubProperties, hub: FunPayHub):
+async def msg_run_proxy_step(
+    message: Message, properties: FunPayHubProperties, hub: FunPayHub
+) -> None:
     await properties.general.proxy.set_value(message.text, save=False)
     await hub.emit_parameter_changed_event(properties.general.proxy)
 
@@ -309,7 +318,7 @@ async def msg_run_useragent_step(
     message: Message,
     properties: FunPayHubProperties,
     hub: FunPayHub,
-):
+) -> None:
     await properties.general.user_agent.set_value(message.text, save=False)
     await hub.emit_parameter_changed_event(properties.general.user_agent)
 
@@ -322,7 +331,7 @@ async def msg_run_golden_key_step(
     message: Message,
     properties: FunPayHubProperties,
     hub: FunPayHub,
-):
+) -> None:
     if message.text == '__test_golden_key__':
         await properties.general.golden_key.set_value(
             message.text,
@@ -357,6 +366,6 @@ async def msg_run_tg_password_step(
     message: Message,
     properties: FunPayHubProperties,
     hub: FunPayHub,
-):
+) -> None:
     await properties.telegram.general.password.set_value(message.text, save=False)
     await hub.emit_parameter_changed_event(properties.telegram.general.password)

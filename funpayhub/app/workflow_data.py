@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = ['WorkflowData']
 
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from collections import UserDict
 
 
@@ -23,47 +23,47 @@ if TYPE_CHECKING:
 
 
 class _WorkflowData(UserDict):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._locked = False
 
-    def lock(self):
+    def lock(self) -> None:
         self._locked = True
 
-    def __getitem__(self, item: str):
+    def __getitem__(self, item: str) -> Any:
         if item in ['workflow_data', 'wfd']:
             return self
         return super().__getitem__(item)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         with self:
             super().__setitem__(key, value)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key) -> None:
         with self:
             super().__delitem__(key)
 
-    def __enter__(self):
+    def __enter__(self) -> _WorkflowData:
         if self._locked:
             raise RuntimeError('Workflow data is locked.')
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         return
 
-    def pop(self, key, /):
+    def pop(self, key, /) -> Any:
         with self:
             self.data.pop(key)
 
-    def popitem(self):
+    def popitem(self) -> None:
         with self:
             self.data.popitem()
 
-    def clear(self):
+    def clear(self) -> None:
         with self:
             self.data.clear()
 
-    def update(self, m, /, **kwargs):
+    def update(self, m, /, **kwargs) -> None:
         with self:
             self.data.update(m, **kwargs)
 

@@ -42,7 +42,7 @@ class GoodsError(FunPayHubError): ...
 
 
 class NotEnoughGoodsError(FunPayHubError):
-    def __init__(self, source: GoodsSource):
+    def __init__(self, source: GoodsSource) -> None:
         super().__init__(
             'Not enough goods in source %s. Available amount: %d.',
             source.source_id,

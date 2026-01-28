@@ -122,10 +122,10 @@ async def manual_change_view_page_activate(
 
 
 @router.message(StateFilter(ChangingMenuPage.__identifier__))
-async def manual_menu_page_change(message: Message, dispatcher: Dispatcher, bot: Bot):
+async def manual_menu_page_change(message: Message, dispatcher: Dispatcher, bot: Bot) -> None:
     await change_page_from_message(message, dispatcher, bot, 'menu')
 
 
 @router.message(StateFilter(ChangingViewPage.__identifier__))
-async def manual_view_page_change(message: Message, dispatcher: Dispatcher, bot: Bot):
+async def manual_view_page_change(message: Message, dispatcher: Dispatcher, bot: Bot) -> None:
     await change_page_from_message(message, dispatcher, bot, 'view')

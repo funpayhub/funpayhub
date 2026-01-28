@@ -17,7 +17,7 @@ def error_event_factory(event: HubEvent, exception: Exception) -> ErrorEvent:
 
 
 class Dispatcher(BaseDispatcher, Router):
-    def __init__(self, workflow_data: dict[str, Any] | None = None):
+    def __init__(self, workflow_data: dict[str, Any] | None = None) -> None:
         BaseDispatcher.__init__(
             self,
             error_event_factory=error_event_factory,

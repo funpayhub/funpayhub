@@ -87,7 +87,9 @@ async def _get_source(trigger: CallbackQuery | Message, source_id: str) -> Goods
 
 
 async def _get_data_and_clear_state(
-    state: FSMContext, clear: bool = True, delete: bool = True
+    state: FSMContext,
+    clear: bool = True,
+    delete: bool = True,
 ) -> Any:
     data = (await state.get_data())['data']
     if clear:
@@ -108,7 +110,7 @@ async def _get_goods_from_message(message: Message) -> list[str]:
 
 # -------- Handlers --------
 @router.callback_query(cbs.DownloadGoods.filter())
-async def download_goods(query: CallbackQuery, callback_data: cbs.DownloadGoods):
+async def download_goods(query: CallbackQuery, callback_data: cbs.DownloadGoods) -> None:
     if (source := await _get_source(query, callback_data.source_id)) is None:
         return
 
@@ -122,7 +124,7 @@ async def download_goods(query: CallbackQuery, callback_data: cbs.DownloadGoods)
 
 
 @router.callback_query(cbs.ReloadGoodsSource.filter())
-async def reload_goods(query: CallbackQuery, callback_data: cbs.ReloadGoodsSource):
+async def reload_goods(query: CallbackQuery, callback_data: cbs.ReloadGoodsSource) -> None:
     if (source := await _get_source(query, callback_data.source_id)) is None:
         return
 
@@ -164,7 +166,7 @@ async def upload_goods_set_state(
 
 @router.message(StateFilter(states.UploadingGoods.identifier))
 @router.message(StateFilter(states.AddingGoods.identifier))
-async def upload_goods(message: Message, state: FSMContext, translater: Translater):
+async def upload_goods(message: Message, state: FSMContext, translater: Translater) -> None:
     data: states.UploadingGoods = await _get_data_and_clear_state(state)
     if (source := await _get_source(message, data.source_id)) is None:
         return

@@ -11,6 +11,7 @@ import sys
 import asyncio
 import logging
 import os.path
+from typing import Any
 from pathlib import Path
 from argparse import ArgumentParser
 from logging.config import dictConfig
@@ -117,7 +118,7 @@ dictConfig(
 )
 
 
-def log_factory(*args, **kwargs) -> HubLogMessage:
+def log_factory(*args: Any, **kwargs: Any) -> HubLogMessage:
     return HubLogMessage(*args, translater=translater, **kwargs)
 
 
@@ -131,7 +132,7 @@ colorama.just_fix_windows_console()
 load_dotenv()
 
 
-async def main():
+async def main() -> None:
     props = FunPayHubProperties()
     await props.load()
     translater.current_language = props.general.language.real_value

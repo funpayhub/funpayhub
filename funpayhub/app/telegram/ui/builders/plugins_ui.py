@@ -179,7 +179,7 @@ class InstallPluginMenuBuilder(MenuBuilder):
     id = MenuIds.install_plugin
     context_type = MenuContext
 
-    async def build(self, ctx: MenuContext, translater: Translater):
+    async def build(self, ctx: MenuContext, translater: Translater) -> Menu:
         kb = KeyboardBuilder()
 
         kb.add_rows(

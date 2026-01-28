@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 
-async def delete_message(msg: Message):
+async def delete_message(msg: Message) -> None:
     with suppress(Exception):
         await msg.delete()
 

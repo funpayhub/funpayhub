@@ -57,14 +57,14 @@ class FunPay:
         self._dispatcher = Dispatcher(workflow_data=workflow_data)
         self.setup_dispatcher()
 
-    async def start(self):
+    async def start(self) -> None:
         try:
             await self._init_bot_engine()
         except:
             return
         await self._bot.listen_events(self._dispatcher)
 
-    async def _init_bot_engine(self):
+    async def _init_bot_engine(self) -> None:
         exception = None
         for i in range(10):
             logger.info('Trying to make a first request to FunPay...')
@@ -106,7 +106,7 @@ class FunPay:
         await self.hub.dispatcher.event_entry(FunPayStartEvent(error=exception))
         raise exception
 
-    def setup_dispatcher(self):
+    def setup_dispatcher(self) -> None:
         self.dispatcher.on_new_message.outer_middleware.register_middleware(
             mdwr.log_new_message_middleware,
         )

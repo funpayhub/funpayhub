@@ -25,11 +25,11 @@ TOKEN_REGEX = re.compile(
 
 
 class Token:
-    def __init__(self, kind: str, value: str):
+    def __init__(self, kind: str, value: str) -> None:
         self.kind = kind
         self.value = value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Token({self.kind!r}, {self.value!r})'
 
 
@@ -48,7 +48,7 @@ def tokenize(expr: str) -> Iterator[Token]:
 
 
 class CategoryIDQuery(CategoriesQuery):
-    def __init__(self, id: str):
+    def __init__(self, id: str) -> None:
         self.id = id
 
     def __call__(self, formatter, registry) -> bool:
@@ -59,11 +59,11 @@ class CategoryIDQuery(CategoriesQuery):
 
 
 class Parser:
-    def __init__(self, tokens: list[Token]):
+    def __init__(self, tokens: list[Token]) -> None:
         self.tokens = tokens
         self.pos = 0
 
-    def peek(self):
+    def peek(self) -> Token | None:
         return self.tokens[self.pos] if self.pos < len(self.tokens) else None
 
     def consume(self, expected=None) -> Token:

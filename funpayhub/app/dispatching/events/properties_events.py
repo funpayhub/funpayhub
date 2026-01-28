@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class ParameterValueChangedEvent(HubEvent, name='fph:parameter_value_changed'):
-    def __init__(self, param: MutableParameter):
+    def __init__(self, param: MutableParameter) -> None:
         super().__init__()
         self.parameter = param
 
@@ -29,7 +29,7 @@ class ParameterValueChangedEvent(HubEvent, name='fph:parameter_value_changed'):
 
 
 class PropertiesAttachedEvent(HubEvent, name='fph:properties_attached'):
-    def __init__(self, props: Properties):
+    def __init__(self, props: Properties) -> None:
         super().__init__()
         self.properties = props
 
@@ -41,7 +41,7 @@ class PropertiesAttachedEvent(HubEvent, name='fph:properties_attached'):
 
 
 class ParameterAttachedEvent(HubEvent, name='fph:parameter_attached'):
-    def __init__(self, param: Parameter | MutableParameter):
+    def __init__(self, param: Parameter | MutableParameter) -> None:
         super().__init__()
         self.parameter = param
 

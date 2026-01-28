@@ -42,7 +42,7 @@ class DateTimeFormatter(Formatter):
     name = '$formatter:datetime:name'
     description = '$formatter:datetime:description'
 
-    def __init__(self, mode: str = 'time'):
+    def __init__(self, mode: str = 'time') -> None:
         self.mode = mode
 
     async def format(self) -> str:
@@ -59,7 +59,7 @@ class ImageFormatter(Formatter):
     name = '$formatter:image:name'
     description = '$formatter:image:description'
 
-    def __init__(self, path_or_id: int | str):
+    def __init__(self, path_or_id: int | str) -> None:
         self.path_or_id = path_or_id
 
     async def format(self) -> Image:
@@ -74,7 +74,7 @@ class OrderFormatter(Formatter):
     name = '$formatter:order:name'
     description = '$formatter:order:description'
 
-    def __init__(self, mode: str = 'id'):
+    def __init__(self, mode: str = 'id') -> None:
         self.mode = mode
 
     async def format(self, event: OrderEvent) -> str:
@@ -103,7 +103,7 @@ class MessageFormatter(Formatter):
     name = '$formatter:message:name'
     description = '$formatter:message:description'
 
-    def __init__(self, mode: str):
+    def __init__(self, mode: str) -> None:
         self.mode = mode
 
     async def format(self, event: NewMessageEvent) -> str:
@@ -129,7 +129,7 @@ class MeFormatter(Formatter):
     name = '$formatter:me:name'
     description = '$formatter:me:description'
 
-    def __init__(self, mode: str = 'username'):
+    def __init__(self, mode: str = 'username') -> None:
         self.mode = mode
 
     async def format(self, hub: FunPayHub) -> str:

@@ -16,6 +16,6 @@ def pyproject_version() -> Version:
     return Version(data['project']['version'])
 
 
-def test_version_integrity(pyproject_version: Version):
+def test_version_integrity(pyproject_version: Version) -> None:
     properties = FunPayHubProperties()
     assert pyproject_version == Version(properties.version.value)

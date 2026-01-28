@@ -121,10 +121,10 @@ class KeyboardBuilder:
     def __iter__(self) -> Iterator[list[Button]]:
         return iter(self.keyboard)
 
-    def __contains__(self, item):
+    def __contains__(self, item) -> bool:
         return item in self.keyboard
 
-    def __reversed__(self):
+    def __reversed__(self) -> Iterator[list[Button]]:
         return reversed(self.keyboard)
 
     def __bool__(self) -> bool:

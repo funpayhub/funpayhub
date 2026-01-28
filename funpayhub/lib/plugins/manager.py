@@ -48,7 +48,7 @@ def _resolve_plugin_id(_v: RESOLVABLE) -> str:
 
 
 class PassPluginAiogramMiddleware(BaseMiddleware):
-    def __init__(self, plugin: LoadedPlugin):
+    def __init__(self, plugin: LoadedPlugin) -> None:
         self.plugin = plugin
 
     async def __call__(self, handler: Any, event: Any, data: dict[str, Any]) -> Any:
@@ -57,7 +57,7 @@ class PassPluginAiogramMiddleware(BaseMiddleware):
 
 
 class PassPluginEventryMiddleware:
-    def __init__(self, plugin: LoadedPlugin):
+    def __init__(self, plugin: LoadedPlugin) -> None:
         self.plugin = plugin
 
     async def __call__(self, data: dict[str, Any]) -> Any:
@@ -102,7 +102,7 @@ class PluginManager:
     PLUGINS_PATH = Path(os.getcwd()) / 'plugins'
     DEV_PLUGINS_PATH = Path(os.environ.get('PYTHONPATH', os.getcwd())) / 'plugins'
 
-    def __init__(self, hub: FunPayHub):
+    def __init__(self, hub: FunPayHub) -> None:
         self._plugins: dict[str, LoadedPlugin] = {}
         self._hub = hub
         self._steps: dict[str, Callable[[LoadedPlugin], Awaitable[Any]]] = {
@@ -162,7 +162,7 @@ class PluginManager:
         plugin = _resolve_plugin_id(plugin)
         return plugin not in self.disabled_plugins
 
-    async def load_plugins(self):
+    async def load_plugins(self) -> None:
         paths = []
         for i in [self.DEV_PLUGINS_PATH, self.PLUGINS_PATH]:
             if i.exists() and i not in paths:
@@ -234,7 +234,7 @@ class PluginManager:
         with open(plugin_path / 'manifest.json', 'r', encoding='utf-8') as f:
             return PluginManifest.model_validate(json.loads(f.read()))
 
-    async def setup_plugins(self):
+    async def setup_plugins(self) -> None:
         for plugin_id, plugin in self._plugins.items():
             if not plugin.manifest.locales_path:
                 logger.info(

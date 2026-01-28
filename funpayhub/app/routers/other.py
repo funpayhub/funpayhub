@@ -28,7 +28,7 @@ messages: list[Message] = []
 
 
 @router.on_telegram_start()
-async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub):
+async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub) -> None:
     ctx = MenuContext(
         chat_id=-1,
         menu_id=MenuIds.start_notification,
@@ -36,7 +36,7 @@ async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub):
 
     menu = await tg_ui.build_menu(ctx)
 
-    async def send_notifications():
+    async def send_notifications() -> None:
         tasks = await hub.telegram.send_notification(
             'system',
             menu.text,
@@ -59,7 +59,9 @@ async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub):
 
 
 @router.on_funpay_start(as_task=True)
-async def edit_start_notifications(error: Exception | None, tg_ui: UIRegistry, hub: FunPayHub):
+async def edit_start_notifications(
+    error: Exception | None, tg_ui: UIRegistry, hub: FunPayHub
+) -> None:
     await sent_event.wait()
     for i in messages:
         ctx = FunPayStartNotificationMenuContext(
@@ -81,11 +83,11 @@ async def edit_start_notifications(error: Exception | None, tg_ui: UIRegistry, h
         lambda properties: properties.toggles.auto_raise.value,
     ),
 )
-async def start_auto_raise(fp: FunPay):
+async def start_auto_raise(fp: FunPay) -> None:
     await fp.start_raising_profile_offers()
 
 
 @router.on_offers_raised(lambda properties: properties.telegram.notifications.offers_raised.value)
-async def send_offers_raised_notification(category: Category, tg: Telegram):
+async def send_offers_raised_notification(category: Category, tg: Telegram) -> None:
     text = f'🔺 Все лоты категории <b>{escape(category.full_name)}</b> успешно подняты.'
     await tg.send_notification('offers_raised', text)

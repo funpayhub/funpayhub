@@ -4,7 +4,7 @@ from funpayhub.lib.properties import Properties, IntParameter, ListParameter
 
 
 class ChatSyncProperties(Properties):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             id='chat_sync',
             name='Chat Sync',

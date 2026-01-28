@@ -9,7 +9,7 @@ from aiogram import Bot
 
 
 class Registry:
-    def __init__(self, path: Path = Path('storage/chat_sync.json')):
+    def __init__(self, path: Path = Path('storage/chat_sync.json')) -> None:
         self._path = path
         self._fp_to_tg_pairs = {}
         if path.exists(follow_symlinks=True):
@@ -46,7 +46,7 @@ class Registry:
     def get_funpay_chat(self, telegram_thread_id: int) -> int | None:
         return self._tg_to_fp_pairs.get(telegram_thread_id, None)
 
-    def save(self):
+    def save(self) -> None:
         with open(self.path, 'w', encoding='utf-8') as f:
             f.write(json.dumps({str(k): v for k, v in self.fp_to_tg_pairs}, ensure_ascii=False))
 
@@ -64,7 +64,7 @@ class Registry:
 
 
 class BotRotater:
-    def __init__(self, tokens):
+    def __init__(self, tokens) -> None:
         self._tokens = set(tokens)
         self._bots = [Bot(token) for token in self._tokens]
         self._current_bot_index = 0

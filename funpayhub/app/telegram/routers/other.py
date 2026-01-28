@@ -22,7 +22,7 @@ router = r = Router(name='fph:other')
 
 # Commands
 @router.message(Command('shutdown'))
-async def shutdown(message: Message, hub: FunPayHub):
+async def shutdown(message: Message, hub: FunPayHub) -> None:
     await message.answer_animation(
         'CAACAgIAAxkBAAIBgml58y4453QL1LPOC20gPjjdTi9cAALNiwACP73RS_9mGlmKls_5OAQ',
     )
@@ -30,13 +30,13 @@ async def shutdown(message: Message, hub: FunPayHub):
 
 
 @router.message(Command('restart'))
-async def restart(message: Message, hub: FunPayHub, translater: Translater):
+async def restart(message: Message, hub: FunPayHub, translater: Translater) -> None:
     await message.reply(translater.translate('$restarting'))
     await hub.shutdown(exit_codes.RESTART)
 
 
 @router.message(Command('safe_mode'))
-async def safe_mode(message: Message, hub: FunPayHub, translater: Translater):
+async def safe_mode(message: Message, hub: FunPayHub, translater: Translater) -> None:
     if hub.safe_mode:
         await message.reply(translater.translate('$already_in_safe_mode'))
         return
@@ -46,7 +46,7 @@ async def safe_mode(message: Message, hub: FunPayHub, translater: Translater):
 
 
 @router.message(Command('standard_mode'))
-async def standard_mode(message: Message, hub: FunPayHub, translater: Translater):
+async def standard_mode(message: Message, hub: FunPayHub, translater: Translater) -> None:
     if not hub.safe_mode:
         await message.reply(translater.translate('$already_in_standard_mode'))
         return
@@ -57,7 +57,10 @@ async def standard_mode(message: Message, hub: FunPayHub, translater: Translater
 
 @r.callback_query(cbs.ShutDown.filter())
 async def shutdown(
-    query: CallbackQuery, hub: FunPayHub, callback_data: cbs.ShutDown, translater: Translater
+    query: CallbackQuery,
+    hub: FunPayHub,
+    callback_data: cbs.ShutDown,
+    translater: Translater,
 ) -> None:
     texts = {
         exit_codes.SHUTDOWN: '$shutting_down',
@@ -76,7 +79,7 @@ async def shutdown(
 
 
 @r.startup()
-async def startup(hub: FunPayHub):
+async def startup(hub: FunPayHub) -> None:
     with suppress(AiogramError):
         await hub.telegram.bot.set_my_description(
             '🤖 FunPay Hub — лучший инструмент для автоматизации продаж на FunPay!\n\n'
@@ -88,7 +91,8 @@ async def startup(hub: FunPayHub):
             '🔧 Множество настроек и кастомизация\n\n'
             '…и многое другое, чтобы полностью контролировать продажи и экономить время!\n\n'
             '💻 Github: https://github.com/funpayhub/funpayhub\n'
-            '💬 Чат проекта: https://t.me/funpay_hub')
+            '💬 Чат проекта: https://t.me/funpay_hub'
+        )
 
         await hub.telegram.bot.set_my_short_description(
             '🤖 Лучший бот для автоматизации продаж на FunPay!\n'

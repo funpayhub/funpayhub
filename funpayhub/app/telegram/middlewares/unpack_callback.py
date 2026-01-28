@@ -12,7 +12,7 @@ from funpayhub.lib.telegram.callback_data.hashinator import BadHashError, Hashin
 
 
 class UnpackMiddleware(BaseMiddleware):
-    async def __call__(self, handler, event: CallbackQuery, data):
+    async def __call__(self, handler, event: CallbackQuery, data) -> None:
         callback_data = event.data
         if HashinatorT1000.is_hash(event.data):
             try:

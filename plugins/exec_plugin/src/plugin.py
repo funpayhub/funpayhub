@@ -6,6 +6,7 @@ from pathlib import Path
 
 from funpayhub.lib.plugins import Plugin
 from funpayhub.lib.properties import Properties
+from funpayhub.lib.telegram.ui import MenuBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.properties.parameter import ListParameter, StringParameter, ToggleParameter
 
@@ -20,7 +21,7 @@ from .telegram.router import r as router
 
 
 class ExecPluginProperties(Properties):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             id='exec_plugin',
             name='Exec plugin',
@@ -60,7 +61,7 @@ class ExecPlugin(Plugin):
     async def properties(self) -> Properties:
         return ExecPluginProperties()
 
-    async def menus(self):
+    async def menus(self) -> list[type[MenuBuilder]]:
         return [ExecCodeMenuBuilder, ExecListMenuBuilder, ExecOutputMenuBuilder]
 
     async def menu_modifications(self):

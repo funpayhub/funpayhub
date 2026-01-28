@@ -36,7 +36,7 @@ from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 from .tty import INIT_SETUP_TEXT_EN, INIT_SETUP_TEXT_RU, box_messages
 
 
-def random_part(length):
+def random_part(length) -> str:
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
@@ -111,10 +111,10 @@ class FunPayHub:
 
             self._setup = True
 
-    def _setup_dispatcher(self):
+    def _setup_dispatcher(self) -> None:
         self._dispatcher.connect_routers(*ROUTERS)
 
-    async def _load_plugins(self):
+    async def _load_plugins(self) -> None:
         if self.safe_mode:
             return
 
@@ -127,7 +127,7 @@ class FunPayHub:
                 await self.create_crash_log()
             await self.shutdown(exit_codes.RESTART_SAFE)
 
-    async def _load_file_goods_sources(self):
+    async def _load_file_goods_sources(self) -> None:
         logger.info('Loading goods files.')
 
         base_path = Path('storage/goods')
@@ -154,7 +154,7 @@ class FunPayHub:
                     e.format_args(self.translater.translate(e.message)),
                 )
 
-    async def create_crash_log(self):
+    async def create_crash_log(self) -> None:
         os.makedirs('logs', exist_ok=True)
         with open('logs/crashlog.log', 'w', encoding='utf-8') as f:
             f.write(traceback.format_exc())
@@ -239,7 +239,7 @@ class FunPayHub:
         self._stop_signal.set_result(code)
         await self._stopped_signal.wait()
 
-    def _welcome_tty(self, me: User):
+    def _welcome_tty(self, me: User) -> None:
         print('\033[2J\033[H', end='')
         print(
             box_messages(

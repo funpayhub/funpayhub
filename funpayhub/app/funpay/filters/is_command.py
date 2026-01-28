@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from typing import Any
+
 from funpaybotengine.dispatching.events import NewMessageEvent
 
 from funpayhub.app.properties import FunPayHubProperties
 
 
-def is_fph_command(event: NewMessageEvent, properties: FunPayHubProperties):
+def is_fph_command(
+    event: NewMessageEvent, properties: FunPayHubProperties
+) -> bool | dict[str, Any]:
     if not event.message.text:
         return False
 
