@@ -3,9 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from aiogram import Router
+from aiogram.exceptions import AiogramError
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from funpayhub.lib.translater import Translater
+from contextlib import suppress
 
 import exit_codes
 import funpayhub.app.telegram.callbacks as cbs
@@ -69,3 +71,25 @@ async def shutdown(query: CallbackQuery, hub: FunPayHub, callback_data: cbs.Shut
         pass
 
     await hub.shutdown(callback_data.exit_code)
+
+@r.startup()
+async def startup(hub: FunPayHub):
+    with suppress(AiogramError):
+        await hub.telegram.bot.set_my_description("""🤖 FunPayHub — лучший инструмент для автоматизации продаж на FunPay!
+    🚀 Автовыдача товаров
+    📈 Автоподнятие лотов
+    💬 Автоответ на сообщения
+    ⚙️ Команды, хуки, форматтеры, чего тут только нет (мне было лень вспоминать)
+    🧩 Модульная система, поддержка плагинов
+    🔧 Множество настроек и кастомизация
+    
+    …и многое другое, чтобы полностью контролировать продажи и экономить время!
+    
+    💻 Github: https://github.com/funpayhub/funpayhub
+    💬 Чат проекта: https://t.me/funpay_hub""")
+
+        await hub.telegram.bot.set_my_short_description(
+            '🤖 Лучший бот для автоматизации продаж на FunPay!\n'
+            '💬 Чат проекта: https://t.me/funpay_hub'
+        )
+
