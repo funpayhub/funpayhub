@@ -22,7 +22,11 @@ class StatesManager:
         self.states = defaultdict(dict)
 
     def set_state(
-        self, user_id: int, chat_id: int, state: State, thread_id: int | None = None
+        self,
+        user_id: int,
+        chat_id: int,
+        state: State,
+        thread_id: int | None = None,
     ) -> None:
         self.states[user_id][f'{chat_id}.{thread_id}'] = state
 

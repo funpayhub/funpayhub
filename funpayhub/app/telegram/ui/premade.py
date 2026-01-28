@@ -144,7 +144,8 @@ async def build_menu_navigation_buttons(
 
 
 async def build_view_navigation_buttons(
-    ctx: MenuContext, total_pages: int = -1
+    ctx: MenuContext,
+    total_pages: int = -1,
 ) -> KeyboardBuilder:
     kb: KeyboardBuilder = KeyboardBuilder()
     callback_data = ctx.callback_data

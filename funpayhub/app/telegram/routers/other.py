@@ -91,7 +91,7 @@ async def startup(hub: FunPayHub) -> None:
             '🔧 Множество настроек и кастомизация\n\n'
             '…и многое другое, чтобы полностью контролировать продажи и экономить время!\n\n'
             '💻 Github: https://github.com/funpayhub/funpayhub\n'
-            '💬 Чат проекта: https://t.me/funpay_hub'
+            '💬 Чат проекта: https://t.me/funpay_hub',
         )
 
         await hub.telegram.bot.set_my_short_description(

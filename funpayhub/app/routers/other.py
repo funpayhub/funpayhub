@@ -60,7 +60,9 @@ async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub) -> None:
 
 @router.on_funpay_start(as_task=True)
 async def edit_start_notifications(
-    error: Exception | None, tg_ui: UIRegistry, hub: FunPayHub
+    error: Exception | None,
+    tg_ui: UIRegistry,
+    hub: FunPayHub,
 ) -> None:
     await sent_event.wait()
     for i in messages:

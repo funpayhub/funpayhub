@@ -56,7 +56,10 @@ async def set_sending_message_state(
 
 @router.message(StateFilter(states.SendingFunpayMessage.identifier))
 async def send_funpay_message(
-    message: Message, fp_bot: FPBot, tg: Telegram, state: FSMContext
+    message: Message,
+    fp_bot: FPBot,
+    tg: Telegram,
+    state: FSMContext,
 ) -> None:
     data: SendingFunpayMessage = (await state.get_data())['data']
     asyncio.create_task(utils.delete_message(data.message))

@@ -8,7 +8,8 @@ from funpayhub.app.properties import FunPayHubProperties
 
 
 def is_fph_command(
-    event: NewMessageEvent, properties: FunPayHubProperties
+    event: NewMessageEvent,
+    properties: FunPayHubProperties,
 ) -> bool | dict[str, Any]:
     if not event.message.text:
         return False

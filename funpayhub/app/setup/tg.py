@@ -46,7 +46,10 @@ class Finished(Exception):
 
 class IgnoreOtherUsers(BaseMiddleware):
     async def __call__(
-        self, handler: Any, event: Message | CallbackQuery, data: dict[str, Any]
+        self,
+        handler: Any,
+        event: Message | CallbackQuery,
+        data: dict[str, Any],
     ) -> None:
         if setup_user_id and event.from_user.id != setup_user_id:
             return
@@ -304,7 +307,9 @@ async def run_password_step(
     lambda _, state_data: state_data.step == cbs.Steps.proxy,
 )
 async def msg_run_proxy_step(
-    message: Message, properties: FunPayHubProperties, hub: FunPayHub
+    message: Message,
+    properties: FunPayHubProperties,
+    hub: FunPayHub,
 ) -> None:
     await properties.general.proxy.set_value(message.text, save=False)
     await hub.emit_parameter_changed_event(properties.general.proxy)
