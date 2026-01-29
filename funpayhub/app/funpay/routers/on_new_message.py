@@ -6,6 +6,7 @@ from funpaybotengine import Router
 from funpaybotengine.dispatching.events import RunnerEvent, NewMessageEvent, ChatChangedEvent
 
 from funpayhub.app.formatters import GeneralFormattersCategory, MessageFormattersCategory
+from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.funpay.filters import is_fph_command
@@ -18,6 +19,8 @@ if TYPE_CHECKING:
 
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
     from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
+    from funpayhub.app.funpay.main import FunPay
+    from funpaybotengine.types import Message
 
 
 on_new_message_router = r = Router(name='fph:on_new_message_router')
@@ -50,8 +53,6 @@ async def process_command(
     # которая будет пытаться отправить сообщение несколько раз + разбивать большие сообщения не
     # более мелкие
 
-    # todo: Выполнение хуков
-
 
 @r.on_chat_changed(handler_id='fph:new_message_notification')
 async def send_new_message_notification(
@@ -60,19 +61,42 @@ async def send_new_message_notification(
     tg: Telegram,
     tg_ui: UIRegistry,
     data: dict[str, Any],
+    properties: FunPayHubProperties,
+    fp: FunPay,
 ) -> None:
-    msgs = []
-    checked = []
+    msgs: list[Message] = []
+    appearance_props = properties.telegram.appearance.new_message_appearance
+
     for i in events_stack:
-        if (
-            isinstance(i, NewMessageEvent)
-            and i.message.chat_id == event.chat_preview.id
-            and i.message.id not in checked
-        ):
-            checked.append(i.message.id)
-            msgs.append(i.message)
+        if isinstance(i, NewMessageEvent) and i.message.chat_id == event.chat_preview.id:
+            if fp.is_manual_message(i.message.id) and appearance_props.show_mine_from_hub.value:
+                msgs.append(i.message)
+            elif await i.message.is_sent_by_bot() and appearance_props.show_automatic.value:
+                msgs.append(i.message)
+            elif i.message.from_me and appearance_props.show_mine.value:
+                msgs.append(i.message)
 
     if not msgs:
+        return
+
+    only_mine = True
+    only_automatic = True
+    only_mine_from_hub = True
+
+    for i in msgs:
+        is_manual = fp.is_manual_message(i.id)
+        by_bot = await i.is_sent_by_bot()
+        automatic = (not is_manual) and by_bot
+
+        only_mine &= i.from_me and not is_manual and not by_bot
+        only_mine_from_hub &= is_manual
+        only_automatic &= automatic
+
+    if any([
+        only_mine and not appearance_props.show_if_mine_only.value,
+        only_automatic and not appearance_props.show_automatic_only.value,
+        only_mine_from_hub and not appearance_props.show_mine_from_hub_only.value,
+    ]):
         return
 
     context = NewMessageMenuContext(

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, ParamSpec
+from typing import TYPE_CHECKING, Any, ParamSpec, Literal
 from collections.abc import Callable, Awaitable
 
 from funpaybotengine import Bot, Dispatcher
@@ -22,6 +22,8 @@ from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 from funpayhub.app.funpay.offers_raiser import OffersRaiser
 from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
+from funpaybotengine.types import Message
+from io import BytesIO
 
 
 if TYPE_CHECKING:
@@ -55,6 +57,9 @@ class FunPay:
         self._profile_page: ProfilePage | None = None
         self._offers_raiser = OffersRaiser(self._bot)
         self._dispatcher = Dispatcher(workflow_data=workflow_data)
+
+        self._sending_message_lock = asyncio.Lock()
+        self._manually_sent_messages: set[int] = set()
         self.setup_dispatcher()
 
     async def start(self) -> None:
@@ -118,6 +123,35 @@ class FunPay:
                 await self._bot.update()
             self._profile_page = await self._bot.get_profile_page(self._bot.userid)
         return self._profile_page
+
+    async def send_message(
+        self,
+        chat_id: int | str,
+        text: str | None = None,
+        image: str | BytesIO | int | None = None,
+        enforce_whitespaces: bool = True,
+        keep_chat_unread: bool = False,
+        automatic_message: bool = True,
+    ) -> Message | None:
+        async with self._sending_message_lock:
+            result = await self.bot.send_message(
+                chat_id=chat_id,
+                text=text,
+                image=image,
+                enforce_whitespaces=enforce_whitespaces,
+                keep_chat_unread=keep_chat_unread,
+            )
+
+            if not automatic_message:
+                self._manually_sent_messages.add(result.id)
+
+            return result
+
+    def is_manual_message(self, message_id: int) -> bool:
+        """
+        Проверяет, было ли сообщение отправлено вручную через FunPayHub.
+        """
+        return message_id in self._manually_sent_messages
 
     async def start_raising_profile_offers(self) -> None:
         categories = await get_profile_raisable_categories(await self.profile(), self.bot)

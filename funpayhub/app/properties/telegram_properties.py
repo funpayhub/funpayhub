@@ -101,7 +101,7 @@ class NewMessageNotificationAppearance(Properties):
                 id='show_mine',
                 name='$props.new_message_appearance.show_mine:name',
                 description='$props.new_message_appearance.show_mine:description',
-                default_value=True,
+                default_value=False,
             ),
         )
 
@@ -110,42 +110,42 @@ class NewMessageNotificationAppearance(Properties):
                 id='show_if_mine_only',
                 name='$props.new_message_appearance.show_if_mine_only:name',
                 description='$props.new_message_appearance.show_if_mine_only:description',
+                default_value=False,
+            ),
+        )
+
+        self.show_automatic = self.attach_parameter(
+            ToggleParameter(
+                id='show_automatic',
+                name='$props.new_message_appearance.show_automatic:name',
+                description='$props.new_message_appearance.show_automatic:description',
                 default_value=True,
             ),
         )
 
-        self.show_by_bot = self.attach_parameter(
+        self.show_automatic_only = self.attach_parameter(
             ToggleParameter(
-                id='show_by_bot',
-                name='$props.new_message_appearance.show_by_bot:name',
-                description='$props.new_message_appearance.show_by_bot:description',
+                id='show_automatic_only',
+                name='$props.new_message_appearance.show_automatic_only:name',
+                description='$props.new_message_appearance.show_automatic_only:description',
                 default_value=True,
             ),
         )
 
-        self.show_by_bot_only = self.attach_parameter(
+        self.show_mine_from_hub = self.attach_parameter(
             ToggleParameter(
-                id='show_by_bot_only',
-                name='$props.new_message_appearance.show_by_bot_only:name',
-                description='$props.new_message_appearance.show_by_bot_only:description',
-                default_value=True,
+                id='show_mine_from_hub',
+                name='$props.new_message_appearance.show_mine_from_hub:name',
+                description='$props.new_message_appearance.show_mine_from_hub:description',
+                default_value=False,
             ),
         )
 
-        self.show_through_bot = self.attach_parameter(
+        self.show_mine_from_hub_only = self.attach_parameter(
             ToggleParameter(
-                id='show_through_bot',
-                name='$props.new_message_appearance.show_through_bot:name',
-                description='$props.new_message_appearance.show_through_bot:description',
-                default_value=True,
-            ),
-        )
-
-        self.show_trough_bot_only = self.attach_parameter(
-            ToggleParameter(
-                id='show_trough_bot_only',
-                name='$props.new_message_appearance.show_trough_bot_only:name',
-                description='$props.new_message_appearance.show_trough_bot_only:description',
-                default_value=True,
+                id='show_mine_from_hub_only',
+                name='$props.new_message_appearance.show_mine_from_hub_only:name',
+                description='$props.new_message_appearance.show_mine_from_hub_only:description',
+                default_value=False,
             ),
         )

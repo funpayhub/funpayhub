@@ -6,7 +6,6 @@ from io import BytesIO
 
 from aiogram.types import Message, CallbackQuery, ReactionTypeEmoji
 from aiogram.filters import StateFilter
-from funpaybotengine import Bot as FPBot
 from aiogram.fsm.context import FSMContext
 
 from funpayhub.lib.telegram.ui import UIRegistry
@@ -21,6 +20,7 @@ from .router import router
 
 if TYPE_CHECKING:
     from funpayhub.app.telegram.main import Telegram
+    from funpayhub.app.funpay.main import FunPay
 
 
 @router.callback_query(cbs.SendMessage.filter())
@@ -57,7 +57,7 @@ async def set_sending_message_state(
 @router.message(StateFilter(states.SendingFunpayMessage.identifier))
 async def send_funpay_message(
     message: Message,
-    fp_bot: FPBot,
+    fp: FunPay,
     tg: Telegram,
     state: FSMContext,
 ) -> None:
@@ -76,15 +76,15 @@ async def send_funpay_message(
 
     result = False
     try:
-        await fp_bot.send_message(
+        await fp.send_message(
             chat_id=data.to,
             text=text,
             image=image,
+            automatic_message=False,
         )
         result = True
     except Exception:
         import traceback
-
         print(traceback.format_exc())
 
     if result:

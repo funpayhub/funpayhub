@@ -32,7 +32,7 @@ def is_fph_command(
         if not any(
             [
                 params.reply.value and params.response_text.value,
-                params.hooks.value,
+                # params.hooks.value,
             ],
         ):
             return False

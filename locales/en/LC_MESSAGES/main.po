@@ -197,34 +197,34 @@ msgstr ""
 "Whether to send a notification about new messages in the chat if all new messages were sent by you via FunPay "
 "(not via FunPay Hub!)"
 
-msgid "$props.new_message_appearance.show_by_bot:name"
+msgid "$props.new_message_appearance.show_automatic:name"
 msgstr "Show automated"
 
-msgid "$props.new_message_appearance.show_by_bot:description"
+msgid "$props.new_message_appearance.show_automatic:description"
 msgstr ""
 "Whether to show messages sent by FunPay Hub in automatic mode "
 "(auto-delivery / auto-reply / hooks / plugins, etc.)"
 
-msgid "$props.new_message_appearance.show_by_bot_only:name"
+msgid "$props.new_message_appearance.show_automatic_only:name"
 msgstr "Notify if only automated"
 
-msgid "$props.new_message_appearance.show_by_bot_only:description"
+msgid "$props.new_message_appearance.show_automatic_only:description"
 msgstr ""
 "Whether to send a notification about new messages in the chat if all new messages were sent by FunPay Hub in "
 "automatic mode (auto-delivery / auto-reply / hooks / plugins, etc.)"
 
-msgid "$props.new_message_appearance.show_through_bot:name"
+msgid "$props.new_message_appearance.show_mine_from_hub:name"
 msgstr "Show mine via Hub"
 
-msgid "$props.new_message_appearance.show_through_bot:description"
+msgid "$props.new_message_appearance.show_mine_from_hub:description"
 msgstr ""
 "Whether to show messages that were sent by you using FunPay Hub "
 "(via the Telegram reply menu, etc.)"
 
-msgid "$props.new_message_appearance.show_trough_bot_only:name"
+msgid "$props.new_message_appearance.show_mine_from_hub_only:name"
 msgstr "Notify if only mine via Hub"
 
-msgid "$props.new_message_appearance.show_trough_bot_only:description"
+msgid "$props.new_message_appearance.show_mine_from_hub_only:description"
 msgstr ""
 "Whether to send a notification about new messages in the chat if all new messages were sent by you via Hub "
 "(via the Telegram reply menu, etc.)"

@@ -198,34 +198,34 @@ msgstr ""
 "Присылать ли уведомление о новых сообщениях в чате, если все новые сообщения отправлены вами через FunPay "
 "(не через FunPay Hub!)"
 
-msgid "$props.new_message_appearance.show_by_bot:name"
+msgid "$props.new_message_appearance.show_automatic:name"
 msgstr "Отображать автоматические"
 
-msgid "$props.new_message_appearance.show_by_bot:description"
+msgid "$props.new_message_appearance.show_automatic:description"
 msgstr ""
 "Отображать ли сообщения, отправленные FunPay Hub в автоматическом режиме "
 "(автовыдача / автоответ / хуки / плагины и т.д.)"
 
-msgid "$props.new_message_appearance.show_by_bot_only:name"
+msgid "$props.new_message_appearance.show_automatic_only:name"
 msgstr "Увед., если только автоматические"
 
-msgid "$props.new_message_appearance.show_by_bot_only:description"
+msgid "$props.new_message_appearance.show_automatic_only:description"
 msgstr ""
 "Присылать ли уведомление о новых сообщениях в чате, если все новые сообщения отправлены FunPay Hub в "
 "автоматическом режиме (автовыдача / автоответ / хуки / плагины и т.д.)"
 
-msgid "$props.new_message_appearance.show_through_bot:name"
+msgid "$props.new_message_appearance.show_mine_from_hub:name"
 msgstr "Отображать мои через Hub"
 
-msgid "$props.new_message_appearance.show_through_bot:description"
+msgid "$props.new_message_appearance.show_mine_from_hub:description"
 msgstr ""
 "Отображать ли сообщения, которые были отправлены вами с помощью FunPay Hub "
 "(через Telegram меню ответа на сообщения и т.д.)"
 
-msgid "$props.new_message_appearance.show_trough_bot_only:name"
+msgid "$props.new_message_appearance.show_mine_from_hub_only:name"
 msgstr "Увед., если только мои через Hub"
 
-msgid "$props.new_message_appearance.show_trough_bot_only:description"
+msgid "$props.new_message_appearance.show_mine_from_hub_only:description"
 msgstr ""
 "Присылать ли уведомление о новых сообщениях в чате, если все новые сообщения отправлены вами через Hub "
 "(через Telegram меню ответа на сообщения и т.д.)"
