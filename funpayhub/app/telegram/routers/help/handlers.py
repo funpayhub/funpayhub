@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 
 import funpayhub.app.telegram.callbacks as cbs
-
+from funpayhub.app.telegram.ui.ids import MenuIds
 
 if TYPE_CHECKING:
     from funpayhub.app.properties import FunPayHubProperties
@@ -38,3 +38,39 @@ async def help_command(message: Message) -> None:
         need_help.add(message.from_user.id)
         await message.answer('Вы вошли в режим справки. Снова введите /help для выхода.')
 
+
+@router.callback_query(cbs.OpenMenu.filter())
+async def show_menu_help(query: CallbackQuery, callback_data: cbs.OpenMenu, properties: FunPayHubProperties, translater: Translater) -> None:
+    if callback_data.menu_id in [
+        MenuIds.properties_entry,
+        MenuIds.properties_properties,
+        MenuIds.properties_list_param,
+        MenuIds.properties_choice_param,
+    ]:
+        path = callback_data.context_data['entry_path']
+        entry = properties.get_entry(path)
+
+        desc = translater.translate(entry.description)
+
+        await query.answer(
+            text=f'Справка:\n{desc}',
+            show_alert=True,
+        )
+
+
+
+@router.callback_query(cbs.NextParamValue.filter())
+@router.callback_query(cbs.ManualParamValueInput.filter())
+async def show_entry_help(
+    query: CallbackQuery,
+    properties: FunPayHubProperties,
+    callback_data: cbs.NextParamValue | cbs.ManualParamValueInput,
+    translater: Translater,
+) -> None:
+    entry = properties.get_entry(callback_data.path)
+    desc = translater.translate(entry.description)
+
+    await query.answer(
+        text=f'Справка:\n{desc}',
+        show_alert=True,
+    )
