@@ -23,16 +23,16 @@ _prefixes_by_badge_type = {
 }
 
 
-class NewMessageNotificationMenuBuilder(MenuBuilder):
-    id = MenuIds.new_funpay_message
-    context_type = NewMessageMenuContext
-
+class NewMessageNotificationMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.new_funpay_message,
+    context_type=NewMessageMenuContext,
+):
     async def build(
         self,
         ctx: NewMessageMenuContext,
         translater: Translater,
         fp_bot: FPBot,
-        properties: FunPayHubProperties,
     ) -> Menu:
         # Не хэшируем коллбэки данного меню, чтобы не забивать память.
         # Вместо этого делаем коротки коллбэки, чтобы они могли работать между перезапусками.
@@ -104,10 +104,11 @@ class NewMessageNotificationMenuBuilder(MenuBuilder):
         )
 
 
-class SendMessageMenuBuilder(MenuBuilder):
-    id = MenuIds.send_funpay_message
-    context_type = SendMessageMenuContext
-
+class SendMessageMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.send_funpay_message,
+    context_type=SendMessageMenuContext,
+):
     async def build(
         self,
         ctx: SendMessageMenuContext,

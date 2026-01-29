@@ -17,10 +17,11 @@ if TYPE_CHECKING:
 
 
 # Formatters
-class FormatterListMenuBuilder(MenuBuilder):
-    id = MenuIds.formatters_list
-    context_type = MenuContext
-
+class FormatterListMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.formatters_list,
+    context_type=MenuContext,
+):
     async def build(
         self,
         ctx: MenuContext,
@@ -87,10 +88,11 @@ class FormatterListMenuBuilder(MenuBuilder):
         )
 
 
-class FormatterInfoMenuBuilder(MenuBuilder):
-    id = MenuIds.formatter_info
-    context_type = MenuContext
-
+class FormatterInfoMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.formatter_info,
+    context_type=MenuContext,
+):
     async def build(
         self,
         ctx: MenuContext,

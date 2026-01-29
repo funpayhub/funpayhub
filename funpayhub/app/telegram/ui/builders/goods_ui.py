@@ -18,10 +18,11 @@ if TYPE_CHECKING:
     from funpayhub.lib.goods_sources import GoodsSource, GoodsSourcesManager
 
 
-class GoodsSourcesListMenuBuilder(MenuBuilder):
-    id = MenuIds.goods_sources_list
-    context_type = MenuContext
-
+class GoodsSourcesListMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.goods_sources_list,
+    context_type=MenuContext,
+):
     async def build(
         self,
         ctx: MenuContext,
@@ -59,10 +60,11 @@ class GoodsSourcesListMenuBuilder(MenuBuilder):
         )
 
 
-class GoodsSourceInfoMenuBuilder(MenuBuilder):
-    id = MenuIds.goods_source_info
-    context_type = GoodsInfoMenuContext
-
+class GoodsSourceInfoMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.goods_source_info,
+    context_type=GoodsInfoMenuContext,
+):
     async def build(
         self,
         ctx: GoodsInfoMenuContext,

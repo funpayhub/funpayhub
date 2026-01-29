@@ -21,10 +21,7 @@ class StepContext(MenuContext):
     step: str
 
 
-class SelectLanguageMenu(MenuBuilder):
-    id = 's1'
-    context_type = MenuContext
-
+class SelectLanguageMenu(MenuBuilder, menu_id='s1', context_type=MenuContext):
     async def build(
         self,
         ctx: MenuContext,
@@ -51,10 +48,7 @@ class SelectLanguageMenu(MenuBuilder):
         )
 
 
-class SetupStepMenuBuilder(MenuBuilder):
-    id = 's2'
-    context_type = StepContext
-
+class SetupStepMenuBuilder(MenuBuilder, menu_id='s2', context_type=StepContext):
     async def build(
         self,
         ctx: StepContext,

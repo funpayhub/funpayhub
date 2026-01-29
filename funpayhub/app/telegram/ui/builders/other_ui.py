@@ -25,10 +25,7 @@ if TYPE_CHECKING:
     from funpayhub.app.funpay.main import FunPay
 
 
-class AddCommandMenuBuilder(MenuBuilder):
-    id = MenuIds.add_command
-    context_type = MenuContext
-
+class AddCommandMenuBuilder(MenuBuilder, menu_id=MenuIds.add_command, context_type=MenuContext):
     async def build(self, ctx: MenuContext, translater: Translater) -> Menu:
         return Menu(
             text='$add_command_message',
@@ -51,10 +48,11 @@ class AddCommandMenuBuilder(MenuBuilder):
         )
 
 
-class StartNotificationMenuBuilder(MenuBuilder):
-    id = MenuIds.start_notification
-    context_type = MenuContext
-
+class StartNotificationMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.start_notification,
+    context_type=MenuContext,
+):
     async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
@@ -69,8 +67,9 @@ class StartNotificationMenuBuilder(MenuBuilder):
             callback_data=cbs.OpenMenu(
                 menu_id=MenuIds.properties_entry,
                 context_data={
-                'entry_path': []
-            }).pack(),
+                    'entry_path': [],
+                },
+            ).pack(),
         )
 
         text = translater.translate('$start_notification_text').format(
@@ -82,10 +81,11 @@ class StartNotificationMenuBuilder(MenuBuilder):
         return Menu(text=text)
 
 
-class FunPayStartNotificationMenuBuilder(MenuBuilder):
-    id = MenuIds.funpay_start_notification
-    context_type = FunPayStartNotificationMenuContext
-
+class FunPayStartNotificationMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.funpay_start_notification,
+    context_type=FunPayStartNotificationMenuContext,
+):
     async def build(
         self,
         ctx: FunPayStartNotificationMenuContext,
@@ -110,10 +110,7 @@ class FunPayStartNotificationMenuBuilder(MenuBuilder):
         return Menu(text=text)
 
 
-class UpdateMenuBuilder(MenuBuilder):
-    id = MenuIds.update
-    context_type = UpdateMenuContext
-
+class UpdateMenuBuilder(MenuBuilder, menu_id=MenuIds.update, context_type=UpdateMenuContext):
     async def build(self, ctx: UpdateMenuContext, translater: Translater) -> Menu:
         menu = Menu(finalizer=StripAndNavigationFinalizer())
         if ctx.update_info is None:
@@ -146,10 +143,11 @@ class UpdateMenuBuilder(MenuBuilder):
         return menu
 
 
-class InstallUpdateMenuBuilder(MenuBuilder):
-    id = MenuIds.install_update
-    context_type = InstallUpdateMenuContext
-
+class InstallUpdateMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.install_update,
+    context_type=InstallUpdateMenuContext,
+):
     async def build(
         self,
         ctx: InstallUpdateMenuContext,
@@ -169,10 +167,11 @@ class InstallUpdateMenuBuilder(MenuBuilder):
         )
 
 
-class MainMenuBuilder(MenuBuilder):
-    id = MenuIds.main_menu
-    context_type = MenuContext
-
+class MainMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.main_menu,
+    context_type=MenuContext,
+):
     async def build(
         self,
         ctx: MenuContext,
@@ -188,7 +187,7 @@ class MainMenuBuilder(MenuBuilder):
             callback_data=cbs.OpenMenu(
                 menu_id=MenuIds.properties_entry,
                 history=history,
-                context_data={'entry_path': []}
+                context_data={'entry_path': []},
             ).pack(),
         )
 
@@ -222,10 +221,7 @@ class MainMenuBuilder(MenuBuilder):
         )
 
 
-class StateMenuBuilder(MenuBuilder):
-    id = MenuIds.state_menu
-    context_type = StateUIContext
-
+class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=StateUIContext):
     async def build(self, ctx: StateUIContext, translater: Translater) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(

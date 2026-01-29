@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Type, Literal, overload
+import inspect
+from typing import TYPE_CHECKING, Any, Type, Literal, overload
 from dataclasses import field, dataclass
-from abc import ABC, abstractmethod
+from abc import ABC
 from collections.abc import Iterable, Iterator
 
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
@@ -226,45 +227,107 @@ class ButtonContext:
     data: dict[str, Any] = field(default_factory=dict)
 
 
-class MenuBuilder[CTX: MenuContext](ABC):
+class MenuBuilder[CTX: MenuContext]:
+    if TYPE_CHECKING:
+        __menu_id__: str
+        __context_type__: type[MenuContext]
+        menu_id: str
+        context_type: type[MenuContext]
+
     def __init__(self) -> None:
-        if not issubclass(self.context_type, MenuContext):
-            raise ValueError('Invalid context type. Must be a subtype of `MenuContext`.')
+        self._wrapped: CallableWrapper[Menu] = CallableWrapper(getattr(self, 'build'))
 
-        self._wrapped: CallableWrapper[Menu] = CallableWrapper(self.build)
+    def __init_subclass__(cls, **kwargs):
+        menu_id = kwargs.pop('menu_id', None)
+        context_type = kwargs.pop('context_type', None)
 
-    @abstractmethod
-    @classproperty
-    @classmethod
-    def id(cls) -> str: ...
+        if not hasattr(cls, 'build') or not inspect.isfunction(getattr(cls, 'build')):
+            raise TypeError(
+                f'{cls.__name__} must implement a `build` instance method that '
+                f'accepts at least one positional argument: `context`.',
+            )
 
-    @abstractmethod
-    @classproperty
-    @classmethod
-    def context_type(cls) -> Type[CTX]: ...
+        if not getattr(cls, '__menu_id__', None):
+            if any(not i for i in [menu_id, context_type]):
+                raise TypeError(
+                    f'{cls.__name__} must be defined with keyword arguments '
+                    f"'menu_id' and 'context_type'. "
+                    f'Got: {menu_id=}, {context_type=}.',
+                )
 
-    @abstractmethod
-    async def build(self, __ctx: CTX, *__a: Any, **__k: Any) -> Menu: ...
+            if not isinstance(menu_id, str):
+                raise ValueError(
+                    f"'menu_id' must be a string, not {type(menu_id)}.",
+                )
+            if not isinstance(context_type, type) or not issubclass(context_type, MenuContext):
+                raise ValueError(
+                    "'context_type' must be a subclass of 'MenuContext'.",
+                )
+
+        if menu_id is not None:
+            cls.__menu_id__ = menu_id
+        if context_type is not None:
+            cls.__context_type__ = context_type
+
+        super().__init_subclass__(**kwargs)
 
     async def __call__(self, ctx: CTX, data: dict[str, Any]) -> Menu:
         return await self._wrapped((ctx,), data)
 
-
-class MenuModification[CTX: MenuContext](ABC):
-    def __init__(self) -> None:
-        self._wrapped_modification: CallableWrapper[Menu] = CallableWrapper(self.modify)
-        self._wrapped_filter: CallableWrapper[bool] = CallableWrapper(self.filter)
-
-    @abstractmethod
     @classproperty
     @classmethod
-    def id(cls) -> str: ...
+    def menu_id(cls) -> str:
+        return cls.__menu_id__
 
-    async def filter(self, __c: CTX, __m: Menu, *__a: Any, **__k: Any) -> bool:
-        return True
+    @classproperty
+    @classmethod
+    def context_type(cls) -> type[MenuContext]:
+        return cls.__context_type__
 
-    @abstractmethod
-    async def modify(self, __c: CTX, __m: Menu, *__a: Any, **__k: Any) -> Menu: ...
+
+class MenuModification[CTX: MenuContext]:
+    if TYPE_CHECKING:
+        __modification_id__: str
+        modification_id: str
+
+    def __init__(self) -> None:
+        self._wrapped_modification: CallableWrapper[Menu] = CallableWrapper(
+            getattr(self, 'modify'),
+        )
+        self._wrapped_filter: CallableWrapper[bool] = CallableWrapper(
+            getattr(self, 'filter', lambda _, __: True),
+        )
+
+    def __init_subclass__(cls, **kwargs):
+        modification_id = kwargs.pop('modification_id', None)
+
+        if not hasattr(cls, 'modify') or not inspect.isfunction(getattr(cls, 'modify')):
+            raise TypeError(
+                f'{cls.__name__} must implement a `modify` instance method that '
+                f'accepts at least two positional argument: `context` and `menu`.',
+            )
+
+        if not getattr(cls, 'modification_id', None):
+            if not modification_id:
+                raise TypeError(
+                    f"{cls.__name__} must be defined with keyword argument 'modification_id'. "
+                    f'Got: {modification_id=}.',
+                )
+
+            if not isinstance(modification_id, str):
+                raise ValueError(
+                    f"'modification_id' must be a string, not {type(modification_id)}.",
+                )
+
+        if modification_id is not None:
+            cls.__modification_id__ = modification_id
+
+        super().__init_subclass__(**kwargs)
+
+    @classproperty
+    @classmethod
+    def modification_id(cls) -> str:
+        return cls.__modification_id__
 
     async def __call__(self, context: MenuContext, menu: Menu, data: dict[str, Any]) -> Menu:
         if self.wrapped_filter is not None:
@@ -283,44 +346,109 @@ class MenuModification[CTX: MenuContext](ABC):
 
 
 class ButtonBuilder[CTX: ButtonContext](ABC):
+    if TYPE_CHECKING:
+        __button_id__: str
+        __context_type__: type[ButtonContext]
+        button_id: str
+        context_type: type[ButtonContext]
+
     def __init__(self) -> None:
         if not issubclass(self.context_type, ButtonContext):
             raise ValueError('Invalid context type. Must be a subtype of `ButtonContext`.')
 
         self._wrapped: CallableWrapper[Button] = CallableWrapper(self.build)
 
-    @abstractmethod
+    def __init_subclass__(cls, **kwargs):
+        button_id = kwargs.pop('button_id', None)
+        context_type = kwargs.pop('context_type', None)
+
+        if not hasattr(cls, 'build') or not inspect.isfunction(getattr(cls, 'build')):
+            raise TypeError(
+                f'{cls.__name__} must implement a `build` instance method that '
+                f'accepts at least one positional argument: `context`.',
+            )
+
+        if not getattr(cls, '__menu_id__', None):
+            if any(not i for i in [button_id, context_type]):
+                raise TypeError(
+                    f'{cls.__name__} must be defined with keyword arguments '
+                    f"'button_id' and 'context_type'. "
+                    f'Got: {button_id=}, {context_type=}.',
+                )
+
+            if not isinstance(button_id, str):
+                raise ValueError(
+                    f"'button_id' must be a string, not {type(button_id)}.",
+                )
+            if not isinstance(context_type, type) or not issubclass(context_type, ButtonContext):
+                raise ValueError(
+                    "'context_type' must be a subclass of 'ButtonContext'.",
+                )
+
+        if button_id is not None:
+            cls.__button_id__ = button_id
+        if context_type is not None:
+            cls.__context_type__ = context_type
+
+        super().__init_subclass__(**kwargs)
+
     @classproperty
     @classmethod
-    def id(cls) -> str: ...
+    def button_id(cls) -> str:
+        return cls.__button_id__
 
-    @abstractmethod
     @classproperty
     @classmethod
-    def context_type(cls) -> Type[CTX]: ...
-
-    @abstractmethod
-    async def build(self, __ctx: CTX, *__a: Any, **__k: Any) -> Button: ...
+    def context_type(cls) -> Type[CTX]:
+        return cls.__context_type__
 
     async def __call__(self, ctx: CTX, data: dict[str, Any]) -> Button:
         return await self._wrapped((ctx,), data)
 
 
-class ButtonModification[CTX: ButtonContext](ABC):
-    def __init__(self) -> None:
-        self._wrapped_modification: CallableWrapper[Button] = CallableWrapper(self.modify)
-        self._wrapped_filter: CallableWrapper[bool] = CallableWrapper(self.filter)
+class ButtonModification[CTX: ButtonContext]:
+    if TYPE_CHECKING:
+        __modification_id__: str
+        modification_id: str
 
-    @abstractmethod
+    def __init__(self) -> None:
+        self._wrapped_modification: CallableWrapper[Button] = CallableWrapper(
+            getattr(self, 'modify'),
+        )
+        self._wrapped_filter: CallableWrapper[bool] = CallableWrapper(
+            getattr(self, 'filter', lambda _, __: True),
+        )
+
+    def __init_subclass__(cls, **kwargs):
+        modification_id = kwargs.pop('modification_id', None)
+
+        if not hasattr(cls, 'modify') or not inspect.isfunction(getattr(cls, 'modify')):
+            raise TypeError(
+                f'{cls.__name__} must implement a `modify` instance method that '
+                f'accepts at least two positional argument: `context` and `button`.',
+            )
+
+        if not getattr(cls, 'modification_id', None):
+            if not modification_id:
+                raise TypeError(
+                    f"{cls.__name__} must be defined with keyword argument 'modification_id'. "
+                    f'Got: {modification_id=}.',
+                )
+
+            if not isinstance(modification_id, str):
+                raise ValueError(
+                    f"'modification_id' must be a string, not {type(modification_id)}.",
+                )
+
+        if modification_id is not None:
+            cls.__modification_id__ = modification_id
+
+        super().__init_subclass__(**kwargs)
+
     @classproperty
     @classmethod
-    def id(cls) -> str: ...
-
-    async def filter(self, __c: CTX, __b: Button, *__a: Any, **__k: Any) -> bool:
-        return True
-
-    @abstractmethod
-    async def modify(self, __c: CTX, __b: Button, *__a: Any, **__k: Any) -> Button: ...
+    def modification_id(cls) -> str:
+        return cls.__modification_id__
 
     async def __call__(
         self,

@@ -90,11 +90,11 @@ class UIRegistry:
                 f'Menu builder must be a subclass of MenuBuilder, got {type(builder).__name__}.',
             )
 
-        if builder.id in self._menus and not overwrite:
-            raise KeyError(f'Menu {builder.id!r} already exists.')
+        if builder.menu_id in self._menus and not overwrite:
+            raise KeyError(f'Menu {builder.menu_id!r} already exists.')
 
-        logger.info('Adding menu builder %s to registry...', builder.id)
-        self._menus[builder.id] = _MenuBuilder(builder())
+        logger.info('Adding menu builder %s to registry...', builder.menu_id)
+        self._menus[builder.menu_id] = _MenuBuilder(builder())
 
     def add_menu_modification(
         self,
@@ -108,9 +108,11 @@ class UIRegistry:
             )
         if menu_id not in self._menus:
             raise KeyError(f'Menu {menu_id!r} does not exist.')
-        if modification.id in self._menus[menu_id].modifications:
-            raise KeyError(f'Menu {menu_id!r} already has a modification {modification.id!r}.')
-        self._menus[menu_id].modifications[modification.id] = modification()
+        if modification.modification_id in self._menus[menu_id].modifications:
+            raise KeyError(
+                f'Menu {menu_id!r} already has a modification {modification.modification_id!r}.'
+            )
+        self._menus[menu_id].modifications[modification.modification_id] = modification()
 
     def get_menu_builder(self, menu_id: str) -> _MenuBuilder:
         return self._menus[menu_id]
@@ -157,11 +159,11 @@ class UIRegistry:
                 f'Button builder must be a subclass of ButtonBuilder, '
                 f'got {type(builder).__name__}.',
             )
-        if builder.id in self._buttons and not overwrite:
-            raise KeyError(f'Button {builder.id!r} already exists.')
+        if builder.button_id in self._buttons and not overwrite:
+            raise KeyError(f'Button {builder.button_id!r} already exists.')
 
-        logger.info('Adding button builder %s to registry...', builder.id)
-        self._buttons[builder.id] = _ButtonBuilder(builder())
+        logger.info('Adding button builder %s to registry...', builder.button_id)
+        self._buttons[builder.button_id] = _ButtonBuilder(builder())
 
     def add_button_modification(
         self,
@@ -176,12 +178,14 @@ class UIRegistry:
 
         if button_id not in self._buttons:
             raise KeyError(f'Button {button_id!r} does not exist.')
-        if modification.id in self._buttons[button_id].modifications:
-            raise KeyError(f'Button {button_id!r} already has a modification {modification.id!r}.')
-        self._buttons[button_id].modifications[modification.id] = modification()
+        if modification.modification_id in self._buttons[button_id].modifications:
+            raise KeyError(
+                f'Button {button_id!r} already has a modification {modification.modification_id!r}.'
+            )
+        self._buttons[button_id].modifications[modification.modification_id] = modification()
         logger.info(
             'Modification %s for button %s has been added to registry.',
-            modification.id,
+            modification.modification_id,
             button_id,
         )
 

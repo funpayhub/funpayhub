@@ -20,10 +20,7 @@ if TYPE_CHECKING:
     from funpayhub.app.properties import FunPayHubProperties
 
 
-class PluginsListMenuBuilder(MenuBuilder):
-    id = MenuIds.plugins_list
-    context_type = MenuContext
-
+class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_type=MenuContext):
     async def build(
         self,
         ctx: MenuContext,
@@ -67,10 +64,11 @@ class PluginsListMenuBuilder(MenuBuilder):
         )
 
 
-class PluginInfoMenuBuilder(MenuBuilder):
-    id = MenuIds.plugin_info
-    context_type = PluginMenuContext
-
+class PluginInfoMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.plugin_info,
+    context_type=PluginMenuContext,
+):
     async def build(
         self,
         ctx: PluginMenuContext,
@@ -145,8 +143,8 @@ class PluginInfoMenuBuilder(MenuBuilder):
                     menu_id=MenuIds.properties_entry,
                     history=ctx.callback_data.as_history() if ctx.callback_data else [],
                     context_data={
-                        'entry_path': plugin.properties.path
-                    }
+                        'entry_path': plugin.properties.path,
+                    },
                 ).pack(),
             )
 
@@ -178,10 +176,11 @@ class PluginInfoMenuBuilder(MenuBuilder):
         )
 
 
-class InstallPluginMenuBuilder(MenuBuilder):
-    id = MenuIds.install_plugin
-    context_type = MenuContext
-
+class InstallPluginMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.install_plugin,
+    context_type=MenuContext,
+):
     async def build(self, ctx: MenuContext, translater: Translater) -> Menu:
         kb = KeyboardBuilder()
 

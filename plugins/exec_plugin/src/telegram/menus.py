@@ -72,10 +72,7 @@ async def exec_view_text(ctx: MenuContext, result: ExecR, mode: Literal['output'
 
 
 # menus
-class ExecListMenuBuilder(MenuBuilder):
-    id = 'exec_list'
-    context_type = MenuContext
-
+class ExecListMenuBuilder(MenuBuilder, menu_id='exec_list', context_type=MenuContext):
     async def build(self, ctx: MenuContext, exec_registry: ExecRReg) -> Menu:
         keyboard = KeyboardBuilder()
         callback_data = ctx.callback_data
@@ -98,10 +95,7 @@ class ExecListMenuBuilder(MenuBuilder):
         )
 
 
-class ExecOutputMenuBuilder(MenuBuilder):
-    id = 'exec_output'
-    context_type = MenuContext
-
+class ExecOutputMenuBuilder(MenuBuilder, menu_id='exec_output', context_type=MenuContext):
     async def build(self, ctx: MenuContext, exec_registry: ExecRReg) -> Menu:
         result = exec_registry.registry[ctx.data['exec_id']]
         total_pages = math.ceil(result.output_len / MAX_TEXT_LEN)
@@ -114,10 +108,7 @@ class ExecOutputMenuBuilder(MenuBuilder):
         )
 
 
-class ExecCodeMenuBuilder(MenuBuilder):
-    id = 'exec_code'
-    context_type = MenuContext
-
+class ExecCodeMenuBuilder(MenuBuilder, menu_id='exec_code', context_type=MenuContext):
     async def build(self, ctx: MenuContext, exec_registry: ExecRReg) -> Menu:
         result = exec_registry.registry[ctx.data['exec_id']]
         total_pages = math.ceil(result.code_len / MAX_TEXT_LEN)
@@ -131,9 +122,7 @@ class ExecCodeMenuBuilder(MenuBuilder):
 
 
 # Main Menu Modification
-class MainMenuModification(MenuModification):
-    id = 'exec:main_menu_modification'
-
+class MainMenuModification(MenuModification, modification_id='exec:main_menu_modification'):
     async def modify(self, ctx: MenuContext, menu: Menu) -> Menu:
         menu.main_keyboard.add_callback_button(
             button_id='open_exec_registry',

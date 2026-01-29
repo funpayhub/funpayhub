@@ -11,10 +11,11 @@ from .. import premade
 from ..ids import MenuIds
 
 
-class NotificationsMenuBuilder(MenuBuilder):
-    id = MenuIds.tg_chat_notifications
-    context_type = MenuContext
-
+class NotificationsMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.tg_chat_notifications,
+    context_type=MenuContext,
+):
     async def build(
         self,
         ctx: MenuContext,
@@ -41,7 +42,7 @@ class NotificationsMenuBuilder(MenuBuilder):
         )
 
         for entry in props.entries.values():
-            if entry.id in [f'review_{j}' for j in range(1, 6)]:
+            if entry.modification_id in [f'review_{j}' for j in range(1, 6)]:
                 continue
             if not isinstance(entry, ListParameter):
                 continue

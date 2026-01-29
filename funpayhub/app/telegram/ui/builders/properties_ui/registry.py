@@ -7,8 +7,8 @@ __all__ = ['EntriesUIRegistry']
 from typing import TYPE_CHECKING, Type
 from dataclasses import replace
 
-from funpayhub.app.properties import FunPayHubProperties
 from loggers import telegram_ui as logger
+from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
 from funpayhub.lib.properties.base import Entry
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
@@ -81,11 +81,14 @@ class _EntriesUIRegistry:
 EntriesUIRegistry = _EntriesUIRegistry()
 
 
-class PropertiesEntryMenuBuilder(MenuBuilder):
-    id = MenuIds.properties_entry
-    context_type = EntryMenuContext
-
-    async def build(self, ctx: EntryMenuContext, tg_ui: UIRegistry, properties: FunPayHubProperties) -> Menu:
+class PropertiesEntryMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.properties_entry,
+    context_type=EntryMenuContext,
+):
+    async def build(
+        self, ctx: EntryMenuContext, tg_ui: UIRegistry, properties: FunPayHubProperties
+    ) -> Menu:
         entry = properties.get_entry(ctx.entry_path)
         if (builder_id := EntriesUIRegistry.get_menu_builder(type(entry))) is None:
             raise LookupError(f'Unknown entry type {type(entry)}.')
@@ -93,11 +96,14 @@ class PropertiesEntryMenuBuilder(MenuBuilder):
         return await tg_ui.build_menu(context, finalize=False)
 
 
-class PropertiesEntryButtonBuilder(ButtonBuilder):
-    id = ButtonIds.properties_entry
-    context_type = EntryButtonContext
-
-    async def build(self, ctx: EntryButtonContext, tg_ui: UIRegistry, properties: FunPayHubProperties) -> Button:
+class PropertiesEntryButtonBuilder(
+    ButtonBuilder,
+    button_id=ButtonIds.properties_entry,
+    context_type=EntryButtonContext,
+):
+    async def build(
+        self, ctx: EntryButtonContext, tg_ui: UIRegistry, properties: FunPayHubProperties
+    ) -> Button:
         entry = properties.get_entry(ctx.entry_path)
         if (builder_id := EntriesUIRegistry.get_button_builder(type(entry))) is None:
             raise LookupError(f'Unknown entry type {type(entry)}.')

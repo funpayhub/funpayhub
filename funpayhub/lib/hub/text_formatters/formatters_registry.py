@@ -45,7 +45,6 @@ class MyFormatter(
 
 """
 
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Type
@@ -77,7 +76,6 @@ class Formatter(ABC):
         description: str
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
-
         key = kwargs.pop('key', None)
         name = kwargs.pop('name', None)
         description = kwargs.pop('description', None)
@@ -86,14 +84,14 @@ class Formatter(ABC):
             if any(not i for i in [key, name, description]):
                 raise TypeError(
                     f'{cls.__name__} must be defined with keyword arguments '
-                    f'\'key\', \'name\' and \'description\'. '
-                    f'Got: {key=}, {name=}, {description=}'
+                    f"'key', 'name' and 'description'. "
+                    f'Got: {key=}, {name=}, {description=}',
                 )
 
             if any(not isinstance(i, str) for i in [key, name, description]):
                 raise ValueError(
-                    f'Keyord argument \'key\', \'name\', \'description\' must be strings. '
-                    f'Got: key={type(key)}, name={type(name)}, description={type(description)}.'
+                    f"Keyord argument 'key', 'name', 'description' must be strings. "
+                    f'Got: key={type(key)}, name={type(name)}, description={type(description)}.',
                 )
 
         if key is not None:

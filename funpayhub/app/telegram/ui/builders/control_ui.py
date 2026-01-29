@@ -15,10 +15,7 @@ if TYPE_CHECKING:
     from funpayhub.app import FunPayHub
 
 
-class ControlMenuBuilder(MenuBuilder):
-    id = MenuIds.control
-    context_type = MenuContext
-
+class ControlMenuBuilder(MenuBuilder, menu_id=MenuIds.control, context_type=MenuContext):
     async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub) -> Menu:
         main_keyboard = KeyboardBuilder()
         main_keyboard.add_rows(
