@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+
 from funpayhub.lib.telegram.ui import MenuContext, ButtonContext
 
 
@@ -13,4 +14,3 @@ class EntryMenuContext(MenuContext):
 class EntryButtonContext(ButtonContext):
     menu_render_context: EntryMenuContext
     entry_path: list[str]
-

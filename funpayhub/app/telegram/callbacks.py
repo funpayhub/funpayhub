@@ -3,9 +3,10 @@ from __future__ import annotations
 from typing import Any, Literal, TypedDict
 
 from pydantic import Field, BaseModel
+from aiogram.types import Message
 
 from funpayhub.lib.telegram.callback_data import CallbackData
-from aiogram.types import Message
+
 
 class MenuPageable(BaseModel):
     menu_page: int = 0
@@ -139,11 +140,12 @@ class DrawMenu(CallbackData, identifier='draw_menu'):
                     {
                         'text': button.text,
                         'callback_data': button.callback_data,
-                        'url': button.url
-                    }
+                        'url': button.url,
+                    },
                 )
             result.append(curr_row)
         return result
+
 
 # list param
 class ListParamItemAction(CallbackData, identifier='list_item_action'):

@@ -5,8 +5,13 @@ from typing import TYPE_CHECKING, Any
 from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
-from aiogram.types import Update, Message, CallbackQuery, InlineKeyboardMarkup, \
-    InlineKeyboardButton
+from aiogram.types import (
+    Update,
+    Message,
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 from aiogram.filters import Command, StateFilter, CommandStart
 from aiogram.fsm.context import FSMContext
 
@@ -64,7 +69,7 @@ async def open_custom_menu(
     if callback_data.replace_history_with_trigger:
         fake_callback_history = cbs.DrawMenu(
             text=query.message.text,
-            keyboard=cbs.DrawMenu.keyboard_from_message(query.message)
+            keyboard=cbs.DrawMenu.keyboard_from_message(query.message),
         ).pack(hash=False)
 
         fake_callback_data = callback_data.model_copy()
@@ -103,14 +108,14 @@ async def draw_menu(
                     text=button.get('text'),
                     callback_data=button.get('callback_data'),
                     url=button.get('url'),
-                )
+                ),
             )
         kb_list.append(curr_row)
 
     kb = InlineKeyboardMarkup(inline_keyboard=kb_list)
     await query.message.edit_text(
         text=callback_data.text,
-        reply_markup=kb
+        reply_markup=kb,
     )
 
 
@@ -172,8 +177,8 @@ async def send_menu(
         data={
             'callback_data': cbs.OpenMenu(
                 menu_id=MenuIds.properties_entry,
-                context_data={'entry_path': []}
-            )
+                context_data={'entry_path': []},
+            ),
         },
     )
 

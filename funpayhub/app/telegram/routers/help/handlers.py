@@ -9,6 +9,7 @@ from aiogram.filters import Command
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.telegram.ui.ids import MenuIds
 
+
 if TYPE_CHECKING:
     from funpayhub.app.properties import FunPayHubProperties
     from funpayhub.lib.translater import Translater
@@ -40,7 +41,12 @@ async def help_command(message: Message) -> None:
 
 
 @router.callback_query(cbs.OpenMenu.filter())
-async def show_menu_help(query: CallbackQuery, callback_data: cbs.OpenMenu, properties: FunPayHubProperties, translater: Translater) -> None:
+async def show_menu_help(
+    query: CallbackQuery,
+    callback_data: cbs.OpenMenu,
+    properties: FunPayHubProperties,
+    translater: Translater,
+) -> None:
     if callback_data.menu_id in [
         MenuIds.properties_entry,
         MenuIds.properties_properties,
@@ -56,7 +62,6 @@ async def show_menu_help(query: CallbackQuery, callback_data: cbs.OpenMenu, prop
             text=f'Справка:\n{desc}',
             show_alert=True,
         )
-
 
 
 @router.callback_query(cbs.NextParamValue.filter())

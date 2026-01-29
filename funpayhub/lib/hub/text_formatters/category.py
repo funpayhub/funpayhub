@@ -18,7 +18,6 @@
 - Фильтрация форматтеров при форматировании текста
 """
 
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Never, Union, TypeAlias
@@ -75,25 +74,26 @@ class LogicalOperatorsMeta(type, _LogicalOperatorsMixin):
     Используется для того, чтобы `FormatterCategory` можно было
     комбинировать напрямую, без инстанцирования.
     """
+
     ...
 
 
 class FormatterCategory(metaclass=LogicalOperatorsMeta):
     """
-        Описывает категорию форматтеров.
+    Описывает категорию форматтеров.
 
-        Категория определяет правила, по которым форматтер считается
-        принадлежащим к ней. Категория не создаётся как объект и
-        используется только на уровне класса.
+    Категория определяет правила, по которым форматтер считается
+    принадлежащим к ней. Категория не создаётся как объект и
+    используется только на уровне класса.
 
-        Поддерживаемые способы включения форматтеров:
-        - Явное указание ключей форматтеров (`include_formatters`)
-        - Включение других категорий (`include_categories`)
-        - Пользовательские правила (`rules`)
+    Поддерживаемые способы включения форматтеров:
+    - Явное указание ключей форматтеров (`include_formatters`)
+    - Включение других категорий (`include_categories`)
+    - Пользовательские правила (`rules`)
 
-        Категории применяются через `FormattersRegistry` и используются
-        для фильтрации форматтеров при форматировании текста.
-        """
+    Категории применяются через `FormattersRegistry` и используются
+    для фильтрации форматтеров при форматировании текста.
+    """
 
     if TYPE_CHECKING:
         include_formatters: set[str]
@@ -164,6 +164,7 @@ class CategoriesQuery(ABC, _LogicalOperatorsMixin):
     - комбинирования категорий,
     - передачи условий в `FormattersRegistry`.
     """
+
     @abstractmethod
     def __call__(self, formatter: type[Formatter], registry: FormattersRegistry) -> bool: ...
 
@@ -175,6 +176,7 @@ class CategoriesExistsQuery(CategoriesQuery):
     Возвращает `True`, если форматтер зарегистрирован в указанной категории
     внутри реестра.
     """
+
     def __init__(self, category: type[FormatterCategory]) -> None:
         self.category = category
 
@@ -189,6 +191,7 @@ class CategoriesAndQuery(CategoriesQuery):
     Возвращает `True`, если все вложенные запросы
     применимы к форматтеру.
     """
+
     def __init__(self, *queries: QUERYABLE_TYPE) -> None:
         self.queries = [
             i if isinstance(i, CategoriesQuery) else CategoriesExistsQuery(i) for i in queries
@@ -208,6 +211,7 @@ class CategoriesOrQuery(CategoriesQuery):
     Возвращает `True`, если хотя бы один из вложенных
     запросов применим к форматтеру.
     """
+
     def __init__(self, *queries: QUERYABLE_TYPE) -> None:
         self.queries = [
             i if isinstance(i, CategoriesQuery) else CategoriesExistsQuery(i) for i in queries
@@ -226,6 +230,7 @@ class CategoriesNotQuery(CategoriesQuery):
 
     Инвертирует результат вложенного запроса.
     """
+
     def __init__(self, query: QUERYABLE_TYPE) -> None:
         self.query = query if isinstance(query, CategoriesQuery) else CategoriesExistsQuery(query)
 

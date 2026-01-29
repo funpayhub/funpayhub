@@ -19,8 +19,8 @@ from .router import router
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.telegram.main import Telegram
     from funpayhub.app.funpay.main import FunPay
+    from funpayhub.app.telegram.main import Telegram
 
 
 @router.callback_query(cbs.SendMessage.filter())
@@ -85,6 +85,7 @@ async def send_funpay_message(
         result = True
     except Exception:
         import traceback
+
         print(traceback.format_exc())
 
     if result:

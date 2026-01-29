@@ -87,7 +87,10 @@ class PropertiesEntryMenuBuilder(
     context_type=EntryMenuContext,
 ):
     async def build(
-        self, ctx: EntryMenuContext, tg_ui: UIRegistry, properties: FunPayHubProperties
+        self,
+        ctx: EntryMenuContext,
+        tg_ui: UIRegistry,
+        properties: FunPayHubProperties,
     ) -> Menu:
         entry = properties.get_entry(ctx.entry_path)
         if (builder_id := EntriesUIRegistry.get_menu_builder(type(entry))) is None:
@@ -102,7 +105,10 @@ class PropertiesEntryButtonBuilder(
     context_type=EntryButtonContext,
 ):
     async def build(
-        self, ctx: EntryButtonContext, tg_ui: UIRegistry, properties: FunPayHubProperties
+        self,
+        ctx: EntryButtonContext,
+        tg_ui: UIRegistry,
+        properties: FunPayHubProperties,
     ) -> Button:
         entry = properties.get_entry(ctx.entry_path)
         if (builder_id := EntriesUIRegistry.get_button_builder(type(entry))) is None:

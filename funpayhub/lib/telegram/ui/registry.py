@@ -110,7 +110,7 @@ class UIRegistry:
             raise KeyError(f'Menu {menu_id!r} does not exist.')
         if modification.modification_id in self._menus[menu_id].modifications:
             raise KeyError(
-                f'Menu {menu_id!r} already has a modification {modification.modification_id!r}.'
+                f'Menu {menu_id!r} already has a modification {modification.modification_id!r}.',
             )
         self._menus[menu_id].modifications[modification.modification_id] = modification()
 
@@ -180,7 +180,7 @@ class UIRegistry:
             raise KeyError(f'Button {button_id!r} does not exist.')
         if modification.modification_id in self._buttons[button_id].modifications:
             raise KeyError(
-                f'Button {button_id!r} already has a modification {modification.modification_id!r}.'
+                f'Button {button_id!r} already has a modification {modification.modification_id!r}.',
             )
         self._buttons[button_id].modifications[modification.modification_id] = modification()
         logger.info(

@@ -39,7 +39,10 @@ class ToggleParamButtonBuilder(
     context_type=EntryButtonContext,
 ):
     async def build(
-        self, ctx: EntryButtonContext, translater: Translater, properties: FunPayHubProperties
+        self,
+        ctx: EntryButtonContext,
+        translater: Translater,
+        properties: FunPayHubProperties,
     ) -> Button:
         callback_data = ctx.menu_render_context.callback_data
         entry = properties.get_entry(ctx.entry_path)
@@ -65,7 +68,10 @@ class ChangeParamValueButtonBuilder(
     context_type=EntryButtonContext,
 ):
     async def build(
-        self, ctx: EntryButtonContext, translater: Translater, properties: FunPayHubProperties
+        self,
+        ctx: EntryButtonContext,
+        translater: Translater,
+        properties: FunPayHubProperties,
     ) -> Button:
         callback_data = ctx.menu_render_context.callback_data
         entry = properties.get_entry(ctx.entry_path)
@@ -92,7 +98,10 @@ class OpenParamMenuButtonBuilder(
     context_type=EntryButtonContext,
 ):
     async def build(
-        self, ctx: EntryButtonContext, translater: Translater, properties: FunPayHubProperties
+        self,
+        ctx: EntryButtonContext,
+        translater: Translater,
+        properties: FunPayHubProperties,
     ) -> Button:
         callback_data = ctx.menu_render_context.callback_data
         entry = properties.get_entry(ctx.entry_path)
@@ -200,7 +209,10 @@ class ListParameterMenuBuilder(
     context_type=EntryMenuContext,
 ):
     async def build(
-        self, ctx: EntryMenuContext, translater: Translater, properties: FunPayHubProperties
+        self,
+        ctx: EntryMenuContext,
+        translater: Translater,
+        properties: FunPayHubProperties,
     ) -> Menu:
         keyboard = KeyboardBuilder()
         mode = ctx.data.get('mode')
@@ -312,7 +324,10 @@ class AddListItemMenuBuilder(
     context_type=EntryMenuContext,
 ):
     async def build(
-        self, ctx: EntryMenuContext, translater: Translater, properties: FunPayHubProperties
+        self,
+        ctx: EntryMenuContext,
+        translater: Translater,
+        properties: FunPayHubProperties,
     ) -> Menu:
         text = translater.translate('$enter_new_list_item_message').format()
         callback_data = ctx.callback_data
@@ -404,7 +419,7 @@ class AddFormattersListButtonModification(
                 ctx.entry_path[0] == 'auto_response' and ctx.entry_path[-1] == 'response_text',
                 ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'review_reply_text',
                 ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'chat_reply_text',
-            ]
+            ],
         )
 
     async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
@@ -414,7 +429,7 @@ class AddFormattersListButtonModification(
             [
                 ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'review_reply_text',
                 ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'chat_reply_text',
-            ]
+            ],
         ):
             query = 'fph:general|fph:order'
         else:

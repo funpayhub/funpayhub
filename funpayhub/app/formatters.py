@@ -41,7 +41,7 @@ class DateTimeFormatter(
     Formatter,
     key='datetime',
     name='$formatter:datetime:name',
-    description='$formatter:datetime:description'
+    description='$formatter:datetime:description',
 ):
     def __init__(self, mode: str = 'time') -> None:
         self.mode = mode
@@ -59,7 +59,7 @@ class ImageFormatter(
     Formatter,
     key='image',
     name='$formatter:image:name',
-    description='$formatter:image:description'
+    description='$formatter:image:description',
 ):
     def __init__(self, path_or_id: int | str) -> None:
         self.path_or_id = path_or_id
@@ -75,7 +75,7 @@ class OrderFormatter(
     Formatter,
     key='order',
     name='$formatter:order:name',
-    description='$formatter:order:description'
+    description='$formatter:order:description',
 ):
     def __init__(self, mode: str = 'id') -> None:
         self.mode = mode
@@ -105,7 +105,7 @@ class MessageFormatter(
     Formatter,
     key='message',
     name='$formatter:message:name',
-    description='$formatter:message:description'
+    description='$formatter:message:description',
 ):
     def __init__(self, mode: str) -> None:
         self.mode = mode
@@ -132,7 +132,7 @@ class MeFormatter(
     Formatter,
     key='me',
     name='$formatter:me:name',
-    description='$formatter:me:description'
+    description='$formatter:me:description',
 ):
     def __init__(self, mode: str = 'username') -> None:
         self.mode = mode

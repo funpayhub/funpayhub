@@ -16,11 +16,11 @@ from funpayhub.app.telegram.ui.builders.context import NewMessageMenuContext
 
 if TYPE_CHECKING:
     from funpaybotengine import Bot
+    from funpaybotengine.types import Message
 
+    from funpayhub.app.funpay.main import FunPay
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
     from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
-    from funpayhub.app.funpay.main import FunPay
-    from funpaybotengine.types import Message
 
 
 on_new_message_router = r = Router(name='fph:on_new_message_router')
@@ -92,11 +92,13 @@ async def send_new_message_notification(
         only_mine_from_hub &= is_manual
         only_automatic &= automatic
 
-    if any([
-        only_mine and not appearance_props.show_if_mine_only.value,
-        only_automatic and not appearance_props.show_automatic_only.value,
-        only_mine_from_hub and not appearance_props.show_mine_from_hub_only.value,
-    ]):
+    if any(
+        [
+            only_mine and not appearance_props.show_if_mine_only.value,
+            only_automatic and not appearance_props.show_automatic_only.value,
+            only_mine_from_hub and not appearance_props.show_mine_from_hub_only.value,
+        ],
+    ):
         return
 
     context = NewMessageMenuContext(
