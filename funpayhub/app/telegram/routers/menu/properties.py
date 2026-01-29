@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Any
 from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
-from aiogram.types import Update, Message, CallbackQuery
+from aiogram.types import Update, Message, CallbackQuery, InlineKeyboardMarkup, \
+    InlineKeyboardButton
 from aiogram.filters import Command, StateFilter, CommandStart
 from aiogram.fsm.context import FSMContext
 
@@ -70,6 +71,31 @@ async def open_custom_menu(
         await menu.answer_to(query.message)
     else:
         await menu.apply_to(query.message)
+
+
+@r.callback_query(cbs.DrawMenu.filter())
+async def draw_menu(
+    query: CallbackQuery,
+    callback_data: cbs.DrawMenu,
+):
+    kb_list = []
+    for row in callback_data.keyboard:
+        curr_row = []
+        for button in row:
+            curr_row.append(
+                InlineKeyboardButton(
+                    text=button.get('text'),
+                    callback_data=button.get('callback_data'),
+                    url=button.get('url'),
+                )
+            )
+        kb_list.append(curr_row)
+
+    kb = InlineKeyboardMarkup(inline_keyboard=kb_list)
+    await query.message.edit_text(
+        text=callback_data.text,
+        reply_markup=kb
+    )
 
 
 @r.callback_query(cbs.OpenEntryMenu.filter())

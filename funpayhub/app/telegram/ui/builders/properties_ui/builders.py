@@ -369,7 +369,6 @@ class AddFormattersListButtonModification(MenuModification):
             text=translater.translate('$open_formatters_list'),
             callback_data=cbs.OpenMenu(
                 menu_id=MenuIds.formatters_list,
-                force_new_message=True,
                 data={'query': query} if query is not None else {},
             ).pack(),
         )

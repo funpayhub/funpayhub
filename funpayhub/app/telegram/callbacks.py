@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, Literal, TypedDict
 
 from pydantic import Field, BaseModel
 
 from funpayhub.lib.telegram.callback_data import CallbackData
-
+from aiogram.types import Message
 
 class MenuPageable(BaseModel):
     menu_page: int = 0
@@ -108,6 +108,35 @@ class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
 class ToggleNotificationChannel(CallbackData, identifier='toggle_notification_channel'):
     channel: str
 
+
+class ButtonDict(TypedDict, total=False):
+    text: str
+    callback_data: str | None
+    url: str | None
+
+
+class DrawMenu(CallbackData, identifier='draw_menu'):
+    text: str
+    keyboard: list[list[ButtonDict]]
+
+    @staticmethod
+    def keyboard_from_message(message: Message) -> list[list[ButtonDict]]:
+        if not message.reply_markup or not message.reply_markup.inline_keyboard:
+            return []
+
+        result = []
+        for row in message.reply_markup.inline_keyboard:
+            curr_row = []
+            for button in row:
+                curr_row.append(
+                    {
+                        'text': button.text,
+                        'callback_data': button.callback_data,
+                        'url': button.url
+                    }
+                )
+            result.append(curr_row)
+        return result
 
 # list param
 class ListParamItemAction(CallbackData, identifier='list_item_action'):

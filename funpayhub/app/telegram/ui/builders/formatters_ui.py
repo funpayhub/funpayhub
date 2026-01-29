@@ -31,7 +31,10 @@ class FormatterListMenuBuilder(MenuBuilder):
         callback_data = ctx.callback_data
 
         if ctx.data.get('by_category'):
-            for category in fp_formatters._categories_to_formatters.keys():
+            for cat_id in fp_formatters._categories_to_formatters.keys():
+                category = fp_formatters.get_category(cat_id)
+                if not category:
+                    continue
                 keyboard.add_callback_button(
                     button_id=f'open_formatters_category:{category.id}',
                     text=translater.translate(category.name),
@@ -95,7 +98,8 @@ class FormatterInfoMenuBuilder(MenuBuilder):
         translater: Translater,
     ) -> Menu:
         formatter = fp_formatters._formatters[ctx.data['formatter_id']]
-        categories = fp_formatters._formatters_to_categories[formatter]
+        categories = fp_formatters._formatters_to_categories[formatter.key]
+        categories = [fp_formatters.get_category(i) for i in categories]
         categories_text = '; '.join(translater.translate(i.name) for i in categories)
 
         text = f"""{translater.translate(formatter.name)}
