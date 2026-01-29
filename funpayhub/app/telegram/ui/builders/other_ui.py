@@ -10,7 +10,6 @@ from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
-from funpayhub.app.telegram.callbacks import OpenEntryMenu
 
 from .context import (
     StateUIContext,
@@ -61,13 +60,17 @@ class StartNotificationMenuBuilder(MenuBuilder):
         kb.add_callback_button(
             button_id='main',
             text=translater.translate('$main_menu'),
-            callback_data=OpenEntryMenu(path=[]).pack(),
+            callback_data=cbs.OpenMenu(menu_id=MenuIds.main_menu).pack(),
         )
 
         kb.add_callback_button(
             button_id='settings',
             text=translater.translate('$settings'),
-            callback_data=OpenEntryMenu(path=[]).pack(),
+            callback_data=cbs.OpenMenu(
+                menu_id=MenuIds.properties_entry,
+                context_data={
+                'entry_path': []
+            }).pack(),
         )
 
         text = translater.translate('$start_notification_text').format(
@@ -182,7 +185,11 @@ class MainMenuBuilder(MenuBuilder):
         kb.add_callback_button(
             button_id='settings',
             text=translater.translate('$props:name'),
-            callback_data=cbs.OpenEntryMenu(path=[], history=history).pack(),
+            callback_data=cbs.OpenMenu(
+                menu_id=MenuIds.properties_entry,
+                history=history,
+                context_data={'entry_path': []}
+            ).pack(),
         )
 
         kb.add_callback_button(

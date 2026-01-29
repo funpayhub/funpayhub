@@ -141,9 +141,12 @@ class PluginInfoMenuBuilder(MenuBuilder):
             keyboard.add_callback_button(
                 button_id='plugin_properties',
                 text=translater.translate('$plugin_properties'),
-                callback_data=cbs.OpenEntryMenu(
-                    path=plugin.properties.path,
+                callback_data=cbs.OpenMenu(
+                    menu_id=MenuIds.properties_entry,
                     history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                    context_data={
+                        'entry_path': plugin.properties.path
+                    }
                 ).pack(),
             )
 

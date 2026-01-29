@@ -4,10 +4,12 @@ import html
 from typing import TYPE_CHECKING
 
 import funpayhub.app.telegram.callbacks as cbs
+from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.app.telegram.ui import premade
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
 from funpayhub.lib.properties.base import Entry
+from funpayhub.lib.properties import parameter as param
 from funpayhub.app.properties.flags import (
     ParameterFlags,
     ParameterFlags as PropsFlags,
@@ -32,63 +34,75 @@ if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui.registry import UIRegistry
 
 
+# noinspection PyMethodOverriding
 class ToggleParamButtonBuilder(ButtonBuilder):
     id = ButtonIds.properties_toggle_param
     context_type = EntryButtonContext
 
-    async def build(self, ctx: EntryButtonContext, translater: Translater) -> Button:
+    async def build(self, ctx: EntryButtonContext, translater: Translater, properties: FunPayHubProperties) -> Button:
         callback_data = ctx.menu_render_context.callback_data
-        translated_name = translater.translate(ctx.entry.name)
+        entry = properties.get_entry(ctx.entry_path)
+        if not isinstance(entry, param.ToggleParameter):
+            raise ValueError()
+
+        translated_name = translater.translate(entry.name)
 
         return Button.callback_button(
             button_id='toggle_param',
-            text=f'{"🟢" if ctx.entry.value else "🔴"} {translated_name}',
+            text=f'{"🟢" if entry.value else "🔴"} {translated_name}',
             callback_data=cbs.NextParamValue(
-                path=ctx.entry.path,
+                path=entry.path,
                 history=callback_data.as_history() if callback_data is not None else [],
             ).pack(),
         )
 
 
 # Int / Float / String parameter
+# noinspection PyMethodOverriding
 class ChangeParamValueButtonBuilder(ButtonBuilder):
     id = ButtonIds.properties_change_param_value
     context_type = EntryButtonContext
 
-    async def build(self, ctx: EntryButtonContext, translater: Translater) -> Button:
+    async def build(self, ctx: EntryButtonContext, translater: Translater, properties: FunPayHubProperties) -> Button:
         callback_data = ctx.menu_render_context.callback_data
+        entry = properties.get_entry(ctx.entry_path)
 
-        if not ctx.entry.has_flag(PropsFlags.PROTECT_VALUE):
+        if not entry.has_flag(PropsFlags.PROTECT_VALUE):
             val_str = (
-                f'{str(ctx.entry.value)[:20] + ("..." if len(str(ctx.entry.value)) > 20 else "")}'
+                f'{str(entry.value)[:20] + ("..." if len(str(entry.value)) > 20 else "")}'
             )
         else:
-            val_str = '•' * 8 if ctx.entry.value else ''
+            val_str = '•' * 8 if entry.value else ''
 
         return Button.callback_button(
-            button_id=f'param_change:{ctx.entry.path}',
-            text=f'{translater.translate(ctx.entry.name)} 【 {val_str} 】',
+            button_id=f'param_change:{entry.path}',
+            text=f'{translater.translate(entry.name)} 【 {val_str} 】',
             callback_data=cbs.ManualParamValueInput(
-                path=ctx.entry.path,
+                path=entry.path,
                 history=callback_data.as_history() if callback_data is not None else [],
             ).pack(),
         )
 
 
 # List / Choice / Properties
+# noinspection PyMethodOverriding
 class OpenParamMenuButtonBuilder(ButtonBuilder):
     id = ButtonIds.properties_open_param_menu
     context_type = EntryButtonContext
 
-    async def build(self, ctx: EntryButtonContext, translater: Translater) -> Button:
+    async def build(self, ctx: EntryButtonContext, translater: Translater, properties: FunPayHubProperties) -> Button:
         callback_data = ctx.menu_render_context.callback_data
+        entry = properties.get_entry(ctx.entry_path)
 
         return Button.callback_button(
-            button_id=f'param_change:{ctx.entry.path}',
-            text=translater.translate(ctx.entry.name),
-            callback_data=cbs.OpenEntryMenu(
-                path=ctx.entry.path,
+            button_id=f'param_change:{entry.path}',
+            text=translater.translate(entry.name),
+            callback_data=cbs.OpenMenu(
+                menu_id=MenuIds.properties_entry,
                 history=callback_data.as_history() if callback_data is not None else [],
+                context_data={
+                    'entry_path': entry.path,
+                }
             ).pack(),
         )
 
@@ -101,6 +115,7 @@ def _entry_text(entry: Entry, translater: Translater) -> str:
 
 
 # Menus
+# noinspection PyMethodOverriding
 class PropertiesMenuBuilder(MenuBuilder):
     id = MenuIds.properties_properties
     context_type = EntryMenuContext
@@ -110,10 +125,11 @@ class PropertiesMenuBuilder(MenuBuilder):
         ctx: EntryMenuContext,
         translater: Translater,
         tg_ui: UIRegistry,
+        properties: FunPayHubProperties,
     ) -> Menu:
         keyboard = KeyboardBuilder()
-
-        for entry_id, sub_entry in ctx.entry.entries.items():
+        entry = properties.get_properties(ctx.entry_path)
+        for entry_id, sub_entry in entry.entries.items():
             if not isinstance(sub_entry, Properties | MutableParameter):  # skip immutable params
                 continue
 
@@ -124,7 +140,7 @@ class PropertiesMenuBuilder(MenuBuilder):
                 button_ctx = EntryButtonContext(
                     button_id=ButtonIds.properties_entry,
                     menu_render_context=ctx,
-                    entry=sub_entry,
+                    entry_path=sub_entry.path,
                 )
                 button = await tg_ui.build_button(context=button_ctx)
             except:
@@ -133,62 +149,75 @@ class PropertiesMenuBuilder(MenuBuilder):
             keyboard.add_button(button)
 
         return Menu(
-            text=_entry_text(ctx.entry, translater),
+            text=_entry_text(entry, translater),
             main_keyboard=keyboard,
             finalizer=premade.StripAndNavigationFinalizer(),
         )
 
 
+# noinspection PyMethodOverriding
 class ChoiceParameterMenuBuilder(MenuBuilder):
     id = MenuIds.properties_choice_param
     context_type = EntryMenuContext
 
-    async def build(self, ctx: EntryMenuContext, translater: Translater) -> Menu:
+    async def build(
+        self,
+        ctx: EntryMenuContext,
+        translater: Translater,
+        properties: FunPayHubProperties
+    ) -> Menu:
         keyboard = KeyboardBuilder()
         callback_data = ctx.callback_data
+        entry = properties.get_parameter(ctx.entry_path)
+        if not isinstance(entry, param.ChoiceParameter):
+            raise ValueError()
 
-        for choice in ctx.entry.choices.values():
+        for choice in entry.choices.values():
             name = translater.translate(choice.name)
             keyboard.add_callback_button(
-                button_id=f'choice_param_value:{choice.id}:{ctx.entry.path}',
-                text=f'【 {name} 】' if ctx.entry.value == choice.id else name,
+                button_id=f'choice_param_value:{choice.id}:{entry.path}',
+                text=f'【 {name} 】' if entry.value == choice.id else name,
                 callback_data=cbs.ChooseParamValue(
-                    path=ctx.entry.path,
+                    path=entry.path,
                     choice_id=choice.id,
                     history=callback_data.as_history() if callback_data is not None else [],
                 ).pack(),
             )
 
         return Menu(
-            text=_entry_text(ctx.entry, translater),
+            text=_entry_text(entry, translater),
             main_keyboard=keyboard,
             finalizer=premade.StripAndNavigationFinalizer(),
         )
 
 
+# noinspection PyMethodOverriding
 class ListParameterMenuBuilder(MenuBuilder):
     id = MenuIds.properties_list_param
     context_type = EntryMenuContext
 
-    async def build(self, ctx: EntryMenuContext, translater: Translater) -> Menu:
+    async def build(self, ctx: EntryMenuContext, translater: Translater, properties: FunPayHubProperties) -> Menu:
         keyboard = KeyboardBuilder()
         mode = ctx.data.get('mode')
         callback_data = ctx.callback_data
+        entry = properties.get_entry(ctx.entry_path)
+        if not isinstance(entry, param.ListParameter):
+            raise ValueError()
 
         texts = {'move_up': '⬆️', 'move_down': '⬇️', 'remove': '🗑️'}
-        for index, val in enumerate(ctx.entry.value):
+        for index, val in enumerate(entry.value):
             keyboard.add_callback_button(
                 button_id='temp',
                 text=f'{texts[mode]} {val}' if mode in texts else str(val),
                 callback_data=cbs.ListParamItemAction(
                     item_index=index,
-                    path=ctx.entry.path,
+                    path=entry.path,
                     action=mode,
                     history=callback_data.as_history() if callback_data is not None else [],
                 ).pack(),
             )
 
-        footer = [[]]
+        footer = KeyboardBuilder()
         mode_data = {
             'cancel': ('❌', None),
             'enable_move_up_mode': ('⬆️', 'move_up'),
@@ -201,11 +230,14 @@ class ListParameterMenuBuilder(MenuBuilder):
                 Button.callback_button(
                     button_id=button_id,
                     text=text,
-                    callback_data=cbs.OpenEntryMenu(
-                        path=ctx.entry.path,
+                    callback_data=cbs.OpenMenu(
+                        menu_id=MenuIds.properties_entry,
                         menu_page=ctx.menu_page,
                         history=callback_data.history if callback_data is not None else [],
                         data={'mode': mode_str},
+                        context_data={
+                            'entry_path': entry.path,
+                        }
                     ).pack(),
                 ),
             )
@@ -218,30 +250,37 @@ class ListParameterMenuBuilder(MenuBuilder):
                 button_id='add_list_item',
                 text='➕',
                 callback_data=cbs.ListParamAddItem(
-                    path=ctx.entry.path,
+                    path=entry.path,
                     history=callback_data.as_history() if callback_data is not None else [],
                 ).pack(),
             ),
         )
 
         return Menu(
-            text=_entry_text(ctx.entry, translater),
+            text=_entry_text(entry, translater),
             main_keyboard=keyboard,
             footer_keyboard=footer,
             finalizer=premade.StripAndNavigationFinalizer(),
         )
 
 
+# noinspection PyMethodOverriding
 class ParamValueManualInputMenuBuilder(MenuBuilder):
     id = MenuIds.param_value_manual_input
     context_type = EntryMenuContext
 
-    async def build(self, ctx: EntryMenuContext, translater: Translater) -> Menu:
+    async def build(
+        self,
+        ctx: EntryMenuContext,
+        translater: Translater,
+        properties: FunPayHubProperties
+    ) -> Menu:
+        entry = properties.get_entry(ctx.entry_path)
         callback_data = ctx.callback_data
         text = translater.translate('$enter_new_value_message').format(
-            parameter_name=translater.translate(ctx.entry.name),
-            parameter_description=translater.translate(ctx.entry.description),
-            current_parameter_value=html.escape(str(ctx.entry.value)),
+            parameter_name=translater.translate(entry.name),
+            parameter_description=translater.translate(entry.description),
+            current_parameter_value=html.escape(str(entry.value)),
         )
 
         footer_keyboard = KeyboardBuilder()
@@ -262,11 +301,12 @@ class ParamValueManualInputMenuBuilder(MenuBuilder):
         )
 
 
+# noinspection PyMethodOverriding
 class AddListItemMenuBuilder(MenuBuilder):
     id = MenuIds.add_list_item
     context_type = EntryMenuContext
 
-    async def build(self, ctx: EntryMenuContext, translater: Translater) -> Menu:
+    async def build(self, ctx: EntryMenuContext, translater: Translater, properties: FunPayHubProperties) -> Menu:
         text = translater.translate('$enter_new_list_item_message').format()
         callback_data = ctx.callback_data
 
@@ -289,11 +329,12 @@ class AddListItemMenuBuilder(MenuBuilder):
 
 
 # Modifications
+# noinspection PyMethodOverriding
 class PropertiesMenuModification(MenuModification):
     id = 'fph:main_properties_menu_modification'
 
     async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
-        return ctx.menu_id == MenuIds.properties_entry and ctx.entry.matches_path([])
+        return ctx.menu_id == MenuIds.properties_entry and ctx.entry_path == []
 
     async def modify(
         self,
@@ -319,13 +360,12 @@ class PropertiesMenuModification(MenuModification):
         return menu
 
 
+# noinspection PyMethodOverriding
 class AutoDeliveryPropertiesMenuModification(MenuModification):
     id = 'fph:auto_delivery_properties_menu_modification'
 
     async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
-        return ctx.menu_id == MenuIds.properties_entry and ctx.entry.matches_path(
-            ['auto_delivery'],
-        )
+        return ctx.menu_id == MenuIds.properties_entry and ctx.entry_path == ['auto_delivery']
 
     async def modify(
         self,
@@ -344,22 +384,24 @@ class AutoDeliveryPropertiesMenuModification(MenuModification):
         return menu
 
 
+# noinspection PyMethodOverriding
 class AddFormattersListButtonModification(MenuModification):
     id = 'fph:add_formatters_list_button_modification'
 
     async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
-        return (
-            ctx.entry.matches_path(['auto_response', '*', 'response_text'])
-            or ctx.entry.matches_path(['review_reply', '*', 'review_reply_text'])
-            or ctx.entry.matches_path(['review_reply', '*', 'chat_reply_text'])
-        )
+        return any([
+            ctx.entry_path[0] == 'auto_response' and ctx.entry_path[-1] == 'response_text',
+            ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'review_reply_text',
+            ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'chat_reply_text'
+        ])
 
     async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
-        if ctx.entry.matches_path(['auto_response', '*', 'response_text']):
+        if ctx.entry_path[0] == 'auto_response' and ctx.entry_path[-1] == 'response_text':
             query = 'fph:general|fph:message'
-        elif ctx.entry.matches_path(
-            ['review_reply', '*', 'review_reply_text'],
-        ) or ctx.entry.matches_path(['review_reply', '*', 'chat_reply_text']):
+        elif any([
+            ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'review_reply_text',
+            ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'chat_reply_text'
+        ]):
             query = 'fph:general|fph:order'
         else:
             query = None
@@ -375,11 +417,12 @@ class AddFormattersListButtonModification(MenuModification):
         return menu
 
 
+# noinspection PyMethodOverriding
 class AddCommandButtonModification(MenuModification):
     id = 'fph:add_command_button_modification'
 
     async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
-        return ctx.entry.matches_path(['auto_response'])
+        return ctx.entry_path == ['auto_response']
 
     async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
         menu.footer_keyboard.add_callback_button(

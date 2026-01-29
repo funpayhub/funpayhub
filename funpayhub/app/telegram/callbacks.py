@@ -61,15 +61,6 @@ class ManualParamValueInput(CallbackData, identifier='manual_value_input'):
     """Путь к параметру."""
 
 
-class OpenEntryMenu(CallbackData, MenuPageable, identifier='open_properties_menu'):
-    """
-    Обновляет привязанное сообщение и открывает меню параметра / категории по пути `path`.
-    """
-
-    path: list[str | int]
-    """Путь к параметру / категории."""
-
-
 class ChangePageTo(CallbackData, identifier='change_page_to'):
     """
     Обновляет привязанное сообщение, меня страницу последнего callback из callback_history,

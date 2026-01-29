@@ -98,26 +98,6 @@ async def draw_menu(
     )
 
 
-@r.callback_query(cbs.OpenEntryMenu.filter())
-async def open_entry_menu(
-    query: CallbackQuery,
-    tg_ui: UIRegistry,
-    data: dict[str, Any],
-    properties: FunPayHubProperties,
-    callback_data: cbs.OpenEntryMenu,
-) -> None:
-    entry = properties.get_entry(callback_data.path)
-    ctx = EntryMenuContext(
-        menu_id=MenuIds.properties_entry,
-        menu_page=callback_data.menu_page,
-        trigger=query,
-        entry=entry,
-        data=callback_data.model_dump(mode='python', exclude={'identifier'}) | callback_data.data,
-    )
-    menu = await tg_ui.build_menu(ctx, data | {'query': query})
-    await menu.apply_to(query.message)
-
-
 @r.message(CommandStart())
 @r.message(Command('menu'))
 async def send_menu(
@@ -166,15 +146,19 @@ async def clear(
 @r.message(Command('settings'))
 async def send_menu(
     message: Message,
-    properties: FunPayHubProperties,
     tg_ui: UIRegistry,
     data: dict[str, Any],
 ) -> None:
     ctx = EntryMenuContext(
         menu_id=MenuIds.properties_entry,
         trigger=message,
-        entry=properties,
-        data={'callback_data': cbs.OpenEntryMenu(path=[])},
+        entry_path=[],
+        data={
+            'callback_data': cbs.OpenMenu(
+                menu_id=MenuIds.properties_entry,
+                context_data={'entry_path': []}
+            )
+        },
     )
 
     await (await tg_ui.build_menu(ctx, data)).answer_to(message)

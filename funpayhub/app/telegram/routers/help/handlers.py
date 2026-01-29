@@ -38,20 +38,3 @@ async def help_command(message: Message) -> None:
         need_help.add(message.from_user.id)
         await message.answer('Вы вошли в режим справки. Снова введите /help для выхода.')
 
-
-@router.callback_query(cbs.OpenEntryMenu.filter())
-@router.callback_query(cbs.NextParamValue.filter())
-@router.callback_query(cbs.ManualParamValueInput.filter())
-async def show_entry_help(
-    query: CallbackQuery,
-    properties: FunPayHubProperties,
-    callback_data: cbs.OpenEntryMenu,
-    translater: Translater,
-) -> None:
-    entry = properties.get_entry(callback_data.path)
-    desc = translater.translate(entry.description)
-
-    await query.answer(
-        text=f'Справка:\n{desc}',
-        show_alert=True,
-    )
