@@ -24,7 +24,7 @@ from funpayhub.lib.hub.text_formatters.category import FormatterCategory
 
 
 if TYPE_CHECKING:
-    from funpayhub.app import FunPayHub
+    from funpayhub.app.main import FunPayHub
 
 
 _time_formats = {
@@ -37,11 +37,12 @@ _time_formats = {
 }
 
 
-class DateTimeFormatter(Formatter):
-    key = 'time'
-    name = '$formatter:datetime:name'
-    description = '$formatter:datetime:description'
-
+class DateTimeFormatter(
+    Formatter,
+    key='datetime',
+    name='$formatter:datetime:name',
+    description='$formatter:datetime:description'
+):
     def __init__(self, mode: str = 'time') -> None:
         self.mode = mode
 
@@ -54,11 +55,12 @@ class DateTimeFormatter(Formatter):
         return now.strftime(self.mode)
 
 
-class ImageFormatter(Formatter):
-    key = 'image'
-    name = '$formatter:image:name'
-    description = '$formatter:image:description'
-
+class ImageFormatter(
+    Formatter,
+    key='image',
+    name='$formatter:image:name',
+    description='$formatter:image:description'
+):
     def __init__(self, path_or_id: int | str) -> None:
         self.path_or_id = path_or_id
 
@@ -69,11 +71,12 @@ class ImageFormatter(Formatter):
         )
 
 
-class OrderFormatter(Formatter):
-    key = 'order'
-    name = '$formatter:order:name'
-    description = '$formatter:order:description'
-
+class OrderFormatter(
+    Formatter,
+    key='order',
+    name='$formatter:order:name',
+    description='$formatter:order:description'
+):
     def __init__(self, mode: str = 'id') -> None:
         self.mode = mode
 
@@ -98,11 +101,12 @@ class OrderFormatter(Formatter):
         raise ValueError(f'Unknown mode for $order formatter: {self.mode!r}')
 
 
-class MessageFormatter(Formatter):
-    key = 'message'
-    name = '$formatter:message:name'
-    description = '$formatter:message:description'
-
+class MessageFormatter(
+    Formatter,
+    key='message',
+    name='$formatter:message:name',
+    description='$formatter:message:description'
+):
     def __init__(self, mode: str) -> None:
         self.mode = mode
 
@@ -124,11 +128,12 @@ class MessageFormatter(Formatter):
         raise ValueError(f'Unknown mode for $message formatter: {self.mode!r}')
 
 
-class MeFormatter(Formatter):
-    key = 'me'
-    name = '$formatter:me:name'
-    description = '$formatter:me:description'
-
+class MeFormatter(
+    Formatter,
+    key='me',
+    name='$formatter:me:name',
+    description='$formatter:me:description'
+):
     def __init__(self, mode: str = 'username') -> None:
         self.mode = mode
 
@@ -146,21 +151,21 @@ class GeneralFormattersCategory(FormatterCategory):
     id = 'fph:general'
     name = '$formatters_categories:general:name'
     description = '$formatters_categories:general:description'
-    include_formatters = {DateTimeFormatter, ImageFormatter, MeFormatter}
+    include_formatters = {DateTimeFormatter.key, ImageFormatter.key, MeFormatter.key}
 
 
 class OrderFormattersCategory(FormatterCategory):
     id = 'fph:order'
     name = '$formatters_categories:order:name'
     description = '$formatters_categories:order:description'
-    include_formatters = {OrderFormatter}
+    include_formatters = {OrderFormatter.key}
 
 
 class MessageFormattersCategory(FormatterCategory):
     id = 'fph:message'
     name = '$formatters_categories:message:name'
     description = '$formatters_categories:message:description'
-    include_formatters = {MessageFormatter}
+    include_formatters = {MessageFormatter.key}
 
 
 FORMATTERS_LIST = [
