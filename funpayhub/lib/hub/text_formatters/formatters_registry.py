@@ -1,3 +1,51 @@
+"""
+Модуль предоставляет базовую инфраструктуру для системы форматтеров.
+
+Форматтеры предназначены для динамической обработки текста: они могут быть
+встроены в строку, автоматически извлечены, и выполнены во время форматирования
+сообщения.
+
+Форматтер объявляется как подкласс `Formatter` с обязательными метаданными
+(`key`, `name`, `description`), передаваемыми через аргументы класса:
+
+class MyFormatter(
+    Formatter,
+    key='my_formatter_key',
+    name='Мой форматтер',
+    description='Это мой форматтер.'
+):
+    def __init__(self, *args) -> None: ...
+    async def format(self, *args, **kwargs) -> str | Image | list[str | Image]: ...
+
+
+Жизненный цикл форматтера:
+
+1. В тексте находится вызов форматтера (например: `$my_formatter<arg1, arg2>`).
+2. Форматтер инициализируется — в `__init__` передаются аргументы, указанные в тексте.
+3. Вызывается метод `format`, в который передаются workflow FunPayHub'а и аргументы контекста вызова
+   (событие FunPay, сообщение, заказ и т.д.).
+4. Результат форматирования подставляется обратно в текст.
+Важно: на данный момент аргументы контекста вызова - это просто аргументы, которые были проброшены
+в FunPay хэндлер. Никакой структуры данных нет. В будущем это будет исправлено.  # todo
+
+Форматтер может возвращать:
+- строку,
+- изображение (`Image`),
+- список строк и/или изображений.
+
+Реестр форматтеров (`FormattersRegistry`) отвечает за:
+- регистрацию форматтеров,
+- регистрацию категорий,
+- фильтрацию форматтеров по категориям,
+- форматирование текста с обработкой ошибок и сохранением исходных вызовов
+  при невозможности выполнения.
+
+Модуль также содержит вспомогательные структуры для представления изображений
+и отправки итогового набора сообщений.
+
+"""
+
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Type
@@ -58,7 +106,7 @@ class Formatter(ABC):
         super().__init_subclass__(**kwargs)
 
     @abstractmethod
-    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
+    def __init__(self, *args: Any) -> None: ...
 
     async def __call__(self, **data: Any) -> str:
         wrapper = CallableWrapper(self.format)
@@ -198,7 +246,6 @@ class FormattersRegistry:
 
             formatter_cls = self._formatters.get(part.name)
             if not formatter_cls or (query and not query(formatter_cls, self)):
-                print(f'{not formatter_cls}. NOT QUERY')
                 result.append(part.string)
                 continue
 
