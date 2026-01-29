@@ -92,7 +92,7 @@ class FunPayHub:
             },
         )
 
-        self._stop_signal = asyncio.Future()
+        self._stop_signal: asyncio.Future[int] = asyncio.Future()
         self._stopped_signal = asyncio.Event()
         self._running_lock = asyncio.Lock()
         self._stopping_lock = asyncio.Lock()
@@ -135,8 +135,6 @@ class FunPayHub:
             return
 
         for file in base_path.iterdir():
-            file: Path
-
             if not file.is_file():
                 continue
 

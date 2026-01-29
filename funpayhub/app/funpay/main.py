@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, ParamSpec, Literal
+from typing import TYPE_CHECKING, Any, ParamSpec
+from io import BytesIO
 from collections.abc import Callable, Awaitable
 
 from funpaybotengine import Bot, Dispatcher
-from funpaybotengine.types import Category
+from funpaybotengine.types import Message, Category
 from funpaybotengine.exceptions import (
     FunPayServerError,
     UnauthorizedError,
+    FunPayBotEngineError,
     RateLimitExceededError,
     BotUnauthenticatedError,
 )
@@ -22,8 +24,6 @@ from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 from funpayhub.app.funpay.offers_raiser import OffersRaiser
 from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
-from funpaybotengine.types import Message
-from io import BytesIO
 
 
 if TYPE_CHECKING:
@@ -70,7 +70,7 @@ class FunPay:
         await self._bot.listen_events(self._dispatcher)
 
     async def _init_bot_engine(self) -> None:
-        exception = None
+        exception: FunPayBotEngineError | None = None
         for i in range(10):
             logger.info('Trying to make a first request to FunPay...')
             try:

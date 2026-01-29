@@ -8,7 +8,7 @@ from typing import Any
 from collections.abc import Callable
 
 
-class classproperty[T, R]:
+class classproperty[T: Any, R: Any]:
     def __init__(self, func: Callable[[type[T]], R]) -> None:
         self.func = func
 

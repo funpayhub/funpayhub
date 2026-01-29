@@ -3,10 +3,15 @@ from __future__ import annotations
 import inspect
 from typing import TYPE_CHECKING, Any, Type, Literal, overload
 from dataclasses import field, dataclass
-from abc import ABC
 from collections.abc import Iterable, Iterator
 
-from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import (
+    Message,
+    CallbackQuery,
+    InaccessibleMessage,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.core import classproperty
@@ -171,17 +176,26 @@ class Menu:
             inline_keyboard=[[button.obj for button in line] for line in total_keyboard],
         )
 
-    async def answer_to(self, msg: Message, /) -> Message:
+    # InaccessibleMessage | None добавлены только чтобы mypy не ругался.
+    # С этим надо что-то делать.
+    # todo
+    async def answer_to(self, msg: Message | InaccessibleMessage | None, /) -> Message:
+        if msg is None or isinstance(msg, InaccessibleMessage):
+            raise ValueError('Inaccessible message.')
+
         return await msg.answer(text=self.text, reply_markup=self.total_keyboard(convert=True))
 
     async def apply_to(
         self,
-        msg: Message,
+        msg: Message | InaccessibleMessage | None,
         /,
         *,
         text: bool = True,
         keyboard: bool = True,
     ) -> Message | bool:
+        if msg is None or isinstance(msg, InaccessibleMessage):
+            raise ValueError('Inaccessible message.')
+
         return await msg.edit_text(
             text=self.text if text else msg.text,
             reply_markup=self.total_keyboard(convert=True) if keyboard else msg.reply_markup,
@@ -227,7 +241,7 @@ class ButtonContext:
     data: dict[str, Any] = field(default_factory=dict)
 
 
-class MenuBuilder[CTX: MenuContext]:
+class MenuBuilder:
     if TYPE_CHECKING:
         __menu_id__: str
         __context_type__: type[MenuContext]
@@ -237,7 +251,7 @@ class MenuBuilder[CTX: MenuContext]:
     def __init__(self) -> None:
         self._wrapped: CallableWrapper[Menu] = CallableWrapper(getattr(self, 'build'))
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: Any) -> None:
         menu_id = kwargs.pop('menu_id', None)
         context_type = kwargs.pop('context_type', None)
 
@@ -271,7 +285,7 @@ class MenuBuilder[CTX: MenuContext]:
 
         super().__init_subclass__(**kwargs)
 
-    async def __call__(self, ctx: CTX, data: dict[str, Any]) -> Menu:
+    async def __call__(self, ctx: MenuContext, data: dict[str, Any]) -> Menu:
         return await self._wrapped((ctx,), data)
 
     @classproperty
@@ -285,7 +299,7 @@ class MenuBuilder[CTX: MenuContext]:
         return cls.__context_type__
 
 
-class MenuModification[CTX: MenuContext]:
+class MenuModification:
     if TYPE_CHECKING:
         __modification_id__: str
         modification_id: str
@@ -298,7 +312,7 @@ class MenuModification[CTX: MenuContext]:
             getattr(self, 'filter', lambda _, __: True),
         )
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: Any) -> None:
         modification_id = kwargs.pop('modification_id', None)
 
         if not hasattr(cls, 'modify') or not inspect.isfunction(getattr(cls, 'modify')):
@@ -345,7 +359,7 @@ class MenuModification[CTX: MenuContext]:
         return self._wrapped_filter
 
 
-class ButtonBuilder[CTX: ButtonContext](ABC):
+class ButtonBuilder:
     if TYPE_CHECKING:
         __button_id__: str
         __context_type__: type[ButtonContext]
@@ -358,7 +372,7 @@ class ButtonBuilder[CTX: ButtonContext](ABC):
 
         self._wrapped: CallableWrapper[Button] = CallableWrapper(self.build)
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: Any) -> None:
         button_id = kwargs.pop('button_id', None)
         context_type = kwargs.pop('context_type', None)
 
@@ -399,14 +413,14 @@ class ButtonBuilder[CTX: ButtonContext](ABC):
 
     @classproperty
     @classmethod
-    def context_type(cls) -> Type[CTX]:
+    def context_type(cls) -> Type[ButtonContext]:
         return cls.__context_type__
 
-    async def __call__(self, ctx: CTX, data: dict[str, Any]) -> Button:
+    async def __call__(self, ctx: ButtonContext, data: dict[str, Any]) -> Button:
         return await self._wrapped((ctx,), data)
 
 
-class ButtonModification[CTX: ButtonContext]:
+class ButtonModification:
     if TYPE_CHECKING:
         __modification_id__: str
         modification_id: str
@@ -419,7 +433,7 @@ class ButtonModification[CTX: ButtonContext]:
             getattr(self, 'filter', lambda _, __: True),
         )
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: Any) -> None:
         modification_id = kwargs.pop('modification_id', None)
 
         if not hasattr(cls, 'modify') or not inspect.isfunction(getattr(cls, 'modify')):

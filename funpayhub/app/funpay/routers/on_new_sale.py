@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 
 from funpaybotengine import Router
-from funpayparsers.types import Subcategory
+from funpaybotengine.types import Subcategory
 from funpaybotengine.runner import EventsStack
 from funpaybotengine.dispatching import NewSaleEvent
 from funpaybotengine.types.enums import SubcategoryType

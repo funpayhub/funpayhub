@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import shutil
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from abc import ABC, abstractmethod
 from pathlib import Path, PurePosixPath
 from zipfile import ZipFile
@@ -73,6 +73,9 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
 
     Архивы с иной структурой считаются некорректными и установке не подлежат.
     """
+
+    if TYPE_CHECKING:
+        source: Path
 
     def __init__(self, plugins_path: Path, source: str | Path) -> None:
         if not isinstance(source, (str, Path)):

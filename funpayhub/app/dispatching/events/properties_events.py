@@ -41,7 +41,7 @@ class PropertiesAttachedEvent(HubEvent, name='fph:properties_attached'):
 
 
 class ParameterAttachedEvent(HubEvent, name='fph:parameter_attached'):
-    def __init__(self, param: Parameter | MutableParameter) -> None:
+    def __init__(self, param: Parameter[Any] | MutableParameter[Any]) -> None:
         super().__init__()
         self.parameter = param
 
