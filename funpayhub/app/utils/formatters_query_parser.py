@@ -55,7 +55,7 @@ class CategoryIDQuery(CategoriesQuery):
         cat = registry._categories.get(self.id)
         if not cat:
             return False
-        return cat.applies_to(formatter)
+        return cat.applies_to(formatter, registry)
 
 
 class Parser:

@@ -40,16 +40,16 @@ class LogicalOperatorsMeta(type, _LogicalOperatorsMixin): ...
 
 class FormatterCategory(metaclass=LogicalOperatorsMeta):
     if TYPE_CHECKING:
-        include_formatters: set[type[Formatter]]
-        include_categories: set[type[FormatterCategory]]
+        include_formatters: set[str]
+        include_categories: set[str]
         rules: set[Callable[[type[Formatter]], bool]]
         id: str
         name: str
         description: str
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
-        formatters: set[type[Formatter]] = getattr(cls, 'include_formatters', set())
-        categories: set[type[FormatterCategory]] = getattr(cls, 'include_categories', set())
+        formatters: set[str] = getattr(cls, 'include_formatters', set())
+        categories: set[str] = getattr(cls, 'include_categories', set())
         rules: set[Callable[[type[Formatter]], bool]] = getattr(cls, 'rules', set())
 
         cls.include_formatters = set(formatters)
@@ -63,11 +63,14 @@ class FormatterCategory(metaclass=LogicalOperatorsMeta):
         raise RuntimeError('`FormatterCategory` should not be instantiated.')
 
     @classmethod
-    def applies_to(cls, formatter: type[Formatter]) -> bool:
-        if formatter in cls.include_formatters:
+    def applies_to(cls, formatter: type[Formatter], registry: FormattersRegistry) -> bool:
+        if formatter.key in cls.include_formatters:
             return True
         for i in cls.include_categories:
-            if i.applies_to(formatter):
+            category = registry.get_category(i)
+            if category is None:
+                continue
+            if category.applies_to(formatter, registry):
                 return True
 
         for rule in cls.rules:

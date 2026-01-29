@@ -20,6 +20,43 @@ type FORMATTER_R = str | Image | list[str | Image]
 
 
 class Formatter(ABC):
+    if TYPE_CHECKING:
+        __key__: str
+        __formatter_name__: str
+        __description__: str
+        key: str
+        formatter_name: str
+        description: str
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+
+        key = kwargs.pop('key', None)
+        name = kwargs.pop('name', None)
+        description = kwargs.pop('description', None)
+
+        if not getattr(cls, '__key__', None):
+            if any(not i for i in [key, name, description]):
+                raise TypeError(
+                    f'{cls.__name__} must be defined with keyword arguments '
+                    f'\'key\', \'name\' and \'description\'. '
+                    f'Got: {key=}, {name=}, {description=}'
+                )
+
+            if any(not isinstance(i, str) for i in [key, name, description]):
+                raise ValueError(
+                    f'Keyord argument \'key\', \'name\', \'description\' must be strings. '
+                    f'Got: key={type(key)}, name={type(name)}, description={type(description)}.'
+                )
+
+        if key is not None:
+            cls.__key__ = key
+        if name is not None:
+            cls.__formatter_name__ = name
+        if description is not None:
+            cls.__description__ = description
+
+        super().__init_subclass__(**kwargs)
+
     @abstractmethod
     def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
@@ -30,20 +67,20 @@ class Formatter(ABC):
     @abstractmethod
     async def format(self, *args: Any, **kwargs: Any) -> FORMATTER_R: ...
 
-    @abstractmethod
     @classproperty
     @classmethod
-    def key(cls) -> str: ...
+    def key(cls) -> str:
+        return cls.__key__
 
-    @abstractmethod
     @classproperty
     @classmethod
-    def name(cls) -> str: ...
+    def name(cls) -> str:
+        return cls.__formatter_name__
 
-    @abstractmethod
     @classproperty
     @classmethod
-    def description(cls) -> str: ...
+    def description(cls) -> str:
+        return cls.__description__
 
 
 @dataclass
@@ -97,7 +134,7 @@ class FormattersRegistry:
         self._formatters_to_categories[formatter] = []
 
         for cat, formatters in self._categories_to_formatters.items():
-            if cat.applies_to(formatter):
+            if cat.applies_to(formatter, self):
                 formatters.append(formatter)
                 self._formatters_to_categories[formatter].append(cat)
 
@@ -109,7 +146,7 @@ class FormattersRegistry:
         self._categories_to_formatters[category] = []
 
         for formatter, categories in self._formatters_to_categories.items():
-            if category.applies_to(formatter):
+            if category.applies_to(formatter, self):
                 categories.append(category)
                 self._categories_to_formatters[category].append(formatter)
 
@@ -120,6 +157,9 @@ class FormattersRegistry:
         if isinstance(query, CategoriesQuery):
             return [i for i in self._formatters.values() if query(i, self)]
         return list(self._categories_to_formatters.get(query, []))
+
+    def get_category(self, category_id: str) -> type[FormatterCategory] | None:
+        return self._categories.get(category_id, None)
 
     async def format_text(
         self,
@@ -148,6 +188,7 @@ class FormattersRegistry:
 
             formatter_cls = self._formatters.get(part.name)
             if not formatter_cls or (query and not query(formatter_cls, self)):
+                print(f'{not formatter_cls}. NOT QUERY')
                 result.append(part.string)
                 continue
 
