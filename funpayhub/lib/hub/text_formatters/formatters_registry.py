@@ -183,7 +183,7 @@ class FormattersRegistry:
 
         for cat, formatters in self._categories_to_formatters.items():
             category = self._categories[cat]
-            if category.applies_to(formatter, self):
+            if category.contains(formatter, self):
                 formatters.append(formatter.key)
                 self._formatters_to_categories[formatter.key].append(cat)
 
@@ -196,7 +196,7 @@ class FormattersRegistry:
 
         for fmt_key, categories in self._formatters_to_categories.items():
             formatter = self._formatters[fmt_key]
-            if category.applies_to(formatter, self):
+            if category.contains(formatter, self):
                 categories.append(category.id)
                 self._categories_to_formatters[category.id].append(fmt_key)
 
