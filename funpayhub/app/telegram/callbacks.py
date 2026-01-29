@@ -26,6 +26,12 @@ class Dummy(CallbackData, identifier='dummy'):
     """
 
 
+class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
+    menu_id: str
+    force_new_message: bool = False
+    context_data: dict[str, Any] = Field(default_factory=dict)
+
+
 class Clear(CallbackData, identifier='clear'):
     """
     Callback очитки текущего состояния.
@@ -88,12 +94,6 @@ class ChangeViewPageManually(CallbackData, identifier='change_view_page_manually
 class ChooseParamValue(CallbackData, identifier='choose_param_value'):
     path: list[str | int]
     choice_id: str
-
-
-class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
-    menu_id: str
-    force_new_message: bool = False
-    context_data: dict[str, Any] = Field(default_factory=dict)
 
 
 class ToggleNotificationChannel(CallbackData, identifier='toggle_notification_channel'):
