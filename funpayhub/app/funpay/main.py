@@ -133,6 +133,9 @@ class FunPay:
         keep_chat_unread: bool = False,
         automatic_message: bool = True,
     ) -> Message | None:
+        """
+        Обёртка над funpaybotegine.Bot.send_message.
+        """
         async with self._sending_message_lock:
             result = await self.bot.send_message(
                 chat_id=chat_id,
