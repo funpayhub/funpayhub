@@ -93,7 +93,7 @@ class CategoriesExistsQuery(CategoriesQuery):
         self.category = category
 
     def __call__(self, formatter: type[Formatter], registry: FormattersRegistry) -> bool:
-        return self.category in registry._formatters_to_categories.get(formatter, [])
+        return self.category.id in registry._formatters_to_categories.get(formatter.key, [])
 
 
 class CategoriesAndQuery(CategoriesQuery):

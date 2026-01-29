@@ -113,8 +113,8 @@ class FormattersRegistry:
         self._formatters: dict[str, type[Formatter]] = {}
         self._categories: dict[str, type[FormatterCategory]] = {}
 
-        self._categories_to_formatters: dict[type[FormatterCategory], list[type[Formatter]]] = {}
-        self._formatters_to_categories: dict[type[Formatter], list[type[FormatterCategory]]] = {}
+        self._categories_to_formatters: dict[str, list[str]] = {}
+        self._formatters_to_categories: dict[str, list[str]] = {}
 
     def add_formatter(self, formatter: type[Formatter]) -> None:
         """
@@ -131,32 +131,42 @@ class FormattersRegistry:
             raise ValueError(f'Formatter with key {formatter.key!r} already exists.')
 
         self._formatters[formatter.key] = formatter
-        self._formatters_to_categories[formatter] = []
+        self._formatters_to_categories[formatter.key] = []
 
         for cat, formatters in self._categories_to_formatters.items():
-            if cat.applies_to(formatter, self):
-                formatters.append(formatter)
-                self._formatters_to_categories[formatter].append(cat)
+            category = self._categories[cat]
+            if category.applies_to(formatter, self):
+                formatters.append(formatter.key)
+                self._formatters_to_categories[formatter.key].append(cat)
 
     def add_category(self, category: type[FormatterCategory]) -> None:
         if category.id in self._categories:
             raise ValueError(f'Category with ID {category.id!r} already exists.')
 
         self._categories[category.id] = category
-        self._categories_to_formatters[category] = []
+        self._categories_to_formatters[category.id] = []
 
-        for formatter, categories in self._formatters_to_categories.items():
+        for fmt_key, categories in self._formatters_to_categories.items():
+            formatter = self._formatters[fmt_key]
             if category.applies_to(formatter, self):
-                categories.append(category)
-                self._categories_to_formatters[category].append(formatter)
+                categories.append(category.id)
+                self._categories_to_formatters[category.id].append(fmt_key)
 
     def get_formatters(
         self,
-        query: type[FormatterCategory] | CategoriesQuery,
+        query: type[FormatterCategory] | str | CategoriesQuery,
     ) -> list[type[Formatter]]:
         if isinstance(query, CategoriesQuery):
             return [i for i in self._formatters.values() if query(i, self)]
-        return list(self._categories_to_formatters.get(query, []))
+
+        result = []
+        formatter_ids = self._categories_to_formatters.get(query.id, [])
+        if not formatter_ids:
+            return []
+
+        for fmt_id in formatter_ids:
+            result.append(self._formatters[fmt_id])
+        return result
 
     def get_category(self, category_id: str) -> type[FormatterCategory] | None:
         return self._categories.get(category_id, None)
