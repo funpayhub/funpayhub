@@ -27,9 +27,25 @@ class Dummy(CallbackData, identifier='dummy'):
 
 
 class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
+    """
+    Callback открытия меню.
+    """
+
     menu_id: str
-    force_new_message: bool = False
+    """ID меню, которое необходимо открыть."""
+
+    new_message: bool = False
+    """
+    Отправлять ли меню в новом сообщении.
+    
+    Внимание: данное поле всегда сбрасывается на False при обработке коллбэка хэндлером.
+    """
+
+    replace_history_with_trigger: bool = False
+    """Заменить ли историю в коллбэке на DrawMenu триггера"""
+
     context_data: dict[str, Any] = Field(default_factory=dict)
+    """Данные для контекста построения меню."""
 
 
 class Clear(CallbackData, identifier='clear'):

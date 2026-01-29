@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
 from dataclasses import dataclass
-
-from funpayhub.lib.properties import Properties, MutableParameter
 from funpayhub.lib.telegram.ui import MenuContext, ButtonContext
 
 

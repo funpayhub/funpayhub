@@ -56,6 +56,21 @@ async def open_custom_menu(
     menu_builder = tg_ui.get_menu_builder(callback_data.menu_id)
     ctx_class = menu_builder.builder.context_type
     ctx_data = callback_data.model_dump(mode='python', exclude={'identifier'}) | callback_data.data
+
+    parsed_callback: UnknownCallback = getattr(query, '__parsed__', None)
+    if parsed_callback is not None:
+        parsed_callback.data['new_message'] = False
+
+    if callback_data.replace_history_with_trigger:
+        fake_callback_history = cbs.DrawMenu(
+            text=query.message.text,
+            keyboard=cbs.DrawMenu.keyboard_from_message(query.message)
+        ).pack(hash=False)
+
+        fake_callback_data = callback_data.model_copy()
+        fake_callback_data.history = [fake_callback_history]
+        ctx_data['callback_data'] = fake_callback_data
+
     ctx_instance = ctx_class(
         menu_id=callback_data.menu_id,
         menu_page=callback_data.menu_page,
@@ -67,7 +82,8 @@ async def open_custom_menu(
 
     menu = await tg_ui.build_menu(ctx_instance, data | {'query': query})
 
-    if callback_data.force_new_message:
+    if callback_data.new_message:
+        await query.answer()
         await menu.answer_to(query.message)
     else:
         await menu.apply_to(query.message)
@@ -229,7 +245,7 @@ async def change_parameter_value(
     ctx = EntryMenuContext(
         menu_id=MenuIds.param_value_manual_input,
         trigger=query,
-        entry=entry,
+        entry_path=entry.path,
     )
 
     msg = await (await tg_ui.build_menu(ctx, data)).apply_to(query.message)
@@ -366,7 +382,7 @@ async def set_adding_list_item_state(
     ctx = EntryMenuContext(
         menu_id=MenuIds.add_list_item,
         trigger=query,
-        entry=entry,
+        entry_path=entry.path,
     )
 
     msg = await (await tg_ui.build_menu(ctx, data)).apply_to(query.message)
