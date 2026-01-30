@@ -37,6 +37,8 @@ class MenuIds(StrEnum):
     goods_sources_list = 'fph:goods_sources_list'
     goods_source_info = 'fph:goods_source_info'
 
+    add_auto_delivery_rule = 'fph:add_auto_delivery_rule'
+
 
 class ButtonIds:
     properties_entry = 'fph:properties_entry'

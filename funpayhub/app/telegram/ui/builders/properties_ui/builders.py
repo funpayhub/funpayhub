@@ -465,6 +465,34 @@ class AddCommandButtonModification(
         return menu
 
 
+class AddOfferButtonModification(
+    MenuModification,
+    modification_id='fph:add_offer_button_modification',
+):
+    """Модификация добавляет кнопку \'Добавить правило\' в меню настроек автовыдачи."""
+
+    async def filter(
+        self,
+        ctx: EntryMenuContext,
+        menu: Menu,
+        properties: FunPayHubProperties
+    ) -> bool:
+        return ctx.entry_path == properties.auto_delivery.path
+
+    async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
+        btn = Button.callback_button(
+            button_id='add_rule',
+            text=translater.translate('$add_offer_rule'),
+            callback_data=cbs.OpenMenu(
+                menu_id=MenuIds.add_auto_delivery_rule,
+                history=ctx.callback_data.as_history() if ctx.callback_data is not None else [],
+            ).pack(),
+            row=True
+        )
+        menu.footer_keyboard.insert(0, btn)
+        return menu
+
+
 class AddSourcesListAtAutoDeliveryModification(
     MenuModification,
     modification_id='fph:add_sources_list_to_auto_delivery'

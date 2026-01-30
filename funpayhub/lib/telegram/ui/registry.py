@@ -26,8 +26,8 @@ from ..callback_data import HashinatorT1000
 
 @dataclass
 class _MenuBuilder:
-    builder: MenuBuilder[Any]
-    modifications: dict[str, MenuModification[Any]] = field(default_factory=dict)
+    builder: MenuBuilder
+    modifications: dict[str, MenuModification] = field(default_factory=dict)
 
     async def build(
         self,
@@ -43,6 +43,8 @@ class _MenuBuilder:
                 try:
                     result = await i(context, result, data)
                 except:
+                    import traceback
+                    print(traceback.format_exc())
                     continue  # todo: logging
 
         if finalize and result.finalizer:
@@ -50,15 +52,16 @@ class _MenuBuilder:
                 wrapped = CallableWrapper(result.finalizer)
                 result = await wrapped((context, result), data)
             except:
-                pass  # todo: logging
+                import traceback
+                print(traceback.format_exc())
             result.finalizer = None
         return result
 
 
 @dataclass
 class _ButtonBuilder:
-    builder: ButtonBuilder[Any]
-    modifications: dict[str, ButtonModification[Any]] = field(default_factory=dict)
+    builder: ButtonBuilder
+    modifications: dict[str, ButtonModification] = field(default_factory=dict)
 
     async def build(
         self,
@@ -84,7 +87,7 @@ class UIRegistry:
         self._buttons: dict[str, _ButtonBuilder] = {}
         self._workflow_data: dict[str, Any] = workflow_data if workflow_data is not None else {}
 
-    def add_menu_builder(self, builder: Type[MenuBuilder[Any]], overwrite: bool = False) -> None:
+    def add_menu_builder(self, builder: Type[MenuBuilder], overwrite: bool = False) -> None:
         if not isinstance(builder, type) or not issubclass(builder, MenuBuilder):
             raise ValueError(
                 f'Menu builder must be a subclass of MenuBuilder, got {type(builder).__name__}.',
@@ -98,7 +101,7 @@ class UIRegistry:
 
     def add_menu_modification(
         self,
-        modification: Type[MenuModification[Any]],
+        modification: Type[MenuModification],
         menu_id: str,
     ) -> None:
         if not isinstance(modification, type) or not issubclass(modification, MenuModification):
@@ -151,7 +154,7 @@ class UIRegistry:
 
     def add_button_builder(
         self,
-        builder: Type[ButtonBuilder[Any]],
+        builder: Type[ButtonBuilder],
         overwrite: bool = False,
     ) -> None:
         if not isinstance(builder, type) or not issubclass(builder, ButtonBuilder):
@@ -167,7 +170,7 @@ class UIRegistry:
 
     def add_button_modification(
         self,
-        modification: Type[ButtonModification[Any]],
+        modification: Type[ButtonModification],
         button_id: str,
     ) -> None:
         if not isinstance(modification, type) or not issubclass(modification, ButtonModification):

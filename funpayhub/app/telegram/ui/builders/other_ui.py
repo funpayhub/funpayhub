@@ -18,6 +18,7 @@ from .context import (
     FunPayStartNotificationMenuContext,
 )
 from ..premade import StripAndNavigationFinalizer
+from itertools import chain
 
 
 if TYPE_CHECKING:
@@ -237,4 +238,28 @@ class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=Sta
         return Menu(
             text=ctx.text,
             footer_keyboard=kb,
+        )
+
+
+class AddAutoDeliveryRuleMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.add_auto_delivery_rule,
+    context_type=MenuContext
+):
+    async def build(self, ctx: MenuBuilder, translater: Translater, hub: FunPayHub) -> Menu:
+        kb = KeyboardBuilder()
+
+        if hub.funpay.authenticated:
+            profile = await hub.funpay.profile(update=False)
+            for offer_preview in chain(k for i in profile.offers.values() for j in i.values() for k in j):
+                kb.add_callback_button(
+                    button_id=f'add_auto_delivery_rule:{offer_preview.id}',
+                    text=html.escape(offer_preview.title[:128]),
+                    callback_data=cbs.Dummy().pack()
+                )
+
+        return Menu(
+            text=translater.translate('$add_auto_delivery_rule_text'),
+            main_keyboard=kb,
+            finalizer=StripAndNavigationFinalizer()
         )

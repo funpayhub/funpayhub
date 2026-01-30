@@ -60,13 +60,16 @@ class FunPay:
 
         self._sending_message_lock = asyncio.Lock()
         self._manually_sent_messages: set[int] = set()
+        self._authenticated = False
         self.setup_dispatcher()
 
     async def start(self) -> None:
+        self._authenticated = False
         try:
             await self._init_bot_engine()
         except:
             return
+        self._authenticated = True
         await self._bot.listen_events(self._dispatcher)
 
     async def _init_bot_engine(self) -> None:
@@ -215,3 +218,7 @@ class FunPay:
     @property
     def offers_raiser(self) -> OffersRaiser:
         return self._offers_raiser
+
+    @property
+    def authenticated(self) -> bool:
+        return self._authenticated

@@ -38,6 +38,7 @@ MENU_BUILDERS = [
     other_ui.UpdateMenuBuilder,
     other_ui.StateMenuBuilder,
     other_ui.InstallUpdateMenuBuilder,
+    other_ui.AddAutoDeliveryRuleMenuBuilder,
     control_ui.ControlMenuBuilder,
     plugins_ui.PluginsListMenuBuilder,
     plugins_ui.PluginInfoMenuBuilder,
@@ -58,6 +59,7 @@ MENU_MODIFICATIONS = {
         properties_ui.PropertiesMenuModification,
         properties_ui.AddCommandButtonModification,
         properties_ui.AutoDeliveryPropertiesMenuModification,
+        properties_ui.AddOfferButtonModification,
     ],
     MenuIds.param_value_manual_input: [
         properties_ui.AddFormattersListButtonModification,
