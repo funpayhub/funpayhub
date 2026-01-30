@@ -31,6 +31,7 @@ from funpayhub.app.telegram.ui.builders.properties_ui.context import (
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater
     from funpayhub.lib.telegram.ui.registry import UIRegistry
+    from funpayhub.lib.goods_sources import GoodsSourcesManager
 
 
 class ToggleParamButtonBuilder(
@@ -327,7 +328,6 @@ class AddListItemMenuBuilder(
         self,
         ctx: EntryMenuContext,
         translater: Translater,
-        properties: FunPayHubProperties,
     ) -> Menu:
         text = translater.translate('$enter_new_list_item_message').format()
         callback_data = ctx.callback_data
@@ -351,7 +351,6 @@ class AddListItemMenuBuilder(
 
 
 # Modifications
-# noinspection PyMethodOverriding
 class PropertiesMenuModification(
     MenuModification,
     modification_id='fph:main_properties_menu_modification',
@@ -383,7 +382,6 @@ class PropertiesMenuModification(
         return menu
 
 
-# noinspection PyMethodOverriding
 class AutoDeliveryPropertiesMenuModification(
     MenuModification,
     modification_id='fph:auto_delivery_properties_menu_modification',
@@ -408,12 +406,14 @@ class AutoDeliveryPropertiesMenuModification(
         return menu
 
 
-# noinspection PyMethodOverriding
 class AddFormattersListButtonModification(
     MenuModification,
     modification_id='fph:add_formatters_list_button_modification',
 ):
     async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
+        if not ctx.entry_path:
+            return False
+
         return any(
             [
                 ctx.entry_path[0] == 'auto_response' and ctx.entry_path[-1] == 'response_text',
@@ -447,7 +447,6 @@ class AddFormattersListButtonModification(
         return menu
 
 
-# noinspection PyMethodOverriding
 class AddCommandButtonModification(
     MenuModification,
     modification_id='fph:add_command_button_modification',
@@ -463,4 +462,36 @@ class AddCommandButtonModification(
                 history=ctx.callback_data.as_history() if ctx.callback_data is not None else [],
             ).pack(),
         )
+        return menu
+
+
+class AddSourcesListAtAutoDeliveryModification(
+    MenuModification,
+    modification_id='fph:add_sources_list_to_auto_delivery'
+):
+    """
+    Модификация, добавляющая список источников товаров к меню изменения параметра
+        `auto_delivery.*.goods_source`.
+    """
+
+    async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
+        return (
+            ctx.entry_path and
+            ctx.entry_path[0] == 'auto_delivery' and
+            ctx.entry_path[-1] == 'goods_source'
+        )
+
+    async def modify(
+        self,
+        ctx: EntryMenuContext,
+        menu: Menu,
+        goods_manager: GoodsSourcesManager
+    ) -> Menu:
+        for source in goods_manager.values():
+            menu.main_keyboard.add_callback_button(
+                button_id=f'set_goods_source:{source.source_id}',
+                text=source.display_id,
+                callback_data=cbs.Dummy().pack()
+            )
+
         return menu

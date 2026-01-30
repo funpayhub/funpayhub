@@ -61,5 +61,6 @@ MENU_MODIFICATIONS = {
     ],
     MenuIds.param_value_manual_input: [
         properties_ui.AddFormattersListButtonModification,
+        properties_ui.AddSourcesListAtAutoDeliveryModification,
     ],
 }

@@ -249,10 +249,10 @@ msgstr "Определять к-во товара"
 msgid "$props.auto_delivery.*.multi_delivery:description"
 msgstr "__empty__"
 
-msgid "$props.auto_delivery.*.products_file:name"
-msgstr "🗃️ Товарный файл"
+msgid "$props.auto_delivery.*.goods_source:name"
+msgstr "🗳 Источник товаров"
 
-msgid "$props.auto_delivery.*.products_file:description"
+msgid "$props.auto_delivery.*.goods_source:description"
 msgstr "__empty__"
 
 msgid "$props.auto_delivery.*.delivery_text:name"

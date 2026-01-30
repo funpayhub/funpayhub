@@ -91,10 +91,10 @@ msgstr "banana papoy tatata"
 msgid "$props.auto_delivery.*.multi_delivery:description"
 msgstr "lala banana buca poopaye bee-do tatata papple banana papoy lala banana buca poopaye bee-do tatata papple banana bello para gelato tulaliloo papaya baboi meena waha po-ka bee-ka haha poy-poy tutu bapple mango kaka blabla bananaaa poyo wii la-la mumu babana zazu"
 
-msgid "$props.auto_delivery.*.products_file:name"
+msgid "$props.auto_delivery.*.goods_source:name"
 msgstr "banana buca poopaye"
 
-msgid "$props.auto_delivery.*.products_file:description"
+msgid "$props.auto_delivery.*.goods_source:description"
 msgstr "papoy banana bee-do tatata papple banana poopaye banana buca lala papoy bee-do tatata papple banana bee-do papoy banana bello para gelato tulaliloo papaya baboi meena waha po-ka bee-ka haha poy-poy tutu bapple mango kaka blabla bananaaa poyo wii la-la mumu babana zazu"
 
 msgid "$props.auto_delivery.*.delivery_text:name"

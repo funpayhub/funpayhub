@@ -34,11 +34,11 @@ class AutoDeliveryEntryProperties(Properties):
             ),
         )
 
-        self.products_file = self.attach_parameter(
+        self.goods_source = self.attach_parameter(
             StringParameter(
-                id='products_file',
-                name='$props.auto_delivery.*.products_file:name',
-                description='$props.auto_delivery.*.products_file:description',
+                id='goods_source',
+                name='$props.auto_delivery.*.goods_source:name',
+                description='$props.auto_delivery.*.goods_source:description',
                 default_value='',
             ),
         )
@@ -53,7 +53,6 @@ class AutoDeliveryEntryProperties(Properties):
         )
 
     if TYPE_CHECKING:
-
         @property
         def parent(self) -> AutoDeliveryProperties | None: ...
 

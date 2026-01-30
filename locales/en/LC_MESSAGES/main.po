@@ -248,10 +248,10 @@ msgstr "Detect item quantity"
 msgid "$props.auto_delivery.*.multi_delivery:description"
 msgstr "__empty__"
 
-msgid "$props.auto_delivery.*.products_file:name"
+msgid "$props.auto_delivery.*.goods_source:name"
 msgstr "🗃️ Goods file"
 
-msgid "$props.auto_delivery.*.products_file:description"
+msgid "$props.auto_delivery.*.goods_source:description"
 msgstr "__empty__"
 
 msgid "$props.auto_delivery.*.delivery_text:name"
