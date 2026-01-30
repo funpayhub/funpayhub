@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 from dataclasses import replace
+from typing import TYPE_CHECKING
 
 from funpaybotengine import Bot as FPBot
 from funpaybotengine.types.enums import BadgeType
@@ -14,6 +15,10 @@ from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, KeyboardB
 from ..ids import MenuIds
 from .context import NewMessageMenuContext, SendMessageMenuContext
 from ..premade import StripAndNavigationFinalizer
+
+
+if TYPE_CHECKING:
+    from funpayhub.app.funpay.main import FunPay
 
 
 _prefixes_by_badge_type = {
@@ -33,6 +38,7 @@ class NewMessageNotificationMenuBuilder(
         ctx: NewMessageMenuContext,
         translater: Translater,
         fp_bot: FPBot,
+        fp: FunPay
     ) -> Menu:
         # Не хэшируем коллбэки данного меню, чтобы не забивать память.
         # Вместо этого делаем коротки коллбэки, чтобы они могли работать между перезапусками.
@@ -69,7 +75,10 @@ class NewMessageNotificationMenuBuilder(
                     username += f' ({msg.badge.text})'
                     prefix = _prefixes_by_badge_type.get(msg.badge.type, '')
                 elif msg.sender_id == fp_bot.userid:
-                    if await fp_bot.storage.is_message_sent_by_bot(msg.id):
+                    if (
+                        (await fp_bot.storage.is_message_sent_by_bot(msg.id)) and
+                        not fp.is_manual_message(msg.id)
+                    ):
                         prefix = '🤖'
                     else:
                         prefix = '😎'

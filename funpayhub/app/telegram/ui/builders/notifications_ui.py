@@ -42,7 +42,7 @@ class NotificationsMenuBuilder(
         )
 
         for entry in props.entries.values():
-            if entry.modification_id in [f'review_{j}' for j in range(1, 6)]:
+            if entry.id in [f'review_{j}' for j in range(1, 6)]:
                 continue
             if not isinstance(entry, ListParameter):
                 continue
