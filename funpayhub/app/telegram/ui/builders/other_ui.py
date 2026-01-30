@@ -251,10 +251,13 @@ class AddAutoDeliveryRuleMenuBuilder(
 
         if hub.funpay.authenticated:
             profile = await hub.funpay.profile(update=False)
-            for offer_preview in chain(k for i in profile.offers.values() for j in i.values() for k in j):
+            for offer in chain(k for i in profile.offers.values() for j in i.values() for k in j):
+                if offer.title in hub.properties.auto_delivery.entries:
+                    continue
+
                 kb.add_callback_button(
-                    button_id=f'add_auto_delivery_rule:{offer_preview.id}',
-                    text=html.escape(offer_preview.title[:128]),
+                    button_id=f'add_auto_delivery_rule:{offer.id}',
+                    text=html.escape(offer.title[:128]),
                     callback_data=cbs.Dummy().pack()
                 )
 
