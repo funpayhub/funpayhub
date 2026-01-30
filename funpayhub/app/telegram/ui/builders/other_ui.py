@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 from typing import TYPE_CHECKING
+from itertools import chain
 
 from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedError
 
@@ -18,7 +19,6 @@ from .context import (
     FunPayStartNotificationMenuContext,
 )
 from ..premade import StripAndNavigationFinalizer
-from itertools import chain
 
 
 if TYPE_CHECKING:
@@ -244,9 +244,9 @@ class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=Sta
 class AddAutoDeliveryRuleMenuBuilder(
     MenuBuilder,
     menu_id=MenuIds.add_auto_delivery_rule,
-    context_type=MenuContext
+    context_type=MenuContext,
 ):
-    async def build(self, ctx: MenuBuilder, translater: Translater, hub: FunPayHub) -> Menu:
+    async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub) -> Menu:
         kb = KeyboardBuilder()
 
         if hub.funpay.authenticated:
@@ -258,11 +258,31 @@ class AddAutoDeliveryRuleMenuBuilder(
                 kb.add_callback_button(
                     button_id=f'add_auto_delivery_rule:{offer.id}',
                     text=html.escape(offer.title[:128]),
-                    callback_data=cbs.Dummy().pack()
+                    callback_data=cbs.AddAutoDeliveryRule(
+                        rule=offer.title,
+                        history=ctx.callback_data.history if ctx.callback_data is not None else [],
+                    ).pack(),
                 )
 
         return Menu(
             text=translater.translate('$add_auto_delivery_rule_text'),
             main_keyboard=kb,
-            finalizer=StripAndNavigationFinalizer()
+            finalizer=StripAndNavigationFinalizer(),
         )
+
+
+class RequestsMenuBuilder(MenuBuilder, menu_id='fph:request_menu', context_type=MenuContext):
+    async def build(self, ctx: MenuContext, hub: FunPayHub) -> Menu:
+        counter = hub.funpay.session.counter
+
+        text = (
+            f'<b>Запросы к главной странице: {counter.get("") or 0}</b>\n'
+            f'<b>Запросы событий: {counter.get("runner/") or 0}</b>\n'
+            f'<b>Запросы к профилю: {counter.get(f"users/{hub.funpay.bot.userid}/" or 0)}</b>\n'
+        )
+        for k, v in hub.funpay.session.counter.items():
+            if k in ['runner/', f'users/{hub.funpay.bot.userid}/', '']:
+                continue
+            text += f'<b>{html.escape(k)}: {v}</b>\n'
+
+        return Menu(text=text)

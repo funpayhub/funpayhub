@@ -13,12 +13,15 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 
 from funpayhub.app.telegram import states, callbacks as cbs
+from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.app.workflow_data import WorkflowData as wfd
 from funpayhub.lib.goods_sources import GoodsSource, FileGoodsSource, GoodsSourcesManager
 from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.lib.telegram.callback_data import UnknownCallback
 from funpayhub.app.telegram.ui.builders.context import StateUIContext, GoodsInfoMenuContext
+from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 
 
 r = router = Router(name='fph:goods')
@@ -311,3 +314,32 @@ async def add_goods_txt_source(
     )
     menu = await tg_ui.build_menu(context)
     await menu.answer_to(message)
+
+
+@router.callback_query(cbs.AddAutoDeliveryRule.filter())
+async def add_auto_delivery_rule(
+    query: CallbackQuery,
+    translater: Translater,
+    properties: FunPayHubProperties,
+    callback_data: cbs.AddAutoDeliveryRule,
+    tg_ui: UIRegistry,
+):
+    if callback_data.rule in properties.auto_delivery.entries:
+        await query.answer(
+            translater.translate('$err_auto_delivery_rule_already_exists'), show_alert=True
+        )
+        return
+
+    entry = properties.auto_delivery.add_entry(callback_data.rule)
+
+    ctx = EntryMenuContext(
+        trigger=query,
+        menu_id=MenuIds.properties_entry,
+        entry_path=entry.path,
+        data={
+            'callback_data': UnknownCallback.parse(callback_data.pack_history(hash=False)),
+        },
+    )
+
+    menu = await tg_ui.build_menu(ctx)
+    await menu.apply_to(query.message)

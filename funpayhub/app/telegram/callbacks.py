@@ -251,3 +251,8 @@ class ReloadGoodsSource(CallbackData, identifier='reload_goods_source'):
 
 
 class AddGoodsTxtSource(CallbackData, identifier='add_goods_txt_source'): ...
+
+
+# Autodelivery
+class AddAutoDeliveryRule(CallbackData, identifier='add_autodelivery_rule'):
+    rule: str

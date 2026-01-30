@@ -82,7 +82,7 @@ class _HashinatorT1000:
         return hashlib.md5(text.encode('utf-8')).hexdigest()
 
     def hash(self, text: str, save: bool = False) -> str:
-        if len(text) <= 64:
+        if len(text) <= 64 and text.isascii():
             return text
         candidate = self._md5(text)
 
@@ -101,7 +101,7 @@ class _HashinatorT1000:
                 self.storage.save_callbacks(self.hashes)
                 self.hashes.clear()
 
-            return f'<<{candidate}>>'
+            return f'[[{candidate}]]'
 
     def unhash(self, hash: str) -> str:
         if not self.is_hash(hash):
@@ -123,7 +123,7 @@ class _HashinatorT1000:
 
     @classmethod
     def is_hash(cls, value: str) -> bool:
-        return value.startswith('<<') and value.endswith('>>') and len(value) == 36
+        return value.startswith('[[') and value.endswith(']]') and len(value) == 36
 
 
 HashinatorT1000 = _HashinatorT1000()

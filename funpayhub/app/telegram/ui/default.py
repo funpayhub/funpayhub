@@ -39,6 +39,7 @@ MENU_BUILDERS = [
     other_ui.StateMenuBuilder,
     other_ui.InstallUpdateMenuBuilder,
     other_ui.AddAutoDeliveryRuleMenuBuilder,
+    other_ui.RequestsMenuBuilder,
     control_ui.ControlMenuBuilder,
     plugins_ui.PluginsListMenuBuilder,
     plugins_ui.PluginInfoMenuBuilder,

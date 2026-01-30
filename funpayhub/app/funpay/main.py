@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import time
 import asyncio
 from typing import TYPE_CHECKING, Any, ParamSpec
 from io import BytesIO
+from collections import Counter
 from collections.abc import Callable, Awaitable
 
 from funpaybotengine import Bot, Dispatcher
 from funpaybotengine.types import Message, Category
+from funpaybotengine.client import Response, AioHttpSession
+from funpaybotengine.methods import FunPayMethod, MethodReturnType
 from funpaybotengine.exceptions import (
     FunPayServerError,
     UnauthorizedError,
@@ -33,6 +37,40 @@ if TYPE_CHECKING:
 P = ParamSpec('P')
 
 
+class HubSession(AioHttpSession):
+    def __init__(
+        self,
+        proxy: str | None = None,
+        default_headers: dict[str, str] | None = None,
+    ):
+        super().__init__(proxy, default_headers)
+        self._first_request = 0
+        self._counter = Counter()
+
+    async def make_request(
+        self,
+        method: FunPayMethod[MethodReturnType],
+        bot: Bot,
+        timeout: float | None = None,
+        skip_session_cookies: bool = False,
+    ) -> Response[MethodReturnType]:
+        request_time = time.time()
+        if not self._first_request:
+            self._first_request = request_time
+        self._counter.update([method.url])
+
+        result = await super().make_request(method, bot, timeout, skip_session_cookies)
+        return result
+
+    @property
+    def counter(self) -> Counter:
+        return self._counter
+
+    @property
+    def first_request_timestamp(self) -> float:
+        return self._first_request
+
+
 class FunPay:
     def __init__(
         self,
@@ -52,7 +90,8 @@ class FunPay:
         for i in FORMATTERS_LIST:
             self._text_formatters.add_formatter(i)
 
-        self._bot = Bot(golden_key=bot_token, proxy=proxy, default_headers=headers)
+        self._session = HubSession(proxy=proxy, default_headers=headers)
+        self._bot = Bot(golden_key=bot_token, session=self._session)
 
         self._profile_page: ProfilePage | None = None
         self._offers_raiser = OffersRaiser(self._bot)
@@ -222,3 +261,7 @@ class FunPay:
     @property
     def authenticated(self) -> bool:
         return self._authenticated
+
+    @property
+    def session(self) -> HubSession:
+        return self._session
