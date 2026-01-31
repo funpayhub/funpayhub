@@ -21,9 +21,11 @@ class Pageable(MenuPageable, ViewPageable): ...
 
 class Dummy(CallbackData, identifier='dummy'):
     """
-    Callback-пустышка.
+    Путсышка.
+    Используется как временная замена для кнопок, callback котороым еще не создан.
+    Сразу отвечат на query. (`query.answer()`)
 
-    На данный callback бот отвечает мгновенным `.answer()`
+    Хэндлер: :func:`funpayhub.app.telegram.routers.menu.properties.dummy`
     """
 
 
@@ -254,5 +256,16 @@ class AddGoodsTxtSource(CallbackData, identifier='add_goods_txt_source'): ...
 
 
 # Autodelivery
+class OpenAutoDeliveryRuleAction(CallbackData, identifier='open_add_autodelivery_rule'):
+    """
+    Открывает в текущем сообщении меню добавления правила авто-выдачи `MenuIds.`.
+    Устаналивает состояние на :class:`funpayhub.app.telegram.states.AddingAutoDeliveryRule`.
+
+    Хэндлер: funpayhub.app.telegram.routers.
+    """
+
+    ...
+
+
 class AddAutoDeliveryRule(CallbackData, identifier='add_autodelivery_rule'):
     rule: str

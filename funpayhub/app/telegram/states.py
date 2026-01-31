@@ -130,3 +130,9 @@ class AddingGoods(State, identifier='fph:adding_goods'):
 class AddingGoodsTxtSource(State, identifier='fph:adding_goods_txt_source'):
     message: Message
     callback_data: UnknownCallback
+
+
+@dataclass
+class AddingAutoDeliveryRule(State, identifier='fph:adding_autodelivery_rule'):
+    message: Message
+    callback_data: UnknownCallback

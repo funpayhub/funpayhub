@@ -30,8 +30,8 @@ from funpayhub.app.telegram.ui.builders.properties_ui.context import (
 
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater
-    from funpayhub.lib.telegram.ui.registry import UIRegistry
     from funpayhub.lib.goods_sources import GoodsSourcesManager
+    from funpayhub.lib.telegram.ui.registry import UIRegistry
 
 
 class ToggleParamButtonBuilder(
@@ -475,7 +475,7 @@ class AddOfferButtonModification(
         self,
         ctx: EntryMenuContext,
         menu: Menu,
-        properties: FunPayHubProperties
+        properties: FunPayHubProperties,
     ) -> bool:
         return ctx.entry_path == properties.auto_delivery.path
 
@@ -483,11 +483,10 @@ class AddOfferButtonModification(
         btn = Button.callback_button(
             button_id='add_rule',
             text=translater.translate('$add_offer_rule'),
-            callback_data=cbs.OpenMenu(
-                menu_id=MenuIds.add_auto_delivery_rule,
+            callback_data=cbs.OpenAutoDeliveryRuleAction(
                 history=ctx.callback_data.as_history() if ctx.callback_data is not None else [],
             ).pack(),
-            row=True
+            row=True,
         )
         menu.footer_keyboard.insert(0, btn)
         return menu
@@ -495,7 +494,7 @@ class AddOfferButtonModification(
 
 class AddSourcesListAtAutoDeliveryModification(
     MenuModification,
-    modification_id='fph:add_sources_list_to_auto_delivery'
+    modification_id='fph:add_sources_list_to_auto_delivery',
 ):
     """
     Модификация, добавляющая список источников товаров к меню изменения параметра
@@ -504,22 +503,22 @@ class AddSourcesListAtAutoDeliveryModification(
 
     async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
         return (
-            ctx.entry_path and
-            ctx.entry_path[0] == 'auto_delivery' and
-            ctx.entry_path[-1] == 'goods_source'
+            ctx.entry_path
+            and ctx.entry_path[0] == 'auto_delivery'
+            and ctx.entry_path[-1] == 'goods_source'
         )
 
     async def modify(
         self,
         ctx: EntryMenuContext,
         menu: Menu,
-        goods_manager: GoodsSourcesManager
+        goods_manager: GoodsSourcesManager,
     ) -> Menu:
         for source in goods_manager.values():
             menu.main_keyboard.add_callback_button(
                 button_id=f'set_goods_source:{source.source_id}',
                 text=source.display_id,
-                callback_data=cbs.Dummy().pack()
+                callback_data=cbs.Dummy().pack(),
             )
 
         return menu
