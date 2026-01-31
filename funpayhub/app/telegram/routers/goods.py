@@ -35,14 +35,12 @@ async def _set_state_and_send_state_ui(
     state_cls: Any,
     text: str,
 ) -> None:
-    ctx = StateUIContext(
+    msg = await StateUIContext(
         menu_id=MenuIds.state_menu,
         delete_on_clear=True,
         text=text,
         trigger=query,
-    )
-    menu = await wfd.tg_ui_registry.build_menu(ctx)
-    msg = await menu.answer_to(query.message)
+    ).build_and_answer(wfd.tg_ui_registr, query.message)
 
     s = state_cls(source_id=callback_data.source_id, message=msg, callback_data=callback_data)
     await state.set_state(s.identifier)
@@ -59,22 +57,18 @@ async def _generate_and_send_new_goods_info(
         menu_id=MenuIds.goods_source_info,
         source_id=source.source_id,
         trigger=trigger,
-        data={
-            'callback_data': cbs.OpenMenu(
+        callback_override=callback_data.copy_history(
+            cbs.OpenMenu(
                 menu_id=MenuIds.goods_source_info,
-                history=callback_data.history[:-1],  # SomeHistory -> OpenMenu (del) -> Action
-                context_data={
-                    'source_id': source.source_id,
-                },
+                context_data={'source_id': source.source_id},
             ),
-        },
+        ),
     )
-    menu = await wfd.tg_ui_registry.build_menu(context)
 
     if isinstance(trigger, Message):
-        await menu.answer_to(trigger)
+        await context.build_and_answer(wfd.tg_ui_registry, trigger)
     elif isinstance(trigger, CallbackQuery):
-        await menu.apply_to(trigger.message)
+        await context.build_and_apply(wfd.tg_ui_registry, trigger.message)
 
 
 async def _get_source(trigger: CallbackQuery | Message, source_id: str) -> GoodsSource | None:
@@ -131,12 +125,11 @@ async def reload_goods(query: CallbackQuery, callback_data: cbs.ReloadGoodsSourc
     if (source := await _get_source(query, callback_data.source_id)) is None:
         return
 
-    fake_callback = cbs.OpenMenu(
-        menu_id=MenuIds.goods_source_info,
-        history=callback_data.history,
-        context_data={
-            'source_id': source.source_id,
-        },
+    fake_callback = callback_data.copy_history(
+        cbs.OpenMenu(
+            menu_id=MenuIds.goods_source_info,
+            context_data={'source_id': source.source_id},
+        ),
     )
 
     try:
@@ -249,7 +242,7 @@ INVALID_CHARS = set('<>:"/\\|?*\0')
 
 @router.message(StateFilter(states.AddingGoodsTxtSource.identifier))
 async def add_goods_txt_source(
-    message: Message,
+    msg: Message,
     translater: Translater,
     state: FSMContext,
     tg_ui: UIRegistry,
@@ -257,24 +250,19 @@ async def add_goods_txt_source(
     goods_manager: GoodsSourcesManager,
 ) -> None:
     data: states.AddingGoodsTxtSource = (await state.get_data())['data']
-
-    if message.text:
-        filename = message.text
-    elif message.document:
-        filename = message.document.file_name
-    else:
-        filename = ''
+    filename = msg.text if msg.text else msg.document.file_name if msg.document else ''
 
     if not filename:
-        await message.reply(translater.translate('$err_goods_txt_source_name_empty'))
+        await msg.reply(translater.translate('$err_goods_txt_source_name_empty'))
         return
+
     if (
         filename in ['.', '..']
         or filename.endswith((' ', '.'))
         or any(c in INVALID_CHARS for c in filename)
         or any(ord(c) < 32 for c in filename)
     ):
-        await message.reply(translater.translate('$err_goods_txt_source_invalid_name'))
+        await msg.reply(translater.translate('$err_goods_txt_source_invalid_name'))
         return
 
     path = Path('storage/goods') / filename
@@ -283,13 +271,13 @@ async def add_goods_txt_source(
     new_id = 'file://' + str(path)
 
     if new_id in goods_manager:
-        await message.reply(translater.translate('$err_goods_txt_source_already_exists'))
+        await msg.reply(translater.translate('$err_goods_txt_source_already_exists'))
         return
 
     await data.message.delete()
 
-    if message.document:
-        file = await tg_bot.get_file(message.document.file_id)
+    if msg.document:
+        file = await tg_bot.get_file(msg.document.file_id)
         buffer = BytesIO()
         await tg_bot.download_file(file.file_path, buffer)
         decoded = buffer.getvalue().decode('utf-8')
@@ -298,22 +286,17 @@ async def add_goods_txt_source(
 
     source = await goods_manager.add_source(FileGoodsSource, path)
 
-    context = GoodsInfoMenuContext(
+    await GoodsInfoMenuContext(
         menu_id=MenuIds.goods_source_info,
         source_id=source.source_id,
-        trigger=message,
-        data={
-            'callback_data': cbs.OpenMenu(
+        trigger=msg,
+        callback_override=data.callback_data.copy_history(
+            cbs.OpenMenu(
                 menu_id=MenuIds.goods_source_info,
-                history=data.callback_data.history,
-                context_data={
-                    'source_id': source.source_id,
-                },
+                context_data={'source_id': source.source_id},
             ),
-        },
-    )
-    menu = await tg_ui.build_menu(context)
-    await menu.answer_to(message)
+        ),
+    ).build_and_answer(tg_ui, msg)
 
 
 @router.callback_query(cbs.AddAutoDeliveryRule.filter())
@@ -333,17 +316,12 @@ async def add_auto_delivery_rule(
 
     entry = properties.auto_delivery.add_entry(callback_data.rule)
 
-    ctx = EntryMenuContext(
+    await EntryMenuContext(
         trigger=query,
         menu_id=MenuIds.properties_entry,
         entry_path=entry.path,
-        data={
-            'callback_data': UnknownCallback.parse(callback_data.pack_history(hash=False)),
-        },
-    )
-
-    menu = await tg_ui.build_menu(ctx)
-    await menu.apply_to(query.message)
+        callback_override=UnknownCallback.parse(callback_data.pack_history(hash=False)),
+    ).build_and_apply(tg_ui, query.message)
 
 
 @router.callback_query(cbs.OpenAutoDeliveryRuleAction.filter())
@@ -352,13 +330,10 @@ async def add_auto_delivery_rule(
     callback_data: cbs.OpenAutoDeliveryRuleAction,
     tg_ui: UIRegistry,
 ):
-    ctx = MenuContext(
+    await MenuContext(
         trigger=query,
         menu_id=MenuIds.add_auto_delivery_rule,
         callback_override=callback_data.copy_history(
             cbs.OpenMenu(menu_id=MenuIds.add_auto_delivery_rule),
         ),
-    )
-
-    menu = await tg_ui.build_menu(ctx)
-    await menu.apply_to(query.message)
+    ).build_and_apply(tg_ui, query.message)

@@ -260,7 +260,7 @@ class AddAutoDeliveryRuleMenuBuilder(
                     text=html.escape(offer.title[:128]),
                     callback_data=cbs.AddAutoDeliveryRule(
                         rule=offer.title,
-                        history=ctx.callback_data.history if ctx.callback_data is not None else [],
+                        from_callback=ctx.callback_data,
                     ).pack(),
                 )
 
