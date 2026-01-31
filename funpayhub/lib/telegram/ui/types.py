@@ -18,6 +18,10 @@ from funpayhub.lib.core import classproperty
 from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
+if TYPE_CHECKING:
+    from funpayhub.lib.telegram.ui import UIRegistry
+
+
 @dataclass
 class Button:
     button_id: str
@@ -237,6 +241,24 @@ class MenuContext:
                 return getattr(self.trigger, '__parsed__')
             return UnknownCallback.parse(self.trigger.data)
         return None
+
+    async def build_menu(self, registry: UIRegistry) -> Menu:
+        return await registry.build_menu(self)
+
+    async def build_and_apply(
+        self,
+        registry: UIRegistry,
+        message: Message,
+        *,
+        text: bool = True,
+        keyboard: bool = True,
+    ) -> Message:
+        menu = await self.build_menu(registry)
+        return await menu.apply_to(message, text=text, keyboard=keyboard)
+
+    async def build_and_answer(self, registry: UIRegistry, message: Message) -> Message:
+        menu = await self.build_menu(registry)
+        return await menu.answer_to(message)
 
 
 @dataclass(kw_only=True)

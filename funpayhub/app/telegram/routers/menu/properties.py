@@ -44,7 +44,6 @@ async def _delete_message(msg: Message) -> None:
 async def open_custom_menu(
     query: CallbackQuery,
     tg_ui: UIRegistry,
-    data: dict[str, Any],
     callback_data: cbs.OpenMenu,
 ) -> None:
     menu_builder = tg_ui.get_menu_builder(callback_data.menu_id)
@@ -73,14 +72,10 @@ async def open_custom_menu(
         data=additional_data,
         **callback_data.context_data,
     )
-
-    menu = await tg_ui.build_menu(ctx_instance, data | {'query': query})
-
     if callback_data.new_message:
-        await query.answer()
-        await menu.answer_to(query.message)
+        await ctx_instance.build_and_answer(tg_ui, query.message)
     else:
-        await menu.apply_to(query.message)
+        await ctx_instance.build_and_apply(tg_ui, query.message)
 
 
 @r.callback_query(cbs.DrawMenu.filter())
@@ -110,18 +105,12 @@ async def draw_menu(
 
 @r.message(CommandStart())
 @r.message(Command('menu'))
-async def send_menu(
-    message: Message,
-    tg_ui: UIRegistry,
-    data: dict[str, Any],
-) -> None:
-    ctx = MenuContext(
+async def send_menu(message: Message, tg_ui: UIRegistry) -> None:
+    await MenuContext(
         menu_id=MenuIds.main_menu,
         trigger=message,
-        data={'callback_data': cbs.OpenMenu(menu_id=MenuIds.main_menu)},
-    )
-
-    await (await tg_ui.build_menu(ctx, data)).answer_to(message)
+        callback_override=cbs.OpenMenu(menu_id=MenuIds.main_menu),
+    ).build_and_answer(tg_ui, message)
 
 
 # TEMP
@@ -154,24 +143,16 @@ async def clear(
 
 
 @r.message(Command('settings'))
-async def send_menu(
-    message: Message,
-    tg_ui: UIRegistry,
-    data: dict[str, Any],
-) -> None:
-    ctx = EntryMenuContext(
+async def send_menu(message: Message, tg_ui: UIRegistry) -> None:
+    await EntryMenuContext(
         menu_id=MenuIds.properties_entry,
         trigger=message,
         entry_path=[],
-        data={
-            'callback_data': cbs.OpenMenu(
-                menu_id=MenuIds.properties_entry,
-                context_data={'entry_path': []},
-            ),
-        },
-    )
-
-    await (await tg_ui.build_menu(ctx, data)).answer_to(message)
+        callback_override=cbs.OpenMenu(
+            menu_id=MenuIds.properties_entry,
+            context_data={'entry_path': []},
+        ),
+    ).build_and_answer(tg_ui, message)
 
 
 @r.callback_query(cbs.NextParamValue.filter())
@@ -234,20 +215,17 @@ async def change_parameter_value(
     await state.clear()
 
     entry = properties.get_parameter(callback_data.path)
-    ctx = EntryMenuContext(
+    msg = await EntryMenuContext(
         menu_id=MenuIds.param_value_manual_input,
         trigger=query,
         entry_path=entry.path,
-        data={
-            'callback_data': cbs.OpenMenu(
+        callback_override=callback_data.copy_history(
+            cbs.OpenMenu(
                 menu_id=MenuIds.param_value_manual_input,
                 context_data={'entry_path': entry.path},
-                history=callback_data.history,
-            )
-        }
-    )
-
-    msg = await (await tg_ui.build_menu(ctx, data)).apply_to(query.message)
+            ),
+        ),
+    ).build_and_apply(tg_ui, query.message)
 
     await state.set_state(ChangingParameterValue.__identifier__)
     await state.set_data(
@@ -368,19 +346,16 @@ async def set_adding_list_item_state(
     query: CallbackQuery,
     properties: FunPayHubProperties,
     tg_ui: UIRegistry,
-    data: dict[str, Any],
     callback_data: cbs.ListParamAddItem,
     state: FSMContext,
 ) -> None:
     await state.clear()
     entry = properties.get_parameter(callback_data.path)
-    ctx = EntryMenuContext(
+    msg = await EntryMenuContext(
         menu_id=MenuIds.add_list_item,
         trigger=query,
         entry_path=entry.path,
-    )
-
-    msg = await (await tg_ui.build_menu(ctx, data)).apply_to(query.message)
+    ).build_and_apply(tg_ui, query.message)
 
     await state.set_state(AddingListItem.__identifier__)
     await state.set_data(
