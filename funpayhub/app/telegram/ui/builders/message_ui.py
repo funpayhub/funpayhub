@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import html
-from dataclasses import replace
 from typing import TYPE_CHECKING
 
 from funpaybotengine import Bot as FPBot
@@ -38,7 +37,7 @@ class NewMessageNotificationMenuBuilder(
         ctx: NewMessageMenuContext,
         translater: Translater,
         fp_bot: FPBot,
-        fp: FunPay
+        fp: FunPay,
     ) -> Menu:
         # Не хэшируем коллбэки данного меню, чтобы не забивать память.
         # Вместо этого делаем коротки коллбэки, чтобы они могли работать между перезапусками.
@@ -76,9 +75,8 @@ class NewMessageNotificationMenuBuilder(
                     prefix = _prefixes_by_badge_type.get(msg.badge.type, '')
                 elif msg.sender_id == fp_bot.userid:
                     if (
-                        (await fp_bot.storage.is_message_sent_by_bot(msg.id)) and
-                        not fp.is_manual_message(msg.id)
-                    ):
+                        await fp_bot.storage.is_message_sent_by_bot(msg.id)
+                    ) and not fp.is_manual_message(msg.id):
                         prefix = '🤖'
                     else:
                         prefix = '😎'
@@ -129,26 +127,8 @@ class SendMessageMenuBuilder(
             keyboard.add_callback_button(
                 button_id=f'send_template:{index}',
                 text=i[:30] + ('...' if len(i) > 30 else ''),
-                callback_data=cbs.SendTemplate(
-                    to=ctx.funpay_chat_id,
-                    index=index,
-                ).pack(hash=False),
+                callback_data=cbs.SendTemplate(to=ctx.funpay_chat_id, index=index).pack_compact(),
             )
-
-        fake_callback_data = cbs.SendMessage(
-            to=ctx.funpay_chat_id,
-            name=ctx.funpay_chat_name,
-            set_state=False,
-            menu_page=ctx.menu_page,
-            view_page=ctx.view_page,
-        )
-
-        finalizer_context = replace(
-            ctx,
-            data=ctx.data | {'callback_data': fake_callback_data},
-            menu_page=ctx.menu_page,
-            view_page=ctx.view_page,
-        )
 
         return Menu(
             text=translater.translate('$new_message_ui.enter_reply_text').format(
@@ -166,8 +146,5 @@ class SendMessageMenuBuilder(
                 ],
             ),
             main_keyboard=keyboard,
-            finalizer=StripAndNavigationFinalizer(
-                back_button=False,
-                context_override=finalizer_context,
-            ),
+            finalizer=StripAndNavigationFinalizer(back_button=False),
         )

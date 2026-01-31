@@ -45,7 +45,6 @@ class ToggleParamButtonBuilder(
         translater: Translater,
         properties: FunPayHubProperties,
     ) -> Button:
-        callback_data = ctx.menu_render_context.callback_data
         entry = properties.get_entry(ctx.entry_path)
         if not isinstance(entry, param.ToggleParameter):
             raise ValueError()
@@ -57,7 +56,7 @@ class ToggleParamButtonBuilder(
             text=f'{"🟢" if entry.value else "🔴"} {translated_name}',
             callback_data=cbs.NextParamValue(
                 path=entry.path,
-                history=callback_data.as_history() if callback_data is not None else [],
+                from_callback=ctx.menu_render_context.callback_data,
             ).pack(),
         )
 
@@ -74,7 +73,6 @@ class ChangeParamValueButtonBuilder(
         translater: Translater,
         properties: FunPayHubProperties,
     ) -> Button:
-        callback_data = ctx.menu_render_context.callback_data
         entry = properties.get_entry(ctx.entry_path)
 
         if not entry.has_flag(PropsFlags.PROTECT_VALUE):
@@ -87,7 +85,7 @@ class ChangeParamValueButtonBuilder(
             text=f'{translater.translate(entry.name)} 【 {val_str} 】',
             callback_data=cbs.ManualParamValueInput(
                 path=entry.path,
-                history=callback_data.as_history() if callback_data is not None else [],
+                from_callback=ctx.menu_render_context.callback_data,
             ).pack(),
         )
 
@@ -104,7 +102,6 @@ class OpenParamMenuButtonBuilder(
         translater: Translater,
         properties: FunPayHubProperties,
     ) -> Button:
-        callback_data = ctx.menu_render_context.callback_data
         entry = properties.get_entry(ctx.entry_path)
 
         return Button.callback_button(
@@ -112,7 +109,7 @@ class OpenParamMenuButtonBuilder(
             text=translater.translate(entry.name),
             callback_data=cbs.OpenMenu(
                 menu_id=MenuIds.properties_entry,
-                history=callback_data.as_history() if callback_data is not None else [],
+                from_callback=ctx.menu_render_context.callback_data,
                 context_data={
                     'entry_path': entry.path,
                 },
@@ -180,7 +177,6 @@ class ChoiceParameterMenuBuilder(
         properties: FunPayHubProperties,
     ) -> Menu:
         keyboard = KeyboardBuilder()
-        callback_data = ctx.callback_data
         entry = properties.get_parameter(ctx.entry_path)
         if not isinstance(entry, param.ChoiceParameter):
             raise ValueError()
@@ -193,7 +189,7 @@ class ChoiceParameterMenuBuilder(
                 callback_data=cbs.ChooseParamValue(
                     path=entry.path,
                     choice_id=choice.id,
-                    history=callback_data.as_history() if callback_data is not None else [],
+                    from_callback=ctx.callback_data,
                 ).pack(),
             )
 
@@ -217,7 +213,6 @@ class ListParameterMenuBuilder(
     ) -> Menu:
         keyboard = KeyboardBuilder()
         mode = ctx.data.get('mode')
-        callback_data = ctx.callback_data
         entry = properties.get_entry(ctx.entry_path)
         if not isinstance(entry, param.ListParameter):
             raise ValueError()
@@ -231,11 +226,11 @@ class ListParameterMenuBuilder(
                     item_index=index,
                     path=entry.path,
                     action=mode,
-                    history=callback_data.as_history() if callback_data is not None else [],
+                    from_callback=ctx.callback_data,
                 ).pack(),
             )
 
-        footer = KeyboardBuilder()
+        footer = KeyboardBuilder(keyboard=[[]])
         mode_data = {
             'cancel': ('❌', None),
             'enable_move_up_mode': ('⬆️', 'move_up'),
@@ -251,7 +246,7 @@ class ListParameterMenuBuilder(
                     callback_data=cbs.OpenMenu(
                         menu_id=MenuIds.properties_entry,
                         menu_page=ctx.menu_page,
-                        history=callback_data.history if callback_data is not None else [],
+                        history=ctx.callback_data.history if ctx.callback_data is not None else [],
                         data={'mode': mode_str},
                         context_data={
                             'entry_path': entry.path,
@@ -269,7 +264,7 @@ class ListParameterMenuBuilder(
                 text='➕',
                 callback_data=cbs.ListParamAddItem(
                     path=entry.path,
-                    history=callback_data.as_history() if callback_data is not None else [],
+                    from_callback=ctx.callback_data,
                 ).pack(),
             ),
         )
@@ -364,8 +359,6 @@ class PropertiesMenuModification(
         menu: Menu,
         translater: Translater,
     ) -> Menu:
-        history = ctx.callback_data.as_history() if ctx.callback_data is not None else []
-
         menu.main_keyboard.insert(
             1,
             [
@@ -374,7 +367,7 @@ class PropertiesMenuModification(
                     text=translater.translate('$telegram_notifications'),
                     callback_data=cbs.OpenMenu(
                         menu_id=MenuIds.tg_chat_notifications,
-                        history=history,
+                        from_callback=ctx.callback_data,
                     ).pack(),
                 ),
             ],
@@ -400,7 +393,7 @@ class AutoDeliveryPropertiesMenuModification(
             text=translater.translate('$goods_sources_list'),
             callback_data=cbs.OpenMenu(
                 menu_id=MenuIds.goods_sources_list,
-                history=ctx.callback_data.as_history() if ctx.callback_data is not None else [],
+                from_callback=ctx.callback_data,
             ).pack(),
         )
         return menu
@@ -458,9 +451,7 @@ class AddCommandButtonModification(
         menu.footer_keyboard.add_callback_button(
             button_id='add_command',
             text=translater.translate('$add_command'),
-            callback_data=cbs.AddCommand(
-                history=ctx.callback_data.as_history() if ctx.callback_data is not None else [],
-            ).pack(),
+            callback_data=cbs.AddCommand(from_callback=ctx.callback_data).pack(),
         )
         return menu
 
@@ -483,9 +474,7 @@ class AddOfferButtonModification(
         btn = Button.callback_button(
             button_id='add_rule',
             text=translater.translate('$add_offer_rule'),
-            callback_data=cbs.OpenAutoDeliveryRuleAction(
-                history=ctx.callback_data.as_history() if ctx.callback_data is not None else [],
-            ).pack(),
+            callback_data=cbs.OpenAutoDeliveryRuleAction(from_callback=ctx.callback_data).pack(),
             row=True,
         )
         menu.footer_keyboard.insert(0, btn)

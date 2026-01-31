@@ -36,10 +36,8 @@ class GoodsSourcesListMenuBuilder(
                 text=f'[{len(source)}] {source.display_id}',
                 callback_data=cbs.OpenMenu(
                     menu_id=MenuIds.goods_source_info,
-                    context_data={
-                        'source_id': source.source_id,
-                    },
-                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                    context_data={'source_id': source.source_id},
+                    from_callback=ctx.callback_data,
                 ).pack(),
             )
 
@@ -47,9 +45,7 @@ class GoodsSourcesListMenuBuilder(
         footer_kb.add_callback_button(
             button_id='add_text_source',
             text=translater.translate('$add_txt_goods_source'),
-            callback_data=cbs.AddGoodsTxtSource(
-                history=ctx.callback_data.as_history() if ctx.callback_data else [],
-            ).pack(),
+            callback_data=cbs.AddGoodsTxtSource(from_callback=ctx.callback_data).pack(),
         )
 
         return Menu(
@@ -80,7 +76,7 @@ class GoodsSourceInfoMenuBuilder(
                 text=translater.translate('$download_goods'),
                 callback_data=cbs.DownloadGoods(
                     source_id=source.source_id,
-                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                    from_callback=ctx.callback_data,
                 ).pack(),
             ),
             Button.callback_button(
@@ -88,7 +84,7 @@ class GoodsSourceInfoMenuBuilder(
                 text=translater.translate('$upload_goods'),
                 callback_data=cbs.UploadGoods(
                     source_id=source.source_id,
-                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                    from_callback=ctx.callback_data,
                 ).pack(),
             ),
         )
@@ -99,7 +95,7 @@ class GoodsSourceInfoMenuBuilder(
                 text=translater.translate('$add_goods'),
                 callback_data=cbs.AddGoods(
                     source_id=source.source_id,
-                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                    from_callback=ctx.callback_data,
                 ).pack(),
             ),
             Button.callback_button(
@@ -107,7 +103,7 @@ class GoodsSourceInfoMenuBuilder(
                 text=translater.translate('$remove_goods'),
                 callback_data=cbs.RemoveGoods(
                     source_id=source.source_id,
-                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                    from_callback=ctx.callback_data,
                 ).pack(),
             ),
         )
@@ -117,7 +113,7 @@ class GoodsSourceInfoMenuBuilder(
             text=translater.translate('$reload_goods_source'),
             callback_data=cbs.ReloadGoodsSource(
                 source_id=source.source_id,
-                history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                from_callback=ctx.callback_data,
             ).pack(),
         )
 
@@ -133,7 +129,13 @@ class GoodsSourceInfoMenuBuilder(
             goods_source=translater.translate(source.display_source),
         )
         text += '\n\n'
-        text += f'<pre><code class="language-{translater.translate("$goods_inline_text")} {min_index + 1}-{max_index + 1}">{goods_text}</code></pre>\n'
+        text += (
+            f'<pre>'
+            f'<code class="language-{translater.translate("$goods_inline_text")} '
+            f'{min_index + 1}-{max_index + 1}">'
+            f'{goods_text}'
+            f'</code></pre>\n'
+        )
 
         return Menu(
             text=text,

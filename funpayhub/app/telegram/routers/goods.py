@@ -352,17 +352,12 @@ async def add_auto_delivery_rule(
     callback_data: cbs.OpenAutoDeliveryRuleAction,
     tg_ui: UIRegistry,
 ):
-    fake_callback = cbs.OpenMenu(
-        menu_id=MenuIds.add_auto_delivery_rule,
-        history=callback_data.history,
-    )
-
     ctx = MenuContext(
         trigger=query,
         menu_id=MenuIds.add_auto_delivery_rule,
-        data={
-            'callback_data': fake_callback,
-        },
+        callback_override=callback_data.copy_history(
+            cbs.OpenMenu(menu_id=MenuIds.add_auto_delivery_rule),
+        ),
     )
 
     menu = await tg_ui.build_menu(ctx)

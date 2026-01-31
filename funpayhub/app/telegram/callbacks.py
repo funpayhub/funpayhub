@@ -165,13 +165,6 @@ class SendMessage(CallbackData, Pageable, identifier='sm'):
     to: int | str
     name: str
 
-    # todo:
-    # Временный костыль.
-    # Т.к. кнопки навигации попросту подставляют тот же CallbackQuery, но с другой страницей,
-    # срабатывает тот же хэндлер, который высылает новое сообщение + устанавливает заново стейт.
-    # Решение - при создании контекста меню подменить историю коллбэков на OpenMenu(data).
-    set_state: bool = True
-
 
 class SendTemplate(CallbackData, identifier='st'):
     to: int | str

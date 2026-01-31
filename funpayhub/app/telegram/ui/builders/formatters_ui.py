@@ -29,7 +29,6 @@ class FormatterListMenuBuilder(
         translater: Translater,
     ) -> Menu:
         keyboard = KeyboardBuilder()
-        callback_data = ctx.callback_data
 
         if ctx.data.get('by_category'):
             for cat_id in fp_formatters._categories_to_formatters.keys():
@@ -42,7 +41,7 @@ class FormatterListMenuBuilder(
                     callback_data=cbs.OpenMenu(
                         menu_id=MenuIds.formatters_list,
                         data={'query': category.id},
-                        history=callback_data.as_history() if callback_data is not None else [],
+                        from_callback=ctx.callback_data,
                     ).pack(),
                 )
         else:
@@ -59,7 +58,7 @@ class FormatterListMenuBuilder(
                     callback_data=cbs.OpenMenu(
                         menu_id=MenuIds.formatter_info,
                         data={'formatter_id': formatter.key},
-                        history=callback_data.as_history() if callback_data is not None else [],
+                        from_callback=ctx.callback_data,
                     ).pack(),
                 )
 
@@ -76,7 +75,7 @@ class FormatterListMenuBuilder(
                 callback_data=cbs.OpenMenu(
                     menu_id=MenuIds.formatters_list,
                     data={'by_category': not bool(ctx.data.get('by_category'))},
-                    history=callback_data.history if callback_data is not None else [],
+                    history=ctx.callback_data.history if ctx.callback_data is not None else [],
                 ).pack(),
             )
 

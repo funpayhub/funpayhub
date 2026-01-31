@@ -211,6 +211,7 @@ class MenuContext:
     thread_id: int | None = None
     message_id: int | None = None
     trigger: Message | CallbackQuery | None = None
+    callback_override: UnknownCallback | None = None
     data: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -225,8 +226,12 @@ class MenuContext:
 
     @property
     def callback_data(self) -> UnknownCallback | None:
-        if isinstance(self.data.get('callback_data', None), UnknownCallback):
+        if self.callback_override is not None:
+            return self.callback_override
+
+        if isinstance(self.data.get('callback_data', None), UnknownCallback):  # todo: remove
             return self.data.get('callback_data')
+
         if isinstance(self.trigger, CallbackQuery):
             if hasattr(self.trigger, '__parsed__'):
                 return getattr(self.trigger, '__parsed__')

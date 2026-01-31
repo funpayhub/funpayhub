@@ -25,6 +25,7 @@ _ALLOWED = set(string.ascii_letters + string.digits + '._-')
 class UnknownCallback(BaseModel):
     identifier: str = Field(frozen=True)
     history: list[str] = Field(default_factory=list, exclude=True)
+    from_callback: UnknownCallback | None = Field(default=None, exclude=True)
     data: dict[str, Any] = Field(default_factory=dict, exclude=True)
     unsigned_data: list[Any] = Field(default_factory=list, exclude=True)
     compact: bool = Field(default=False, exclude=True)
@@ -32,7 +33,7 @@ class UnknownCallback(BaseModel):
     def pack(self, include_history: bool = True, hash: bool = True) -> str:
         result = (repr(self.data) if self.data else '') + self.identifier
         if include_history:
-            result = join_callbacks(*self.history, result)
+            result = join_callbacks(*self.full_history, result)
 
         if hash:
             result = HashinatorT1000.hash(result)
@@ -52,7 +53,7 @@ class UnknownCallback(BaseModel):
         return result
 
     def pack_history(self, hash: bool = True) -> str:
-        result = join_callbacks(*self.history)
+        result = join_callbacks(*self.full_history)
         if hash:
             result = HashinatorT1000.hash(result)
         return result
@@ -146,6 +147,16 @@ class UnknownCallback(BaseModel):
 
         return identifier
 
+    @property
+    def full_history(self) -> list[str]:
+        history = self.from_callback.as_history() if self.from_callback is not None else []
+        return history + self.history
+
+    def copy_history[R: UnknownCallback](self, other: R) -> R:
+        other.from_callback = self.from_callback
+        other.history = copy(self.history)
+        return other
+
 
 class CallbackData(UnknownCallback):
     if TYPE_CHECKING:
@@ -174,7 +185,7 @@ class CallbackData(UnknownCallback):
         data = self.data | data
         result = (repr(data) if data else '') + self.__identifier__
         if include_history:
-            result = join_callbacks(*self.history, result)
+            result = join_callbacks(*self.full_history, result)
         if not result.startswith('!'):
             result = '!' + result
         if hash:

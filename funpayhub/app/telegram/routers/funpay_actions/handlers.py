@@ -32,26 +32,32 @@ async def set_sending_message_state(
 ) -> None:
     menu_context = SendMessageMenuContext(
         menu_id=MenuIds.send_funpay_message,
+        trigger=query,
         funpay_chat_id=callback_data.to,
         funpay_chat_name=callback_data.name,
-        trigger=query,
-        menu_page=callback_data.menu_page,
-        view_page=callback_data.view_page,
+        callback_override=callback_data.copy_history(
+            cbs.OpenMenu(
+                menu_id=MenuIds.send_funpay_message,
+                context_data={
+                    'funpay_chat_id': callback_data.to,
+                    'funpay_chat_name': callback_data.name,
+                },
+            ),
+        ),
     )
-    menu = await tg_ui.build_menu(menu_context)
-    if callback_data.set_state:
-        msg = await query.message.answer(
-            text=menu.text,
-            reply_markup=menu.total_keyboard(convert=True),
-        )
 
-        await state.set_state(states.SendingFunpayMessage.__identifier__)
-        await state.set_data(
-            {'data': states.SendingFunpayMessage(message=msg, to=callback_data.to)},
-        )
-        await query.answer()
-    else:
-        await menu.apply_to(query.message)
+    menu = await tg_ui.build_menu(menu_context)
+
+    msg = await query.message.answer(
+        text=menu.text,
+        reply_markup=menu.total_keyboard(convert=True),
+    )
+
+    await state.set_state(states.SendingFunpayMessage.__identifier__)
+    await state.set_data(
+        {'data': states.SendingFunpayMessage(message=msg, to=callback_data.to)},
+    )
+    await query.answer()
 
 
 @router.message(StateFilter(states.SendingFunpayMessage.identifier))
