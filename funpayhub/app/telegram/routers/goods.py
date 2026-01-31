@@ -330,7 +330,7 @@ async def add_auto_delivery_rule(
     callback_data: cbs.OpenAutoDeliveryRuleAction,
     tg_ui: UIRegistry,
 ):
-    await MenuContext(
+    msg = await MenuContext(
         trigger=query,
         menu_id=MenuIds.add_auto_delivery_rule,
         callback_override=callback_data.copy_history(
