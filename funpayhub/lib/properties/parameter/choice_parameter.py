@@ -6,7 +6,7 @@ __all__ = ['ChoiceParameter', 'Choice']
 
 from typing import TYPE_CHECKING, Any
 from dataclasses import dataclass
-from types import MappingProxyType
+from types import EllipsisType, MappingProxyType
 from collections.abc import Callable, Iterable, Awaitable
 
 from funpayhub.lib.properties.parameter.base import MutableParameter
@@ -39,7 +39,7 @@ class ChoiceParameter[T: int | float | bool | str](MutableParameter[str]):
         description: str,
         choices: tuple[Choice[T], ...],
         default_value: str,
-        validator: Callable[[str], Awaitable[None]] | type[Ellipsis] = ...,
+        validator: Callable[[str], Awaitable[None]] | EllipsisType = ...,
         flags: Iterable[Any] | None = None,
     ) -> None:
         if not choices:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+from types import EllipsisType
 from asyncio import Lock
 from collections.abc import Callable, Iterable, Awaitable
 
@@ -12,6 +13,9 @@ if TYPE_CHECKING:
 
 
 class Parameter[ValueT](Entry):
+    if TYPE_CHECKING:
+        parent: Properties | None
+
     def __init__(
         self,
         *,
@@ -45,17 +49,7 @@ class Parameter[ValueT](Entry):
         """Значение параметра."""
         return self._value
 
-    @property
-    def parent(self) -> Properties | None:
-        """
-        Категория параметров, к которой принадлежит данный параметр.
-
-        Из-за особенности архитектуры параметры **всегда** принадлежат какой-то категории
-        (имеют родителя).
-        """
-        return super().parent  # type: ignore  # always has a parent
-
-    @parent.setter
+    @Entry.parent.setter
     def parent(self, value: Properties | None) -> None:
         from ..properties import Properties
 
@@ -71,16 +65,19 @@ class Parameter[ValueT](Entry):
 
 
 class MutableParameter[ValueT](Parameter[ValueT]):
+    if TYPE_CHECKING:
+        parent: Properties | None
+
     def __init__(
         self,
         *,
         id: str,
         name: str,
         description: str,
-        default_value: ValueT | type[Ellipsis] = ...,
-        default_factory: Callable[[], ValueT] | type[Ellipsis] = ...,
+        default_value: ValueT | EllipsisType = ...,
+        default_factory: Callable[[], ValueT] | EllipsisType = ...,
         converter: Callable[[Any], ValueT],
-        validator: Callable[[ValueT], Awaitable[None]] | type[Ellipsis] = ...,
+        validator: Callable[[ValueT], Awaitable[None]] | EllipsisType = ...,
         flags: Iterable[Any] | None = None,
     ) -> None:
         """
@@ -128,7 +125,14 @@ class MutableParameter[ValueT](Parameter[ValueT]):
     def default_value(self) -> ValueT:
         if self._default_value is not Ellipsis:
             return self._default_value
-        return self._default_factory()
+
+        if self._default_factory is not Ellipsis:
+            return self._default_factory()
+
+        raise RuntimeError(
+            f'Unable to produce default value for parameter {self.id!r}: '
+            f'neither default value nor default_factory was provided.',
+        )
 
     async def set_value(
         self,
@@ -179,7 +183,7 @@ class MutableParameter[ValueT](Parameter[ValueT]):
 
         :param value: Значение, которое необходимо валидировать.
         """
-        if not isinstance(self._validator, type(Ellipsis)):
+        if not isinstance(self._validator, EllipsisType):
             await self._validator(value)
 
     async def save(self) -> None:
@@ -191,7 +195,7 @@ class MutableParameter[ValueT](Parameter[ValueT]):
                 'Cannot save parameter value because it is not attached to any '
                 '`Properties` instance.',
             )
-        self.parent.save()
+        await self.parent.save()
 
     async def set_validator(
         self,

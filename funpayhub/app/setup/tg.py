@@ -128,7 +128,7 @@ class FinishedMiddleware(BaseMiddleware):
         try:
             await handler(event, data)
         except Finished:
-            hub.properties.save()
+            await hub.properties.save()
             await msg.answer(translater.translate('$setup_finished'))
             await hub.shutdown(exit_codes.RESTART)
 

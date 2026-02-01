@@ -126,7 +126,8 @@ class Properties(Entry):
         if not isinstance(props, Properties):
             return None
 
-        props = self._entries.pop(properties_id)
+        self._entries.pop(properties_id)
+        props.parent = None
         return props
 
     def as_dict(
@@ -146,14 +147,14 @@ class Properties(Entry):
                 total[v.id] = v.as_dict()
         return total
 
-    def save(
+    async def save(
         self,
         same_file_only: bool = False,
     ) -> None:
         if not self._file:
-            if not self.parent:
-                raise RuntimeError('Unable to save')
-            self.parent.save(same_file_only=same_file_only)
+            if self.parent is None:
+                raise RuntimeError(f'Unable to save properties {self.id!r}: parent is None.')
+            await self.parent.save(same_file_only=same_file_only)
             return
 
         if not os.path.exists(self._file):
@@ -166,15 +167,17 @@ class Properties(Entry):
         if not same_file_only:
             for props in self.chain_to_tail:
                 if props._file and props.file_to_save != self.file_to_save:
-                    props.save()  # todo
+                    await props.save()  # todo
 
     async def load(self) -> None:
         data = {}
         if self.file and os.path.exists(self.file):
             with open(self.file, 'r', encoding='utf-8') as f:
                 data = tomllib.loads(f.read())
+        await self.load_from_dict(data)
 
-        await self._set_values(data)
+    async def load_from_dict(self, properties_dict: dict[str, Any]) -> None:
+        await self._set_values(properties_dict)
 
     async def _set_values(self, values: dict[str, Any]) -> None:
         for v in self._entries.values():

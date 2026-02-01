@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+from types import EllipsisType
 from collections.abc import Callable, Iterable, Awaitable
 
 from funpayhub.lib.properties.parameter.base import MutableParameter
@@ -15,7 +16,7 @@ class StringParameter(MutableParameter[str]):
         name: str,
         description: str,
         default_value: str,
-        validator: Callable[[str], Awaitable[None]] | type[Ellipsis] = ...,
+        validator: Callable[[str], Awaitable[None]] | EllipsisType = ...,
         flags: Iterable[Any] | None = None,
     ) -> None:
         super().__init__(

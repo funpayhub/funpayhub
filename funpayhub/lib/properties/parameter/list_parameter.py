@@ -5,6 +5,7 @@ __all__ = ['ListParameter']
 
 from typing import Any
 from copy import copy
+from types import EllipsisType
 from collections.abc import Callable, Iterable, Awaitable
 
 from funpayhub.lib.properties.parameter.base import MutableParameter
@@ -21,11 +22,11 @@ class ListParameter[ItemType: ALLOWED_TYPES](MutableParameter[list[ItemType]]):
         name: str,
         description: str,
         default_factory: Callable[[], list[ItemType]],
-        validator: Callable[[list[ItemType]], Awaitable[None]] | type[Ellipsis] = ...,
+        validator: Callable[[list[ItemType]], Awaitable[None]] | EllipsisType = ...,
         add_item_validator: Callable[[list[ItemType], ItemType], Awaitable[None]]
-        | type[Ellipsis] = ...,
+        | EllipsisType = ...,
         remove_item_validator: Callable[[list[ItemType], ItemType], Awaitable[None]]
-        | type[Ellipsis] = ...,
+        | EllipsisType = ...,
         flags: Iterable[Any] | None = None,
     ) -> None:
         super().__init__(
@@ -91,12 +92,12 @@ class ListParameter[ItemType: ALLOWED_TYPES](MutableParameter[list[ItemType]]):
             if save:
                 await self.save()
 
-    async def add_item_validate(self, item: ItemType):
-        if not isinstance(self._add_item_validator, type(Ellipsis)):
+    async def add_item_validate(self, item: ItemType) -> None:
+        if not isinstance(self._add_item_validator, EllipsisType):
             await self._add_item_validator(copy(self._value), item)
 
-    async def remove_item_validate(self, item: ItemType):
-        if not isinstance(self._remove_item_validator, type(Ellipsis)):
+    async def remove_item_validate(self, item: ItemType) -> None:
+        if not isinstance(self._remove_item_validator, EllipsisType):
             await self._remove_item_validator(copy(self._value), item)
 
     @property

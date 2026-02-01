@@ -76,7 +76,7 @@ async def add_command(
         return
 
     entry = props.add_entry(message.text)
-    props.save(same_file_only=True)
+    await props.save(same_file_only=True)
 
     asyncio.create_task(hub.emit_properties_attached_event(entry))
     await dispatcher.feed_update(

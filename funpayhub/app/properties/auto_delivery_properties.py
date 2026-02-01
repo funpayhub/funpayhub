@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-import tomllib
 from typing import TYPE_CHECKING, Any, NoReturn
 from types import MappingProxyType
 
@@ -9,6 +7,9 @@ from funpayhub.lib.properties import Properties, StringParameter, ToggleParamete
 
 
 class AutoDeliveryEntryProperties(Properties):
+    if TYPE_CHECKING:
+        parent: AutoDeliveryProperties | None
+
     def __init__(self, offer_name: str) -> None:
         super().__init__(
             id=offer_name,
@@ -52,13 +53,9 @@ class AutoDeliveryEntryProperties(Properties):
             ),
         )
 
-    if TYPE_CHECKING:
-        @property
-        def parent(self) -> AutoDeliveryProperties | None: ...
-
     @Properties.parent.setter
-    def parent(self, value: Properties) -> None:
-        if not isinstance(value, AutoDeliveryProperties):
+    def parent(self, value: Properties | None) -> None:
+        if value is not None and not isinstance(value, AutoDeliveryProperties):
             raise TypeError(
                 f'{self.__class__.__name__!r} must be attached only to '
                 f'{AutoDeliveryProperties.__name__!r}.',
@@ -90,16 +87,11 @@ class AutoDeliveryProperties(Properties):
             )
         return super().attach_properties(properties)
 
-    async def load(self) -> None:
-        if not os.path.exists(self.file):
-            return
-        with open(self.file, 'r', encoding='utf-8') as f:
-            data = tomllib.loads(f.read())
-
+    async def load_from_dict(self, properties_dict: dict[str, Any]) -> None:
         self._entries = {}
-        for i in data:
+        for i in properties_dict:
             obj = AutoDeliveryEntryProperties(offer_name=i)
-            await obj._set_values(data[i])
+            await obj._set_values(properties_dict[i])
             super().attach_properties(obj)
 
     def add_entry(self, offer_name: str) -> AutoDeliveryEntryProperties:

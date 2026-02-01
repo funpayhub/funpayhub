@@ -399,7 +399,7 @@ async def delete_auto_delivery_rule(
         return
 
     properties.auto_delivery.deattach_properties(callback_data.rule)
-    properties.auto_delivery.save()
+    await properties.auto_delivery.save()
 
     await EntryMenuContext(
         trigger=query,
