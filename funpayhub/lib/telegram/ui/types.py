@@ -348,7 +348,7 @@ class MenuModification:
                 f'accepts at least two positional argument: `context` and `menu`.',
             )
 
-        if not getattr(cls, 'modification_id', None):
+        if not getattr(cls, '__modification_id__', None):
             if not modification_id:
                 raise TypeError(
                     f"{cls.__name__} must be defined with keyword argument 'modification_id'. "
@@ -469,7 +469,7 @@ class ButtonModification:
                 f'accepts at least two positional argument: `context` and `button`.',
             )
 
-        if not getattr(cls, 'modification_id', None):
+        if not getattr(cls, '__modification_id__', None):
             if not modification_id:
                 raise TypeError(
                     f"{cls.__name__} must be defined with keyword argument 'modification_id'. "

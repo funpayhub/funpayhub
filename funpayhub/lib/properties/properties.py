@@ -135,6 +135,14 @@ class Properties(Entry):
         self._entries[properties.id] = properties
         return properties
 
+    def deattach_properties(self, properties_id: str) -> Properties | None:
+        props = self._entries.get(properties_id)
+        if not isinstance(props, Properties):
+            return None
+
+        props = self._entries.pop(properties_id)
+        return props
+
     def as_dict(
         self,
         same_file_only: bool = True,

@@ -18,19 +18,29 @@ _STATES: set[str] = set()
 class State:
     if TYPE_CHECKING:
         __identifier__: str
+        identifier: str
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
-        if 'identifier' not in kwargs:
-            raise ValueError(
-                f'identifier required, usage example: '
-                f"`class {cls.__name__}(State, identifier='my_state'): ...`",
-            )
-        identifier = kwargs.pop('identifier')
-        if identifier in _STATES:
-            warnings.warn(f'State with identifier {identifier} already exists.')
-        else:
-            _STATES.add(identifier)
-        cls.__identifier__ = identifier
+        identifier = kwargs.pop('identifier', None)
+
+        if not getattr(cls, '__identifier__', None):
+            if not identifier:
+                raise TypeError(
+                    f"{cls.__name__} must be defined with keyword argument 'identifier'. "
+                    f'Got: {identifier=}.',
+                )
+
+            if not isinstance(identifier, str):
+                raise ValueError(
+                    f"'identifier' must be a string, not {type(identifier)}.",
+                )
+
+        if identifier is not None:
+            if identifier in _STATES:
+                warnings.warn(f'State with identifier {identifier} already exists.')
+            else:
+                _STATES.add(identifier)
+            cls.__identifier__ = identifier
 
         super().__init_subclass__(**kwargs)
 
