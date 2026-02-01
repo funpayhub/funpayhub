@@ -72,9 +72,13 @@ class Node:
 
     @parent.setter
     def parent(self, value: Properties | None) -> None:
+        if value is None:
+            self._parent = None
+            return
+
         from .properties import Properties
 
-        if value is not None and self.parent is not None:
+        if self.parent is not None:
             raise RuntimeError(f'Node {self.id!r} already has a parent {self.parent.id!r}.')
         if not isinstance(value, Properties):
             raise ValueError('Parent of Node must be an instance of `Properties`.')

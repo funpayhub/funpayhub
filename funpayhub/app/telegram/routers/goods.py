@@ -316,6 +316,7 @@ async def add_auto_delivery_rule(
         return
 
     entry = properties.auto_delivery.add_entry(callback_data.rule)
+    await properties.auto_delivery.save()
 
     await EntryMenuContext(
         trigger=query,
@@ -366,6 +367,7 @@ async def add_auto_delivery_rule_from_message(
 
     data: states.AddingAutoDeliveryRule = (await state.get_data())['data']
     entry = properties.auto_delivery.add_entry(msg.text)
+    await properties.auto_delivery.save()
 
     await EntryMenuContext(
         trigger=msg,
