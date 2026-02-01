@@ -12,20 +12,20 @@ class ChatSyncProperties(Properties):
             file='config/chat_sync.toml',
         )
 
-        self.sync_chat_id = self.attach_parameter(
+        self.sync_chat_id = self.attach_node(
             IntParameter(
                 id='sync_chat_id',
                 name='ID чата синхронизации',
                 description='ID чата с темами, в который будут присылаться сообщения.',
                 default_value=0,
-            ),
+            )
         )
 
-        self.bot_tokens = self.attach_parameter(
+        self.bot_tokens = self.attach_node(
             ListParameter(
                 id='bot_tokens',
                 name='Токены Telegram ботов',
                 description='Токены Telegram ботов для отправки сообщений в темы.',
                 default_factory=list,
-            ),
+            )
         )

@@ -5,17 +5,14 @@ from types import EllipsisType
 from asyncio import Lock
 from collections.abc import Callable, Iterable, Awaitable
 
-from funpayhub.lib.properties.base import Entry
+from funpayhub.lib.properties.base import Node
 
 
 if TYPE_CHECKING:
     from funpayhub.lib.properties import Properties
 
 
-class Parameter[ValueT](Entry):
-    if TYPE_CHECKING:
-        parent: Properties | None
-
+class Parameter[ValueT](Node):
     def __init__(
         self,
         *,
@@ -48,16 +45,6 @@ class Parameter[ValueT](Entry):
     def value(self) -> ValueT:
         """Значение параметра."""
         return self._value
-
-    @Entry.parent.setter
-    def parent(self, value: Properties | None) -> None:
-        from ..properties import Properties
-
-        if value and self.parent:
-            raise RuntimeError('Already has a parent.')
-        if value is not None and not isinstance(value, Properties):
-            raise ValueError('Parent of parameter must be an instance of `Properties`.')
-        self._parent = value
 
     @property
     def serialized_value(self) -> Any:
@@ -199,10 +186,10 @@ class MutableParameter[ValueT](Parameter[ValueT]):
 
     async def set_validator(
         self,
-        validator: Callable[[ValueT], None],
+        validator: Callable[[ValueT], Awaitable[None]] | EllipsisType,
         validate: bool = False,
     ) -> None:
-        self._validator = validator
+        self._validator = validator if validator is not None else Ellipsis
         if validate:
             await self.validate(self.value)
 

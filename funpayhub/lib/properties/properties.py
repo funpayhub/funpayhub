@@ -6,22 +6,17 @@ __all__ = ['Properties']
 
 import os
 import tomllib
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from types import MappingProxyType
 from collections.abc import Iterable, Generator
 
 import tomli_w
 
-from .base import Entry
+from .base import Node
 from .parameter.base import Parameter, MutableParameter
 
 
-class Properties(Entry):
-    if TYPE_CHECKING:
-        parent: Properties | None
-        root: Properties
-        chain_to_root: Generator[Properties, None, None]
-
+class Properties(Node):
     def __init__(
         self,
         *,
@@ -47,7 +42,7 @@ class Properties(Entry):
             используется файл родительской категории.
         """
         self._file = file
-        self._entries: dict[str, Properties | Parameter[Any] | MutableParameter[Any]] = {}
+        self._nodes: dict[str, Node] = {}
 
         super().__init__(
             id=id,
@@ -55,17 +50,6 @@ class Properties(Entry):
             description=description,
             flags=flags,
         )
-
-    @Entry.parent.setter
-    def parent(self, value: Properties) -> None:
-        if not isinstance(value, Properties):
-            raise TypeError('Parent should be an instance of Properties.')
-        if self.parent is not None:
-            raise ValueError('Already has a parent')
-        if value is self:
-            raise ValueError('Cannot attach properties to itself.')
-        # todo: better checks
-        self._parent = value
 
     @property
     def chain_to_tail(self) -> Generator[Properties, None, None]:
@@ -75,7 +59,7 @@ class Properties(Entry):
         :yield: Текущая категория и все вложенные конечные категории (без дочерних элементов).
         """
         yield self
-        for entry in self._entries.values():
+        for entry in self._nodes.values():
             if isinstance(entry, Properties):
                 yield from entry.chain_to_tail
 
@@ -97,38 +81,28 @@ class Properties(Entry):
     @property
     def entries(
         self,
-    ) -> MappingProxyType[str, Parameter[Any] | MutableParameter[Any] | Properties]:
+    ) -> MappingProxyType[str, Node]:
         """
         Неизменяемый словарь со всеми вложенными элементами (параметрами / подкатегориями).
         """
-        return MappingProxyType(self._entries)
+        return MappingProxyType(self._nodes)
 
-    def attach_parameter[T: Parameter[Any]](self, param: T) -> T:
-        if not isinstance(param, Parameter):
-            raise ValueError('Parameter should be an instance of Parameter.')
-        if param.id in self._entries:
-            raise RuntimeError(f'Entry with ID {param.id!r} already exists.')
-        param.parent = self
-        self._entries[param.id] = param
-        return param
+    def attach_node[T: Node](self, node: T) -> T:
+        if node.id in self._nodes:
+            raise ValueError(f'Node with ID {node.id!r} already exists.')
 
-    def attach_properties[P: Properties](self, properties: P) -> P:
-        if not isinstance(properties, Properties):
-            raise ValueError('Properties must be an instance of Properties.')
-        if properties.id in self._entries:
-            raise RuntimeError(f'Entry with ID {properties.id!r} already exists.')
-        properties.parent = self
-        self._entries[properties.id] = properties
-        return properties
+        node.parent = self
+        self._nodes[node.id] = node
+        return node
 
-    def deattach_properties(self, properties_id: str) -> Properties | None:
-        props = self._entries.get(properties_id)
-        if not isinstance(props, Properties):
+    def deattach_node(self, node_id: str) -> Properties | None:
+        node = self._nodes.get(node_id)
+        if not isinstance(node, Properties):
             return None
 
-        self._entries.pop(properties_id)
-        props.parent = None
-        return props
+        self._nodes.pop(node_id)
+        node.parent = None
+        return node
 
     def as_dict(
         self,
@@ -136,7 +110,7 @@ class Properties(Entry):
         exclude_immutable_parameters: bool = True,
     ) -> dict[str, Any]:
         total: dict[str, Any] = {}
-        for v in self._entries.values():
+        for v in self._nodes.values():
             if isinstance(v, Parameter):
                 if not isinstance(v, MutableParameter) and exclude_immutable_parameters:
                     continue
@@ -180,7 +154,7 @@ class Properties(Entry):
         await self._set_values(properties_dict)
 
     async def _set_values(self, values: dict[str, Any]) -> None:
-        for v in self._entries.values():
+        for v in self._nodes.values():
             if isinstance(v, Properties) and v.file:
                 await v.load()
             elif v.id not in values:
@@ -241,8 +215,8 @@ class Properties(Entry):
     def __len__(self) -> int:
         return len(self.entries)
 
-    def __getitem__(self, item: str) -> Properties | Parameter[Any] | MutableParameter[Any]:
-        return self._entries[item]
+    def __getitem__(self, item: str) -> Node:
+        return self._nodes[item]
 
     def __contains__(self, item: str) -> bool:
-        return item in self._entries
+        return item in self._nodes

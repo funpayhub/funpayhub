@@ -22,11 +22,11 @@ class PluginProperties(Properties):
             description='$props:plugin_properties:description',
         )
 
-        self.disabled_plugins = self.attach_parameter(
+        self.disabled_plugins = self.attach_node(
             ListParameter(
                 id='disabled_plugins',
                 name='$props:plugin_properties:disabled_plugins:name',
                 description='$props:plugin_properties:disabled_plugins:description',
                 default_factory=list,
-            ),
+            )
         )

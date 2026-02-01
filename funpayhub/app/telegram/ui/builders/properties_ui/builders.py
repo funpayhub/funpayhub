@@ -8,7 +8,7 @@ from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties import Properties, MutableParameter, parameter as param
 from funpayhub.app.telegram.ui import premade
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
-from funpayhub.lib.properties.base import Entry
+from funpayhub.lib.properties.base import Node
 from funpayhub.app.properties.flags import (
     ParameterFlags,
     ParameterFlags as PropsFlags,
@@ -117,7 +117,7 @@ class OpenParamMenuButtonBuilder(
         )
 
 
-def _entry_text(entry: Entry, translater: Translater) -> str:
+def _entry_text(entry: Node, translater: Translater) -> str:
     return f"""<u><b>{translater.translate(entry.name)}</b></u>
 
 <i>{translater.translate(entry.description)}</i>

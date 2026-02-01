@@ -11,38 +11,38 @@ class TogglesProperties(Properties):
             description='$props.toggles:description',
         )
 
-        self.auto_delivery = self.attach_parameter(
+        self.auto_delivery = self.attach_node(
             ToggleParameter(
                 id='auto_delivery',
                 name='$props.toggles.auto_delivery:name',
                 description='$props.toggles.auto_delivery:description',
                 default_value=True,
-            ),
+            )
         )
 
-        self.auto_restock = self.attach_parameter(
+        self.auto_restock = self.attach_node(
             ToggleParameter(
                 id='auto_restock',
                 name='$props.toggles.auto_restock:name',
                 description='$props.toggles.auto_restock:description',
                 default_value=True,
-            ),
+            )
         )
 
-        self.auto_response = self.attach_parameter(
+        self.auto_response = self.attach_node(
             ToggleParameter(
                 id='auto_response',
                 name='$props.toggles.auto_response:name',
                 description='$props.toggles.auto_response:description',
                 default_value=True,
-            ),
+            )
         )
 
-        self.auto_raise = self.attach_parameter(
+        self.auto_raise = self.attach_node(
             ToggleParameter(
                 id='auto_raise',
                 name='$props.toggles.auto_raise:name',
                 description='$props.toggles.auto_raise:description',
                 default_value=True,
-            ),
+            )
         )

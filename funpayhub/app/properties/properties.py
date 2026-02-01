@@ -25,26 +25,26 @@ class FunPayHubProperties(Properties):
             file='config/funpayhub.toml',
         )
 
-        self.version = self.attach_parameter(
+        self.version = self.attach_node(
             Parameter(
                 id='version',
                 name='version',
                 description='version',
                 value='0.2.6',
-            ),
+            )
         )
-        self.toggles = self.attach_properties(TogglesProperties())
-        self.general = self.attach_properties(GeneralProperties())
-        self.telegram = self.attach_properties(TelegramProperties())
-        self.auto_response = self.attach_properties(AutoResponseProperties())
-        self.auto_delivery = self.attach_properties(AutoDeliveryProperties())
-        self.review_reply = self.attach_properties(ReviewReplyProperties())
-        self.message_templates = self.attach_parameter(
+        self.toggles = self.attach_node(TogglesProperties())
+        self.general = self.attach_node(GeneralProperties())
+        self.telegram = self.attach_node(TelegramProperties())
+        self.auto_response = self.attach_node(AutoResponseProperties())
+        self.auto_delivery = self.attach_node(AutoDeliveryProperties())
+        self.review_reply = self.attach_node(ReviewReplyProperties())
+        self.message_templates = self.attach_node(
             ListParameter[str](
                 id='message_templates',
                 name='$props.message_templates:names',
                 description='$props:message_templates:description',
                 default_factory=list,
-            ),
+            )
         )
-        self.plugin_properties = self.attach_properties(PluginProperties())
+        self.plugin_properties = self.attach_node(PluginProperties())

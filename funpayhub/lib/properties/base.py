@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 
-__all__ = ['Entry']
+__all__ = ['Node']
 
 
-from typing import Any, Union, TypeVar, Callable
+from typing import TYPE_CHECKING, Any, Union, TypeVar, Callable
 from collections.abc import Iterable, Generator
+
+
+if TYPE_CHECKING:
+    from .properties import Properties
 
 
 ParamValueType = TypeVar('ParamValueType')
@@ -16,11 +20,11 @@ def resolve(value: CallableValue[ParamValueType]) -> ParamValueType:
     return value() if callable(value) else value
 
 
-class Entry:
+class Node:
     def __init__(
         self,
         *,
-        parent: Entry | None = None,
+        parent: Properties | None = None,
         id: str,
         name: CallableValue[str],
         description: CallableValue[str],
@@ -38,7 +42,7 @@ class Entry:
         :param flags: Флаги объекта.
         """
         if not id:
-            raise ValueError('Entry ID cannot be empty.')
+            raise ValueError('Node ID cannot be empty.')
 
         self._parent = parent
         self._id = id
@@ -62,9 +66,19 @@ class Entry:
         return resolve(self._description)
 
     @property
-    def parent(self) -> Entry | None:
+    def parent(self) -> Properties | None:
         """Родительский объект."""
         return self._parent
+
+    @parent.setter
+    def parent(self, value: Properties | None) -> None:
+        from .properties import Properties
+
+        if value is not None and self.parent is not None:
+            raise RuntimeError(f'Node {self.id!r} already has a parent {self.parent.id!r}.')
+        if not isinstance(value, Properties):
+            raise ValueError('Parent of Node must be an instance of `Properties`.')
+        self._parent = value
 
     @property
     def path(self) -> list[str]:
@@ -78,7 +92,7 @@ class Entry:
         return [*self.parent.path, self.id]
 
     @property
-    def root(self) -> Entry:
+    def root(self) -> Node:
         """Корневой объект."""
         return self.parent.root if self.parent is not None else self
 
@@ -91,7 +105,7 @@ class Entry:
         return self.parent is None
 
     @property
-    def chain_to_root(self) -> Generator[Entry, None, None]:
+    def chain_to_root(self) -> Generator[Node, None, None]:
         """
         Генератор до корневого объекта.
         """

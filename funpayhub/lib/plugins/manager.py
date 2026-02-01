@@ -298,7 +298,7 @@ class PluginManager:
         if (properties := await self._run_step(plugin.plugin.properties)) is None:
             return
 
-        self.hub.properties.plugin_properties.attach_properties(properties)
+        self.hub.properties.plugin_properties.attach_node(properties)
         await self.hub.properties.load()
         self.plugins[plugin.manifest.plugin_id].properties = properties
 

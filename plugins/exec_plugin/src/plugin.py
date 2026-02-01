@@ -29,31 +29,31 @@ class ExecPluginProperties(Properties):
             file='config/exec_plugin.toml',
         )
 
-        self.test_toggle = self.attach_parameter(
+        self.test_toggle = self.attach_node(
             ToggleParameter(
                 id='test_toggle_parameter',
                 name='Test Toggle Parameter',
                 description='Test Toggle Parameter',
                 default_value=False,
-            ),
+            )
         )
 
-        self.test_string = self.attach_parameter(
+        self.test_string = self.attach_node(
             StringParameter(
                 id='test_string_parameter',
                 name='Test String Parameter',
                 description='Test String Parameter',
                 default_value='',
-            ),
+            )
         )
 
-        self.test_list = self.attach_parameter(
+        self.test_list = self.attach_node(
             ListParameter(
                 id='test_list_parameter',
                 name='Test List Parameter',
                 description='Test List Parameter',
                 default_factory=list,
-            ),
+            )
         )
 
 

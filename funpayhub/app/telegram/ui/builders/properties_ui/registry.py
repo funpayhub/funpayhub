@@ -10,7 +10,7 @@ from dataclasses import replace
 from loggers import telegram_ui as logger
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds
-from funpayhub.lib.properties.base import Entry
+from funpayhub.lib.properties.base import Node
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
 from funpayhub.app.telegram.ui.builders.properties_ui.context import (
     EntryMenuContext,
@@ -24,13 +24,13 @@ if TYPE_CHECKING:
 
 class _EntriesUIRegistry:
     def __init__(self) -> None:
-        self._buttons: dict[type[Entry], str] = {}
+        self._buttons: dict[type[Node], str] = {}
         """Дефолтные фабрики кнопок параметров / категорий."""
 
-        self._menus: dict[type[Entry], str] = {}
+        self._menus: dict[type[Node], str] = {}
         """Дефолтные фабрики меню просмотра параметров / категорий."""
 
-    def get_button_builder(self, entry_type: Type[Entry]) -> str | None:
+    def get_button_builder(self, entry_type: Type[Node]) -> str | None:
         if entry_type in self._buttons:
             return self._buttons[entry_type]
         for type, builder in self._buttons.items():
@@ -38,7 +38,7 @@ class _EntriesUIRegistry:
                 return builder
         return None
 
-    def get_menu_builder(self, entry_type: Type[Entry]) -> str | None:
+    def get_menu_builder(self, entry_type: Type[Node]) -> str | None:
         if entry_type in self._menus:
             return self._menus[entry_type]
         for type, builder in self._menus.items():
@@ -48,7 +48,7 @@ class _EntriesUIRegistry:
 
     def add_button_builder(
         self,
-        entry_type: Type[Entry],
+        entry_type: Type[Node],
         button_builder_id: str,
         overwrite: bool = False,
     ) -> None:
@@ -64,7 +64,7 @@ class _EntriesUIRegistry:
 
     def add_menu_builder(
         self,
-        entry_type: Type[Entry],
+        entry_type: Type[Node],
         menu_builder_id: str,
         overwrite: bool = False,
     ) -> None:
