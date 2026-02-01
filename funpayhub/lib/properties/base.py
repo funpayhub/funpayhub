@@ -1,39 +1,15 @@
 from __future__ import annotations
 
 
-__all__ = [
-    'UNSET',
-    'Entry',
-]
+__all__ = ['Entry']
 
 
-import threading
 from typing import Any, Union, TypeVar, Callable
 from collections.abc import Iterable, Generator
 
 
 ParamValueType = TypeVar('ParamValueType')
 CallableValue = Union[ParamValueType, Callable[[], ParamValueType]]
-
-
-class _UNSET:
-    __slots__ = ()
-
-    _instance = None
-    _lock = threading.Lock()
-
-    def __new__(cls) -> _UNSET:
-        if cls._instance is None:
-            with cls._lock:
-                if cls._instance is None:
-                    cls._instance = super().__new__(cls)
-        return cls._instance
-
-    def __bool__(self) -> bool:
-        return False
-
-
-UNSET = _UNSET()
 
 
 def resolve(value: CallableValue[ParamValueType]) -> ParamValueType:
@@ -99,15 +75,12 @@ class Entry:
         """
         if self.parent is None:
             return []
-        path = self.parent.path
-        return [*path, self.id]
+        return [*self.parent.path, self.id]
 
     @property
     def root(self) -> Entry:
         """Корневой объект."""
-        if self.parent is None:
-            return self
-        return self.parent.root
+        return self.parent.root if self.parent is not None else self
 
     @property
     def is_root(self) -> bool:

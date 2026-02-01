@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from collections.abc import Callable, Iterable, Awaitable
 
-from funpayhub.lib.properties.base import UNSET, _UNSET
 from funpayhub.lib.properties.parameter.base import MutableParameter
 from funpayhub.lib.properties.parameter.converters import string_converter
 
@@ -40,7 +39,7 @@ class ChoiceParameter[T: int | float | bool | str](MutableParameter[str]):
         description: str,
         choices: tuple[Choice[T], ...],
         default_value: str,
-        validator: Callable[[str], Awaitable[None]] | _UNSET = UNSET,
+        validator: Callable[[str], Awaitable[None]] | type[Ellipsis] = ...,
         flags: Iterable[Any] | None = None,
     ) -> None:
         if not choices:

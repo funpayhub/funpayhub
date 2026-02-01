@@ -4,14 +4,11 @@ from typing import TYPE_CHECKING, Any
 from asyncio import Lock
 from collections.abc import Callable, Iterable, Awaitable
 
-from funpayhub.lib.properties.base import UNSET, _UNSET, Entry
+from funpayhub.lib.properties.base import Entry
 
 
 if TYPE_CHECKING:
     from funpayhub.lib.properties import Properties
-
-
-_NOT_SET = object()
 
 
 class Parameter[ValueT](Entry):
@@ -80,10 +77,10 @@ class MutableParameter[ValueT](Parameter[ValueT]):
         id: str,
         name: str,
         description: str,
-        default_value: ValueT | _NOT_SET = _NOT_SET,
-        default_factory: Callable[[], ValueT] | _NOT_SET = _NOT_SET,
+        default_value: ValueT | type[Ellipsis] = ...,
+        default_factory: Callable[[], ValueT] | type[Ellipsis] = ...,
         converter: Callable[[Any], ValueT],
-        validator: Callable[[ValueT], Awaitable[None]] | _UNSET = UNSET,
+        validator: Callable[[ValueT], Awaitable[None]] | type[Ellipsis] = ...,
         flags: Iterable[Any] | None = None,
     ) -> None:
         """
@@ -104,11 +101,11 @@ class MutableParameter[ValueT](Parameter[ValueT]):
             принимает уже конвертированный объект и проверяет его валидность.
             Если значение невалидно, должна бросать `ValueError` с текстом ошибки.
         """
-        if default_value is _NOT_SET and default_factory is _NOT_SET:
+        if default_value is Ellipsis and default_factory is Ellipsis:
             raise ValueError(
                 'Expected exactly one of default_value or default_factory, but neither was provided.',
             )
-        if default_value is not _NOT_SET and default_factory is not _NOT_SET:
+        if default_value is not Ellipsis and default_factory is not Ellipsis:
             raise ValueError(
                 'Expected exactly one of default_value or default_factory, but both were provided.',
             )
@@ -129,7 +126,7 @@ class MutableParameter[ValueT](Parameter[ValueT]):
 
     @property
     def default_value(self) -> ValueT:
-        if self._default_value is not _NOT_SET:
+        if self._default_value is not Ellipsis:
             return self._default_value
         return self._default_factory()
 
@@ -182,7 +179,7 @@ class MutableParameter[ValueT](Parameter[ValueT]):
 
         :param value: Значение, которое необходимо валидировать.
         """
-        if not isinstance(self._validator, _UNSET):
+        if not isinstance(self._validator, type(Ellipsis)):
             await self._validator(value)
 
     async def save(self) -> None:

@@ -6,7 +6,7 @@ __all__ = ['Properties']
 
 import os
 import tomllib
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from types import MappingProxyType
 from collections.abc import Iterable, Generator
 
@@ -17,6 +17,11 @@ from .parameter.base import Parameter, MutableParameter
 
 
 class Properties(Entry):
+    if TYPE_CHECKING:
+        parent: Properties | None
+        root: Properties
+        chain_to_root: Generator[Properties, None, None]
+
     def __init__(
         self,
         *,
@@ -51,12 +56,7 @@ class Properties(Entry):
             flags=flags,
         )
 
-    @property
-    def parent(self) -> Properties | None:
-        """Родительская категория или `None`, если категория корневая."""
-        return self._parent
-
-    @parent.setter
+    @Entry.parent.setter
     def parent(self, value: Properties) -> None:
         if not isinstance(value, Properties):
             raise TypeError('Parent should be an instance of Properties.')
@@ -66,20 +66,6 @@ class Properties(Entry):
             raise ValueError('Cannot attach properties to itself.')
         # todo: better checks
         self._parent = value
-
-    @property
-    def root(self) -> Properties:
-        """Корневая категория (верхний элемент в иерархии)."""
-        return super().root  # type: ignore  # check in __init__
-
-    @property
-    def chain_to_root(self) -> Generator[Properties, None, None]:
-        """
-        Генератор всех категорий от текущей до корневой.
-
-        :yield: Категории начиная с текущей и заканчивая корневой.
-        """
-        return super().chain_to_root  # type: ignore  # check in __init__
 
     @property
     def chain_to_tail(self) -> Generator[Properties, None, None]:

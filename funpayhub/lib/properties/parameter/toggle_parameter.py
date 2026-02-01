@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 from collections.abc import Callable, Iterable, Awaitable
 
-from funpayhub.lib.properties.base import UNSET, _UNSET
 from funpayhub.lib.properties.parameter.base import MutableParameter
 from funpayhub.lib.properties.parameter.converters import bool_converter
 
@@ -16,7 +15,7 @@ class ToggleParameter(MutableParameter[bool]):
         name: str,
         description: str,
         default_value: bool,
-        validator: Callable[[bool], Awaitable[None]] | _UNSET = UNSET,
+        validator: Callable[[bool], Awaitable[None]] | type[Ellipsis] = ...,
         flags: Iterable[Any] | None = None,
     ) -> None:
         super().__init__(
