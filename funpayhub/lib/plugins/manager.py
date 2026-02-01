@@ -53,6 +53,8 @@ class PassPluginAiogramMiddleware(BaseMiddleware):
 
     async def __call__(self, handler: Any, event: Any, data: dict[str, Any]) -> Any:
         data['plugin'] = self.plugin
+        data['plugin_properties'] = self.plugin.properties
+        data['plugin_manifest'] = self.plugin.manifest
         return await handler(event, data)
 
 
@@ -62,6 +64,8 @@ class PassPluginEventryMiddleware:
 
     async def __call__(self, data: dict[str, Any]) -> Any:
         data['plugin'] = self.plugin
+        data['plugin_properties'] = self.plugin.properties
+        data['plugin_manifest'] = self.plugin.manifest
         yield
 
 

@@ -9,7 +9,7 @@ from aiogram import Bot
 
 
 class Registry:
-    def __init__(self, path: Path = Path('storage/chat_sync.json')) -> None:
+    def __init__(self, path: Path = Path('storage/chat_sync/chat_sync.json')) -> None:
         self._path = path
         self._fp_to_tg_pairs = {}
         if path.exists(follow_symlinks=True):
@@ -47,6 +47,7 @@ class Registry:
         return self._tg_to_fp_pairs.get(telegram_thread_id, None)
 
     def save(self) -> None:
+        self._path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.path, 'w', encoding='utf-8') as f:
             f.write(json.dumps({str(k): v for k, v in self.fp_to_tg_pairs}, ensure_ascii=False))
 

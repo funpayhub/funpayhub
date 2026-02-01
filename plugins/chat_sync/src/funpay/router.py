@@ -9,7 +9,6 @@ from funpaybotengine.types import Message
 from funpaybotengine.runner import EventsStack
 from funpaybotengine.dispatching import NewMessageEvent
 
-from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.builders.context import NewMessageMenuContext
 
@@ -31,16 +30,16 @@ async def sync_new_message(
     message: Message,
     chat_sync_registry: Registry,
     tg_ui: UIRegistry,
-    properties: FunPayHubProperties,
+    plugin_properties: ChatSyncProperties,
     events_stack: EventsStack,
     chat_sync_rotater: BotRotater,
 ) -> None:
-    pl_props: ChatSyncProperties = properties.plugin_properties.get_properties['chat_sync']
     telegram_thread_id = chat_sync_registry.get_telegram_thread(message.chat_id)
+
     if telegram_thread_id is None:
         bot = chat_sync_rotater.next_bot()
         topic = await bot.create_forum_topic(
-            chat_id=pl_props.sync_chat_id.value,
+            chat_id=plugin_properties.sync_chat_id.value,
             name=f'{message.chat_name} ({message.chat_id})',
         )
         telegram_thread_id = topic.message_thread_id
@@ -57,13 +56,13 @@ async def sync_new_message(
         funpay_chat_id=message.chat_id,
         funpay_chat_name=message.chat_name,
         messages=messages,
-        chat_id=pl_props.sync_chat_id.value,
+        chat_id=plugin_properties.sync_chat_id.value,
         thread_id=telegram_thread_id,
     )
 
     asyncio.create_task(
         send_message_task(
-            chat_id=pl_props.sync_chat_id.value,
+            chat_id=plugin_properties.sync_chat_id.value,
             thread_id=telegram_thread_id,
             bot=chat_sync_rotater.next_bot(),
             menu=await tg_ui.build_menu(context=ctx),
