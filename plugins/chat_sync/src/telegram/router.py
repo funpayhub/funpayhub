@@ -3,19 +3,22 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 from aiogram import Router
-from aiogram.filters import Command, CommandObject
+from aiogram.filters import Command
 from io import BytesIO
 
 from funpaybotengine.exceptions import FunPayBotEngineError
+import asyncio
 
 if TYPE_CHECKING:
     from chat_sync.src.properties import ChatSyncProperties
     from aiogram.types import Message, ReactionTypeEmoji
     from chat_sync.src.types import Registry, BotRotater
     from funpayhub.app.main import FunPayHub
+    from aiogram import Bot as TGBot
 
 
 r = router = Router(name='chat_sync')
+checking_chat_lock = asyncio.Lock()
 
 
 async def need_to_resend(
@@ -32,7 +35,7 @@ async def need_to_resend(
 @r.message(Command('chat_sync'))
 async def setup_chat_sync_chat(
     message: Message,
-    plugin_properties: ChatSyncProperties
+    plugin_properties: ChatSyncProperties,
 ):
     if plugin_properties.sync_chat_id.value:
         await message.answer(
@@ -44,6 +47,7 @@ async def setup_chat_sync_chat(
     if not message.chat.is_forum:
         await message.answer('❌ Чат не является форумом.')
         return
+
 
     await plugin_properties.sync_chat_id.set_value(message.chat.id)
     await message.answer('✅ Sync-чат установлен.')

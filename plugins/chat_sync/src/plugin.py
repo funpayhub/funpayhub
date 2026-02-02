@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from funpayhub.lib.plugins import Plugin
+from funpayhub.lib.telegram import Command
 
 from .types import Registry, BotRotater
 from .properties import ChatSyncProperties
@@ -31,6 +32,16 @@ class ChatSyncPlugin(Plugin):
 
     async def telegram_routers(self) -> TGRouter:
         return chat_sync_tg_router
+
+    async def commands(self) -> Command | list[Command] | None:
+        return [
+            Command(
+                command='chat_sync',
+                source=self.manifest.plugin_id,
+                setup=True,
+                description='[ChatSync] Установить чат для синхронизации.'
+            )
+        ]
 
     async def post_setup(self) -> None:
         props: ChatSyncProperties = self.hub.properties.plugin_properties.get_properties(
