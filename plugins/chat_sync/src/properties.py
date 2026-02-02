@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.properties import Properties, IntParameter, ListParameter
+from funpayhub.lib.properties import Properties, IntParameter, SetParameter
 
 
 class ChatSyncProperties(Properties):
@@ -22,10 +22,9 @@ class ChatSyncProperties(Properties):
         )
 
         self.bot_tokens = self.attach_node(
-            ListParameter(
+            SetParameter[str](
                 id='bot_tokens',
                 name='Токены Telegram ботов',
                 description='Токены Telegram ботов для отправки сообщений в темы.',
-                default_factory=list,
             )
         )

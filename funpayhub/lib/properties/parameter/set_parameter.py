@@ -22,7 +22,7 @@ class SetParameter[ItemType: CONTAINER_ALLOWED_TYPES](MutableParameter[set[ItemT
         id: str,
         name: str,
         description: str,
-        default_factory: Callable[[], set[ItemType]],
+        default_factory: Callable[[], set[ItemType]] = set,
         validator: Callable[[set[ItemType]], Awaitable[None]] | EllipsisType = ...,
         add_item_validator: Callable[[set[ItemType], ItemType], Awaitable[None]]
         | EllipsisType = ...,

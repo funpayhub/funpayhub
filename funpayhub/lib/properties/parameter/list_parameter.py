@@ -22,7 +22,7 @@ class ListParameter[ItemType: CONTAINER_ALLOWED_TYPES](MutableParameter[list[Ite
         id: str,
         name: str,
         description: str,
-        default_factory: Callable[[], list[ItemType]],
+        default_factory: Callable[[], list[ItemType]] = list,
         validator: Callable[[list[ItemType]], Awaitable[None]] | EllipsisType = ...,
         add_item_validator: Callable[[list[ItemType], ItemType], Awaitable[None]]
         | EllipsisType = ...,

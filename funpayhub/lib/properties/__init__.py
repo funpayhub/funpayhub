@@ -15,6 +15,7 @@ __all__ = [
     'IntParameter',
     'FloatParameter',
     'ListParameter',
+    'SetParameter',
     'ChoiceParameter',
 ]
 
