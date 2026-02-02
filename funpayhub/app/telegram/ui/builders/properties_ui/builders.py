@@ -573,3 +573,49 @@ class AddRemoveButtonToAutoDeliveryModification(
                 ),
             )
         return menu
+
+
+class AddRemoveButtonToCommandModification(
+    MenuModification,
+    modification_id='fph:add_remove_button_to_command',
+):
+    async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
+        return len(ctx.entry_path) == 2 and ctx.entry_path[0] == 'auto_response'
+
+    async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
+        key = f'{self.modification_id}:confirm_delete'
+
+        if not ctx.data.get(key):
+            menu.footer_keyboard.add_callback_button(
+                button_id='delete',
+                text=translater.translate('$delete'),
+                callback_data=cbs.OpenMenu(
+                    menu_id=ctx.menu_id,
+                    menu_page=ctx.menu_page,
+                    view_page=ctx.view_page,
+                    context_data={'entry_path': ctx.entry_path},
+                    data={**ctx.data, key: True},
+                    history=ctx.callback_data.history if ctx.callback_data is not None else [],
+                ).pack(),
+            )
+        else:
+            menu.footer_keyboard.add_row(
+                Button.callback_button(
+                    button_id='confirm_delete',
+                    text=translater.translate('$delete'),
+                    callback_data=cbs.Dummy().pack(),
+                ),
+                Button.callback_button(
+                    button_id='cancel_delete',
+                    text=translater.translate('$cancel'),
+                    callback_data=cbs.OpenMenu(
+                        menu_id=ctx.menu_id,
+                        menu_page=ctx.menu_page,
+                        view_page=ctx.view_page,
+                        context_data={'entry_path': ctx.entry_path},
+                        data={**ctx.data, key: False},
+                        history=ctx.callback_data.history if ctx.callback_data is not None else [],
+                    ).pack(),
+                ),
+            )
+        return menu

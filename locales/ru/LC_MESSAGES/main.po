@@ -262,6 +262,10 @@ msgid "$props.auto_delivery.*.delivery_text:description"
 msgstr "__empty__"
 
 
+msgid "$add_offer_rule"
+msgstr "➕ Добавить правило"
+
+
 
 # ----------------------------------------------------
 # ----------------------- Goods ----------------------

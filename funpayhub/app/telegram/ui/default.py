@@ -62,6 +62,7 @@ MENU_MODIFICATIONS = {
         properties_ui.AutoDeliveryPropertiesMenuModification,
         properties_ui.AddOfferButtonModification,
         properties_ui.AddRemoveButtonToAutoDeliveryModification,
+        properties_ui.AddRemoveButtonToCommandModification,
     ],
     MenuIds.param_value_manual_input: [
         properties_ui.AddFormattersListButtonModification,
