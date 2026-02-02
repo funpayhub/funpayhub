@@ -54,7 +54,7 @@ async def show_menu_help(
         MenuIds.properties_choice_param,
     ]:
         path = callback_data.context_data['entry_path']
-        entry = properties.get_entry(path)
+        entry = properties.get_node(path)
 
         desc = translater.translate(entry.description)
 
@@ -72,7 +72,7 @@ async def show_entry_help(
     callback_data: cbs.NextParamValue | cbs.ManualParamValueInput,
     translater: Translater,
 ) -> None:
-    entry = properties.get_entry(callback_data.path)
+    entry = properties.get_node(callback_data.path)
     desc = translater.translate(entry.description)
 
     await query.answer(

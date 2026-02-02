@@ -92,7 +92,7 @@ class PropertiesEntryMenuBuilder(
         tg_ui: UIRegistry,
         properties: FunPayHubProperties,
     ) -> Menu:
-        entry = properties.get_entry(ctx.entry_path)
+        entry = properties.get_node(ctx.entry_path)
         if (builder_id := EntriesUIRegistry.get_menu_builder(type(entry))) is None:
             raise LookupError(f'Unknown entry type {type(entry)}.')
         context = replace(ctx, menu_id=builder_id)
@@ -110,7 +110,7 @@ class PropertiesEntryButtonBuilder(
         tg_ui: UIRegistry,
         properties: FunPayHubProperties,
     ) -> Button:
-        entry = properties.get_entry(ctx.entry_path)
+        entry = properties.get_node(ctx.entry_path)
         if (builder_id := EntriesUIRegistry.get_button_builder(type(entry))) is None:
             raise LookupError(f'Unknown entry type {type(entry)}.')
         context = replace(ctx, button_id=builder_id)

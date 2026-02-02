@@ -12,6 +12,9 @@ if TYPE_CHECKING:
     from funpayhub.lib.properties import Properties
 
 
+type CONTAINER_ALLOWED_TYPES = int | float | str | bool
+
+
 class Parameter[ValueT](Node):
     def __init__(
         self,

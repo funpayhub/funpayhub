@@ -45,7 +45,7 @@ class ToggleParamButtonBuilder(
         translater: Translater,
         properties: FunPayHubProperties,
     ) -> Button:
-        entry = properties.get_entry(ctx.entry_path)
+        entry = properties.get_node(ctx.entry_path)
         if not isinstance(entry, param.ToggleParameter):
             raise ValueError()
 
@@ -73,7 +73,7 @@ class ChangeParamValueButtonBuilder(
         translater: Translater,
         properties: FunPayHubProperties,
     ) -> Button:
-        entry = properties.get_entry(ctx.entry_path)
+        entry = properties.get_node(ctx.entry_path)
 
         if not entry.has_flag(PropsFlags.PROTECT_VALUE):
             val_str = f'{str(entry.value)[:20] + ("..." if len(str(entry.value)) > 20 else "")}'
@@ -102,7 +102,7 @@ class OpenParamMenuButtonBuilder(
         translater: Translater,
         properties: FunPayHubProperties,
     ) -> Button:
-        entry = properties.get_entry(ctx.entry_path)
+        entry = properties.get_node(ctx.entry_path)
 
         return Button.callback_button(
             button_id=f'param_change:{entry.path}',
@@ -213,7 +213,7 @@ class ListParameterMenuBuilder(
     ) -> Menu:
         keyboard = KeyboardBuilder()
         mode = ctx.data.get('mode')
-        entry = properties.get_entry(ctx.entry_path)
+        entry = properties.get_node(ctx.entry_path)
         if not isinstance(entry, param.ListParameter):
             raise ValueError()
 
@@ -288,7 +288,7 @@ class ParamValueManualInputMenuBuilder(
         translater: Translater,
         properties: FunPayHubProperties,
     ) -> Menu:
-        entry = properties.get_entry(ctx.entry_path)
+        entry = properties.get_node(ctx.entry_path)
         callback_data = ctx.callback_data
         text = translater.translate('$enter_new_value_message').format(
             parameter_name=translater.translate(entry.name),

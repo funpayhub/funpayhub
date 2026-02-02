@@ -95,7 +95,7 @@ class Properties(Node):
         self._nodes[node.id] = node
         return node
 
-    def deattach_node(self, node_id: str) -> Properties | None:
+    def detach_node(self, node_id: str) -> Properties | None:
         node = self._nodes.get(node_id)
         if not isinstance(node, Properties):
             return None
@@ -141,7 +141,9 @@ class Properties(Node):
         if not same_file_only:
             for props in self.chain_to_tail:
                 if props._file and props.file_to_save != self.file_to_save:
-                    await props.save()  # todo
+                    await props.save()
+                    # todo: один и тот же файл сохраняется несколько раз,
+                    #  если в подузлах есть узлы с таким же файлом.
 
     async def load(self) -> None:
         data = {}
@@ -164,7 +166,7 @@ class Properties(Node):
             elif isinstance(v, Properties):
                 await v._set_values(values[v.id])
 
-    def get_entry(
+    def get_node(
         self,
         path: list[str | int],
     ) -> Properties | Parameter[Any] | MutableParameter[Any]:
@@ -195,19 +197,19 @@ class Properties(Node):
 
         if isinstance(next_entry, Properties):
             if len(path) > 1:
-                return next_entry.get_entry(path[1:])
+                return next_entry.get_node(path[1:])
             return next_entry
 
         raise LookupError(f'No entry with path {path!r}.')
 
     def get_parameter(self, path: list[str | int]) -> Parameter[Any] | MutableParameter[Any]:
-        result = self.get_entry(path)
+        result = self.get_node(path)
         if not isinstance(result, Parameter):
             raise LookupError(f'No parameter with path {path}')
         return result
 
     def get_properties(self, path: list[str | int]) -> Properties:
-        result = self.get_entry(path)
+        result = self.get_node(path)
         if not isinstance(result, Properties):
             raise LookupError(f'No properties with path {path}')
         return result

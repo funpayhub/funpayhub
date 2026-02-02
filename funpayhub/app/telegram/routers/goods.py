@@ -400,7 +400,7 @@ async def delete_auto_delivery_rule(
         )
         return
 
-    properties.auto_delivery.deattach_node(callback_data.rule)
+    properties.auto_delivery.detach_node(callback_data.rule)
     await properties.auto_delivery.save()
 
     await EntryMenuContext(

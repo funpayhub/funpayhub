@@ -3,7 +3,7 @@ from __future__ import annotations
 
 __all__ = ['ListParameter']
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from copy import copy
 from types import EllipsisType
 from collections.abc import Callable, Iterable, Awaitable
@@ -11,10 +11,11 @@ from collections.abc import Callable, Iterable, Awaitable
 from funpayhub.lib.properties.parameter.base import MutableParameter
 
 
-ALLOWED_TYPES = int | float | bool | str
+if TYPE_CHECKING:
+    from .base import CONTAINER_ALLOWED_TYPES
 
 
-class ListParameter[ItemType: ALLOWED_TYPES](MutableParameter[list[ItemType]]):
+class ListParameter[ItemType: CONTAINER_ALLOWED_TYPES](MutableParameter[list[ItemType]]):
     def __init__(
         self,
         *,

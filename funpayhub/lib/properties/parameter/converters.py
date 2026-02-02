@@ -5,11 +5,14 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from json import JSONDecodeError
 from collections.abc import Iterable
 
 from funpayhub.lib.exceptions import ConvertionError
+
+if TYPE_CHECKING:
+    from .base import CONTAINER_ALLOWED_TYPES
 
 
 __all__ = [
@@ -79,7 +82,7 @@ def string_converter(value: Any) -> str:
         raise ConvertionError('Unable to convert value %r to string.', value)
 
 
-def list_converter(value: Any) -> list[str]:
+def list_converter(value: Any) -> list[CONTAINER_ALLOWED_TYPES]:
     if isinstance(value, str):
         try:
             value = json.loads(value)
@@ -87,6 +90,19 @@ def list_converter(value: Any) -> list[str]:
             raise ConvertionError('Unable to convert string %r to list.', value)
 
     if isinstance(value, Iterable):
-        return [i if isinstance(i, str) else str(i) for i in value]
+        return [str(i) if not isinstance(i, (int, str, float, bool)) else i for i in value]
 
     raise ConvertionError('Unable to convert %r to list of strings.', value)
+
+
+def set_converter(value: Any) -> set[CONTAINER_ALLOWED_TYPES]:
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except JSONDecodeError:
+            raise ConvertionError('Unable to convert string %r to set.', value)
+
+    if isinstance(value, Iterable):
+        return {str(i) if not isinstance(i, (int, str, float, bool)) else i for i in value}
+
+    raise ConvertionError('Unable to convert %r to set of strings.', value)

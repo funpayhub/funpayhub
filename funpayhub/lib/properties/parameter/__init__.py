@@ -10,6 +10,7 @@ __all__ = [
     'ChoiceParameter',
     'StringParameter',
     'ToggleParameter',
+    'SetParameter'
 ]
 
 
@@ -20,3 +21,4 @@ from .float_parameter import FloatParameter
 from .choice_parameter import ChoiceParameter
 from .string_parameter import StringParameter
 from .toggle_parameter import ToggleParameter
+from .set_parameter import SetParameter
