@@ -6,11 +6,13 @@ __all__ = ['Properties']
 
 import os
 import tomllib
-from typing import Any
-from types import MappingProxyType
-from collections.abc import Iterable, Generator
+from typing import Any, Literal
+from types import EllipsisType, MappingProxyType
+from collections.abc import Callable, Iterable, Awaitable, Generator
 
 import tomli_w
+
+from loggers import main as logger
 
 from .base import Node
 from .parameter.base import Parameter, MutableParameter
@@ -25,6 +27,10 @@ class Properties(Node):
         description: str,
         file: str | None = None,
         flags: Iterable[Any] | None = None,
+        on_parameter_changed_hook: Callable[[MutableParameter], Awaitable[None]]
+        | EllipsisType = ...,
+        on_node_attached_hook: Callable[[Node], Awaitable[None]] | EllipsisType = ...,
+        on_node_detached_hook: Callable[[Node], Awaitable[None]] | EllipsisType = ...,
     ) -> None:
         """
         Категория параметров.
@@ -43,6 +49,10 @@ class Properties(Node):
         """
         self._file = file
         self._nodes: dict[str, Node] = {}
+
+        self._on_node_attached_hook = on_node_attached_hook
+        self._on_node_detached_hook = on_node_detached_hook
+        self._on_parameter_changed_hook = on_parameter_changed_hook
 
         super().__init__(
             id=id,
@@ -213,6 +223,34 @@ class Properties(Node):
         if not isinstance(result, Properties):
             raise LookupError(f'No properties with path {path}')
         return result
+
+    async def _execute_hook(
+        self,
+        hook: Literal['on_attach', 'on_detach', 'on_change'],
+        trigger: Node,
+    ) -> None:
+        if not self.is_root:
+            return await self.parent._execute_hook(hook, trigger)
+
+        hooks = {
+            'attach': self._on_node_attached_hook,
+            'detach': self._on_node_detached_hook,
+            'change': self._on_parameter_changed_hook,
+        }
+        hook_callable = hooks.get(hook)
+
+        if hook_callable in [None, Ellipsis]:
+            return None
+
+        try:
+            await hook_callable(trigger)
+        except Exception:
+            logger.error(
+                'An error occurred while executing %s trigger for %s',
+                hook,
+                '.'.join(trigger.path),
+                exc_info=True,
+            )
 
     def __len__(self) -> int:
         return len(self.entries)
