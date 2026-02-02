@@ -274,6 +274,7 @@ async def add_goods_txt_source(
         await msg.reply(translater.translate('$err_goods_txt_source_already_exists'))
         return
 
+    await state.clear()
     await data.message.delete()
 
     if msg.document:
