@@ -3,6 +3,8 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
+from aiogram.types import InlineKeyboardButton, CopyTextButton
+
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties import Properties, MutableParameter, parameter as param
@@ -219,16 +221,27 @@ class ListParameterMenuBuilder(
 
         texts = {'move_up': '⬆️', 'move_down': '⬇️', 'remove': '🗑️'}
         for index, val in enumerate(entry.value):
-            keyboard.add_callback_button(
-                button_id='temp',
-                text=f'{texts[mode]} {val}' if mode in texts else str(val),
-                callback_data=cbs.ListParamItemAction(
-                    item_index=index,
-                    path=entry.path,
-                    action=mode,
-                    from_callback=ctx.callback_data,
-                ).pack(),
-            )
+            if mode:
+                keyboard.add_callback_button(
+                    button_id='temp',
+                    text=f'{texts[mode]} {val}' if mode in texts else str(val),
+                    callback_data=cbs.ListParamItemAction(
+                        item_index=index,
+                        path=entry.path,
+                        action=mode,
+                        from_callback=ctx.callback_data,
+                    ).pack()
+                )
+            else:
+                keyboard.add_row(
+                    Button(
+                        button_id='temp',
+                        obj=InlineKeyboardButton(
+                            text=str(val),
+                            copy_text=CopyTextButton(text=str(val))
+                        )
+                    )
+                )
 
         footer = KeyboardBuilder(keyboard=[[]])
         mode_data = {

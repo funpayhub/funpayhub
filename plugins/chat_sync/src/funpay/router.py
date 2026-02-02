@@ -21,10 +21,11 @@ if TYPE_CHECKING:
 
 
 router = Router(name='chat_sync')
-last_event_stack: str | None = None
+last_event_stacks: dict[int, str] = {}
 
 
 async def is_setup(
+    message: Message,
     plugin_properties:
     ChatSyncProperties,
     chat_sync_rotater: BotRotater,
@@ -34,7 +35,7 @@ async def is_setup(
         return False
     if len(chat_sync_rotater) < 4:
         return False
-    if events_stack.id == last_event_stack:
+    if last_event_stacks.get(message.chat_id) == events_stack.id:
         return False
 
     return True
@@ -50,8 +51,8 @@ async def sync_new_message(
     events_stack: EventsStack,
     chat_sync_rotater: BotRotater,
 ) -> None:
-    global last_event_stack
-    last_event_stack = events_stack.id
+    global last_event_stacks
+    last_event_stacks[message.chat_id] = events_stack.id
 
     for event in events_stack.events:
         if isinstance(event, ChatChangedEvent) and event.chat_preview.id == message.chat_id:
@@ -93,6 +94,7 @@ async def sync_new_message(
             rotater=chat_sync_rotater,
             menu=await tg_ui.build_menu(context=ctx),
         ),
+        name=f'chat_sync-fp{chat_event.chat_preview.id}:tg{plugin_properties.sync_chat_id.value}.{telegram_thread_id}',
     )
 
 

@@ -23,7 +23,8 @@ class Registry:
         if path.exists(follow_symlinks=True):
             with open(self.path, 'r', encoding='utf-8') as f:
                 try:
-                    self._fp_to_tg_pairs = json.load(f)
+                    data = json.load(f)
+                    self._fp_to_tg_pairs = {int(k): v for k, v in data.items()}
                 except Exception as e:
                     # todo: logging
                     self._fp_to_tg_pairs = {}
@@ -140,9 +141,9 @@ class BotRotater:
         if not self._bots:
             raise StopIteration
 
-        if self._current_bot_index > len(self._bots) + 1:
+        if self._current_bot_index > len(self._bots) - 1:
             self._current_bot_index = 0
-        bot = self._bots[0]
+        bot = self._bots[self._current_bot_index]
         self._current_bot_index += 1
         return bot
 

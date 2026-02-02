@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 from aiogram import Router
-from aiogram.filters import Command
+from aiogram.filters import Command, CommandObject
 from io import BytesIO
 
 from funpaybotengine.exceptions import FunPayBotEngineError
@@ -48,7 +49,7 @@ async def setup_chat_sync_chat(
     await message.answer('✅ Sync-чат установлен.')
 
 
-@r.message(need_to_resend)
+@r.message(~Command(re.compile('\S+')), need_to_resend)
 async def send_to_funpay_chat(message: Message, chat_sync_registry: Registry, hub: FunPayHub):
     funpay_chat_id = chat_sync_registry.tg_to_fp_pairs[message.message_thread_id]
 
