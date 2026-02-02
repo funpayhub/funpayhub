@@ -40,7 +40,7 @@ async def _set_state_and_send_state_ui(
         delete_on_clear=True,
         text=text,
         trigger=query,
-    ).build_and_answer(wfd.tg_ui_registr, query.message)
+    ).build_and_answer(wfd.tg_ui_registry, query.message)
 
     s = state_cls(source_id=callback_data.source_id, message=msg, callback_data=callback_data)
     await state.set_state(s.identifier)

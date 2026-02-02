@@ -125,7 +125,7 @@ class FunPayHub:
             plugins_logger.critical('Failed to load plugins. Creating crashlog.', exc_info=True)
             with suppress(Exception):
                 await self.create_crash_log()
-            await self.shutdown(exit_codes.RESTART_SAFE)
+            sys.exit(exit_codes.RESTART_SAFE)  # todo: graceful shutdown before start
 
     async def _load_file_goods_sources(self) -> None:
         logger.info('Loading goods files.')
