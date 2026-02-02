@@ -173,7 +173,7 @@ class FunPayHub:
             except Exception:
                 return exit_codes.TELEGRAM_ERROR
 
-            if not self.can_load_plugins:
+            if not self.setup_completed:
                 if not sys.stdin.isatty() or not sys.stdout.isatty():
                     return exit_codes.NOT_A_TTY
 
