@@ -3,26 +3,41 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from aiogram import Bot as TGBot
 from funpaybotengine import Router
 from funpaybotengine.types import Message
 from funpaybotengine.runner import EventsStack
-from funpaybotengine.dispatching import NewMessageEvent
+from funpaybotengine.dispatching import NewMessageEvent, ChatChangedEvent
+from aiogram.exceptions import TelegramUnauthorizedError
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.builders.context import NewMessageMenuContext
-
-from .filter import is_setup
 
 
 if TYPE_CHECKING:
     from chat_sync.src.types import Registry, BotRotater
     from chat_sync.src.properties import ChatSyncProperties
-
+    from aiogram import Bot as TGBot
     from funpayhub.lib.telegram.ui import Menu, UIRegistry
 
 
 router = Router(name='chat_sync')
+last_event_stack: str | None = None
+
+
+async def is_setup(
+    plugin_properties:
+    ChatSyncProperties,
+    chat_sync_rotater: BotRotater,
+    events_stack: EventsStack
+) -> bool:
+    if not plugin_properties.sync_chat_id:
+        return False
+    if len(chat_sync_rotater) < 4:
+        return False
+    if events_stack.id == last_event_stack:
+        return False
+
+    return True
 
 
 @router.on_new_message(is_setup)
@@ -30,20 +45,31 @@ async def sync_new_message(
     message: Message,
     chat_sync_registry: Registry,
     tg_ui: UIRegistry,
+    tg_bot: TGBot,
     plugin_properties: ChatSyncProperties,
     events_stack: EventsStack,
     chat_sync_rotater: BotRotater,
 ) -> None:
+    global last_event_stack
+    last_event_stack = events_stack.id
+
+    for event in events_stack.events:
+        if isinstance(event, ChatChangedEvent) and event.chat_preview.id == message.chat_id:
+            chat_event = event
+            break
+    else:
+        return
+
     telegram_thread_id = chat_sync_registry.get_telegram_thread(message.chat_id)
 
     if telegram_thread_id is None:
-        bot = chat_sync_rotater.next_bot()
-        topic = await bot.create_forum_topic(
+        topic = await tg_bot.create_forum_topic(
             chat_id=plugin_properties.sync_chat_id.value,
-            name=f'{message.chat_name} ({message.chat_id})',
+            name=f'{chat_event.chat_preview.username} ({message.chat_id})',
+            icon_custom_emoji_id='5417915203100613993'
         )
         telegram_thread_id = topic.message_thread_id
-        await chat_sync_registry.add_chat_pair(message.chat_id, telegram_thread_id)
+        chat_sync_registry.add_chat_pair(message.chat_id, telegram_thread_id)
 
     messages = [
         i.message
@@ -64,15 +90,25 @@ async def sync_new_message(
         send_message_task(
             chat_id=plugin_properties.sync_chat_id.value,
             thread_id=telegram_thread_id,
-            bot=chat_sync_rotater.next_bot(),
+            rotater=chat_sync_rotater,
             menu=await tg_ui.build_menu(context=ctx),
         ),
     )
 
 
-async def send_message_task(chat_id: int, thread_id: int, bot: TGBot, menu: Menu) -> None:
-    await bot.send_message(
-        chat_id=chat_id,
-        message_thread_id=thread_id,
-        text=menu.text,
-    )
+async def send_message_task(chat_id: int, thread_id: int, rotater: BotRotater, menu: Menu) -> None:
+    while True:
+        try:
+            bot = rotater.next_bot()
+        except StopIteration:
+            return
+
+        try:
+            await bot.send_message(
+                chat_id=chat_id,
+                message_thread_id=thread_id,
+                text=menu.main_text,
+            )
+            return
+        except TelegramUnauthorizedError:
+            rotater.remove_bot(bot.token)

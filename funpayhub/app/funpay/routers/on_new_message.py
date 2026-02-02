@@ -112,6 +112,6 @@ async def send_new_message_notification(
 
     await tg.send_notification(
         'new_message',
-        text=menu.text,
+        text=menu.full_text,
         reply_markup=menu.total_keyboard(convert=True),
     )

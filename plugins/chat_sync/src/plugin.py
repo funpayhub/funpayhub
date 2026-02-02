@@ -7,10 +7,12 @@ from funpayhub.lib.plugins import Plugin
 from .types import Registry, BotRotater
 from .properties import ChatSyncProperties
 from .funpay.router import router as chat_sync_fp_router
+from .telegram.router import router as chat_sync_tg_router
 
 
 if TYPE_CHECKING:
     from funpaybotengine import Router as FPRouter
+    from aiogram import Router as TGRouter
 
 
 class ChatSyncPlugin(Plugin):
@@ -26,6 +28,9 @@ class ChatSyncPlugin(Plugin):
 
     async def funpay_routers(self) -> FPRouter:
         return chat_sync_fp_router
+
+    async def telegram_routers(self) -> TGRouter:
+        return chat_sync_tg_router
 
     async def post_setup(self) -> None:
         props: ChatSyncProperties = self.hub.properties.plugin_properties.get_properties(

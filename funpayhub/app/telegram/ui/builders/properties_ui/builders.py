@@ -159,7 +159,7 @@ class PropertiesMenuBuilder(
             keyboard.add_button(button)
 
         return Menu(
-            text=_entry_text(entry, translater),
+            main_text=_entry_text(entry, translater),
             main_keyboard=keyboard,
             finalizer=premade.StripAndNavigationFinalizer(),
         )
@@ -194,7 +194,7 @@ class ChoiceParameterMenuBuilder(
             )
 
         return Menu(
-            text=_entry_text(entry, translater),
+            main_text=_entry_text(entry, translater),
             main_keyboard=keyboard,
             finalizer=premade.StripAndNavigationFinalizer(),
         )
@@ -270,7 +270,7 @@ class ListParameterMenuBuilder(
         )
 
         return Menu(
-            text=_entry_text(entry, translater),
+            main_text=_entry_text(entry, translater),
             main_keyboard=keyboard,
             footer_keyboard=footer,
             finalizer=premade.StripAndNavigationFinalizer(),
@@ -308,7 +308,7 @@ class ParamValueManualInputMenuBuilder(
         )
 
         return Menu(
-            text=text,
+            main_text=text,
             footer_keyboard=footer_keyboard,
             finalizer=premade.StripAndNavigationFinalizer(back_button=False),
         )
@@ -339,7 +339,7 @@ class AddListItemMenuBuilder(
         )
 
         return Menu(
-            text=text,
+            main_text=text,
             footer_keyboard=footer_keyboard,
             finalizer=premade.StripAndNavigationFinalizer(back_button=False),
         )

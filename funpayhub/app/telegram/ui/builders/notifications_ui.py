@@ -59,7 +59,7 @@ class NotificationsMenuBuilder(
             )
 
         return Menu(
-            text='$notifications',
+            main_text='$notifications',
             main_keyboard=kb,
             finalizer=premade.StripAndNavigationFinalizer(),
         )

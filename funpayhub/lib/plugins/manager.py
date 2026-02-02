@@ -66,7 +66,7 @@ class PassPluginEventryMiddleware:
         data['plugin'] = self.plugin
         data['plugin_properties'] = self.plugin.properties
         data['plugin_manifest'] = self.plugin.manifest
-        yield
+        return
 
 
 def setup_aiogram_router(plugin: LoadedPlugin, *routers: AiogramRouter) -> AiogramRouter:
@@ -83,7 +83,7 @@ def setup_eventry_plugin_router(router: EventryRouter, plugin: LoadedPlugin) -> 
     middleware = PassPluginEventryMiddleware(plugin)
     for i in router._handler_managers.values():
         manager = i.middleware_manager(MiddlewareManagerTypes.MANAGER_OUTER)
-        if not manager:
+        if manager is None:
             continue
         manager.register_middleware(middleware)
 

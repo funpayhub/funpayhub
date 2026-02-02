@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 class AddCommandMenuBuilder(MenuBuilder, menu_id=MenuIds.add_command, context_type=MenuContext):
     async def build(self, ctx: MenuContext, translater: Translater) -> Menu:
         return Menu(
-            text='$add_command_message',
+            main_text='$add_command_message',
             footer_keyboard=KeyboardBuilder(
                 keyboard=[
                     Button.callback_button(
@@ -79,7 +79,7 @@ class StartNotificationMenuBuilder(
 
         if hub.safe_mode:
             text += '\n\n' + translater.translate('$safe_mode_enabled')
-        return Menu(text=text)
+        return Menu(main_text=text)
 
 
 class FunPayStartNotificationMenuBuilder(
@@ -108,14 +108,14 @@ class FunPayStartNotificationMenuBuilder(
         else:
             text = translater.translate('$funpay_unexpected_error_notification_text')
 
-        return Menu(text=text)
+        return Menu(main_text=text)
 
 
 class UpdateMenuBuilder(MenuBuilder, menu_id=MenuIds.update, context_type=UpdateMenuContext):
     async def build(self, ctx: UpdateMenuContext, translater: Translater) -> Menu:
         menu = Menu(finalizer=StripAndNavigationFinalizer())
         if ctx.update_info is None:
-            menu.text = translater.translate('$no_updates_available')
+            menu.main_text = translater.translate('$no_updates_available')
             return menu
 
         desc = html.escape(ctx.update_info.description)
@@ -128,7 +128,7 @@ class UpdateMenuBuilder(MenuBuilder, menu_id=MenuIds.update, context_type=Update
                 + ': https://github.com/funpayhub/funpayhub/releases/latest'
             )
 
-        menu.text = f"""{translater.translate('$new_update_available')}
+        menu.main_text = f"""{translater.translate('$new_update_available')}
 
 <b>{html.escape(ctx.update_info.title)}</b>
 
@@ -163,7 +163,7 @@ class InstallUpdateMenuBuilder(
         )
 
         return Menu(
-            text=translater.translate('$install_update_text'),
+            main_text=translater.translate('$install_update_text'),
             main_keyboard=kb,
         )
 
@@ -217,7 +217,7 @@ class MainMenuBuilder(
         )
 
         return Menu(
-            text=f'🐙 <b><u>FunPay Hub v{hub.properties.version.value}</u></b>',
+            main_text=f'🐙 <b><u>FunPay Hub v{hub.properties.version.value}</u></b>',
             main_keyboard=kb,
         )
 
@@ -236,7 +236,7 @@ class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=Sta
         )
 
         return Menu(
-            text=ctx.text,
+            main_text=ctx.text,
             footer_keyboard=kb,
         )
 
@@ -265,7 +265,7 @@ class AddAutoDeliveryRuleMenuBuilder(
                 )
 
         return Menu(
-            text=translater.translate('$add_auto_delivery_rule_text'),
+            main_text=translater.translate('$add_auto_delivery_rule_text'),
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )
@@ -285,4 +285,4 @@ class RequestsMenuBuilder(MenuBuilder, menu_id='fph:request_menu', context_type=
                 continue
             text += f'<b>{html.escape(k)}: {v}</b>\n'
 
-        return Menu(text=text)
+        return Menu(main_text=text)

@@ -152,7 +152,9 @@ class KeyboardBuilder:
 
 @dataclass
 class Menu:
-    text: str = ''
+    header_text: str = ''
+    main_text: str = ''
+    footer_text: str = ''
     header_keyboard: KeyboardBuilder = field(default_factory=KeyboardBuilder)
     main_keyboard: KeyboardBuilder = field(default_factory=KeyboardBuilder)
     footer_keyboard: KeyboardBuilder = field(default_factory=KeyboardBuilder)
@@ -187,7 +189,10 @@ class Menu:
         if msg is None or isinstance(msg, InaccessibleMessage):
             raise ValueError('Inaccessible message.')
 
-        return await msg.answer(text=self.text, reply_markup=self.total_keyboard(convert=True))
+        return await msg.answer(
+            text=self.full_text,
+            reply_markup=self.total_keyboard(convert=True)
+        )
 
     async def apply_to(
         self,
@@ -201,9 +206,13 @@ class Menu:
             raise ValueError('Inaccessible message.')
 
         return await msg.edit_text(
-            text=self.text if text else msg.text,
+            text=self.full_text if text else msg.text,
             reply_markup=self.total_keyboard(convert=True) if keyboard else msg.reply_markup,
         )
+
+    @property
+    def full_text(self) -> str:
+        return '\n\n'.join(i for i in [self.header_text, self.main_text, self.footer_text] if i)
 
 
 @dataclass(kw_only=True)

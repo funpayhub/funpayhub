@@ -49,7 +49,7 @@ async def set_sending_message_state(
     menu = await tg_ui.build_menu(menu_context)
 
     msg = await query.message.answer(
-        text=menu.text,
+        text=menu.main_text,
         reply_markup=menu.total_keyboard(convert=True),
     )
 

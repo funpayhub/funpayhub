@@ -57,7 +57,7 @@ class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_
         )
 
         return Menu(
-            text=translater.translate('$plugins_list'),
+            main_text=translater.translate('$plugins_list'),
             main_keyboard=keyboard,
             footer_keyboard=footer_keyboard,
             finalizer=StripAndNavigationFinalizer(),
@@ -170,7 +170,7 @@ class PluginInfoMenuBuilder(
         )
 
         return Menu(
-            text=text,
+            main_text=text,
             main_keyboard=keyboard,
             finalizer=StripAndNavigationFinalizer(),
         )
@@ -194,7 +194,7 @@ class InstallPluginMenuBuilder(
         )
 
         return Menu(
-            text=translater.translate('$install_plugin_choice'),
+            main_text=translater.translate('$install_plugin_choice'),
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )

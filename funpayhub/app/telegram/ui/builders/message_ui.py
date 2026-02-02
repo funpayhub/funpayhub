@@ -99,13 +99,14 @@ class NewMessageNotificationMenuBuilder(
                 '</code></pre>'
             )
 
-        text = (
+        header_text = (
             f'✉️ <b>Новые сообщения в чате <code>{ctx.funpay_chat_name}</code> '
-            f'(ID: <code>{ctx.funpay_chat_id}</code>).</b>\n\n'
-        ) + text
+            f'(ID: <code>{ctx.funpay_chat_id}</code>).</b>'
+        )
 
         return Menu(
-            text=text,
+            header_text=header_text,
+            main_text=text,
             header_keyboard=keyboard,
             finalizer=StripAndNavigationFinalizer(),
         )
@@ -131,7 +132,7 @@ class SendMessageMenuBuilder(
             )
 
         return Menu(
-            text=translater.translate('$new_message_ui.enter_reply_text').format(
+            main_text=translater.translate('$new_message_ui.enter_reply_text').format(
                 chat_id=ctx.funpay_chat_id,
                 chat_name=ctx.funpay_chat_name,
             ),

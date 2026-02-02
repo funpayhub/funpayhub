@@ -43,7 +43,7 @@ class SelectLanguageMenu(MenuBuilder, menu_id='s1', context_type=MenuContext):
             )
 
         return Menu(
-            text='👋🙂❗\n\n🗣️❓ 🌍💬 ❓\n\n👇',
+            main_text='👋🙂❗\n\n🗣️❓ 🌍💬 ❓\n\n👇',
             footer_keyboard=kb,
         )
 
@@ -82,7 +82,7 @@ class SetupStepMenuBuilder(MenuBuilder, menu_id='s2', context_type=StepContext):
             )
 
         return Menu(
-            text=translater.translate(f'$setup_enter_{ctx.step}_message'),
+            main_text=translater.translate(f'$setup_enter_{ctx.step}_message'),
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )

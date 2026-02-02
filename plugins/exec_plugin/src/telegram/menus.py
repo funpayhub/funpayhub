@@ -89,7 +89,7 @@ class ExecListMenuBuilder(MenuBuilder, menu_id='exec_list', context_type=MenuCon
             )
 
         return Menu(
-            text='Exec registry',
+            main_text='Exec registry',
             main_keyboard=keyboard,
             finalizer=StripAndNavigationFinalizer(),
         )
@@ -101,7 +101,7 @@ class ExecOutputMenuBuilder(MenuBuilder, menu_id='exec_output', context_type=Men
         total_pages = math.ceil(result.output_len / MAX_TEXT_LEN)
 
         return Menu(
-            text=await exec_view_text(ctx, result, 'output'),
+            main_text=await exec_view_text(ctx, result, 'output'),
             header_keyboard=await build_view_navigation_buttons(ctx, total_pages),
             main_keyboard=await exec_view_kb(ctx, 'output'),
             finalizer=StripAndNavigationFinalizer(),
@@ -114,7 +114,7 @@ class ExecCodeMenuBuilder(MenuBuilder, menu_id='exec_code', context_type=MenuCon
         total_pages = math.ceil(result.code_len / MAX_TEXT_LEN)
 
         return Menu(
-            text=await exec_view_text(ctx, result, 'code'),
+            main_text=await exec_view_text(ctx, result, 'code'),
             header_keyboard=await build_view_navigation_buttons(ctx, total_pages),
             main_keyboard=await exec_view_kb(ctx, 'code'),
             finalizer=StripAndNavigationFinalizer(),

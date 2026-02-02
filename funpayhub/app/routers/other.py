@@ -39,7 +39,7 @@ async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub) -> None:
     async def send_notifications() -> None:
         tasks = await hub.telegram.send_notification(
             'system',
-            menu.text,
+            menu.full_text,
             menu.total_keyboard(True),
         )
         if not tasks:
@@ -74,7 +74,7 @@ async def edit_start_notifications(
         menu = await tg_ui.build_menu(ctx)
 
         try:
-            await i.edit_text(text=menu.text, reply_markup=menu.total_keyboard(True))
+            await i.edit_text(text=menu.full_text, reply_markup=menu.total_keyboard(True))
         except:
             continue
 

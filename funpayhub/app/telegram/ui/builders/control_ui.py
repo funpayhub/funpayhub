@@ -53,7 +53,7 @@ class ControlMenuBuilder(MenuBuilder, menu_id=MenuIds.control, context_type=Menu
         )
 
         return Menu(
-            text=translater.translate('$control_ui_desc'),
+            main_text=translater.translate('$control_ui_desc'),
             main_keyboard=main_keyboard,
             finalizer=StripAndNavigationFinalizer(),
         )

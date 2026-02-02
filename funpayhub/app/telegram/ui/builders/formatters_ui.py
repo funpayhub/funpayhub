@@ -80,7 +80,7 @@ class FormatterListMenuBuilder(
             )
 
         return Menu(
-            text='Форматтеры',
+            main_text='Форматтеры',
             main_keyboard=keyboard,
             footer_keyboard=footer_keyboard,
             finalizer=premade.StripAndNavigationFinalizer(),
@@ -110,6 +110,6 @@ class FormatterInfoMenuBuilder(
 {translater.translate(formatter.description)}
 """
         return Menu(
-            text=text,
+            main_text=text,
             finalizer=premade.StripAndNavigationFinalizer(),
         )

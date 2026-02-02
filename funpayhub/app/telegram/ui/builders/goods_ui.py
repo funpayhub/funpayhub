@@ -49,7 +49,7 @@ class GoodsSourcesListMenuBuilder(
         )
 
         return Menu(
-            text=translater.translate('$goods_sources_list_text'),
+            main_text=translater.translate('$goods_sources_list_text'),
             main_keyboard=kb,
             footer_keyboard=footer_kb,
             finalizer=StripAndNavigationFinalizer(),
@@ -138,7 +138,7 @@ class GoodsSourceInfoMenuBuilder(
         )
 
         return Menu(
-            text=text,
+            main_text=text,
             header_keyboard=await build_view_navigation_buttons(ctx, -1),
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
