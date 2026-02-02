@@ -30,8 +30,8 @@ class FunPayHubProperties(Properties):
                 id='version',
                 name='version',
                 description='version',
-                value='0.2.6',
-            )
+                value='0.2.7',
+            ),
         )
         self.toggles = self.attach_node(TogglesProperties())
         self.general = self.attach_node(GeneralProperties())
@@ -45,6 +45,6 @@ class FunPayHubProperties(Properties):
                 name='$props.message_templates:names',
                 description='$props:message_templates:description',
                 default_factory=list,
-            )
+            ),
         )
         self.plugin_properties = self.attach_node(PluginProperties())
