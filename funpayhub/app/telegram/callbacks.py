@@ -272,7 +272,7 @@ class AutoDeliveryOpenGoodsSourcesList(
 
 
 class BindGoodsSourceToAutoDelivery(
-    CallbackData,
+    CallbackData, Pageable,
     identifier='bind_goods_source_to_autodelivery'
 ):
     rule: str

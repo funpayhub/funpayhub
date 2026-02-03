@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
-from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
+from aiogram.types import Message, BotCommand, InlineKeyboardMarkup, CallbackQuery, Update
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
 
@@ -21,6 +21,7 @@ from funpayhub.app.telegram.middlewares import (
     AddDataMiddleware,
     IsAuthorizedMiddleware,
 )
+from funpayhub.lib.telegram.callback_data import UnknownCallback
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 
 
@@ -182,3 +183,23 @@ class Telegram:
             )
 
         return tasks
+
+    async def execute_previous_callback(
+        self,
+        callback_data: UnknownCallback | str,
+        query: CallbackQuery,
+    ) -> None:
+        await self.dispatcher.feed_update(
+            self.bot,
+            Update(
+                update_id=-1,
+                callback_query=query.model_copy(
+                    update={
+                        'data': callback_data.pack_history(hash=False)
+                        if isinstance(callback_data, UnknownCallback)
+                        else callback_data
+                    }
+                ),
+            ),
+            dispatcher=self.dispatcher,
+        )

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from aiogram import Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import StateFilter
@@ -7,11 +8,17 @@ from aiogram.fsm.context import FSMContext
 
 from funpayhub.app.telegram import states, callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
+
+from funpayhub.lib.goods_sources import GoodsSource, GoodsSourcesManager
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
 from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.lib.telegram.callback_data import UnknownCallback
+from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
+
+
+if TYPE_CHECKING:
+    from funpayhub.app.telegram.main import Telegram
 
 
 r = router = Router(name='fph:auto_delivery')
@@ -153,9 +160,54 @@ async def open_bind_goods_menu(
     callback_data: cbs.AutoDeliveryOpenGoodsSourcesList,
     properties: FunPayHubProperties,
     tg_ui: UIRegistry,
+    state: FSMContext
 ):
     await EntryMenuContext(
         trigger=query,
         menu_id=MenuIds.autodelivery_goods_sources_list,
         entry_path=properties.auto_delivery.get_properties([callback_data.rule]).path,
     ).build_and_apply(tg_ui, query.message)
+
+    state_obj = states.BindingAutoDeliveryGoodsSource(
+        message=query.message,
+        callback_data=callback_data
+    )
+    await state.set_state(state_obj.identifier)
+    await state.set_data({'data': state_obj})
+
+
+@router.callback_query(cbs.BindGoodsSourceToAutoDelivery.filter())
+async def bind_goods_source(
+    query: CallbackQuery,
+    callback_data: cbs.BindGoodsSourceToAutoDelivery,
+    properties: FunPayHubProperties,
+    state: FSMContext,
+    goods_manager: GoodsSourcesManager,
+    tg: Telegram
+):
+    source = goods_manager.get(callback_data.source_id)
+    if source is None:
+        await query.answer('$goods_source_does_not_exist', show_alert=True)
+        return
+
+    state_str = await state.get_state()
+    if state_str == states.BindingAutoDeliveryGoodsSource.identifier:
+        await state.clear()
+
+    await properties.auto_delivery.get_properties(
+        [callback_data.rule]
+    ).get_parameter(
+        ['goods_source']
+    ).set_value(
+        callback_data.source_id
+    )
+
+    await tg.execute_previous_callback(
+        join_callbacks(*callback_data.history[:-1]),
+        query
+    )
+
+
+@router.message(StateFilter(states.BindingAutoDeliveryGoodsSource.identifier))
+async def handler(message: Message, state: FSMContext):
+    await message.reply('Binding auto delivery filter')

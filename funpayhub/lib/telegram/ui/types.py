@@ -218,9 +218,9 @@ class Menu:
 @dataclass(kw_only=True)
 class MenuContext:
     menu_id: str
-    menu_page: int = 0
-    view_page: int = 0
-    chat_id: int | None = None
+    menu_page: int = ...
+    view_page: int = ...
+    chat_id: int = None
     thread_id: int | None = None
     message_id: int | None = None
     trigger: Message | CallbackQuery | None = None
@@ -236,6 +236,20 @@ class MenuContext:
 
         if self.chat_id is None:
             raise ValueError('Chat ID or trigger must be provided.')
+
+        if self.menu_page is Ellipsis and self.callback_data is not None:
+            menu_page = getattr(self.callback_data, 'menu_page', None)
+            if menu_page is not None:
+                self.menu_page = menu_page
+            else:
+                self.menu_page = self.callback_data.data.get('menu_page', 0)
+
+        if self.view_page is Ellipsis and self.callback_data is not None:
+            view_page = getattr(self.callback_data, 'view_page', None)
+            if view_page is not None:
+                self.view_page = view_page
+            else:
+                self.view_page = self.callback_data.data.get('view_page', 0)
 
     @property
     def callback_data(self) -> UnknownCallback | None:
