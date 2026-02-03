@@ -490,7 +490,7 @@ class AddOfferButtonModification(
         btn = Button.callback_button(
             button_id='add_rule',
             text=translater.translate('$add_offer_rule'),
-            callback_data=cbs.OpenAutoDeliveryRuleAction(from_callback=ctx.callback_data).pack(),
+            callback_data=cbs.OpenAddAutoDeliveryRuleMenu(from_callback=ctx.callback_data).pack(),
             row=True,
         )
         menu.footer_keyboard.insert(0, btn)

@@ -252,14 +252,7 @@ class AddGoodsTxtSource(CallbackData, identifier='add_goods_txt_source'): ...
 
 
 # Autodelivery
-class OpenAutoDeliveryRuleAction(CallbackData, identifier='open_add_autodelivery_rule'):
-    """
-    Открывает в текущем сообщении меню добавления правила авто-выдачи `MenuIds.`.
-    Устаналивает состояние на :class:`funpayhub.app.telegram.states.AddingAutoDeliveryRule`.
-
-    Хэндлер: funpayhub.app.telegram.routers.
-    """
-
+class OpenAddAutoDeliveryRuleMenu(CallbackData, identifier='open_add_autodelivery_rule_menu'):
     ...
 
 
