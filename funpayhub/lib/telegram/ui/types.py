@@ -217,6 +217,32 @@ class Menu:
 
 @dataclass(kw_only=True)
 class MenuContext:
+    """
+    Базовый контекст для билдеров меню Telegram.
+
+    Аргументы:
+        `menu_id`: Обязательный. ID меню, которое необходимо построить.
+        `menu_page`: Страница меню. Если не указана, будет получена из `callback_data` или `trigger`.
+        `view_page`: Страница текста меню. Если не указана, будет получена из `callback_data` или `trigger`.
+        `chat_id`: ID Telegram чата, куда будет выслано меню. Обязательно, если `trigger` не указан.
+        `thread_id`: ID темы в чате. Получается из `trigger`, если он указан.
+        `message_id`: ID сообщения, в которое будет вставлено меню. Получается из `trigger`, если он указан.
+        `trigger`: Триггер, вызвавший меню. Используется для получения `chat_id`, `thread_id` и `message_id`.
+        `callback_override`: Переопределяет `callback_data`.
+        `data`: Дополнительные данные контекста.
+
+    Правила и логика:
+        - Обязательно указать либо `chat_id`, либо `trigger`.
+        - Если указан `trigger`, `chat_id`, `thread_id` и `message_id` подтягиваются из него автоматически.
+        - callback_data определяется в следующем порядке:
+            1. `callback_override`, если передан.
+            2. ключ 'callback_data' в `data`, если он экземпляром `UnknownCallback`.
+            3. разбор `trigger`, если `trigger` — `CallbackQuery`.
+            4. иначе возвращает `None`.
+        - Если `menu_page` или `view_page` не указаны (`Ellipsis`),
+          сначала ищется соответствующее поле в `callback_data`, затем в `callback_data.data`,
+          и если не найдено — устанавливается 0.
+    """
     menu_id: str
     menu_page: int = ...
     view_page: int = ...
