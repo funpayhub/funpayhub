@@ -36,7 +36,6 @@ if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater
     from funpayhub.lib.goods_sources import GoodsSourcesManager
     from funpayhub.lib.telegram.ui.registry import UIRegistry
-    from funpayhub.lib.telegram.ui import MenuContext
 
 
 class ToggleParamButtonBuilder(
@@ -497,35 +496,50 @@ class AddOfferButtonModification(
         return menu
 
 
-class AddSourcesListAtAutoDeliveryModification(
+class ReplaceSourcesListButtonModification(
     MenuModification,
-    modification_id='fph:add_sources_list_to_auto_delivery',
+    modification_id='fph:replace_sources_list_button_modification',
 ):
     """
-    Модификация, добавляющая список источников товаров к меню изменения параметра
-        `auto_delivery.*.goods_source`.
+    Заменяет кнопку параметра goods_source в `auto_delivery.*` на кастомную кнопку.
     """
 
-    async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
-        return (
-            ctx.entry_path
-            and ctx.entry_path[0] == 'auto_delivery'
-            and ctx.entry_path[-1] == 'goods_source'
-        )
+    async def filter(
+        self,
+        ctx: EntryMenuContext,
+        menu: Menu,
+        properties: FunPayHubProperties
+    ) -> bool:
+        print(ctx.menu_id)
+        print(len(ctx.entry_path))
+        print(ctx.entry_path[0] == properties.auto_delivery.path[0])
+        print(ctx.entry_path[0])
+        print(properties.auto_delivery.path[0])
+        return len(ctx.entry_path) == 2 and ctx.entry_path[0] == properties.auto_delivery.id
 
     async def modify(
         self,
         ctx: EntryMenuContext,
         menu: Menu,
-        goods_manager: GoodsSourcesManager,
+        translater: Translater,
     ) -> Menu:
-        for source in goods_manager.values():
-            menu.main_keyboard.add_callback_button(
-                button_id=f'set_goods_source:{source.source_id}',
-                text=source.display_id,
-                callback_data=cbs.Dummy().pack(),
-            )
+        entry_path = str([*ctx.entry_path, 'goods_source'])
 
+        for l_index, line in enumerate(menu.main_keyboard):
+            for b_index, button in enumerate(line):
+                if not button.button_id.endswith(entry_path):
+                    continue
+
+                btn = Button.callback_button(
+                    button_id='bind_goods_source',
+                    text=translater.translate('$bind_goods_source'),
+                    callback_data=cbs.BindGoodsSource(
+                        rule=ctx.entry_path[-1],
+                        from_callback=ctx.callback_data
+                    ).pack(),
+                )
+                menu.main_keyboard.keyboard[l_index][b_index] = btn
+                break
         return menu
 
 

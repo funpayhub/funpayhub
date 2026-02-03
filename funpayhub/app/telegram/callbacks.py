@@ -262,3 +262,7 @@ class AddAutoDeliveryRule(CallbackData, identifier='add_autodelivery_rule'):
 
 class DeleteAutoDeliveryRule(CallbackData, identifier='delete_autodelivery_rule'):
     rule: str
+
+
+class BindGoodsSource(CallbackData, identifier='bind_goods_source'):
+    rule: str

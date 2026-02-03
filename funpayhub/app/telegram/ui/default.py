@@ -63,10 +63,10 @@ MENU_MODIFICATIONS = {
         properties_ui.AddOfferButtonModification,
         properties_ui.AddRemoveButtonToAutoDeliveryModification,
         properties_ui.AddRemoveButtonToCommandModification,
+        properties_ui.ReplaceSourcesListButtonModification,
     ],
     MenuIds.param_value_manual_input: [
         properties_ui.AddFormattersListButtonModification,
-        properties_ui.AddSourcesListAtAutoDeliveryModification,
     ],
     MenuIds.goods_source_info: [
         goods_ui.AddRemoveButtonToGoodsSourceInfoModification

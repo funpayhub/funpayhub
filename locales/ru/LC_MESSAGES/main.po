@@ -276,6 +276,9 @@ msgstr "🗳 Источники товаров"
 msgid "$goods_sources_list_text"
 msgstr "🗳 Источники товаров"
 
+msgid "$bind_goods_source"
+msgstr "🗳 Источник товаров"
+
 msgid "$download_goods"
 msgstr "⤵ Скачать товары"
 
