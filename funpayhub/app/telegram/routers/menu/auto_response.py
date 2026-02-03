@@ -4,9 +4,8 @@ import asyncio
 from typing import TYPE_CHECKING, Any
 from copy import copy
 
-from aiogram import Bot, Dispatcher
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Update, Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery
 from aiogram.filters import StateFilter
 
 import funpayhub.app.telegram.callbacks as cbs

@@ -91,11 +91,10 @@ async def send_funpay_message(
         result = True
     except Exception:
         import traceback
-
-        print(traceback.format_exc())
+        print(traceback.format_exc())  # todo: logging
 
     if result:
-        await message.react(reaction=[ReactionTypeEmoji(emoji='👍')], is_big=True)
+        await message.react(reaction=[ReactionTypeEmoji(emoji='👍')])
     else:
-        await message.react(reaction=[ReactionTypeEmoji(emoji='💩')], is_big=True)
+        await message.react(reaction=[ReactionTypeEmoji(emoji='💩')])
     # todo: execute $formatters
