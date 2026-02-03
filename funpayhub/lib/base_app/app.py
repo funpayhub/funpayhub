@@ -10,30 +10,18 @@ from typing import Any
 from pathlib import Path
 from contextlib import suppress
 
-from colorama import Fore, Style
-from aiogram.types import User
+from eventry.asyncio.dispatcher import Dispatcher
 
 import exit_codes
 from loggers import main as logger, plugins as plugins_logger
-from funpayhub.app.routers import ROUTERS
 from funpayhub.lib.plugins import PluginManager
-from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.exceptions import GoodsError
 from funpayhub.lib.properties import Parameter, Properties, MutableParameter
 from funpayhub.lib.translater import Translater
-from funpayhub.app.dispatching import (
-    Dispatcher as HubDispatcher,
-    ParameterAttachedEvent,
-    PropertiesAttachedEvent,
-    ParameterValueChangedEvent,
-)
-from funpayhub.app.funpay.main import FunPay
-from funpayhub.app.telegram.main import Telegram
-from funpayhub.app.workflow_data import WorkflowData
 from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
-from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 
-from .tty import INIT_SETUP_TEXT_EN, INIT_SETUP_TEXT_RU, box_messages
+from .telegram import TelegramApp
+from .workflow_data import WorkflowData
 
 
 def random_part(length) -> str:
@@ -43,53 +31,27 @@ def random_part(length) -> str:
 class App:
     def __init__(
         self,
+        dispatcher: Dispatcher,
         properties: Properties,
         translater: Translater | None = None,
         safe_mode: bool = False,
+        telegram_bot_token: str = '',
     ):
         self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
         logger.info('FunPay Hub initialized. Instance ID: %s', self._instance_id)
 
-        self._setup_completed = bool(properties.general.golden_key.value)
         self._safe_mode = safe_mode
         self._properties = properties
         self._translater = translater or Translater()
         self._goods_manager = GoodsSourcesManager()
         self._plugin_manager = PluginManager(self)
+        self._workflow_data = WorkflowData()
+        self._dispatcher = dispatcher
 
-        self._workflow_data = WorkflowData
-        self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
-        self._setup_dispatcher()
-
-        self._funpay = FunPay(
+        self._telegram = TelegramApp(
             self,
-            bot_token=self.properties.general.golden_key.value,
-            proxy=self.properties.general.proxy.value or None,
-            headers=None,
+            bot_token=telegram_bot_token,
             workflow_data=self.workflow_data,
-        )
-        self._telegram = Telegram(
-            self,
-            bot_token=os.environ.get('FPH_TELEGRAM_TOKEN'),  # todo: or from config
-            workflow_data=self.workflow_data,
-        )
-
-        self.workflow_data.update(
-            {
-                'hub': self,
-                'properties': self.properties,
-                'translater': self.translater,
-                'fp': self.funpay,
-                'fp_bot': self.funpay.bot,
-                'fp_dp': self.funpay.dispatcher,
-                'fp_formatters': self.funpay.text_formatters,
-                'tg': self._telegram,
-                'tg_bot': self._telegram.bot,
-                'tg_dp': self.telegram.dispatcher,
-                'tg_ui': self.telegram.ui_registry,
-                'plugin_manager': self._plugin_manager,
-                'goods_manager': self._goods_manager,
-            },
         )
 
         self._stop_signal: asyncio.Future[int] = asyncio.Future()
@@ -110,9 +72,6 @@ class App:
                 await self._load_plugins()
 
             self._setup = True
-
-    def _setup_dispatcher(self) -> None:
-        self._dispatcher.connect_routers(*ROUTERS)
 
     async def _load_plugins(self) -> None:
         if self.safe_mode:
@@ -237,27 +196,6 @@ class App:
         self._stop_signal.set_result(code)
         await self._stopped_signal.wait()
 
-    def _welcome_tty(self, me: User) -> None:
-        print('\033[2J\033[H', end='')
-        print(
-            box_messages(
-                INIT_SETUP_TEXT_EN.format(
-                    setup_key=self._instance_id,
-                    bot_username=me.username,
-                ),
-                INIT_SETUP_TEXT_RU.format(
-                    setup_key=self._instance_id,
-                    bot_username=me.username,
-                ),
-            ),
-        )
-        input(
-            f'{Fore.GREEN + Style.BRIGHT}'
-            f'Press ENTER to continue / Нажмите ENTER чтобы продолжить...'
-            f'{Style.RESET_ALL}',
-        )
-        print('\033[2J\033[H', end='')
-
     async def emit_parameter_changed_event(
         self,
         parameter: MutableParameter[Any],
@@ -280,15 +218,11 @@ class App:
         await self.dispatcher.event_entry(event)
 
     @property
-    def properties(self) -> FunPayHubProperties:
+    def properties(self) -> Properties:
         return self._properties
 
     @property
-    def funpay(self) -> FunPay:
-        return self._funpay
-
-    @property
-    def telegram(self) -> Telegram:
+    def telegram(self) -> TelegramApp:
         return self._telegram
 
     @property
@@ -296,11 +230,11 @@ class App:
         return self._translater
 
     @property
-    def workflow_data(self) -> dict[str, Any]:
+    def workflow_data(self) -> WorkflowData:
         return self._workflow_data
 
     @property
-    def dispatcher(self) -> HubDispatcher:
+    def dispatcher(self) -> Dispatcher:
         return self._dispatcher
 
     @property
@@ -316,9 +250,5 @@ class App:
         return self._safe_mode
 
     @property
-    def setup_completed(self) -> bool:
-        return self._setup_completed
-
-    @property
     def can_load_plugins(self) -> bool:
-        return not self.safe_mode and self.setup_completed
+        return not self.safe_mode
