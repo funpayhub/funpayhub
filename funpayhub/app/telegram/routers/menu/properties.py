@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
     from funpayhub.lib.translater import Translater
     from funpayhub.app.properties.properties import FunPayHubProperties
+    from funpayhub.app.telegram.main import Telegram
 
 
 async def _delete_message(msg: Message) -> None:
@@ -124,21 +125,14 @@ async def dummy(query: CallbackQuery) -> None:
 @r.callback_query(cbs.Clear.filter())
 async def clear(
     query: CallbackQuery,
-    bot: Bot,
-    dispatcher: Dispatcher,
     callback_data: cbs.Clear,
     state: FSMContext,
+    tg: Telegram
 ) -> None:
     if callback_data.delete_message:
         await query.message.delete()
     elif callback_data.open_previous and callback_data.history:
-        await dispatcher.feed_update(
-            bot,
-            Update(
-                update_id=-1,
-                callback_query=query.model_copy(update={'data': callback_data.pack_history()}),
-            ),
-        )
+        await tg.execute_previous_callback(callback_data, query)
     await state.clear()
 
 
