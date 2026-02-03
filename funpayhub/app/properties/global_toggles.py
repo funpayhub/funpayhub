@@ -20,15 +20,6 @@ class TogglesProperties(Properties):
             )
         )
 
-        self.auto_restock = self.attach_node(
-            ToggleParameter(
-                id='auto_restock',
-                name='$props.toggles.auto_restock:name',
-                description='$props.toggles.auto_restock:description',
-                default_value=True,
-            )
-        )
-
         self.auto_response = self.attach_node(
             ToggleParameter(
                 id='auto_response',
