@@ -148,6 +148,9 @@ class AddingAutoDeliveryRule(State, identifier='fph:adding_autodelivery_rule'):
 
 
 @dataclass
-class BindingAutoDeliveryGoodsSource(State, identifier='fph:binding_binding_autodelivery_goods_source'):
-    message: Message
+class BindingAutoDeliveryGoodsSource(
+    State, identifier='fph:binding_binding_autodelivery_goods_source'
+):
+    query: CallbackQuery
     callback_data: UnknownCallback
+    rule: str
