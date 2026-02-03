@@ -300,6 +300,36 @@ async def add_goods_txt_source(
     ).build_and_answer(tg_ui, msg)
 
 
+@r.callback_query(cbs.RemoveGoodsSource.filter())
+async def delete_auto_delivery_rule(
+    query: CallbackQuery,
+    callback_data: cbs.RemoveGoodsSource,
+    translater: Translater,
+    tg_ui: UIRegistry,
+    goods_manager: GoodsSourcesManager
+):
+    source = goods_manager.get(callback_data.source_id)
+    if source is None:
+        await query.answer(
+            translater.translate('$err_goods_source_does_not_exist'),
+            show_alert=True
+        )
+        return
+
+    await goods_manager.remove_source(callback_data.source_id)
+
+    await MenuContext(
+        menu_id=MenuIds.goods_sources_list,
+        trigger=query,
+        callback_override=cbs.OpenMenu(
+            menu_id=MenuIds.goods_sources_list,
+            context_data={'source_id': source.source_id},
+            history=callback_data.history[:-2]
+        )
+    ).build_and_apply(tg_ui, query.message)
+
+
+# todo: в отдельный модуль
 @router.callback_query(cbs.AddAutoDeliveryRule.filter())
 async def add_auto_delivery_rule(
     query: CallbackQuery,
@@ -411,6 +441,7 @@ async def delete_auto_delivery_rule(
         callback_override=cbs.OpenMenu(
             menu_id=MenuIds.properties_entry,
             context_data={'entry_path': properties.auto_delivery.path},
-            history=callback_data.history[:-1],
+            #  * > список автовыдачи > меню настроек автовыдачи
+            history=callback_data.history[:-2],
         ),
     ).build_and_apply(tg_ui, query.message)

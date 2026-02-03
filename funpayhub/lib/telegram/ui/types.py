@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 from typing import TYPE_CHECKING, Any, Type, Literal, overload
-from dataclasses import field, dataclass
+from dataclasses import field, dataclass, fields
 from collections.abc import Iterable, Iterator
 
 from aiogram.types import (
@@ -268,6 +268,18 @@ class MenuContext:
     async def build_and_answer(self, registry: UIRegistry, message: Message) -> Message:
         menu = await self.build_menu(registry)
         return await menu.answer_to(message)
+
+    @property
+    def context_data(self) -> dict[str, Any]:
+        """
+        Возвращает словарь полей, объявленных в классе-наследнике,
+        исключая поля базового `MenuContext`.
+        """
+
+        base_fields = {i.name for i in fields(MenuContext)}
+        return {
+            k.name: getattr(self, k.name) for k in fields(self) if k.name not in base_fields
+        }
 
 
 @dataclass(kw_only=True)

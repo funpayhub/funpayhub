@@ -68,4 +68,7 @@ MENU_MODIFICATIONS = {
         properties_ui.AddFormattersListButtonModification,
         properties_ui.AddSourcesListAtAutoDeliveryModification,
     ],
+    MenuIds.goods_source_info: [
+        goods_ui.AddRemoveButtonToGoodsSourceInfoModification
+    ]
 }

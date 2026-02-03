@@ -29,11 +29,14 @@ from funpayhub.app.telegram.ui.builders.properties_ui.context import (
     EntryButtonContext,
 )
 
+from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
+
 
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater
     from funpayhub.lib.goods_sources import GoodsSourcesManager
     from funpayhub.lib.telegram.ui.registry import UIRegistry
+    from funpayhub.lib.telegram.ui import MenuContext
 
 
 class ToggleParamButtonBuilder(
@@ -527,95 +530,31 @@ class AddSourcesListAtAutoDeliveryModification(
 
 
 class AddRemoveButtonToAutoDeliveryModification(
-    MenuModification,
+    AddRemoveButtonBaseModification,
     modification_id='fph:add_remove_button_to_auto_delivery',
 ):
     async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
         return len(ctx.entry_path) == 2 and ctx.entry_path[0] == 'auto_delivery'
 
     async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
-        key = f'{self.modification_id}:confirm_delete'
+        delete_callback = cbs.DeleteAutoDeliveryRule(
+            rule=ctx.entry_path[1],
+            from_callback=ctx.callback_data,
+        ).pack()
 
-        if not ctx.data.get(key):
-            menu.footer_keyboard.add_callback_button(
-                button_id='delete',
-                text=translater.translate('$delete'),
-                callback_data=cbs.OpenMenu(
-                    menu_id=ctx.menu_id,
-                    menu_page=ctx.menu_page,
-                    view_page=ctx.view_page,
-                    context_data={'entry_path': ctx.entry_path},
-                    data={**ctx.data, key: True},
-                    history=ctx.callback_data.history if ctx.callback_data is not None else [],
-                ).pack(),
-            )
-        else:
-            menu.footer_keyboard.add_row(
-                Button.callback_button(
-                    button_id='confirm_delete',
-                    text=translater.translate('$delete'),
-                    callback_data=cbs.DeleteAutoDeliveryRule(
-                        rule=ctx.entry_path[1],
-                        from_callback=ctx.callback_data,
-                    ).pack(),
-                ),
-                Button.callback_button(
-                    button_id='cancel_delete',
-                    text=translater.translate('$cancel'),
-                    callback_data=cbs.OpenMenu(
-                        menu_id=ctx.menu_id,
-                        menu_page=ctx.menu_page,
-                        view_page=ctx.view_page,
-                        context_data={'entry_path': ctx.entry_path},
-                        data={**ctx.data, key: False},
-                        history=ctx.callback_data.history if ctx.callback_data is not None else [],
-                    ).pack(),
-                ),
-            )
-        return menu
+        return await self._modify(ctx, menu, translater, delete_callback=delete_callback)
 
 
 class AddRemoveButtonToCommandModification(
-    MenuModification,
+    AddRemoveButtonBaseModification,
     modification_id='fph:add_remove_button_to_command',
 ):
     async def filter(self, ctx: EntryMenuContext, menu: Menu) -> bool:
         return len(ctx.entry_path) == 2 and ctx.entry_path[0] == 'auto_response'
 
     async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
-        key = f'{self.modification_id}:confirm_delete'
-
-        if not ctx.data.get(key):
-            menu.footer_keyboard.add_callback_button(
-                button_id='delete',
-                text=translater.translate('$delete'),
-                callback_data=cbs.OpenMenu(
-                    menu_id=ctx.menu_id,
-                    menu_page=ctx.menu_page,
-                    view_page=ctx.view_page,
-                    context_data={'entry_path': ctx.entry_path},
-                    data={**ctx.data, key: True},
-                    history=ctx.callback_data.history if ctx.callback_data is not None else [],
-                ).pack(),
-            )
-        else:
-            menu.footer_keyboard.add_row(
-                Button.callback_button(
-                    button_id='confirm_delete',
-                    text=translater.translate('$delete'),
-                    callback_data=cbs.Dummy().pack(),
-                ),
-                Button.callback_button(
-                    button_id='cancel_delete',
-                    text=translater.translate('$cancel'),
-                    callback_data=cbs.OpenMenu(
-                        menu_id=ctx.menu_id,
-                        menu_page=ctx.menu_page,
-                        view_page=ctx.view_page,
-                        context_data={'entry_path': ctx.entry_path},
-                        data={**ctx.data, key: False},
-                        history=ctx.callback_data.history if ctx.callback_data is not None else [],
-                    ).pack(),
-                ),
-            )
-        return menu
+        delete_callback = cbs.RemoveCommand(
+            command=ctx.entry_path[-1],
+            from_callback=ctx.callback_data
+        ).pack()
+        return await self._modify(ctx, menu, translater, delete_callback=delete_callback)
