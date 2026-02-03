@@ -90,7 +90,6 @@ class AddingListItem(State, identifier='fph:adding_list_item'):
 @dataclass
 class AddingCommand(State, identifier='fph:adding_command'):
     message: Message
-    callback_query_obj: CallbackQuery
     callback_data: UnknownCallback
 
 
