@@ -31,6 +31,7 @@ MENU_BUILDERS = [
     message_ui.SendMessageMenuBuilder,
     goods_ui.GoodsSourcesListMenuBuilder,
     goods_ui.GoodsSourceInfoMenuBuilder,
+    goods_ui.AutoDeliveryGoodsSourcesListMenuBuilder,
     other_ui.MainMenuBuilder,
     other_ui.AddCommandMenuBuilder,
     other_ui.StartNotificationMenuBuilder,

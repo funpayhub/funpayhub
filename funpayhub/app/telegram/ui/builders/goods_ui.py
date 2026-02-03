@@ -4,6 +4,7 @@ import html
 from typing import TYPE_CHECKING
 
 from funpayhub.app.telegram import callbacks as cbs
+from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.premade import (
@@ -52,6 +53,41 @@ class GoodsSourcesListMenuBuilder(
             main_text=translater.translate('$goods_sources_list_text'),
             main_keyboard=kb,
             footer_keyboard=footer_kb,
+            finalizer=StripAndNavigationFinalizer(),
+        )
+
+
+class AutoDeliveryGoodsSourcesListMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.autodelivery_goods_sources_list,
+    context_type=EntryMenuContext,
+):
+    """
+    Внимание: в context.entry_path необходимо передавать путь до текущего правила автовыдачи!
+    Например: ['auto_delivery', 'my offer']
+
+    """
+    async def build(
+        self,
+        ctx: EntryMenuContext,
+        goods_manager: GoodsSourcesManager,
+        translater: Translater,
+    ) -> Menu:
+        kb = KeyboardBuilder()
+        for source in goods_manager.values():
+            kb.add_callback_button(
+                button_id=f'bind_goods_source:{source.source_id}',
+                text=f'[{len(source)}] {source.display_id}',
+                callback_data=cbs.BindGoodsSourceToAutoDelivery(
+                    rule=ctx.entry_path[-1],
+                    source_id=source.source_id,
+                    from_callback=ctx.callback_data,
+                ).pack(),
+            )
+
+        return Menu(
+            main_text=translater.translate('$autodelivery_bind_goods_source'),
+            main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )
 

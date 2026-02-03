@@ -510,11 +510,6 @@ class ReplaceSourcesListButtonModification(
         menu: Menu,
         properties: FunPayHubProperties
     ) -> bool:
-        print(ctx.menu_id)
-        print(len(ctx.entry_path))
-        print(ctx.entry_path[0] == properties.auto_delivery.path[0])
-        print(ctx.entry_path[0])
-        print(properties.auto_delivery.path[0])
         return len(ctx.entry_path) == 2 and ctx.entry_path[0] == properties.auto_delivery.id
 
     async def modify(
@@ -533,7 +528,7 @@ class ReplaceSourcesListButtonModification(
                 btn = Button.callback_button(
                     button_id='bind_goods_source',
                     text=translater.translate('$bind_goods_source'),
-                    callback_data=cbs.BindGoodsSource(
+                    callback_data=cbs.AutoDeliveryOpenGoodsSourcesList(
                         rule=ctx.entry_path[-1],
                         from_callback=ctx.callback_data
                     ).pack(),

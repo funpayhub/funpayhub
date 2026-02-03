@@ -264,5 +264,16 @@ class DeleteAutoDeliveryRule(CallbackData, identifier='delete_autodelivery_rule'
     rule: str
 
 
-class BindGoodsSource(CallbackData, identifier='bind_goods_source'):
+class AutoDeliveryOpenGoodsSourcesList(
+    CallbackData,
+    identifier='auto_delivery_optn_goods_sources_list'
+):
     rule: str
+
+
+class BindGoodsSourceToAutoDelivery(
+    CallbackData,
+    identifier='bind_goods_source_to_autodelivery'
+):
+    rule: str
+    source_id: str

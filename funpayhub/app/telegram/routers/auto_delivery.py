@@ -145,3 +145,17 @@ async def delete_auto_delivery_rule(
             history=callback_data.history[:-2],
         ),
     ).build_and_apply(tg_ui, query.message)
+
+
+@router.callback_query(cbs.AutoDeliveryOpenGoodsSourcesList.filter())
+async def open_bind_goods_menu(
+    query: CallbackQuery,
+    callback_data: cbs.AutoDeliveryOpenGoodsSourcesList,
+    properties: FunPayHubProperties,
+    tg_ui: UIRegistry,
+):
+    await EntryMenuContext(
+        trigger=query,
+        menu_id=MenuIds.autodelivery_goods_sources_list,
+        entry_path=properties.auto_delivery.get_properties([callback_data.rule]).path,
+    ).build_and_apply(tg_ui, query.message)
