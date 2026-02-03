@@ -12,6 +12,24 @@ from aiogram.types import Message, CallbackQuery, TelegramObject
 
 from loggers import telegram as logger
 from funpayhub.app.properties import FunPayHubProperties
+import random
+
+
+messages = [
+    'Доступ закрыт. Клуб избранных сегодня без гостей.',
+    'Упс. Кажется, это меню не для тебя.',
+    'Извините, вход по спискам. Тебя там нет. Точно нет.',
+    'Система посмотрела на тебя... и покачала головой.',
+    'Доступ запрещён. Попробуй ещё раз. Где-нибудь в другом боте.',
+    'Хорошая попытка. Но нет.',
+    'Этот функционал доступен только тем, кому можно. Тебе не можно.',
+    'Хаб вежливо делает вид, что вас здесь нет.',
+    'Запрос отклонён. Без объяснения причин.',
+    'Я бы пустил тебя… но не сегодня. И не завтра.',
+    'Очень смело. Очень мимо.',
+    'Попытка засчитана. Результат — отрицательный.',
+    'Интерфейс вас не узнаёт. И не хочет.'
+]
 
 
 class IsAuthorizedMiddleware(BaseMiddleware):
@@ -33,6 +51,8 @@ class IsAuthorizedMiddleware(BaseMiddleware):
                 from_user.username,
                 from_user.id,
             )
+            if isinstance(event, CallbackQuery):
+                await event.answer(random.choice(messages), show_alert=True)
             return None
 
         return await handler(event, data)
