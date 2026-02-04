@@ -41,67 +41,6 @@ async def _delete_message(msg: Message) -> None:
 
 
 # TEMP
-@r.callback_query(cbs.OpenMenu.filter())
-async def open_custom_menu(
-    query: CallbackQuery,
-    tg_ui: UIRegistry,
-    callback_data: cbs.OpenMenu,
-) -> None:
-    menu_builder = tg_ui.get_menu_builder(callback_data.menu_id)
-    ctx_class = menu_builder.builder.context_type
-    additional_data = {**callback_data.data}
-
-    parsed_callback: UnknownCallback = getattr(query, '__parsed__', None)
-    if parsed_callback is not None:
-        parsed_callback.data['new_message'] = False
-
-    if callback_data.replace_history_with_trigger:
-        fake_callback_history = cbs.DrawMenu(
-            text=query.message.text,
-            keyboard=cbs.DrawMenu.keyboard_from_message(query.message),
-        ).pack(hash=False)
-
-        fake_callback_data = callback_data.model_copy()
-        fake_callback_data.history = [fake_callback_history]
-        additional_data['callback_data'] = fake_callback_data
-
-    ctx_instance = ctx_class(
-        menu_id=callback_data.menu_id,
-        menu_page=callback_data.menu_page,
-        view_page=callback_data.view_page,
-        trigger=query,
-        data=additional_data,
-        **callback_data.context_data,
-    )
-    if callback_data.new_message:
-        await ctx_instance.build_and_answer(tg_ui, query.message)
-    else:
-        await ctx_instance.build_and_apply(tg_ui, query.message)
-
-
-@r.callback_query(cbs.DrawMenu.filter())
-async def draw_menu(
-    query: CallbackQuery,
-    callback_data: cbs.DrawMenu,
-):
-    kb_list = []
-    for row in callback_data.keyboard:
-        curr_row = []
-        for button in row:
-            curr_row.append(
-                InlineKeyboardButton(
-                    text=button.get('text'),
-                    callback_data=button.get('callback_data'),
-                    url=button.get('url'),
-                ),
-            )
-        kb_list.append(curr_row)
-
-    kb = InlineKeyboardMarkup(inline_keyboard=kb_list)
-    await query.message.edit_text(
-        text=callback_data.text,
-        reply_markup=kb,
-    )
 
 
 @r.message(CommandStart())
@@ -117,25 +56,6 @@ async def send_menu(message: Message, tg_ui: UIRegistry) -> None:
 # TEMP
 
 
-@r.callback_query(cbs.Dummy.filter())
-async def dummy(query: CallbackQuery) -> None:
-    await query.answer()
-
-
-@r.callback_query(cbs.Clear.filter())
-async def clear(
-    query: CallbackQuery,
-    callback_data: cbs.Clear,
-    state: FSMContext,
-    tg: Telegram,
-) -> None:
-    if callback_data.delete_message:
-        await query.message.delete()
-    elif callback_data.open_previous and callback_data.history:
-        await tg.execute_previous_callback(callback_data, query)
-    await state.clear()
-
-
 @r.message(Command('settings'))
 async def send_menu(message: Message, tg_ui: UIRegistry) -> None:
     await EntryMenuContext(
@@ -149,30 +69,7 @@ async def send_menu(message: Message, tg_ui: UIRegistry) -> None:
     ).build_and_answer(tg_ui, message)
 
 
-@r.callback_query(cbs.NextParamValue.filter())
-async def next_param_value(
-    query: CallbackQuery,
-    properties: FunPayHubProperties,
-    callback_data: cbs.NextParamValue,
-    dispatcher: Dispatcher,
-    hub: FunPayHub,
-    bot,
-) -> None:
-    try:
-        param = properties.get_parameter(callback_data.path)
-        await param.next_value(save=True)
-    except Exception as e:
-        await query.answer(text=str(e), show_alert=True)
-        raise
 
-    asyncio.create_task(hub.emit_parameter_changed_event(param))
-    await dispatcher.feed_update(
-        bot,
-        Update(
-            update_id=0,
-            callback_query=query.model_copy(update={'data': callback_data.pack_history()}),
-        ),
-    )
 
 
 @r.callback_query(cbs.ChooseParamValue.filter())
