@@ -104,7 +104,6 @@ def setup_botengine_router(plugin: LoadedPlugin, *routers: FPBERouter) -> FPBERo
 
 class PluginManager:
     PLUGINS_PATH = Path(os.getcwd()) / 'plugins'
-    DEV_PLUGINS_PATH = Path(os.environ.get('PYTHONPATH', os.getcwd())) / 'plugins'
 
     def __init__(self, hub: FunPayHub) -> None:
         self._plugins: dict[str, LoadedPlugin] = {}
@@ -134,11 +133,9 @@ class PluginManager:
             'post_setup': self._run_post_setup,
         }
 
-        paths = [str(self.DEV_PLUGINS_PATH), str(self.PLUGINS_PATH)]
-        for i in paths:
-            if i not in sys.path:
-                logger.info('Adding %s to %s.', str(i), 'sys.path')
-                sys.path.append(i)
+        if self.PLUGINS_PATH not in sys.path:
+            logger.info('Adding %s to %s.', str(self.PLUGINS_PATH), 'sys.path')
+            sys.path.append(str(self.PLUGINS_PATH))
 
         self._installation_lock = asyncio.Lock()
 
@@ -167,12 +164,7 @@ class PluginManager:
         return plugin not in self.disabled_plugins
 
     async def load_plugins(self) -> None:
-        paths = []
-        for i in [self.DEV_PLUGINS_PATH, self.PLUGINS_PATH]:
-            if i.exists() and i not in paths:
-                paths.append(i)
-
-        for i in chain(*[i.iterdir() for i in paths]):
+        for i in self.PLUGINS_PATH.iterdir():
             if not i.is_dir():
                 logger.debug('Ignoring %s: not a directory.', str(i))
                 continue
