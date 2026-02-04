@@ -95,13 +95,6 @@ def setup_hub_router(plugin: LoadedPlugin, *routers: HubRouter) -> HubRouter:
     return wrapper_router
 
 
-def setup_botengine_router(plugin: LoadedPlugin, *routers: FPBERouter) -> FPBERouter:
-    wrapper_router = FPBERouter(f'plugin_wrapper:{plugin.manifest.plugin_id}')
-    setup_eventry_plugin_router(wrapper_router, plugin)
-    wrapper_router.connect_routers(*routers)
-    return wrapper_router
-
-
 class PluginManager:
     PLUGINS_PATH = Path(os.getcwd()) / 'plugins'
 
@@ -112,10 +105,8 @@ class PluginManager:
             'pre_setup': self._run_pre_setup_step,
             'apply_properties': self._apply_properties,
             'setup_properties': self._run_setup_properties_step,
-            'apply_hub_routers': self._apply_hub_routers,
-            'setup_hub_routers': self._run_setup_hub_routers_step,
-            'apply_fp_routers': self._apply_funpay_routers,
-            'setup_fp_routers': self._run_setup_funpay_routers_step,
+            'apply_app_routers': self._apply_hub_routers,
+            'setup_app_routers': self._run_setup_hub_routers_step,
             'apply_tg_routers': self._apply_telegram_routers,
             'setup_tg_routers': self._run_setup_telegram_routers_step,
             'apply_menus': self._apply_menus,
