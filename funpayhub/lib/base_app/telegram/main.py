@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from dataclasses import dataclass
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
@@ -19,6 +20,11 @@ if TYPE_CHECKING:
     from ..workflow_data import WorkflowData
 
 
+@dataclass
+class TelegramAppConfig:
+    max_menu_lines: int = 6
+
+
 class TelegramApp:
     def __init__(
         self,
@@ -26,12 +32,13 @@ class TelegramApp:
         bot_token: str,
         workflow_data: WorkflowData,
         *,
+        config: TelegramAppConfig | None = None,
         dispatcher: Dispatcher | None = None,
         commands_registry: CommandsRegistry | None = None,
         ui_registry: UIRegistry | None = None,
     ) -> None:
         self._app = app
-
+        self._config = config if config is not None else TelegramAppConfig()
         self._dispatcher = dispatcher or Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
         self._dispatcher.workflow_data = workflow_data
         self._commands_registry = commands_registry or CommandsRegistry()
@@ -61,6 +68,10 @@ class TelegramApp:
     @property
     def app(self) -> App:
         return self._app
+
+    @property
+    def config(self) -> TelegramAppConfig:
+        return self._config
 
     async def start(self) -> None:
         await self.bot.delete_webhook(drop_pending_updates=True)
