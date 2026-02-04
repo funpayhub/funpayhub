@@ -6,10 +6,11 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
+from aiogram.types import CallbackQuery, Update
 
 from funpayhub.lib.telegram import CommandsRegistry
 from funpayhub.lib.telegram.ui.registry import UIRegistry
-
+from ...telegram.callback_data import UnknownCallback
 
 if TYPE_CHECKING:
     from ..app import App
@@ -62,3 +63,22 @@ class TelegramApp:
     async def start(self) -> None:
         await self.bot.delete_webhook(drop_pending_updates=True)
         await self.dispatcher.start_polling(self.bot)
+
+    async def fake_query(
+        self,
+        callback_data: UnknownCallback | str,
+        query: CallbackQuery,
+        pack_history: bool = True
+    ) -> None:
+        if isinstance(callback_data, UnknownCallback):
+            query_str = callback_data.pack_history(hash=False) \
+                if pack_history \
+                else callback_data.pack(hash=False)
+        else:
+            query_str = query
+
+        await self.dispatcher.feed_update(
+            self.bot,
+            Update(update_id=-1, callback_query=query.model_copy(update={'data': query_str})),
+            dispatcher=self.dispatcher,
+        )
