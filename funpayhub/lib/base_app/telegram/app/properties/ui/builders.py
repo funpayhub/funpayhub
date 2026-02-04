@@ -11,6 +11,7 @@ from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, 
 from funpayhub.lib.base_app.telegram.app.ui import callbacks as ui_cbs
 
 from .. import callbacks as cbs
+from .registry import NodeMenuBuilder, NodeButtonBuilder
 from .context import NodeMenuContext as MenuCtx, NodeButtonContext as BtnCtx
 
 
@@ -69,7 +70,7 @@ class OpenParamMenuButtonBuilder(ButtonBuilder, button_id='open_param', context_
             button_id=f'param_change:{entry.path}',
             text=translater.translate(entry.name),
             callback_data=ui_cbs.OpenMenu(
-                menu_id=MenuIds.properties_entry,
+                menu_id=NodeMenuBuilder.menu_id,
                 from_callback=ctx.menu_render_context.callback_data,
                 context_data={'entry_path': entry.path},
             ).pack(),
@@ -98,7 +99,7 @@ class PropertiesMenuBuilder(MenuBuilder, menu_id='props_menu', context_type=Menu
 
             try:
                 button_ctx = BtnCtx(
-                    button_id=ButtonIds.properties_entry,
+                    button_id=NodeButtonBuilder.button_id,
                     menu_render_context=ctx,
                     entry_path=sub_entry.path,
                 )
@@ -183,7 +184,7 @@ class ListParameterMenuBuilder(MenuBuilder, menu_id='list_param_menu', context_t
                     button_id=button_id,
                     text=text,
                     callback_data=ui_cbs.OpenMenu(
-                        menu_id=MenuIds.properties_entry,
+                        menu_id=NodeMenuBuilder.menu_id,
                         menu_page=ctx.menu_page,
                         from_callback=ctx.callback_data,
                         data={'mode': mode_str},
