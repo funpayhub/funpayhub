@@ -8,7 +8,7 @@ from aiogram.types import CopyTextButton, InlineKeyboardButton as InlineButton
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.properties import Properties as Props, parameter as param
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, KeyboardBuilder
-from funpayhub.lib.base_app.telegram.app.ui import callbacks as ui_cbs
+from funpayhub.lib.base_app.telegram.app.ui import callbacks as ui_cbs, ui_finalizers
 
 from .. import callbacks as cbs
 from .context import NodeMenuContext as MenuCtx, NodeButtonContext as BtnCtx
@@ -112,7 +112,7 @@ class PropertiesMenuBuilder(MenuBuilder, menu_id='props_menu', context_type=Menu
         return Menu(
             main_text=_entry_text(entry, translater),
             main_keyboard=keyboard,
-            finalizer=premade.StripAndNavigationFinalizer(),
+            finalizer=ui_finalizers.StripAndNavigationFinalizer(),
         )
 
 
@@ -138,7 +138,7 @@ class ChoiceParameterMenuBuilder(MenuBuilder, menu_id='choice_param_menu', conte
         return Menu(
             main_text=_entry_text(entry, translater),
             main_keyboard=keyboard,
-            finalizer=premade.StripAndNavigationFinalizer(),
+            finalizer=ui_finalizers.StripAndNavigationFinalizer(),
         )
 
 
@@ -213,7 +213,7 @@ class ListParameterMenuBuilder(MenuBuilder, menu_id='list_param_menu', context_t
             main_text=_entry_text(entry, translater),
             main_keyboard=keyboard,
             footer_keyboard=KeyboardBuilder(keyboard=[buttons]),
-            finalizer=premade.StripAndNavigationFinalizer(),
+            finalizer=ui_finalizers.StripAndNavigationFinalizer(),
         )
 
 
@@ -240,7 +240,7 @@ class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', con
         return Menu(
             main_text=text,
             footer_keyboard=footer_keyboard,
-            finalizer=premade.StripAndNavigationFinalizer(back_button=False),
+            finalizer=ui_finalizers.StripAndNavigationFinalizer(back_button=False),
         )
 
 
@@ -262,5 +262,5 @@ class AddListItemMenuBuilder(MenuBuilder, menu_id='add_list_param_item', context
         return Menu(
             main_text=text,
             footer_keyboard=footer_keyboard,
-            finalizer=premade.StripAndNavigationFinalizer(back_button=False),
+            finalizer=ui_finalizers.StripAndNavigationFinalizer(back_button=False),
         )
