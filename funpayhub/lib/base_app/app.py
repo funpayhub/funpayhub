@@ -218,16 +218,20 @@ class App:
         await self.dispatcher.event_entry(event)
 
     @property
+    def instance_id(self) -> str:
+        return self._instance_id
+
+    @property
     def properties(self) -> Properties:
         return self._properties
 
     @property
-    def telegram(self) -> TelegramApp:
-        return self._telegram
-
-    @property
     def translater(self) -> Translater:
         return self._translater
+
+    @property
+    def telegram(self) -> TelegramApp:
+        return self._telegram
 
     @property
     def workflow_data(self) -> WorkflowData:
@@ -240,10 +244,6 @@ class App:
     @property
     def goods_managers(self) -> GoodsSourcesManager:
         return self._goods_manager
-
-    @property
-    def instance_id(self) -> str:
-        return self._instance_id
 
     @property
     def safe_mode(self) -> bool:
