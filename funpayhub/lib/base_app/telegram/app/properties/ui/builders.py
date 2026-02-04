@@ -67,7 +67,7 @@ class OpenParamMenuButtonBuilder(ButtonBuilder, button_id='open_param', context_
         return Button.callback_button(
             button_id=f'param_change:{entry.path}',
             text=translater.translate(entry.name),
-            callback_data=cbs.OpenMenu(
+            callback_data=ui_cbs.OpenMenu(
                 menu_id=MenuIds.properties_entry,
                 from_callback=ctx.menu_render_context.callback_data,
                 context_data={'entry_path': entry.path},
@@ -182,7 +182,7 @@ class ListParameterMenuBuilder(MenuBuilder, menu_id='list_param_menu', context_t
                 Button.callback_button(
                     button_id=button_id,
                     text=text,
-                    callback_data=cbs.OpenMenu(
+                    callback_data=ui_cbs.OpenMenu(
                         menu_id=MenuIds.properties_entry,
                         menu_page=ctx.menu_page,
                         from_callback=ctx.callback_data,
