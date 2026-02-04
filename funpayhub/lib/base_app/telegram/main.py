@@ -12,6 +12,7 @@ from aiogram.client.default import DefaultBotProperties
 from funpayhub.lib.telegram import CommandsRegistry
 from funpayhub.lib.telegram.ui.registry import UIRegistry
 
+from .app import MENUS, BUTTONS, ROUTERS
 from ...telegram.callback_data import UnknownCallback
 
 
@@ -52,6 +53,19 @@ class TelegramApp:
                 link_preview_is_disabled=True,
             ),
         )
+
+        self._setup_dispatcher()
+        self._setup_ui()
+
+    def _setup_dispatcher(self) -> None:
+        self.dispatcher.include_routers(*ROUTERS)
+
+    def _setup_ui(self) -> None:
+        for i in MENUS:
+            self.ui_registry.add_menu_builder(i)
+
+        for i in BUTTONS:
+            self.ui_registry.add_button_builder(i)
 
     @property
     def dispatcher(self) -> Dispatcher:
