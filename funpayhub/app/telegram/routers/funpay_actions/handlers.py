@@ -91,6 +91,7 @@ async def send_funpay_message(
         result = True
     except Exception:
         import traceback
+
         print(traceback.format_exc())  # todo: logging
 
     if result:

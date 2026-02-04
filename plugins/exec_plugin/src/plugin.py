@@ -35,7 +35,7 @@ class ExecPluginProperties(Properties):
                 name='Test Toggle Parameter',
                 description='Test Toggle Parameter',
                 default_value=False,
-            )
+            ),
         )
 
         self.test_string = self.attach_node(
@@ -44,7 +44,7 @@ class ExecPluginProperties(Properties):
                 name='Test String Parameter',
                 description='Test String Parameter',
                 default_value='',
-            )
+            ),
         )
 
         self.test_list = self.attach_node(
@@ -53,7 +53,7 @@ class ExecPluginProperties(Properties):
                 name='Test List Parameter',
                 description='Test List Parameter',
                 default_factory=list,
-            )
+            ),
         )
 
 

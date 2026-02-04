@@ -30,7 +30,7 @@ class GeneralProperties(Properties):
                     Choice('banana', '🍌 Bacunana', 'banana'),
                 ),
                 default_value='ru',
-            )
+            ),
         )
 
         self.proxy = self.attach_node(
@@ -41,7 +41,7 @@ class GeneralProperties(Properties):
                 default_value='',
                 flags=[ParameterFlags.PROTECT_VALUE],
                 validator=proxy_validator,
-            )
+            ),
         )
 
         self.user_agent = self.attach_node(
@@ -51,7 +51,7 @@ class GeneralProperties(Properties):
                 description='$props.general.user_agent:description',
                 flags=[ParameterFlags.PROTECT_VALUE],
                 default_value='',
-            )
+            ),
         )
 
         self.golden_key = self.attach_node(
@@ -61,7 +61,7 @@ class GeneralProperties(Properties):
                 description='$props.general.golden_key:description',
                 default_value='',
                 flags=[ParameterFlags.PROTECT_VALUE],
-            )
+            ),
         )
 
         self.runner_request_interval = self.attach_node(
@@ -70,5 +70,5 @@ class GeneralProperties(Properties):
                 name='$props.general.runner_request_interval:name',
                 description='$props.general.runner_request_interval:description',
                 default_value=5.0,
-            )
+            ),
         )

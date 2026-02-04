@@ -28,5 +28,5 @@ class PluginProperties(Properties):
                 name='$props:plugin_properties:disabled_plugins:name',
                 description='$props:plugin_properties:disabled_plugins:description',
                 default_factory=list,
-            )
+            ),
         )

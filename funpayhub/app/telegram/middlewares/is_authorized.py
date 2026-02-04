@@ -4,6 +4,7 @@ from __future__ import annotations
 __all__ = ['IsAuthorizedMiddleware']
 
 
+import random
 from typing import Any
 from collections.abc import Callable, Awaitable
 
@@ -12,7 +13,6 @@ from aiogram.types import Message, CallbackQuery, TelegramObject
 
 from loggers import telegram as logger
 from funpayhub.app.properties import FunPayHubProperties
-import random
 
 
 messages = [
@@ -28,7 +28,7 @@ messages = [
     'Я бы пустил тебя… но не сегодня. И не завтра.',
     'Очень смело. Очень мимо.',
     'Попытка засчитана. Результат — отрицательный.',
-    'Интерфейс вас не узнаёт. И не хочет.'
+    'Интерфейс вас не узнаёт. И не хочет.',
 ]
 
 

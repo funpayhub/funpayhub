@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from aiogram import Bot
 from aiogram.exceptions import TelegramUnauthorizedError
 
-from funpayhub.lib.properties import Properties, IntParameter, ListParameter
 from funpayhub.lib.exceptions import ValidationError
-from aiogram import Bot
+from funpayhub.lib.properties import Properties, IntParameter, ListParameter
 
 
 class ChatSyncProperties(Properties):
@@ -22,7 +22,7 @@ class ChatSyncProperties(Properties):
                 name='ID чата синхронизации',
                 description='ID чата с темами, в который будут присылаться сообщения.',
                 default_value=0,
-            )
+            ),
         )
 
         self.bot_tokens = self.attach_node(
@@ -30,8 +30,8 @@ class ChatSyncProperties(Properties):
                 id='bot_tokens',
                 name='Токены Telegram ботов',
                 description='Токены Telegram ботов для отправки сообщений в темы.',
-                add_item_validator=tokens_validator
-            )
+                add_item_validator=tokens_validator,
+            ),
         )
 
 

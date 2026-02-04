@@ -218,7 +218,8 @@ INVALID_CHARS = set('<>:"/\\|?*\0')  # todo: code duplicate
 
 
 @router.message(
-    StateFilter(states.BindingAutoDeliveryGoodsSource.identifier), lambda msg: msg.text
+    StateFilter(states.BindingAutoDeliveryGoodsSource.identifier),
+    lambda msg: msg.text,
 )
 async def handler(
     message: Message,

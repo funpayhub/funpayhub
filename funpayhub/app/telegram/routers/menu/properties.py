@@ -31,8 +31,8 @@ from ...ui.ids import MenuIds
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
     from funpayhub.lib.translater import Translater
-    from funpayhub.app.properties.properties import FunPayHubProperties
     from funpayhub.app.telegram.main import Telegram
+    from funpayhub.app.properties.properties import FunPayHubProperties
 
 
 async def _delete_message(msg: Message) -> None:
@@ -127,7 +127,7 @@ async def clear(
     query: CallbackQuery,
     callback_data: cbs.Clear,
     state: FSMContext,
-    tg: Telegram
+    tg: Telegram,
 ) -> None:
     if callback_data.delete_message:
         await query.message.delete()

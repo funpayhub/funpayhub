@@ -13,15 +13,12 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 
 from funpayhub.app.telegram import states, callbacks as cbs
-from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
 from funpayhub.app.workflow_data import WorkflowData as wfd
 from funpayhub.lib.goods_sources import GoodsSource, FileGoodsSource, GoodsSourcesManager
 from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.lib.telegram.callback_data import UnknownCallback
 from funpayhub.app.telegram.ui.builders.context import StateUIContext, GoodsInfoMenuContext
-from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 
 
 r = router = Router(name='fph:goods')
@@ -306,13 +303,13 @@ async def delete_auto_delivery_rule(
     callback_data: cbs.RemoveGoodsSource,
     translater: Translater,
     tg_ui: UIRegistry,
-    goods_manager: GoodsSourcesManager
+    goods_manager: GoodsSourcesManager,
 ):
     source = goods_manager.get(callback_data.source_id)
     if source is None:
         await query.answer(
             translater.translate('$err_goods_source_does_not_exist'),
-            show_alert=True
+            show_alert=True,
         )
         return
 
@@ -324,6 +321,6 @@ async def delete_auto_delivery_rule(
         callback_override=cbs.OpenMenu(
             menu_id=MenuIds.goods_sources_list,
             context_data={'source_id': source.source_id},
-            history=callback_data.history[:-2]
-        )
+            history=callback_data.history[:-2],
+        ),
     ).build_and_apply(tg_ui, query.message)

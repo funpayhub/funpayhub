@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-
-from typing import Any, Self, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Self
 
 
 if TYPE_CHECKING:
-    from .app import App
-    from funpayhub.lib.translater import Translater
+    from aiogram import Bot, Dispatcher
+
     from funpayhub.lib.properties import Properties
-    from .telegram import TelegramApp
+    from funpayhub.lib.translater import Translater
+    from funpayhub.lib.telegram.ui import UIRegistry
     from funpayhub.lib.goods_sources import GoodsSourcesManager
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
-    from funpayhub.lib.telegram.ui import UIRegistry
-    from aiogram import Dispatcher, Bot
+
+    from .app import App
+    from .telegram import TelegramApp
 
 
 class WorkflowData:

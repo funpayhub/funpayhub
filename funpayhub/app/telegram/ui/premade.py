@@ -14,9 +14,9 @@ import math
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
+from funpayhub.lib.telegram.ui import MenuModification
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext, KeyboardBuilder
 from funpayhub.lib.telegram.callback_data import UnknownCallback
-from funpayhub.lib.telegram.ui import MenuModification
 
 
 class StripAndNavigationFinalizer:
@@ -205,7 +205,7 @@ async def build_view_navigation_buttons(
 
 class AddRemoveButtonBaseModification(
     MenuModification,
-    modification_id='fph:add_remove_button_base_modification'
+    modification_id='fph:add_remove_button_base_modification',
 ):
     """
     Базовая модификация, добавляющая кнопку удаления в подвал клавиатуры.
@@ -218,7 +218,7 @@ class AddRemoveButtonBaseModification(
         ctx: MenuContext,
         menu: Menu,
         translater: Translater,
-        delete_callback: str = cbs.Dummy().pack()
+        delete_callback: str = cbs.Dummy().pack(),
     ):
         key = f'{self.modification_id}:confirm_delete'
 

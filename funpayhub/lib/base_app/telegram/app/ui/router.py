@@ -2,18 +2,24 @@ from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING
-from aiogram.filters import StateFilter
-import funpayhub.app.telegram.callbacks as cbs
-from .states import ChangingMenuPage
-from funpayhub.lib.telegram.callback_data import UnknownCallback
+
 from aiogram import Router
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.filters import StateFilter
+
 from funpayhub.lib.base_app.telegram import utils
+from funpayhub.lib.telegram.callback_data import UnknownCallback
+
+from . import callbacks as cbs
+from .states import ChangingMenuPage
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.base_app.telegram import TelegramApp
     from aiogram.types import Message, CallbackQuery
     from aiogram.fsm.context import FSMContext
+
+    from funpayhub.lib.telegram.ui import UIRegistry
+    from funpayhub.lib.base_app.telegram import TelegramApp
 
 
 router = Router(name='app:base_ui')
@@ -92,29 +98,28 @@ async def draw_menu(
 async def change_page(
     query: CallbackQuery,
     callback_data: cbs.ChangePageTo,
-    tg: TelegramApp
+    tg: TelegramApp,
 ) -> None:
     old = UnknownCallback.parse(callback_data.history[-1])
     if callback_data.menu_page is not None:
-        old.data['menu_page'] = callback_data.menu_page
+        old.data['menu_page'] = callback_data.keyboard
     if callback_data.view_page is not None:
-        old.data['view_page'] = callback_data.view_page
+        old.data['view_page'] = callback_data.text
     old.history = callback_data.history[:-1]
 
     await tg.fake_query(old.pack(), query)
 
 
-@router.callback_query(cbs.ChangeMenuPageManually.filter())
-@router.callback_query(cbs.ChangeViewPageManually.filter())
+@router.callback_query(cbs.ActivateChangingPageState.filter())
 async def activate_manual_page_changing_state(
     query: CallbackQuery,
     state: FSMContext,
-    callback_data: cbs.ChangeMenuPageManually | cbs.ChangeViewPageManually
+    callback_data: cbs.ActivateChangingPageState,
 ):
     msg = await query.message.answer(text='$enter_new_page_index_message')
 
     data = ChangingMenuPage(
-        mode='keyboard' if isinstance(callback_data, cbs.ChangeMenuPageManually) else 'text',
+        mode=callback_data.mode,
         query=query,
         message=msg,
         max_pages=callback_data.total_pages,
@@ -146,7 +151,6 @@ async def change_page_from_message(message: Message, state: FSMContext, tg: Tele
     await tg.fake_query(callback_data=old.pack(), query=data.query)
 
 
-
 # ----------------------------------------------------
 # ----------------------- Other ----------------------
 # ----------------------------------------------------
@@ -155,15 +159,15 @@ async def dummy(query: CallbackQuery) -> None:
     await query.answer()
 
 
-@router.callback_query(cbs.Clear.filter())
-async def clear(
+@router.callback_query(cbs.ClearState.filter())
+async def clear_state(
     query: CallbackQuery,
-    callback_data: cbs.Clear,
+    callback_data: cbs.ClearState,
     state: FSMContext,
-    tg: Telegram
+    tg: TelegramApp,
 ) -> None:
     if callback_data.delete_message:
         await query.message.delete()
     elif callback_data.open_previous and callback_data.history:
-        await tg.execute_previous_callback(callback_data, query)
+        await tg.fake_query(callback_data, query, pack_history=True)
     await state.clear()

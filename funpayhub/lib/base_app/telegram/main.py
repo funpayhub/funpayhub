@@ -4,13 +4,15 @@ from typing import TYPE_CHECKING
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
+from aiogram.types import Update, CallbackQuery
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
-from aiogram.types import CallbackQuery, Update
 
 from funpayhub.lib.telegram import CommandsRegistry
 from funpayhub.lib.telegram.ui.registry import UIRegistry
+
 from ...telegram.callback_data import UnknownCallback
+
 
 if TYPE_CHECKING:
     from ..app import App
@@ -68,12 +70,14 @@ class TelegramApp:
         self,
         callback_data: UnknownCallback | str,
         query: CallbackQuery,
-        pack_history: bool = True
+        pack_history: bool = True,
     ) -> None:
         if isinstance(callback_data, UnknownCallback):
-            query_str = callback_data.pack_history(hash=False) \
-                if pack_history \
+            query_str = (
+                callback_data.pack_history(hash=False)
+                if pack_history
                 else callback_data.pack(hash=False)
+            )
         else:
             query_str = query
 

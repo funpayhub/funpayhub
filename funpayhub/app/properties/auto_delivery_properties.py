@@ -23,7 +23,7 @@ class AutoDeliveryEntryProperties(Properties):
                 name='$props.auto_delivery.*.auto_delivery:name',
                 description='$props.auto_delivery.*.auto_delivery:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.multi_delivery = self.attach_node(
@@ -32,7 +32,7 @@ class AutoDeliveryEntryProperties(Properties):
                 name='$props.auto_delivery.*.multi_delivery:name',
                 description='$props.auto_delivery.*.multi_delivery:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.goods_source = self.attach_node(
@@ -41,7 +41,7 @@ class AutoDeliveryEntryProperties(Properties):
                 name='$props.auto_delivery.*.goods_source:name',
                 description='$props.auto_delivery.*.goods_source:description',
                 default_value='',
-            )
+            ),
         )
 
         self.delivery_text = self.attach_node(
@@ -50,7 +50,7 @@ class AutoDeliveryEntryProperties(Properties):
                 name='$props.auto_delivery.*.delivery_text:name',
                 description='$props.auto_delivery.*.delivery_text:description',
                 default_value='Thank you for buying this staff!',
-            )
+            ),
         )
 
 

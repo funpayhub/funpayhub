@@ -44,6 +44,7 @@ class _MenuBuilder:
                     result = await i(context, result, data)
                 except:
                     import traceback
+
                     print(traceback.format_exc())
                     continue  # todo: logging
 
@@ -53,6 +54,7 @@ class _MenuBuilder:
                 result = await wrapped((context, result), data)
             except:
                 import traceback
+
                 print(traceback.format_exc())
             result.finalizer = None
         return result

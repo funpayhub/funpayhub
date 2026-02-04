@@ -12,12 +12,10 @@ import importlib
 from typing import TYPE_CHECKING, Any
 from types import MappingProxyType
 from pathlib import Path
-from itertools import chain
 from contextlib import suppress
 from collections.abc import Callable, Awaitable
 
 from aiogram import Router as AiogramRouter, BaseMiddleware
-from funpaybotengine import Router as FPBERouter
 from packaging.version import Version
 from eventry.asyncio.router import Router as EventryRouter
 from eventry.asyncio.middleware_manager import MiddlewareManagerTypes

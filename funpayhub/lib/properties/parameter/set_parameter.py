@@ -3,7 +3,7 @@ from __future__ import annotations
 
 __all__ = ['SetParameter']
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from copy import copy
 from types import EllipsisType
 from collections.abc import Callable, Iterable, Awaitable

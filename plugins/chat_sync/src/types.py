@@ -6,8 +6,8 @@ from pathlib import Path
 from collections.abc import Iterator
 
 from aiogram import Bot
-from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.client.default import DefaultBotProperties
 
 
 class Registry:
@@ -25,7 +25,7 @@ class Registry:
                 try:
                     data = json.load(f)
                     self._fp_to_tg_pairs = {int(k): v for k, v in data.items()}
-                except Exception as e:
+                except Exception:
                     # todo: logging
                     self._fp_to_tg_pairs = {}
 
@@ -93,8 +93,9 @@ class Registry:
         with open(self.path, 'w', encoding='utf-8') as f:
             f.write(
                 json.dumps(
-                    {str(k): v for k, v in self.fp_to_tg_pairs.items()}, ensure_ascii=False
-                )
+                    {str(k): v for k, v in self.fp_to_tg_pairs.items()},
+                    ensure_ascii=False,
+                ),
             )
 
     @property
@@ -126,10 +127,11 @@ class BotRotater:
     Хранит набор ботов и поочерёдно возвращает их по кругу (round-robin).
     Поддерживает добавление и удаление ботов во время работы.
     """
+
     _DEFAULT_BOT_PROPERTIES = DefaultBotProperties(
         parse_mode=ParseMode.HTML,
         allow_sending_without_reply=True,
-        link_preview_is_disabled=True
+        link_preview_is_disabled=True,
     )
 
     def __init__(self, tokens) -> None:

@@ -4,19 +4,20 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from funpaybotengine import Router
+from aiogram.exceptions import TelegramUnauthorizedError
 from funpaybotengine.types import Message
 from funpaybotengine.runner import EventsStack
 from funpaybotengine.dispatching import NewMessageEvent, ChatChangedEvent
-from aiogram.exceptions import TelegramUnauthorizedError
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.builders.context import NewMessageMenuContext
 
 
 if TYPE_CHECKING:
+    from aiogram import Bot as TGBot
     from chat_sync.src.types import Registry, BotRotater
     from chat_sync.src.properties import ChatSyncProperties
-    from aiogram import Bot as TGBot
+
     from funpayhub.lib.telegram.ui import Menu, UIRegistry
 
 
@@ -26,10 +27,9 @@ last_event_stacks: dict[int, str] = {}
 
 async def is_setup(
     message: Message,
-    plugin_properties:
-    ChatSyncProperties,
+    plugin_properties: ChatSyncProperties,
     chat_sync_rotater: BotRotater,
-    events_stack: EventsStack
+    events_stack: EventsStack,
 ) -> bool:
     if not plugin_properties.sync_chat_id:
         return False
@@ -67,7 +67,7 @@ async def sync_new_message(
         topic = await tg_bot.create_forum_topic(
             chat_id=plugin_properties.sync_chat_id.value,
             name=f'{chat_event.chat_preview.username} ({message.chat_id})',
-            icon_custom_emoji_id='5417915203100613993'
+            icon_custom_emoji_id='5417915203100613993',
         )
         telegram_thread_id = topic.message_thread_id
         chat_sync_registry.add_chat_pair(message.chat_id, telegram_thread_id)

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING
+
 from aiogram.filters import StateFilter
+
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.telegram.states import ChangingMenuPage, ChangingViewPage
 from funpayhub.lib.telegram.callback_data import UnknownCallback
@@ -12,9 +14,10 @@ from .router import router
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.telegram.main import Telegram
     from aiogram.types import Message, CallbackQuery
     from aiogram.fsm.context import FSMContext
+
+    from funpayhub.app.telegram.main import Telegram
 
 
 @router.callback_query(cbs.ChangePageTo.filter())
@@ -34,13 +37,15 @@ async def change_page(query: CallbackQuery, callback_data: cbs.ChangePageTo, tg:
 async def activate_manual_page_changing_state(
     query: CallbackQuery,
     state: FSMContext,
-    callback_data: cbs.ChangeMenuPageManually | cbs.ChangeViewPageManually
+    callback_data: cbs.ChangeMenuPageManually | cbs.ChangeViewPageManually,
 ):
     msg = await query.message.answer(text='$enter_new_page_index_message')
 
-    data = ChangingViewPage \
-        if isinstance(callback_data, cbs.ChangeViewPageManually) \
+    data = (
+        ChangingViewPage
+        if isinstance(callback_data, cbs.ChangeViewPageManually)
         else ChangingMenuPage
+    )
 
     data_obj = data(
         callback_query_obj=query,

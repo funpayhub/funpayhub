@@ -4,9 +4,9 @@ import asyncio
 from typing import TYPE_CHECKING, Any
 from copy import copy
 
-from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import StateFilter
+from aiogram.fsm.context import FSMContext
 
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
@@ -16,8 +16,8 @@ from funpayhub.app.telegram.states import AddingCommand
 
 from .. import utils
 from .router import router as r
-from ...ui.builders.properties_ui.context import EntryMenuContext
 from ...ui.ids import MenuIds
+from ...ui.builders.properties_ui.context import EntryMenuContext
 
 
 if TYPE_CHECKING:
@@ -76,8 +76,8 @@ async def add_command(
             cbs.OpenMenu(
                 menu_id=MenuIds.properties_entry,
                 context_data={'entry_path': entry.path},
-            )
-        )
+            ),
+        ),
     ).build_and_apply(tg_ui, data.message)
 
 

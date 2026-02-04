@@ -7,13 +7,7 @@ __all__ = [
 import warnings
 from typing import TYPE_CHECKING, Any
 
-from aiogram.types import TelegramObject
-from aiogram.filters import Filter
-from aiogram.dispatcher.middlewares.user_context import EventContext
-
 from funpayhub.lib.core import classproperty
-
-from .states_manager import STATES_MANAGER_KEY
 
 
 if TYPE_CHECKING:

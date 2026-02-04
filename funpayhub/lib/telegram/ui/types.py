@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 from typing import TYPE_CHECKING, Any, Type, Literal, overload
-from dataclasses import field, dataclass, fields
+from dataclasses import field, fields, dataclass
 from collections.abc import Iterable, Iterator
 
 from aiogram.types import (
@@ -191,7 +191,7 @@ class Menu:
 
         return await msg.answer(
             text=self.full_text,
-            reply_markup=self.total_keyboard(convert=True)
+            reply_markup=self.total_keyboard(convert=True),
         )
 
     async def apply_to(
@@ -243,6 +243,7 @@ class MenuContext:
           сначала ищется соответствующее поле в `callback_data`, затем в `callback_data.data`,
           и если не найдено — устанавливается 0.
     """
+
     menu_id: str
     menu_page: int = ...
     view_page: int = ...
@@ -317,9 +318,7 @@ class MenuContext:
         """
 
         base_fields = {i.name for i in fields(MenuContext)}
-        return {
-            k.name: getattr(self, k.name) for k in fields(self) if k.name not in base_fields
-        }
+        return {k.name: getattr(self, k.name) for k in fields(self) if k.name not in base_fields}
 
 
 @dataclass(kw_only=True)

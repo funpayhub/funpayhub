@@ -4,14 +4,15 @@ import html
 from typing import TYPE_CHECKING
 
 from funpayhub.app.telegram import callbacks as cbs
-from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.premade import (
     StripAndNavigationFinalizer,
-    build_view_navigation_buttons, AddRemoveButtonBaseModification,
+    AddRemoveButtonBaseModification,
+    build_view_navigation_buttons,
 )
 from funpayhub.app.telegram.ui.builders.context import GoodsInfoMenuContext
+from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 
 
 if TYPE_CHECKING:
@@ -67,6 +68,7 @@ class AutoDeliveryGoodsSourcesListMenuBuilder(
     Например: ['auto_delivery', 'my offer']
 
     """
+
     async def build(
         self,
         ctx: EntryMenuContext,
@@ -209,11 +211,11 @@ class GoodsSourceInfoMenuBuilder(
 
 class AddRemoveButtonToGoodsSourceInfoModification(
     AddRemoveButtonBaseModification,
-    modification_id='fph:add_remove_button_to_goods_source_info'
+    modification_id='fph:add_remove_button_to_goods_source_info',
 ):
     async def modify(self, ctx: GoodsInfoMenuContext, menu: Menu, translater: Translater) -> Menu:
         delete_callback = cbs.RemoveGoodsSource(
             source_id=ctx.source_id,
-            from_callback=ctx.callback_data
+            from_callback=ctx.callback_data,
         ).pack()
         return await self._modify(ctx, menu, translater, delete_callback=delete_callback)

@@ -44,7 +44,7 @@ class TelegramGeneral(Properties):
                 name='$props.telegram.general.token:name',
                 description='$props.telegram.general.token:description',
                 default_value='',
-            )
+            ),
         )
 
         self.password = self.attach_node(
@@ -54,7 +54,7 @@ class TelegramGeneral(Properties):
                 description='$props.telegram.general.password:description',
                 default_value='',
                 flags=[ParamFlags.PROTECT_VALUE],
-            )
+            ),
         )
 
         self.authorized_users = self.attach_node(
@@ -63,7 +63,7 @@ class TelegramGeneral(Properties):
                 name='$props.telegram.general.authorized_users:name',
                 description='$props.telegram.general.authorized_users:description',
                 default_factory=list,
-            )
+            ),
         )
 
 
@@ -82,7 +82,7 @@ class TelegramAppearance(Properties):
                 description='$props.telegram.appearance.menu_entries_amount:description',
                 default_value=6,
                 validator=entries_validator,
-            )
+            ),
         )
 
         self.new_message_appearance = self.attach_node(NewMessageNotificationAppearance())
@@ -102,7 +102,7 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_mine:name',
                 description='$props.new_message_appearance.show_mine:description',
                 default_value=False,
-            )
+            ),
         )
 
         self.show_if_mine_only = self.attach_node(
@@ -111,7 +111,7 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_if_mine_only:name',
                 description='$props.new_message_appearance.show_if_mine_only:description',
                 default_value=False,
-            )
+            ),
         )
 
         self.show_automatic = self.attach_node(
@@ -120,7 +120,7 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_automatic:name',
                 description='$props.new_message_appearance.show_automatic:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.show_automatic_only = self.attach_node(
@@ -129,7 +129,7 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_automatic_only:name',
                 description='$props.new_message_appearance.show_automatic_only:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.show_mine_from_hub = self.attach_node(
@@ -138,7 +138,7 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_mine_from_hub:name',
                 description='$props.new_message_appearance.show_mine_from_hub:description',
                 default_value=False,
-            )
+            ),
         )
 
         self.show_mine_from_hub_only = self.attach_node(
@@ -147,5 +147,5 @@ class NewMessageNotificationAppearance(Properties):
                 name='$props.new_message_appearance.show_mine_from_hub_only:name',
                 description='$props.new_message_appearance.show_mine_from_hub_only:description',
                 default_value=False,
-            )
+            ),
         )

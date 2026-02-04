@@ -17,7 +17,7 @@ class TogglesProperties(Properties):
                 name='$props.toggles.auto_delivery:name',
                 description='$props.toggles.auto_delivery:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.auto_response = self.attach_node(
@@ -26,7 +26,7 @@ class TogglesProperties(Properties):
                 name='$props.toggles.auto_response:name',
                 description='$props.toggles.auto_response:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.auto_raise = self.attach_node(
@@ -35,5 +35,5 @@ class TogglesProperties(Properties):
                 name='$props.toggles.auto_raise:name',
                 description='$props.toggles.auto_raise:description',
                 default_value=True,
-            )
+            ),
         )

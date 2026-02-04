@@ -1,12 +1,15 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Literal
 from dataclasses import dataclass
+
 from funpayhub.lib.telegram.fsm import State
 
 
 if TYPE_CHECKING:
-    from aiogram.types import CallbackQuery, Message
-    from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
+    from aiogram.types import Message, CallbackQuery
+
+    from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
 @dataclass
@@ -14,6 +17,7 @@ class ChangingMenuPage(State, identifier='fph:changin_page'):
     """
     Состояние смены страницы меню (клавиатуры).
     """
+
     mode: Literal['keyboard', 'text']
     """
     Режиме переключения страницы:
@@ -39,4 +43,3 @@ class ChangingMenuPage(State, identifier='fph:changin_page'):
                 self.callback_data = getattr(self.query, '__parsed__')
             else:
                 self.callback_data = UnknownCallback.parse(self.query.data)
-

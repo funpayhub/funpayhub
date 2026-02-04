@@ -27,7 +27,7 @@ class AutoResponseEntryProperties(Properties):
                 name='$props.auto_response.*.case_sensitive:name',
                 description='$props.auto_response.*.case_sensitive:description',
                 default_value=False,
-            )
+            ),
         )
 
         self.reply = self.attach_node(
@@ -36,7 +36,7 @@ class AutoResponseEntryProperties(Properties):
                 name='$props.auto_response.*.reply:name',
                 description='$props.auto_response.*.reply:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.ignore_formatters_errors = self.attach_node(
@@ -45,7 +45,7 @@ class AutoResponseEntryProperties(Properties):
                 name='$props.auto_response.*.ignore_formatters_errors:name',
                 description='$props.auto_response.*.ignore_formatters_errors:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.ignore_hooks_errors = self.attach_node(
@@ -54,7 +54,7 @@ class AutoResponseEntryProperties(Properties):
                 name='$props.auto_response.*.ignore_hooks_errors:name',
                 description='$props.auto_response.*.ignore_hooks_errors:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.react_on_me = self.attach_node(
@@ -63,7 +63,7 @@ class AutoResponseEntryProperties(Properties):
                 name='$props.auto_response.*.react_on_me:name',
                 description='$props.auto_response.*.react_on_me:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.react_on_others = self.attach_node(
@@ -72,7 +72,7 @@ class AutoResponseEntryProperties(Properties):
                 name='$props.auto_response.*.react_on_others:name',
                 description='$props.auto_response.*.react_on_others:description',
                 default_value=True,
-            )
+            ),
         )
 
         self.response_text = self.attach_node(
@@ -81,7 +81,7 @@ class AutoResponseEntryProperties(Properties):
                 name='$props.auto_response.*.response_text:name',
                 description='$props.auto_response.*.response_text:description',
                 default_value='',
-            )
+            ),
         )
 
         self.hooks = self.attach_node(
@@ -90,7 +90,7 @@ class AutoResponseEntryProperties(Properties):
                 name='$props.auto_response.*.hooks:name',
                 description='$props.auto_response.*.hooks:description',
                 default_factory=list,
-            )
+            ),
         )
 
 

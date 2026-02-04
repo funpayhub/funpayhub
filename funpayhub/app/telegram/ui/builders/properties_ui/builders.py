@@ -3,7 +3,7 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
-from aiogram.types import InlineKeyboardButton, CopyTextButton
+from aiogram.types import CopyTextButton, InlineKeyboardButton
 
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.app.properties import FunPayHubProperties
@@ -24,17 +24,15 @@ from funpayhub.lib.telegram.ui.types import (
     KeyboardBuilder,
     MenuModification,
 )
+from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 from funpayhub.app.telegram.ui.builders.properties_ui.context import (
     EntryMenuContext,
     EntryButtonContext,
 )
 
-from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
-
 
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater
-    from funpayhub.lib.goods_sources import GoodsSourcesManager
     from funpayhub.lib.telegram.ui.registry import UIRegistry
 
 
@@ -232,7 +230,7 @@ class ListParameterMenuBuilder(
                         path=entry.path,
                         action=mode,
                         from_callback=ctx.callback_data,
-                    ).pack()
+                    ).pack(),
                 )
             else:
                 keyboard.add_row(
@@ -240,9 +238,9 @@ class ListParameterMenuBuilder(
                         button_id='temp',
                         obj=InlineKeyboardButton(
                             text=str(val),
-                            copy_text=CopyTextButton(text=str(val))
-                        )
-                    )
+                            copy_text=CopyTextButton(text=str(val)),
+                        ),
+                    ),
                 )
 
         footer = KeyboardBuilder(keyboard=[[]])
@@ -508,7 +506,7 @@ class ReplaceSourcesListButtonModification(
         self,
         ctx: EntryMenuContext,
         menu: Menu,
-        properties: FunPayHubProperties
+        properties: FunPayHubProperties,
     ) -> bool:
         return len(ctx.entry_path) == 2 and ctx.entry_path[0] == properties.auto_delivery.id
 
@@ -530,7 +528,7 @@ class ReplaceSourcesListButtonModification(
                     text=translater.translate('$bind_goods_source'),
                     callback_data=cbs.AutoDeliveryOpenGoodsSourcesList(
                         rule=ctx.entry_path[-1],
-                        from_callback=ctx.callback_data
+                        from_callback=ctx.callback_data,
                     ).pack(),
                 )
                 menu.main_keyboard.keyboard[l_index][b_index] = btn
@@ -564,6 +562,6 @@ class AddRemoveButtonToCommandModification(
     async def modify(self, ctx: EntryMenuContext, menu: Menu, translater: Translater) -> Menu:
         delete_callback = cbs.RemoveCommand(
             command=ctx.entry_path[-1],
-            from_callback=ctx.callback_data
+            from_callback=ctx.callback_data,
         ).pack()
         return await self._modify(ctx, menu, translater, delete_callback=delete_callback)

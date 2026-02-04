@@ -12,8 +12,8 @@ from .telegram.router import router as chat_sync_tg_router
 
 
 if TYPE_CHECKING:
-    from funpaybotengine import Router as FPRouter
     from aiogram import Router as TGRouter
+    from funpaybotengine import Router as FPRouter
 
 
 class ChatSyncPlugin(Plugin):
@@ -39,8 +39,8 @@ class ChatSyncPlugin(Plugin):
                 command='chat_sync',
                 source=self.manifest.plugin_id,
                 setup=True,
-                description='[ChatSync] Установить чат для синхронизации.'
-            )
+                description='[ChatSync] Установить чат для синхронизации.',
+            ),
         ]
 
     async def post_setup(self) -> None:

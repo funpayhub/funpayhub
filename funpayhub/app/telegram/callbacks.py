@@ -1,66 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Literal, TypedDict
-
-from pydantic import Field, BaseModel
-from aiogram.types import Message
+from typing import Literal
 
 from funpayhub.lib.telegram.callback_data import CallbackData
-
-
-class MenuPageable(BaseModel):
-    menu_page: int = 0
-
-
-class ViewPageable(BaseModel):
-    view_page: int = 0
-
-
-class Pageable(MenuPageable, ViewPageable): ...
-
-
-class Dummy(CallbackData, identifier='dummy'):
-    """
-    Путсышка.
-    Используется как временная замена для кнопок, callback котороым еще не создан.
-    Сразу отвечат на query. (`query.answer()`)
-
-    Хэндлер: :func:`funpayhub.app.telegram.routers.menu.properties.dummy`
-    """
-
-
-class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
-    """
-    Callback открытия меню.
-    """
-
-    menu_id: str
-    """ID меню, которое необходимо открыть."""
-
-    new_message: bool = False
-    """
-    Отправлять ли меню в новом сообщении.
-    
-    Внимание: данное поле всегда сбрасывается на False при обработке коллбэка хэндлером.
-    """
-
-    replace_history_with_trigger: bool = False
-    """Заменить ли историю в коллбэке на DrawMenu триггера"""
-
-    context_data: dict[str, Any] = Field(default_factory=dict)
-    """Данные для контекста построения меню."""
-
-
-class Clear(CallbackData, identifier='clear'):
-    """
-    Callback очитки текущего состояния.
-
-    При срабатывании бот очищает состояние пользователя в чате / теме, откуда пришел callback +
-    удаляет привязанное сообщение.
-    """
-
-    delete_message: bool = True
-    open_previous: bool = False
 
 
 class NextParamValue(CallbackData, identifier='next_param_value'):
@@ -86,30 +28,6 @@ class ManualParamValueInput(CallbackData, identifier='manual_value_input'):
     """Путь к параметру."""
 
 
-class ChangePageTo(CallbackData, identifier='change_page_to'):
-    """
-    Обновляет привязанное сообщение, меня страницу последнего callback из callback_history,
-    если в нем имеется паттерн page-\\d+
-    """
-
-    menu_page: int | None = None
-    """Новый индекс страницы."""
-
-    view_page: int | None = None  # todo: доделать
-
-
-class ChangeMenuPageManually(CallbackData, identifier='change_page_manually'):
-    """
-    Устанавливает состояние на `ChangingMenuPage`.
-    """
-
-    total_pages: int
-
-
-class ChangeViewPageManually(CallbackData, identifier='change_view_page_manually'):
-    total_pages: int
-
-
 class ChooseParamValue(CallbackData, identifier='choose_param_value'):
     path: list[str | int]
     choice_id: str
@@ -117,36 +35,6 @@ class ChooseParamValue(CallbackData, identifier='choose_param_value'):
 
 class ToggleNotificationChannel(CallbackData, identifier='toggle_notification_channel'):
     channel: str
-
-
-class ButtonDict(TypedDict, total=False):
-    text: str
-    callback_data: str | None
-    url: str | None
-
-
-class DrawMenu(CallbackData, identifier='draw_menu'):
-    text: str
-    keyboard: list[list[ButtonDict]]
-
-    @staticmethod
-    def keyboard_from_message(message: Message) -> list[list[ButtonDict]]:
-        if not message.reply_markup or not message.reply_markup.inline_keyboard:
-            return []
-
-        result = []
-        for row in message.reply_markup.inline_keyboard:
-            curr_row = []
-            for button in row:
-                curr_row.append(
-                    {
-                        'text': button.text,
-                        'callback_data': button.callback_data,
-                        'url': button.url,
-                    },
-                )
-            result.append(curr_row)
-        return result
 
 
 # list param
@@ -178,6 +66,7 @@ class MuteChat(CallbackData, identifier='mute_chat'):
 # Other
 class AddCommand(CallbackData, identifier='add_command'):
     pass
+
 
 class RemoveCommand(CallbackData, identifier='remove_command'):
     command: str
@@ -252,8 +141,7 @@ class AddGoodsTxtSource(CallbackData, identifier='add_goods_txt_source'): ...
 
 
 # Autodelivery
-class OpenAddAutoDeliveryRuleMenu(CallbackData, identifier='open_add_autodelivery_rule_menu'):
-    ...
+class OpenAddAutoDeliveryRuleMenu(CallbackData, identifier='open_add_autodelivery_rule_menu'): ...
 
 
 class AddAutoDeliveryRule(CallbackData, identifier='add_autodelivery_rule'):
@@ -266,14 +154,15 @@ class DeleteAutoDeliveryRule(CallbackData, identifier='delete_autodelivery_rule'
 
 class AutoDeliveryOpenGoodsSourcesList(
     CallbackData,
-    identifier='auto_delivery_optn_goods_sources_list'
+    identifier='auto_delivery_optn_goods_sources_list',
 ):
     rule: str
 
 
 class BindGoodsSourceToAutoDelivery(
-    CallbackData, Pageable,
-    identifier='bind_goods_source_to_autodelivery'
+    CallbackData,
+    Pageable,
+    identifier='bind_goods_source_to_autodelivery',
 ):
     rule: str
     source_id: str
