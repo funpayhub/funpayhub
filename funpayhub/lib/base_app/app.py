@@ -10,6 +10,7 @@ from typing import Any
 from pathlib import Path
 from contextlib import suppress
 
+from eventry.asyncio.event import Event
 from eventry.asyncio.dispatcher import Dispatcher
 
 import exit_codes
@@ -33,6 +34,8 @@ class App:
         self,
         dispatcher: Dispatcher,
         properties: Properties,
+        on_parameter_change_event: type[Event],
+        on_node_attached_event: type[Event],
         translater: Translater | None = None,
         safe_mode: bool = False,
         telegram_bot_token: str = '',
