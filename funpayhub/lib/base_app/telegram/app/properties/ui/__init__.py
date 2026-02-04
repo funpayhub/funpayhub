@@ -1,15 +1,20 @@
+from __future__ import annotations
+
+
 __all__ = [
     'NodesUIRegistry',
     'NodeMenuBuilder',
     'NodeButtonBuilder',
     'NodeMenuContext',
-    'NodeButtonContext'
+    'NodeButtonContext',
 ]
 
-from .registry import NodesUIRegistry, NodeMenuBuilder, NodeButtonBuilder
-from funpayhub.lib.properties import parameter as p, Properties
+from funpayhub.lib.properties import Properties, parameter as p
+
 from . import builders
 from .context import NodeMenuContext, NodeButtonContext
+from .registry import NodeMenuBuilder, NodesUIRegistry, NodeButtonBuilder
+
 
 NodesUIRegistry.add_menu_builder(p.IntParameter, builders.ParamManualInputMenuBuilder.menu_id)
 NodesUIRegistry.add_menu_builder(p.FloatParameter, builders.ParamManualInputMenuBuilder.menu_id)

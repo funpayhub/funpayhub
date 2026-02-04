@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+
 __all__ = [
-    'Entries'
+    'Entries',
 ]
 from funpayhub.lib.properties import Properties, parameter as param
 from funpayhub.app.telegram.ui.ids import MenuIds, ButtonIds

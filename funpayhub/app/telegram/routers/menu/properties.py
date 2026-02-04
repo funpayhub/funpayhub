@@ -9,8 +9,6 @@ from aiogram.types import (
     Update,
     Message,
     CallbackQuery,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
 )
 from aiogram.filters import Command, StateFilter, CommandStart
 from aiogram.fsm.context import FSMContext
@@ -31,7 +29,6 @@ from ...ui.ids import MenuIds
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
     from funpayhub.lib.translater import Translater
-    from funpayhub.app.telegram.main import Telegram
     from funpayhub.app.properties.properties import FunPayHubProperties
 
 

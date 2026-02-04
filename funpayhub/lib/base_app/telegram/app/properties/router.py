@@ -1,17 +1,19 @@
 from __future__ import annotations
+
+import asyncio
 from typing import TYPE_CHECKING
 
 from aiogram import Router
+
 from . import callbacks as cbs
-import asyncio
 
 
 if TYPE_CHECKING:
-    from aiogram.types import CallbackQuery, Message
-    from aiogram import Dispatcher
-    from funpayhub.lib.base_app.telegram.main import TelegramApp
-    from funpayhub.lib.properties import Properties
+    from aiogram.types import CallbackQuery
+
     from funpayhub.lib.base_app import App
+    from funpayhub.lib.properties import Properties
+    from funpayhub.lib.base_app.telegram.main import TelegramApp
 
 
 router = Router()
@@ -23,7 +25,7 @@ async def next_param_value(
     properties: Properties,
     callback_data: cbs.NextParamValue,
     app: App,
-    tg: TelegramApp
+    tg: TelegramApp,
 ) -> None:
     param = properties.get_parameter(callback_data.path)
     await param.next_value(save=True)

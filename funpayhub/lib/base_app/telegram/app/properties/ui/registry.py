@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = [
     'NodesUIRegistry',
     'NodeMenuBuilder',
-    'NodeButtonBuilder'
+    'NodeButtonBuilder',
 ]
 
 
@@ -13,6 +13,7 @@ from dataclasses import replace
 
 from loggers import telegram_ui as logger
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
+
 from .context import NodeMenuContext as MenuCtx, NodeButtonContext as BtnCtx
 
 
