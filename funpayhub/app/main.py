@@ -7,30 +7,24 @@ import string
 import asyncio
 import traceback
 from typing import Any
-from pathlib import Path
-from contextlib import suppress
 
 from colorama import Fore, Style
 from aiogram.types import User
 
 import exit_codes
-from loggers import main as logger, plugins as plugins_logger
+from loggers import main as logger
 from funpayhub.app.routers import ROUTERS
 from funpayhub.lib.plugins import PluginManager
+from funpayhub.lib.base_app import App
 from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.lib.exceptions import GoodsError
-from funpayhub.lib.properties import Parameter, Properties, MutableParameter
 from funpayhub.lib.translater import Translater
 from funpayhub.app.dispatching import (
     Dispatcher as HubDispatcher,
-    ParameterAttachedEvent,
-    PropertiesAttachedEvent,
-    ParameterValueChangedEvent,
 )
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.workflow_data import WorkflowData
-from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
+from funpayhub.lib.goods_sources import GoodsSourcesManager
 from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 
 from .tty import INIT_SETUP_TEXT_EN, INIT_SETUP_TEXT_RU, box_messages
@@ -40,7 +34,7 @@ def random_part(length) -> str:
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
-class FunPayHub:
+class FunPayHub(App):
     def __init__(
         self,
         properties: FunPayHubProperties,
@@ -113,44 +107,6 @@ class FunPayHub:
 
     def _setup_dispatcher(self) -> None:
         self._dispatcher.connect_routers(*ROUTERS)
-
-    async def _load_plugins(self) -> None:
-        if self.safe_mode:
-            return
-
-        try:
-            await self._plugin_manager.load_plugins()
-            await self._plugin_manager.setup_plugins()
-        except Exception:
-            plugins_logger.critical('Failed to load plugins. Creating crashlog.', exc_info=True)
-            with suppress(Exception):
-                await self.create_crash_log()
-            sys.exit(exit_codes.RESTART_SAFE)  # todo: graceful shutdown before start
-
-    async def _load_file_goods_sources(self) -> None:
-        logger.info('Loading goods files.')
-
-        base_path = Path('storage/goods')
-        if not base_path.exists():
-            return
-
-        for file in base_path.iterdir():
-            if not file.is_file():
-                continue
-
-            if not file.suffix == '.txt':
-                continue
-
-            logger.info('Loading goods file %s.', file)
-
-            try:
-                await self._goods_manager.add_source(FileGoodsSource, file)
-            except GoodsError as e:
-                logger.error(
-                    'An error occurred while loading goods file %s: %s',
-                    file,
-                    e.format_args(self.translater.translate(e.message)),
-                )
 
     async def create_crash_log(self) -> None:
         os.makedirs('logs', exist_ok=True)
@@ -258,27 +214,6 @@ class FunPayHub:
         )
         print('\033[2J\033[H', end='')
 
-    async def emit_parameter_changed_event(
-        self,
-        parameter: MutableParameter[Any],
-    ) -> None:
-        event = ParameterValueChangedEvent(param=parameter)
-        await self.dispatcher.event_entry(event)
-
-    async def emit_properties_attached_event(
-        self,
-        properties: Properties,
-    ) -> None:
-        event = PropertiesAttachedEvent(props=properties)
-        await self.dispatcher.event_entry(event)
-
-    async def emit_parameter_attached_event(
-        self,
-        parameter: Parameter[Any] | MutableParameter[Any],
-    ) -> None:
-        event = ParameterAttachedEvent(param=parameter)
-        await self.dispatcher.event_entry(event)
-
     @property
     def properties(self) -> FunPayHubProperties:
         return self._properties
@@ -292,28 +227,12 @@ class FunPayHub:
         return self._telegram
 
     @property
-    def translater(self) -> Translater:
-        return self._translater
-
-    @property
     def workflow_data(self) -> dict[str, Any]:
         return self._workflow_data
 
     @property
     def dispatcher(self) -> HubDispatcher:
         return self._dispatcher
-
-    @property
-    def goods_managers(self) -> GoodsSourcesManager:
-        return self._goods_manager
-
-    @property
-    def instance_id(self) -> str:
-        return self._instance_id
-
-    @property
-    def safe_mode(self) -> bool:
-        return self._safe_mode
 
     @property
     def setup_completed(self) -> bool:
