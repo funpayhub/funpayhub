@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+import html
 from typing import TYPE_CHECKING
+
+from aiogram.types import CopyTextButton, InlineKeyboardButton as InlineButton
 
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.properties import Properties as Props, parameter as param
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, KeyboardBuilder
-from aiogram.types import InlineKeyboardButton as InlineButton, CopyTextButton
-import html
+from funpayhub.lib.base_app.telegram.app.ui import callbacks as ui_cbs
 
 from .. import callbacks as cbs
-from funpayhub.lib.base_app.telegram.app.ui import callbacks as ui_cbs
 from .context import EntryMenuContext as MenuCtx, EntryButtonContext as BtnCtx
 
 
@@ -88,7 +89,6 @@ class PropertiesMenuBuilder(MenuBuilder, menu_id='props_menu', context_type=Menu
         keyboard = KeyboardBuilder()
         entry = properties.get_properties(ctx.entry_path)
         for entry_id, sub_entry in entry.entries.items():
-
             # skip immutable params
             if not isinstance(sub_entry, Props | param.MutableParameter):
                 continue
@@ -254,7 +254,7 @@ class AddListItemMenuBuilder(MenuBuilder, menu_id='add_list_param_item', context
             callback_data=ui_cbs.ClearState(
                 delete_message=False,
                 open_previous=True,
-                from_callback=ctx.callback_data
+                from_callback=ctx.callback_data,
             ).pack(),
         )
 

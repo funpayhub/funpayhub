@@ -1,5 +1,8 @@
-from funpayhub.lib.telegram.callback_data import CallbackData
+from __future__ import annotations
+
 from typing import Literal
+
+from funpayhub.lib.telegram.callback_data import CallbackData
 
 
 class NextParamValue(CallbackData, identifier='next_param_value'):
