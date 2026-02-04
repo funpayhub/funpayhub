@@ -6,11 +6,11 @@ from funpayhub.lib.telegram.ui import MenuContext, ButtonContext
 
 
 @dataclass(kw_only=True)
-class EntryMenuContext(MenuContext):
+class NodeMenuContext(MenuContext):
     entry_path: list[str]
 
 
 @dataclass(kw_only=True)
-class EntryButtonContext(ButtonContext):
-    menu_render_context: EntryMenuContext
+class NodeButtonContext(ButtonContext):
+    menu_render_context: NodeMenuContext
     entry_path: list[str]

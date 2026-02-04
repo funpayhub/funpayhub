@@ -2,25 +2,27 @@ from __future__ import annotations
 
 
 __all__ = [
-    'EntriesUIRegistry'
+    'NodesUIRegistry',
+    'NodeMenuBuilder',
+    'NodeButtonBuilder'
 ]
 
 
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING
 from dataclasses import replace
 
 from loggers import telegram_ui as logger
-from funpayhub.lib.properties.base import Node
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
-from .context import EntryMenuContext as MenuCtx, EntryButtonContext as BtnCtx
+from .context import NodeMenuContext as MenuCtx, NodeButtonContext as BtnCtx
 
 
 if TYPE_CHECKING:
     from funpayhub.lib.properties import Properties as Props
     from funpayhub.lib.telegram.ui import UIRegistry as UI
+    from funpayhub.lib.properties.base import Node
 
 
-class _EntriesUIRegistry:
+class _NodesUIRegistry:
     def __init__(self) -> None:
         self._buttons: dict[type[Node], str] = {}
         """Дефолтные фабрики кнопок параметров / категорий."""
@@ -28,7 +30,7 @@ class _EntriesUIRegistry:
         self._menus: dict[type[Node], str] = {}
         """Дефолтные фабрики меню просмотра параметров / категорий."""
 
-    def get_button_builder(self, entry_type: Type[Node]) -> str | None:
+    def get_button_builder(self, entry_type: type[Node]) -> str | None:
         if entry_type in self._buttons:
             return self._buttons[entry_type]
         for type, builder in self._buttons.items():
@@ -36,7 +38,7 @@ class _EntriesUIRegistry:
                 return builder
         return None
 
-    def get_menu_builder(self, entry_type: Type[Node]) -> str | None:
+    def get_menu_builder(self, entry_type: type[Node]) -> str | None:
         if entry_type in self._menus:
             return self._menus[entry_type]
         for type, builder in self._menus.items():
@@ -46,7 +48,7 @@ class _EntriesUIRegistry:
 
     def add_button_builder(
         self,
-        entry_type: Type[Node],
+        entry_type: type[Node],
         button_builder_id: str,
         overwrite: bool = False,
     ) -> None:
@@ -62,7 +64,7 @@ class _EntriesUIRegistry:
 
     def add_menu_builder(
         self,
-        entry_type: Type[Node],
+        entry_type: type[Node],
         menu_builder_id: str,
         overwrite: bool = False,
     ) -> None:
@@ -76,22 +78,22 @@ class _EntriesUIRegistry:
         )
 
 
-EntriesUIRegistry = _EntriesUIRegistry()
+NodesUIRegistry = _NodesUIRegistry()
 
 
-class PropertiesEntryMenuBuilder(MenuBuilder, menu_id='props_entry', context_type=MenuCtx):
+class NodeMenuBuilder(MenuBuilder, menu_id='node', context_type=MenuCtx):
     async def build(self, ctx: MenuCtx, tg_ui: UI, properties: Props) -> Menu:
         entry = properties.get_node(ctx.entry_path)
-        if (builder_id := EntriesUIRegistry.get_menu_builder(type(entry))) is None:
+        if (builder_id := NodesUIRegistry.get_menu_builder(type(entry))) is None:
             raise LookupError(f'Unknown entry type {type(entry)}.')
         context = replace(ctx, menu_id=builder_id)
         return await tg_ui.build_menu(context, finalize=False)
 
 
-class PropertiesEntryButtonBuilder(ButtonBuilder,button_id='props_entry',  context_type=BtnCtx):
+class NodeButtonBuilder(ButtonBuilder, button_id='node', context_type=BtnCtx):
     async def build(self, ctx: BtnCtx, tg_ui: UI, properties: Props) -> Button:
         entry = properties.get_node(ctx.entry_path)
-        if (builder_id := EntriesUIRegistry.get_button_builder(type(entry))) is None:
+        if (builder_id := NodesUIRegistry.get_button_builder(type(entry))) is None:
             raise LookupError(f'Unknown entry type {type(entry)}.')
         context = replace(ctx, button_id=builder_id)
         return await tg_ui.build_button(context)

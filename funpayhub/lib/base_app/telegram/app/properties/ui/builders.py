@@ -11,7 +11,7 @@ from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, 
 from funpayhub.lib.base_app.telegram.app.ui import callbacks as ui_cbs
 
 from .. import callbacks as cbs
-from .context import EntryMenuContext as MenuCtx, EntryButtonContext as BtnCtx
+from .context import NodeMenuContext as MenuCtx, NodeButtonContext as BtnCtx
 
 
 if TYPE_CHECKING:

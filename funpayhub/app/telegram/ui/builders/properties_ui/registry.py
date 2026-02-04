@@ -78,7 +78,7 @@ class _EntriesUIRegistry:
         )
 
 
-EntriesUIRegistry = _EntriesUIRegistry()
+NodesUIRegistry = _EntriesUIRegistry()
 
 
 class PropertiesEntryMenuBuilder(
