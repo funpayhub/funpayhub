@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.translater import Translater
-from funpayhub.app.telegram.ui import premade
 from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 from funpayhub.app.utils.formatters_query_parser import parse_categories_query
+from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from ..ids import MenuIds
 
@@ -83,7 +83,7 @@ class FormatterListMenuBuilder(
             main_text='Форматтеры',
             main_keyboard=keyboard,
             footer_keyboard=footer_keyboard,
-            finalizer=premade.StripAndNavigationFinalizer(),
+            finalizer=StripAndNavigationFinalizer(),
         )
 
 
@@ -111,5 +111,5 @@ class FormatterInfoMenuBuilder(
 """
         return Menu(
             main_text=text,
-            finalizer=premade.StripAndNavigationFinalizer(),
+            finalizer=StripAndNavigationFinalizer(),
         )

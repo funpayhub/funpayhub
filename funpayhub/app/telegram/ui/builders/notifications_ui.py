@@ -6,8 +6,8 @@ from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import KeyboardBuilder
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
+from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
-from .. import premade
 from ..ids import MenuIds
 
 
@@ -61,5 +61,5 @@ class NotificationsMenuBuilder(
         return Menu(
             main_text='$notifications',
             main_keyboard=kb,
-            finalizer=premade.StripAndNavigationFinalizer(),
+            finalizer=StripAndNavigationFinalizer(),
         )

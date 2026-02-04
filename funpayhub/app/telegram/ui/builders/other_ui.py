@@ -11,6 +11,7 @@ from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
+from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from .context import (
     StateUIContext,
@@ -18,7 +19,6 @@ from .context import (
     InstallUpdateMenuContext,
     FunPayStartNotificationMenuContext,
 )
-from ..premade import StripAndNavigationFinalizer
 
 
 if TYPE_CHECKING:

@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 from funpayhub.app.telegram import callbacks as cbs
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.premade import (
+from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
+from funpayhub.app.telegram.ui.builders.context import GoodsInfoMenuContext
+from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import (
     StripAndNavigationFinalizer,
-    AddRemoveButtonBaseModification,
     build_view_navigation_buttons,
 )
-from funpayhub.app.telegram.ui.builders.context import GoodsInfoMenuContext
-from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
 
 
 if TYPE_CHECKING:
@@ -61,17 +61,16 @@ class GoodsSourcesListMenuBuilder(
 class AutoDeliveryGoodsSourcesListMenuBuilder(
     MenuBuilder,
     menu_id=MenuIds.autodelivery_goods_sources_list,
-    context_type=EntryMenuContext,
+    context_type=NodeMenuContext,
 ):
     """
     Внимание: в context.entry_path необходимо передавать путь до текущего правила автовыдачи!
     Например: ['auto_delivery', 'my offer']
-
     """
 
     async def build(
         self,
-        ctx: EntryMenuContext,
+        ctx: NodeMenuContext,
         goods_manager: GoodsSourcesManager,
         translater: Translater,
     ) -> Menu:

@@ -11,8 +11,8 @@ from funpayhub.app.telegram import callbacks as cbs
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.premade import StripAndNavigationFinalizer
 from funpayhub.app.telegram.ui.builders.context import PluginMenuContext
+from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 
 if TYPE_CHECKING:
