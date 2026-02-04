@@ -7,6 +7,8 @@ __all__ = [
     'NodeButtonBuilder',
     'NodeMenuContext',
     'NodeButtonContext',
+    'NodeMenuIds',
+    'NodeButtonIds',
 ]
 
 from funpayhub.lib.properties import Properties, parameter as p
@@ -24,10 +26,18 @@ NodesUIRegistry.add_menu_builder(p.ListParameter, builders.ListParameterMenuBuil
 NodesUIRegistry.add_menu_builder(Properties, builders.PropertiesMenuBuilder.menu_id)
 
 NodesUIRegistry.add_button_builder(p.ToggleParameter, builders.ToggleParamButtonBuilder.button_id)
-NodesUIRegistry.add_button_builder(p.IntParameter, builders.ChangeParamValueButtonBuilder.button_id)
-NodesUIRegistry.add_button_builder(p.FloatParameter, builders.ChangeParamValueButtonBuilder.button_id)
-NodesUIRegistry.add_button_builder(p.StringParameter, builders.ChangeParamValueButtonBuilder.button_id)
-NodesUIRegistry.add_button_builder(p.ChoiceParameter, builders.OpenParamMenuButtonBuilder.button_id)
+NodesUIRegistry.add_button_builder(
+    p.IntParameter, builders.ChangeParamValueButtonBuilder.button_id
+)
+NodesUIRegistry.add_button_builder(
+    p.FloatParameter, builders.ChangeParamValueButtonBuilder.button_id
+)
+NodesUIRegistry.add_button_builder(
+    p.StringParameter, builders.ChangeParamValueButtonBuilder.button_id
+)
+NodesUIRegistry.add_button_builder(
+    p.ChoiceParameter, builders.OpenParamMenuButtonBuilder.button_id
+)
 NodesUIRegistry.add_button_builder(p.ListParameter, builders.OpenParamMenuButtonBuilder.button_id)
 NodesUIRegistry.add_button_builder(Properties, builders.OpenParamMenuButtonBuilder.button_id)
 
@@ -38,6 +48,7 @@ class NodeMenuIds:
     props_choice_param = builders.ChoiceParameterMenuBuilder.menu_id
     props_list_param = builders.ListParameterMenuBuilder.menu_id
     props_props = builders.PropertiesMenuBuilder.menu_id
+    props_add_list_item = builders.AddListItemMenuBuilder.menu_id
 
 
 class NodeButtonIds:

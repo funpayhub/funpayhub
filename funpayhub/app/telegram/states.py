@@ -6,10 +6,8 @@ from dataclasses import dataclass
 
 from aiogram.types import Message, CallbackQuery
 
-import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.core import classproperty
-from funpayhub.lib.properties import ListParameter, MutableParameter
-from funpayhub.lib.telegram.callback_data import CallbackData, UnknownCallback
+from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
 _STATES: set[str] = set()
@@ -53,38 +51,6 @@ class State:
     @classmethod
     def identifier(cls) -> str:
         return cls.__identifier__
-
-
-@dataclass
-class ChangingParameterValue(State, identifier='fph:changing_parameter_value'):
-    parameter: MutableParameter[Any]
-    callback_query_obj: CallbackQuery
-    callbacks_history: list[str]
-    message: Message
-
-
-@dataclass
-class ChangingMenuPage(State, identifier='fph:changing_menu_page'):
-    callback_query_obj: CallbackQuery
-    callback_data: CallbackData
-    message: Message
-    max_pages: int
-
-
-@dataclass
-class ChangingViewPage(State, identifier='fph:changing_view_page'):
-    callback_query_obj: CallbackQuery
-    callback_data: CallbackData
-    message: Message
-    max_pages: int
-
-
-@dataclass
-class AddingListItem(State, identifier='fph:adding_list_item'):
-    parameter: ListParameter[Any]
-    callback_query_obj: CallbackQuery
-    callback_data: cbs.ListParamAddItem
-    message: Message
 
 
 @dataclass
