@@ -10,6 +10,7 @@ from .builders import (
     formatters_ui,
     notifications_ui,
 )
+from . import modifications
 
 
 MENU_BUILDERS = [
@@ -41,17 +42,17 @@ BUTTON_BUILDERS = []
 
 
 MENU_MODIFICATIONS = {
-    MenuIds.properties_entry: [
-        properties_ui.PropertiesMenuModification,
-        properties_ui.AddCommandButtonModification,
-        properties_ui.AutoDeliveryPropertiesMenuModification,
-        properties_ui.AddOfferButtonModification,
-        properties_ui.AddRemoveButtonToAutoDeliveryModification,
-        properties_ui.AddRemoveButtonToCommandModification,
-        properties_ui.ReplaceSourcesListButtonModification,
+    MenuIds.props_node: [
+        modifications.PropertiesMenuModification,
+        modifications.AddCommandButtonModification,
+        modifications.AutoDeliveryPropertiesMenuModification,
+        modifications.AddOfferButtonModification,
+        modifications.AddRemoveButtonToAutoDeliveryModification,
+        modifications.AddRemoveButtonToCommandModification,
+        modifications.ReplaceSourcesListButtonModification,
     ],
-    MenuIds.param_value_manual_input: [
-        properties_ui.AddFormattersListButtonModification,
+    MenuIds.props_param_manual_input: [
+        modifications.AddFormattersListButtonModification,
     ],
     MenuIds.goods_source_info: [
         goods_ui.AddRemoveButtonToGoodsSourceInfoModification,
