@@ -4,7 +4,7 @@ import os
 import json
 from pathlib import Path
 
-from funpayhub.lib.plugins import Plugin
+from funpayhub.app.plugins import Plugin
 from funpayhub.lib.properties import Properties
 from funpayhub.lib.telegram.ui import MenuBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds

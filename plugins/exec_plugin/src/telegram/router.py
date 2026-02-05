@@ -17,6 +17,7 @@ from exec_plugin.src.types import ExecutionResult, ExecutionResultsRegistry
 
 import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
 from .callbacks import SaveExecCode, SendExecFile
 
@@ -65,7 +66,7 @@ async def exec_list_menu(message: Message, tg_ui: UIRegistry, data: dict[str, An
     context = MenuContext(
         menu_id='exec_list',
         trigger=message,
-        data={'callback_data': cbs.OpenMenu(menu_id='exec_list')},
+        data={'callback_data': OpenMenu(menu_id='exec_list')},
     )
     await (await tg_ui.build_menu(context, data)).answer_to(message)
 
@@ -106,10 +107,10 @@ async def execute_python_code(
         menu_id='exec_output',
         trigger=message,
         data={
-            'callback_data': cbs.OpenMenu(
+            'callback_data': OpenMenu(
                 menu_id='exec_output',
                 data={'exec_id': r.id},
-                history=[cbs.OpenMenu(menu_id='exec_list').pack(hash=False)],
+                history=[OpenMenu(menu_id='exec_list').pack(hash=False)],
             ),
             'exec_id': r.id,
         },
