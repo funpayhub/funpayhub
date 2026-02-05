@@ -27,6 +27,7 @@ type RESOLVABLE = Plugin | LoadedPlugin | PluginManifest | str
 type STEP = Callable[[LoadedPlugin], Awaitable[Any]]
 type INIT_ARGS_FACTORY = Callable[[PluginManifest], tuple[Any, ...]]
 
+
 def _resolve_plugin_id(_v: RESOLVABLE) -> str:
     if isinstance(_v, str):
         return _v
@@ -128,7 +129,7 @@ class PluginManager[PluginCLS]:
             exception = TranslatableException('Instantiation for this plugin disabled.')
         if self._safe_mode:
             exception = TranslatableException('Safe mode enabled.')
-        elif self._app_version not in manifest.hub_version:
+        elif self._app_version not in manifest.app_version:
             exception = TranslatableException(
                 'App version mismatch. Expected: %s. Current: %s',
                 manifest.app_version,

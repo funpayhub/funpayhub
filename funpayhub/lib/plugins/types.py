@@ -3,7 +3,6 @@ from __future__ import annotations
 
 __all__ = [
     'PluginManifest',
-    'Plugin',
     'LoadedPlugin',
 ]
 
@@ -18,20 +17,7 @@ from packaging.specifiers import SpecifierSet
 
 
 if TYPE_CHECKING:
-    from aiogram import Router as TGRouter
-    from funpaybotengine import Router as FPRouter
-
-    from funpayhub.app.main import FunPayHub
     from funpayhub.lib.properties import Properties
-    from funpayhub.app.dispatching import Router as HubRouter
-    from funpayhub.lib.telegram.ui import (
-        MenuBuilder,
-        ButtonBuilder,
-        MenuModification,
-        ButtonModification,
-    )
-    from funpayhub.lib.hub.text_formatters import Formatter
-    from funpayhub.lib.telegram.commands_registry import Command
 
 
 class PluginManifest(BaseModel):
@@ -43,7 +29,7 @@ class PluginManifest(BaseModel):
 
     manifest: int
     plugin_version: Version
-    hub_version: SpecifierSet
+    app_version: SpecifierSet
     plugin_id: str
     name: str
     repo: str | None = Field(default=None)
@@ -60,7 +46,7 @@ class PluginManifest(BaseModel):
             value = Version(value)
         return value
 
-    @field_validator('hub_version', mode='before')
+    @field_validator('app_version', mode='before')
     @classmethod
     def convert_hub_version(cls, value: str | SpecifierSet) -> SpecifierSet:
         if isinstance(value, str):
@@ -100,98 +86,10 @@ class PluginAuthor(BaseModel):
     social: dict[str, str] | None = Field(default=None)
 
 
-class Plugin:
-    def __init__(
-        self,
-        manifest: PluginManifest,
-        hub: FunPayHub,
-    ) -> None:
-        self._manifest = manifest
-        self._hub = hub
-
-    @property
-    def manifest(self) -> PluginManifest:
-        return self._manifest
-
-    @property
-    def hub(self) -> FunPayHub:
-        return self._hub
-
-    async def pre_setup(self) -> Properties:
-        raise NotImplementedError()
-
-    async def properties(self) -> Properties:
-        raise NotImplementedError()
-
-    async def setup_properties(self) -> None:
-        raise NotImplementedError()
-
-    async def formatters(self) -> type[Formatter] | list[type[Formatter]] | None:
-        raise NotImplementedError()
-
-    async def setup_formatters(self) -> None:
-        raise NotImplementedError()
-
-    async def hub_routers(self) -> HubRouter | list[HubRouter]:
-        raise NotImplementedError()
-
-    async def setup_hub_routers(self) -> None:
-        raise NotImplementedError()
-
-    async def funpay_routers(self) -> FPRouter | list[FPRouter]:
-        raise NotImplementedError()
-
-    async def setup_funpay_routers(self) -> None:
-        raise NotImplementedError()
-
-    async def telegram_routers(self) -> TGRouter | list[TGRouter]:
-        raise NotImplementedError()
-
-    async def setup_telegram_routers(self) -> None:
-        raise NotImplementedError()
-
-    async def menus(self) -> type[MenuBuilder] | list[type[MenuBuilder]]:
-        raise NotImplementedError()
-
-    async def setup_menus(self) -> None:
-        raise NotImplementedError()
-
-    async def buttons(self) -> ButtonBuilder | list[type[ButtonBuilder]]:
-        raise NotImplementedError()
-
-    async def setup_buttons(self) -> None:
-        raise NotImplementedError()
-
-    async def menu_modifications(
-        self,
-    ) -> dict[str, type[MenuModification] | list[type[MenuModification]]]:
-        raise NotImplementedError()
-
-    async def setup_menu_modifications(self) -> None:
-        raise NotImplementedError()
-
-    async def button_modifications(
-        self,
-    ) -> dict[str, type[ButtonModification] | list[type[ButtonModification]]]:
-        raise NotImplementedError()
-
-    async def setup_button_modifications(self) -> None:
-        raise NotImplementedError()
-
-    async def commands(self) -> Command | list[Command] | None:
-        raise NotImplementedError()
-
-    async def setup_commands(self) -> None:
-        raise NotImplementedError()
-
-    async def post_setup(self) -> None:
-        raise NotImplementedError()
-
-
 @dataclass
-class LoadedPlugin:
+class LoadedPlugin[PluginCLS]:
     path: Path
     manifest: PluginManifest
-    plugin: Plugin | None
+    plugin: PluginCLS | None
     properties: Properties | None = None
     error: Exception | None = None
