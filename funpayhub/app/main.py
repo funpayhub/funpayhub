@@ -6,7 +6,7 @@ import random
 import string
 import asyncio
 import traceback
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from colorama import Fore, Style
 from aiogram.types import User
@@ -27,6 +27,10 @@ from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 from .tty import INIT_SETUP_TEXT_EN, INIT_SETUP_TEXT_RU, box_messages
 
 
+if TYPE_CHECKING:
+    from .workflow_data import WorkflowData
+
+
 def random_part(length) -> str:
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
@@ -35,6 +39,7 @@ class FunPayHub(App):
     if TYPE_CHECKING:
         properties: FunPayHubProperties
         telegram: Telegram
+        workflow_data: WorkflowData
 
     def __init__(
         self,
@@ -58,9 +63,6 @@ class FunPayHub(App):
         self._stopped_signal = asyncio.Event()
         self._running_lock = asyncio.Lock()
         self._stopping_lock = asyncio.Lock()
-
-        self._setup_lock = asyncio.Lock()
-        self._setup = False
 
         super().__init__(
             version=properties.version.value,
@@ -88,17 +90,6 @@ class FunPayHub(App):
                 'formatters_registry': self._funpay.text_formatters,
             },
         )
-
-    async def setup(self) -> None:
-        async with self._setup_lock:
-            if self._setup:
-                return
-
-            await self._load_file_goods_sources()
-            if self.can_load_plugins:
-                await self._load_plugins()
-
-            self._setup = True
 
     def _setup_dispatcher(self) -> None:
         self._dispatcher.connect_routers(*ROUTERS)
@@ -218,21 +209,9 @@ class FunPayHub(App):
         return self._funpay
 
     @property
-    def telegram(self) -> Telegram:
-        return self._telegram
-
-    @property
-    def workflow_data(self) -> dict[str, Any]:
-        return self._workflow_data
-
-    @property
     def dispatcher(self) -> HubDispatcher:
         return self._dispatcher
 
     @property
     def setup_completed(self) -> bool:
         return self._setup_completed
-
-    @property
-    def can_load_plugins(self) -> bool:
-        return not self.safe_mode and self.setup_completed

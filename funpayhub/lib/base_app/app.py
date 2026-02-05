@@ -76,9 +76,6 @@ class App:
             workflow_data=self.workflow_data,
         )
 
-        self._setup_lock = asyncio.Lock()
-        self._setup = False
-
         self._workflow_data.update(
             {
                 'app': self,
@@ -92,8 +89,11 @@ class App:
                 'tg_ui_registry': self._telegram.ui_registry,
                 'plugin_manager': self._plugin_manager,
                 'goods_manager': self._goods_manager,
-            }
+            },
         )
+
+        self._setup_lock = asyncio.Lock()
+        self._setup_completed = False
 
         logger.info(
             'App initialized. Version: %s. Instance ID: %s',
@@ -103,20 +103,18 @@ class App:
 
     async def setup(self) -> None:
         async with self._setup_lock:
-            if self._setup:
+            if self._setup_completed:
                 return
 
             await self._load_file_goods_sources()
-            if self.can_load_plugins:
-                await self._load_plugins()
+            await self._load_plugins()
 
-            self._setup = True
+            self._setup_completed = True
 
     async def _load_plugins(self) -> None:
         try:
             await self._plugin_manager.load_plugins()
-            if not self.safe_mode:
-                await self._plugin_manager.setup_plugins()
+            await self._plugin_manager.setup_plugins()
         except Exception:
             plugins_logger.critical('Failed to load plugins. Creating crashlog.', exc_info=True)
             with suppress(Exception):
@@ -203,7 +201,3 @@ class App:
     @property
     def safe_mode(self) -> bool:
         return self._safe_mode
-
-    @property
-    def can_load_plugins(self) -> bool:
-        return not self.safe_mode
