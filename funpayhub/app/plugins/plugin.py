@@ -1,15 +1,23 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
-    from funpayhub.lib.plugins import PluginManifest
-    from funpayhub.app.main import FunPayHub
-    from funpayhub.lib.properties import Properties
-    from funpayhub.lib.hub.text_formatters import Formatter
-    from funpayhub.app.dispatching import Router as HubRouter
-    from funpaybotengine import Router as FPRouter
     from aiogram import Router as TGRouter
-    from funpayhub.lib.telegram.ui import MenuBuilder, MenuModification, ButtonBuilder, ButtonModification
+    from funpaybotengine import Router as FPRouter
+
+    from funpayhub.app.main import FunPayHub
+    from funpayhub.lib.plugins import PluginManifest
+    from funpayhub.lib.properties import Properties
+    from funpayhub.app.dispatching import Router as HubRouter
+    from funpayhub.lib.telegram.ui import (
+        MenuBuilder,
+        ButtonBuilder,
+        MenuModification,
+        ButtonModification,
+    )
+    from funpayhub.lib.hub.text_formatters import Formatter
     from funpayhub.lib.telegram.commands_registry import Command
 
 

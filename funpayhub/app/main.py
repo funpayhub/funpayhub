@@ -6,15 +6,15 @@ import random
 import string
 import asyncio
 import traceback
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from colorama import Fore, Style
 from aiogram.types import User
 
 import exit_codes
 from loggers import main as logger
-from funpayhub.app.routers import ROUTERS
 from funpayhub.app.plugins import PluginManager
+from funpayhub.app.routers import ROUTERS
 from funpayhub.lib.base_app import App
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
@@ -63,11 +63,11 @@ class FunPayHub(App):
         super().__init__(
             version=self.properties.version.value,
             config=...,
-            dispatcher = HubDispatcher(workflow_data=self._workflow_data),
+            dispatcher=HubDispatcher(workflow_data=self._workflow_data),
             properties=properties,
             plugin_manager=PluginManager(self),
             translater=translater,
-            safe_mode=safe_mode
+            safe_mode=safe_mode,
         )
 
         self._setup_dispatcher()

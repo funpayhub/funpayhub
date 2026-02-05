@@ -1,21 +1,28 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any
-from funpayhub.lib.plugins import PluginManager as BasePluginManager
+
 import os
+from typing import TYPE_CHECKING, Any
 from pathlib import Path
-from .plugin import Plugin
-from aiogram import BaseMiddleware
-from eventry.asyncio.middleware_manager import MiddlewareManagerTypes
 from contextlib import suppress
 
+from aiogram import BaseMiddleware
+from eventry.asyncio.middleware_manager import MiddlewareManagerTypes
+
+from funpayhub.lib.plugins import PluginManager as BasePluginManager
+
+from .plugin import Plugin
+
+
 if TYPE_CHECKING:
-    from funpayhub.app.main import FunPayHub
-    from funpayhub.lib.plugins import PluginManifest, LoadedPlugin
-    from aiogram import Router as AiogramRouter
-    from eventry.asyncio.router import Router as EventryRouter
-    from funpaybotengine import Router as FPBERouter
-    from funpayhub.app.dispatching import Router as HubRouter
     from collections.abc import Callable, Awaitable
+
+    from aiogram import Router as AiogramRouter
+    from funpaybotengine import Router as FPBERouter
+    from eventry.asyncio.router import Router as EventryRouter
+
+    from funpayhub.app.main import FunPayHub
+    from funpayhub.lib.plugins import LoadedPlugin, PluginManifest
+    from funpayhub.app.dispatching import Router as HubRouter
 
 
 class PassPluginAiogramMiddleware(BaseMiddleware):
@@ -80,7 +87,7 @@ class PluginManager(BasePluginManager[Plugin]):
             app_version=hub.properties.version,
             plugin_cls=Plugin,
             init_args_factory=self.args_factory,
-            safe_mode=safe_mode
+            safe_mode=safe_mode,
         )
 
         self._hub = hub

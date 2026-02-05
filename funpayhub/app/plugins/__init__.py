@@ -1,7 +1,10 @@
+from __future__ import annotations
+
+
 __all__ = [
     'PluginManager',
-    'Plugin'
+    'Plugin',
 ]
 
-from .manager import PluginManager
 from .plugin import Plugin
+from .manager import PluginManager

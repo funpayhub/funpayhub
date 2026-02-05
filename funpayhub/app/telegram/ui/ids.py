@@ -33,5 +33,4 @@ class MenuIds(BaseMenuIds):
     add_auto_delivery_rule = 'fph:add_auto_delivery_rule'
 
 
-class ButtonIds(BaseButtonIds):
-    ...
+class ButtonIds(BaseButtonIds): ...

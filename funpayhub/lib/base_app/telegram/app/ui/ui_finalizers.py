@@ -27,7 +27,11 @@ class StripAndNavigationFinalizer:
         self.context_override = context_override
 
     async def __call__(
-        self, ctx: MenuContext, menu: Menu, tg: TelegramApp, translater: Tr
+        self,
+        ctx: MenuContext,
+        menu: Menu,
+        tg: TelegramApp,
+        translater: Tr,
     ) -> Menu:
         ctx = self.context_override if self.context_override is not None else ctx
         if not menu.footer_keyboard:
@@ -118,7 +122,11 @@ async def build_menu_navigation_buttons(
             ctx.menu_page + 1,
         ),
         _btn(
-            'last_kb_page', '⏩', ctx.menu_page < max_pages - 1, ctx.callback_data, max_pages - 1
+            'last_kb_page',
+            '⏩',
+            ctx.menu_page < max_pages - 1,
+            ctx.callback_data,
+            max_pages - 1,
         ),
     ]
     kb.insert(0, nav_kb)
@@ -126,7 +134,8 @@ async def build_menu_navigation_buttons(
 
 
 async def build_view_navigation_buttons(
-    ctx: MenuContext, total_pages: int = -1
+    ctx: MenuContext,
+    total_pages: int = -1,
 ) -> KeyboardBuilder:
     kb: KeyboardBuilder = KeyboardBuilder()
     callback_data = ctx.callback_data

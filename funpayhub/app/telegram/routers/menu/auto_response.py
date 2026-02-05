@@ -13,11 +13,12 @@ from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
 from funpayhub.app.telegram.states import AddingCommand
+from funpayhub.lib.base_app.telegram import utils
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
-from .. import utils
 from .router import router as r
 from ...ui.ids import MenuIds
-from ...ui.builders.properties_ui.context import EntryMenuContext
 
 
 if TYPE_CHECKING:
@@ -66,17 +67,14 @@ async def add_command(
     entry = props.add_entry(message.text)
     await props.save(same_file_only=True)
 
-    asyncio.create_task(hub.emit_properties_attached_event(entry))
+    asyncio.create_task(hub.emit_node_attached_event(entry))
 
-    await EntryMenuContext(
+    await NodeMenuContext(
         trigger=message,
-        menu_id=MenuIds.properties_entry,
+        menu_id=MenuIds.props_node,
         entry_path=entry.path,
         callback_override=data.callback_data.copy_history(
-            cbs.OpenMenu(
-                menu_id=MenuIds.properties_entry,
-                context_data={'entry_path': entry.path},
-            ),
+            OpenMenu(menu_id=MenuIds.props_node, context_data={'entry_path': entry.path}),
         ),
     ).build_and_apply(tg_ui, data.message)
 
@@ -96,12 +94,12 @@ async def delete_auto_delivery_rule(
     properties.auto_response.detach_node(callback_data.command)
     await properties.auto_response.save()
 
-    await EntryMenuContext(
+    await NodeMenuContext(
         trigger=query,
-        menu_id=MenuIds.properties_entry,
+        menu_id=MenuIds.props_node,
         entry_path=properties.auto_response.path,
-        callback_override=cbs.OpenMenu(
-            menu_id=MenuIds.properties_entry,
+        callback_override=OpenMenu(
+            menu_id=MenuIds.props_node,
             context_data={'entry_path': properties.auto_response.path},
             #  * > список команд > меню настроек команды
             history=callback_data.history[:-2],

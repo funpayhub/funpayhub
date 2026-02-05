@@ -27,16 +27,20 @@ NodesUIRegistry.add_menu_builder(Properties, builders.PropertiesMenuBuilder.menu
 
 NodesUIRegistry.add_button_builder(p.ToggleParameter, builders.ToggleParamButtonBuilder.button_id)
 NodesUIRegistry.add_button_builder(
-    p.IntParameter, builders.ChangeParamValueButtonBuilder.button_id
+    p.IntParameter,
+    builders.ChangeParamValueButtonBuilder.button_id,
 )
 NodesUIRegistry.add_button_builder(
-    p.FloatParameter, builders.ChangeParamValueButtonBuilder.button_id
+    p.FloatParameter,
+    builders.ChangeParamValueButtonBuilder.button_id,
 )
 NodesUIRegistry.add_button_builder(
-    p.StringParameter, builders.ChangeParamValueButtonBuilder.button_id
+    p.StringParameter,
+    builders.ChangeParamValueButtonBuilder.button_id,
 )
 NodesUIRegistry.add_button_builder(
-    p.ChoiceParameter, builders.OpenParamMenuButtonBuilder.button_id
+    p.ChoiceParameter,
+    builders.OpenParamMenuButtonBuilder.button_id,
 )
 NodesUIRegistry.add_button_builder(p.ListParameter, builders.OpenParamMenuButtonBuilder.button_id)
 NodesUIRegistry.add_button_builder(Properties, builders.OpenParamMenuButtonBuilder.button_id)

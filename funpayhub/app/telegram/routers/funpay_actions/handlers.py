@@ -11,9 +11,10 @@ from aiogram.fsm.context import FSMContext
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.app.telegram.states import SendingFunpayMessage
 from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.lib.base_app.telegram import utils
 from funpayhub.app.telegram.ui.builders.context import SendMessageMenuContext
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
-from .. import utils
 from ... import states, callbacks as cbs
 from .router import router
 
@@ -36,7 +37,7 @@ async def set_sending_message_state(
         funpay_chat_id=callback_data.to,
         funpay_chat_name=callback_data.name,
         callback_override=callback_data.copy_history(
-            cbs.OpenMenu(
+            OpenMenu(
                 menu_id=MenuIds.send_funpay_message,
                 context_data={
                     'funpay_chat_id': callback_data.to,

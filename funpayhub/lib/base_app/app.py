@@ -6,7 +6,8 @@ import random
 import string
 import asyncio
 import traceback
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass
 from pathlib import Path
 from contextlib import suppress
 
@@ -18,16 +19,18 @@ from funpayhub.lib.plugins import PluginManager
 from funpayhub.lib.exceptions import GoodsError
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
-from dataclasses import dataclass
 
 from .telegram import TelegramApp
 from .workflow_data import WorkflowData
 
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Awaitable
-    from funpayhub.lib.properties import Properties, Parameter, MutableParameter, Node
-    from eventry.asyncio.dispatcher import Dispatcher
+
     from eventry.asyncio.event import Event
+    from eventry.asyncio.dispatcher import Dispatcher
+
+    from funpayhub.lib.properties import Node, Parameter, Properties, MutableParameter
 
 
 def random_part(length) -> str:
@@ -78,7 +81,7 @@ class App:
         logger.info(
             'App initialized. Version: %s. Instance ID: %s',
             self._version,
-            self._instance_id
+            self._instance_id,
         )
 
     async def setup(self) -> None:

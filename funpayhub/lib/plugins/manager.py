@@ -45,7 +45,7 @@ class PluginManager[PluginCLS]:
         app_version: Version,
         plugin_cls: type[PluginCLS],
         init_args_factory: INIT_ARGS_FACTORY,
-        safe_mode: bool = False
+        safe_mode: bool = False,
     ) -> None:
         self._plugins_path = plugins_path
         self._safe_mode = safe_mode
@@ -132,7 +132,7 @@ class PluginManager[PluginCLS]:
             exception = TranslatableException(
                 'App version mismatch. Expected: %s. Current: %s',
                 manifest.app_version,
-                self._app_version
+                self._app_version,
             )
         elif not self.is_enabled(manifest.plugin_id):
             exception = TranslatableException('Plugin %s is disabled.', manifest.plugin_id)
@@ -150,10 +150,10 @@ class PluginManager[PluginCLS]:
                 plugin_instance = self._load_entry_point(plugin_path, manifest)
             except Exception as e:
                 logger.error(
-                    "An error occurred while loading entry point %s of %s.",
+                    'An error occurred while loading entry point %s of %s.',
                     manifest.entry_point,
                     manifest.plugin_id,
-                    exc_info=True
+                    exc_info=True,
                 )
                 exception = e
 
@@ -209,16 +209,16 @@ class PluginManager[PluginCLS]:
 
         if plugin_class is None:
             raise TranslatableException(
-                f'Unable to find entry point %s of %s.',
+                'Unable to find entry point %s of %s.',
                 manifest.entry_point,
-                manifest.plugin_id
+                manifest.plugin_id,
             )
 
         if not issubclass(plugin_class, self._plugin_cls):
             raise TranslatableException(
                 'Entry point of plugin must be a subclass of %s, not %s.',
                 self._plugin_cls.__name__,
-                plugin_class.__name__
+                plugin_class.__name__,
             )
 
         return plugin_class(*self._init_args_factory(manifest))

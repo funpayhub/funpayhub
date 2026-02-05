@@ -4,11 +4,11 @@ import html
 from typing import TYPE_CHECKING
 
 from funpayhub.app.telegram import callbacks as cbs
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 from funpayhub.app.telegram.ui.builders.context import GoodsInfoMenuContext
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import (
     StripAndNavigationFinalizer,

@@ -15,7 +15,8 @@ from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
 from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
-from funpayhub.app.telegram.ui.builders.properties_ui.context import EntryMenuContext
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
 
 if TYPE_CHECKING:
@@ -39,7 +40,7 @@ async def open_add_auto_delivery_rule_menu(
         trigger=query,
         menu_id=MenuIds.add_auto_delivery_rule,
         callback_override=callback_data.copy_history(
-            cbs.OpenMenu(menu_id=MenuIds.add_auto_delivery_rule),
+            OpenMenu(menu_id=MenuIds.add_auto_delivery_rule),
         ),
     ).build_and_apply(tg_ui, query.message)
 
@@ -76,9 +77,9 @@ async def add_auto_delivery_rule(
     entry = properties.auto_delivery.add_entry(callback_data.rule)
     await properties.auto_delivery.save()
 
-    await EntryMenuContext(
+    await NodeMenuContext(
         trigger=query,
-        menu_id=MenuIds.properties_entry,
+        menu_id=MenuIds.props_node,
         entry_path=entry.path,
         callback_override=UnknownCallback.parse(callback_data.pack_history(hash=False)),
     ).build_and_apply(tg_ui, query.message)
@@ -110,13 +111,13 @@ async def add_auto_delivery_rule_from_message(
     entry = properties.auto_delivery.add_entry(msg.text)
     await properties.auto_delivery.save()
 
-    await EntryMenuContext(
+    await NodeMenuContext(
         trigger=msg,
-        menu_id=MenuIds.properties_entry,
+        menu_id=MenuIds.props_node,
         entry_path=entry.path,
         callback_override=data.callback_data.copy_history(
-            cbs.OpenMenu(
-                menu_id=MenuIds.properties_entry,
+            OpenMenu(
+                menu_id=MenuIds.props_node,
                 context_data={'entry_path': entry.path},
             ),
         ),
@@ -142,12 +143,12 @@ async def delete_auto_delivery_rule(
     properties.auto_delivery.detach_node(callback_data.rule)
     await properties.auto_delivery.save()
 
-    await EntryMenuContext(
+    await NodeMenuContext(
         trigger=query,
-        menu_id=MenuIds.properties_entry,
+        menu_id=MenuIds.props_node,
         entry_path=properties.auto_delivery.path,
-        callback_override=cbs.OpenMenu(
-            menu_id=MenuIds.properties_entry,
+        callback_override=OpenMenu(
+            menu_id=MenuIds.props_node,
             context_data={'entry_path': properties.auto_delivery.path},
             #  * > список автовыдачи > меню настроек автовыдачи
             history=callback_data.history[:-2],
@@ -163,7 +164,7 @@ async def open_bind_goods_menu(
     tg_ui: UIRegistry,
     state: FSMContext,
 ):
-    await EntryMenuContext(
+    await NodeMenuContext(
         trigger=query,
         menu_id=MenuIds.autodelivery_goods_sources_list,
         entry_path=properties.auto_delivery.get_properties([callback_data.rule]).path,
@@ -208,10 +209,7 @@ async def bind_goods_source(
         )
     )
 
-    await tg.execute_previous_callback(
-        join_callbacks(*callback_data.history[:-1]),
-        query,
-    )
+    await tg.fake_query(join_callbacks(*callback_data.history[:-1]), query)
 
 
 INVALID_CHARS = set('<>:"/\\|?*\0')  # todo: code duplicate
@@ -261,9 +259,9 @@ async def handler(
     await state.clear()
     await message.delete()
 
-    await EntryMenuContext(
+    await NodeMenuContext(
         trigger=message,
-        menu_id=MenuIds.properties_entry,
+        menu_id=MenuIds.props_node,
         entry_path=properties.auto_delivery.get_properties([state_obj.rule]).path,
         callback_override=UnknownCallback.parse(state_obj.callback_data.pack_history(hash=False)),
     ).build_and_answer(tg_ui, message)

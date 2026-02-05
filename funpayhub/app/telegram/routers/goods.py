@@ -19,6 +19,7 @@ from funpayhub.app.workflow_data import WorkflowData as wfd
 from funpayhub.lib.goods_sources import GoodsSource, FileGoodsSource, GoodsSourcesManager
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.builders.context import StateUIContext, GoodsInfoMenuContext
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
 
 r = router = Router(name='fph:goods')
@@ -55,7 +56,7 @@ async def _generate_and_send_new_goods_info(
         source_id=source.source_id,
         trigger=trigger,
         callback_override=callback_data.copy_history(
-            cbs.OpenMenu(
+            OpenMenu(
                 menu_id=MenuIds.goods_source_info,
                 context_data={'source_id': source.source_id},
             ),
@@ -123,7 +124,7 @@ async def reload_goods(query: CallbackQuery, callback_data: cbs.ReloadGoodsSourc
         return
 
     fake_callback = callback_data.copy_history(
-        cbs.OpenMenu(
+        OpenMenu(
             menu_id=MenuIds.goods_source_info,
             context_data={'source_id': source.source_id},
         ),
@@ -289,7 +290,7 @@ async def add_goods_txt_source(
         source_id=source.source_id,
         trigger=msg,
         callback_override=data.callback_data.copy_history(
-            cbs.OpenMenu(
+            OpenMenu(
                 menu_id=MenuIds.goods_source_info,
                 context_data={'source_id': source.source_id},
             ),
@@ -318,7 +319,7 @@ async def delete_auto_delivery_rule(
     await MenuContext(
         menu_id=MenuIds.goods_sources_list,
         trigger=query,
-        callback_override=cbs.OpenMenu(
+        callback_override=OpenMenu(
             menu_id=MenuIds.goods_sources_list,
             context_data={'source_id': source.source_id},
             history=callback_data.history[:-2],

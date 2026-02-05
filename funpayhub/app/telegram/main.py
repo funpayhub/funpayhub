@@ -34,7 +34,7 @@ class Telegram(TelegramApp):
 
         super().__init__(
             bot_token=bot_token,
-            workflow_data=workflow_data
+            workflow_data=workflow_data,
         )
 
         self._setup_commands()
@@ -73,11 +73,19 @@ class Telegram(TelegramApp):
 
     def _setup_commands(self) -> None:
         self._commands_registry.create_command('start', 'hub', True, '$command:start:description')
-        self._commands_registry.create_command('settings', 'hub', True, '$command:settings:description')
+        self._commands_registry.create_command(
+            'settings', 'hub', True, '$command:settings:description'
+        )
         self._commands_registry.create_command('help', 'hub', True, '$commands:help:description')
-        self._commands_registry.create_command('shutdown', 'hub', True, '$commands:shutdown:description')
-        self._commands_registry.create_command('restart', 'hub', True, '$commands:restart:description')
-        self._commands_registry.create_command('safe_mode', 'hub', True, '$commands:safe_mode:description')
+        self._commands_registry.create_command(
+            'shutdown', 'hub', True, '$commands:shutdown:description'
+        )
+        self._commands_registry.create_command(
+            'restart', 'hub', True, '$commands:restart:description'
+        )
+        self._commands_registry.create_command(
+            'safe_mode', 'hub', True, '$commands:safe_mode:description'
+        )
         self._commands_registry.create_command(
             'standard_mode',
             'hub',

@@ -7,10 +7,10 @@ from funpaybotengine import Bot as FPBot
 from funpaybotengine.types.enums import BadgeType
 
 import funpayhub.app.telegram.callbacks as cbs
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, KeyboardBuilder
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from ..ids import MenuIds

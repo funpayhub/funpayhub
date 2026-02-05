@@ -17,6 +17,7 @@ from funpayhub.lib.plugins.installers import (
     AiogramPluginInstaller,
     PluginInstallationError,
 )
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 
 
 if TYPE_CHECKING:
@@ -100,7 +101,7 @@ async def install_plugin(
                 [
                     InlineKeyboardButton(
                         text=translater.translate('$clear_state'),
-                        callback_data=cbs.Clear(delete_message=True).pack(),
+                        callback_data=ClearState(delete_message=True).pack(),
                     ),
                 ],
             ],
