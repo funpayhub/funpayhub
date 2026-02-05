@@ -99,7 +99,7 @@ class PluginManager[PluginCLS]:
                 continue
             self.load_plugin(i)
 
-    def load_plugin(self, plugin_path: str | Path, instantiate: bool = False) -> None:
+    def load_plugin(self, plugin_path: str | Path, instantiate: bool = True) -> None:
         logger.info('Loading plugin %s.', str(plugin_path))
 
         module_name = Path(plugin_path).name
@@ -205,7 +205,7 @@ class PluginManager[PluginCLS]:
         module_name, class_name = manifest.entry_point.rsplit('.', 1)
 
         module = importlib.import_module(f'{plugin_module_name}.{module_name}')
-        plugin_class: type[Plugin] | None = getattr(module, class_name, None)
+        plugin_class: type[PluginCLS] | None = getattr(module, class_name, None)
 
         if plugin_class is None:
             raise TranslatableException(
