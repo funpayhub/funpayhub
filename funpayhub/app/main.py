@@ -78,6 +78,7 @@ class FunPayHub(App):
 
         self.workflow_data.update(
             {
+                'app': self,
                 'hub': self,
                 'properties': self.properties,
                 'translater': self.translater,

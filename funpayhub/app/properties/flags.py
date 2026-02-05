@@ -1,24 +1,9 @@
 from __future__ import annotations
 
-from enum import Enum, auto
+from funpayhub.lib.base_app.properties_flags import ParameterFlags as BaseParameterFlags, PropertiesFlags as BasePropertiesFlags
 
 
-class ParameterFlags(Enum):
-    HIDE = auto()
-    """Параметры с данным флагом не отображаются в меню параметров."""
-
-    HIDE_VALUE = auto()
-    """Значения параметров с данным флагом не отображаются в меню параметров."""
-
-    PROTECT_VALUE = auto()
-    """Значения параметров с данным флагом замаскированы в меню параметров."""
-
-    NEED_RESTART = auto()
-    """
-    После изменения значения параметра с данным флагом пользователь получит сообщение о том,
-    что FunPay Hub необходимо перезапустить.
-    """
+class ParameterFlags(BaseParameterFlags): ...
 
 
-class PropertiesFlags(Enum):
-    HIDE = auto()
+class PropertiesFlags(BasePropertiesFlags): ...
