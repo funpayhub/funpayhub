@@ -7,6 +7,7 @@ from contextlib import suppress
 
 from aiogram import BaseMiddleware
 from eventry.asyncio.middleware_manager import MiddlewareManagerTypes
+from packaging.version import Version
 
 from funpayhub.lib.plugins import PluginManager as BasePluginManager
 
@@ -81,10 +82,10 @@ def setup_botengine_router(plugin: LoadedPlugin[Plugin], *routers: FPBERouter) -
 
 
 class PluginManager(BasePluginManager[Plugin]):
-    def __init__(self, hub: FunPayHub, safe_mode: bool = False):
+    def __init__(self, hub: FunPayHub, version: Version, safe_mode: bool = False):
         super().__init__(
             plugins_path=Path(os.getcwd()) / 'plugins',
-            app_version=hub.properties.version,
+            app_version=version,
             plugin_cls=Plugin,
             init_args_factory=self.args_factory,
             safe_mode=safe_mode,

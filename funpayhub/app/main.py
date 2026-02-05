@@ -46,11 +46,13 @@ class FunPayHub(App):
         self._workflow_data = WorkflowData
         self._funpay = FunPay(
             self,
-            bot_token=self.properties.general.golden_key.value,
-            proxy=self.properties.general.proxy.value or None,
+            bot_token=properties.general.golden_key.value,
+            proxy=properties.general.proxy.value or None,
             headers=None,
             workflow_data=self.workflow_data,
         )
+
+        telegram_app = Telegram(self, os.environ.get('FPH_TELEGRAM_TOKEN'), self._workflow_data)
 
         self._stop_signal: asyncio.Future[int] = asyncio.Future()
         self._stopped_signal = asyncio.Event()
@@ -61,13 +63,14 @@ class FunPayHub(App):
         self._setup = False
 
         super().__init__(
-            version=self.properties.version.value,
+            version=properties.version.value,
             config=...,
             dispatcher=HubDispatcher(workflow_data=self._workflow_data),
             properties=properties,
-            plugin_manager=PluginManager(self),
+            plugin_manager=PluginManager(self, properties.version),
             translater=translater,
             safe_mode=safe_mode,
+            telegram_app=telegram_app
         )
 
         self._setup_dispatcher()
