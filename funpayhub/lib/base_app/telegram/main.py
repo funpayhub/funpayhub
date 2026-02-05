@@ -97,7 +97,7 @@ class TelegramApp:
                 else callback_data.pack(hash=False)
             )
         else:
-            query_str = query
+            query_str = callback_data
 
         await self.dispatcher.feed_update(
             self.bot,

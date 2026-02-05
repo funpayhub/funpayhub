@@ -4,13 +4,14 @@ import math
 from typing import TYPE_CHECKING
 
 from funpayhub.lib.telegram.ui import Button
+from funpayhub.lib.telegram.ui import KeyboardBuilder
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater as Tr
-    from funpayhub.lib.telegram.ui import Menu, MenuContext, KeyboardBuilder
+    from funpayhub.lib.telegram.ui import Menu, MenuContext
     from funpayhub.lib.base_app.telegram import TelegramApp
     from funpayhub.lib.telegram.callback_data import UnknownCallback
 

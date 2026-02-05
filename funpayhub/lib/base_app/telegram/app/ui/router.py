@@ -101,9 +101,9 @@ async def change_page(
     tg: TelegramApp,
 ) -> None:
     old = UnknownCallback.parse(callback_data.history[-1])
-    if callback_data.menu_page is not None:
+    if callback_data.keyboard is not None:
         old.data['menu_page'] = callback_data.keyboard
-    if callback_data.view_page is not None:
+    if callback_data.text is not None:
         old.data['view_page'] = callback_data.text
     old.history = callback_data.history[:-1]
 

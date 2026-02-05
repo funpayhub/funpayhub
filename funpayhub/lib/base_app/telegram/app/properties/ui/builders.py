@@ -9,6 +9,7 @@ from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.properties import Properties as Props, parameter as param
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, KeyboardBuilder
 from funpayhub.lib.base_app.telegram.app.ui import callbacks as ui_cbs, ui_finalizers
+from funpayhub.lib.base_app.properties_flags import PropertiesFlags, ParameterFlags
 
 from .. import callbacks as cbs
 from .context import NodeMenuContext as MenuCtx, NodeButtonContext as BtnCtx
@@ -46,7 +47,7 @@ class ChangeParamValueButtonBuilder(ButtonBuilder, button_id='change_param', con
     async def build(self, ctx: BtnCtx, translater: Tr, properties: Props) -> Button:
         entry = properties.get_node(ctx.entry_path)
 
-        if not entry.has_flag(PropsFlags.PROTECT_VALUE):
+        if not entry.has_flag(ParameterFlags.PROTECT_VALUE):
             val_str = f'{str(entry.value)[:20] + ("..." if len(str(entry.value)) > 20 else "")}'
         else:
             val_str = '•' * 8 if entry.value else ''
