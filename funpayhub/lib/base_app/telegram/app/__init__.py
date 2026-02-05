@@ -7,11 +7,23 @@ __all__ = [
     'BUTTONS',
 ]
 
-from .ui.router import Router as ui_router
-from .properties.router import Router as properties_router
-from .properties.ui.builders import NodeMenuBuilder, NodeButtonBuilder, AddListItemMenuBuilder
+from .ui.router import router as ui_router
+from .properties.router import router as properties_router
+from .properties.ui import builders
 
 
 ROUTERS = [ui_router, properties_router]
-MENUS = [NodeMenuBuilder, AddListItemMenuBuilder]
-BUTTONS = [NodeButtonBuilder]
+MENUS = [
+    builders.NodeMenuBuilder,
+    builders.PropertiesMenuBuilder,
+    builders.ChoiceParameterMenuBuilder,
+    builders.ListParameterMenuBuilder,
+    builders.ParamManualInputMenuBuilder,
+    builders.AddListItemMenuBuilder
+]
+BUTTONS = [
+    builders.NodeButtonBuilder,
+    builders.ToggleParamButtonBuilder,
+    builders.ChangeParamValueButtonBuilder,
+    builders.OpenParamMenuButtonBuilder,
+]
