@@ -65,7 +65,7 @@ class Plugin:
     async def setup_menus(self) -> None:
         raise NotImplementedError()
 
-    async def buttons(self) -> ButtonBuilder | list[type[ButtonBuilder]]:
+    async def buttons(self) -> type[ButtonBuilder] | list[type[ButtonBuilder]]:
         raise NotImplementedError()
 
     async def setup_buttons(self) -> None:
