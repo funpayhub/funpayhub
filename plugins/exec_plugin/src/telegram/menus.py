@@ -8,6 +8,7 @@ import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import Menu, Button, MenuContext, KeyboardBuilder
 from funpayhub.lib.telegram.ui.types import MenuBuilder, MenuModification
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer, build_view_navigation_buttons
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
 from .callbacks import SaveExecCode, SendExecFile
 
@@ -28,7 +29,7 @@ async def exec_view_kb(ctx: MenuContext, mode: Literal['output', 'code']) -> Key
     keyboard.add_callback_button(
         button_id='download_exec_files',
         text='🔲 Код' if mode == 'output' else '📄 Вывод',
-        callback_data=cbs.OpenMenu(
+        callback_data=OpenMenu(
             menu_id='exec_code' if mode == 'output' else 'exec_output',
             data={'exec_id': ctx.data['exec_id']},
             history=callback_data.history if callback_data is not None else [],
@@ -78,7 +79,7 @@ class ExecListMenuBuilder(MenuBuilder, menu_id='exec_list', context_type=MenuCon
             keyboard.add_callback_button(
                 button_id=f'open_exec_output:{exec_id}',
                 text=f'{"❌" if result.error else "✅"} {exec_id}',
-                callback_data=cbs.OpenMenu(
+                callback_data=OpenMenu(
                     menu_id='exec_output',
                     data={'exec_id': exec_id},
                     history=callback_data.as_history() if callback_data is not None else [],
@@ -124,7 +125,7 @@ class MainMenuModification(MenuModification, modification_id='exec:main_menu_mod
         menu.main_keyboard.add_callback_button(
             button_id='open_exec_registry',
             text='💻 Exec Registry',
-            callback_data=cbs.OpenMenu(
+            callback_data=OpenMenu(
                 menu_id='exec_list',
                 history=ctx.callback_data.as_history() if ctx.callback_data is not None else [],
             ).pack(),

@@ -10,20 +10,19 @@ from eventry.asyncio.middleware_manager import MiddlewareManagerTypes
 from packaging.version import Version
 
 from funpayhub.lib.plugins import PluginManager as BasePluginManager
+from funpayhub.app.dispatching import Router as HubRouter
+from aiogram import Router as AiogramRouter
+from funpaybotengine import Router as FPBERouter
 
 from .plugin import Plugin
 
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Awaitable
-
-    from aiogram import Router as AiogramRouter
-    from funpaybotengine import Router as FPBERouter
     from eventry.asyncio.router import Router as EventryRouter
-
     from funpayhub.app.main import FunPayHub
     from funpayhub.lib.plugins import LoadedPlugin, PluginManifest
-    from funpayhub.app.dispatching import Router as HubRouter
+
 
 
 class PassPluginAiogramMiddleware(BaseMiddleware):
@@ -240,7 +239,7 @@ class PluginManager(BasePluginManager[Plugin]):
             result = [result]
 
         for i in result:
-            self.hub.telegram._commands.add_command(i)
+            self.hub.telegram._commands_registry.add_command(i)
 
     async def _setup_commands(self, plugin: LoadedPlugin[Plugin]) -> None:
         await self._run_step(plugin.plugin.setup_commands)
