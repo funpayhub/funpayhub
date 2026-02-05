@@ -10,6 +10,8 @@ from typing import Any, TYPE_CHECKING
 from pathlib import Path
 from contextlib import suppress
 
+from packaging.version import Version
+
 import exit_codes
 from loggers import main as logger, plugins as plugins_logger
 from funpayhub.lib.plugins import PluginManager
@@ -41,38 +43,43 @@ class AppConfig:
 class App:
     def __init__(
         self,
+        version: Version,
+        config: AppConfig,
         dispatcher: Dispatcher,
         properties: Properties,
-        config: AppConfig,
+        plugin_manager: PluginManager,
         translater: Translater | None = None,
+        telegram_app: TelegramApp | None = None,
         safe_mode: bool = False,
         telegram_bot_token: str = '',
     ):
         self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
-        logger.info('FunPay Hub initialized. Instance ID: %s', self._instance_id)
+        self._version = version
 
         self._config = config
         self._safe_mode = safe_mode
         self._properties = properties
         self._translater = translater or Translater()
         self._goods_manager = GoodsSourcesManager()
-        self._plugin_manager = PluginManager(self)
+        self._plugin_manager = plugin_manager
+        self._plugin_manager._safe_mode = self._safe_mode
+
         self._workflow_data = WorkflowData()
         self._dispatcher = dispatcher
 
-        self._telegram = TelegramApp(
-            self,
+        self._telegram = telegram_app or TelegramApp(
             bot_token=telegram_bot_token,
             workflow_data=self.workflow_data,
         )
 
-        self._stop_signal: asyncio.Future[int] = asyncio.Future()
-        self._stopped_signal = asyncio.Event()
-        self._running_lock = asyncio.Lock()
-        self._stopping_lock = asyncio.Lock()
-
         self._setup_lock = asyncio.Lock()
         self._setup = False
+
+        logger.info(
+            'App initialized. Version: %s. Instance ID: %s',
+            self._version,
+            self._instance_id
+        )
 
     async def setup(self) -> None:
         async with self._setup_lock:
@@ -86,12 +93,10 @@ class App:
             self._setup = True
 
     async def _load_plugins(self) -> None:
-        if self.safe_mode:
-            return
-
         try:
             await self._plugin_manager.load_plugins()
-            await self._plugin_manager.setup_plugins()
+            if not self.safe_mode:
+                await self._plugin_manager.setup_plugins()
         except Exception:
             plugins_logger.critical('Failed to load plugins. Creating crashlog.', exc_info=True)
             with suppress(Exception):
@@ -141,6 +146,10 @@ class App:
     async def emit_node_attached_event(self, node: Node) -> None:
         event = await self._config.on_node_attached_event_factory(node)
         await self.dispatcher.event_entry(event)
+
+    @property
+    def version(self) -> Version:
+        return self._version
 
     @property
     def instance_id(self) -> str:

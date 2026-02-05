@@ -17,7 +17,6 @@ from ...telegram.callback_data import UnknownCallback
 
 
 if TYPE_CHECKING:
-    from ..app import App
     from ..workflow_data import WorkflowData
 
 
@@ -29,7 +28,6 @@ class TelegramAppConfig:
 class TelegramApp:
     def __init__(
         self,
-        app: App,
         bot_token: str,
         workflow_data: WorkflowData,
         *,
@@ -38,7 +36,6 @@ class TelegramApp:
         commands_registry: CommandsRegistry | None = None,
         ui_registry: UIRegistry | None = None,
     ) -> None:
-        self._app = app
         self._config = config if config is not None else TelegramAppConfig()
         self._dispatcher = dispatcher or Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
         self._dispatcher.workflow_data = workflow_data
@@ -78,10 +75,6 @@ class TelegramApp:
     @property
     def bot(self) -> Bot:
         return self._bot
-
-    @property
-    def app(self) -> App:
-        return self._app
 
     @property
     def config(self) -> TelegramAppConfig:
