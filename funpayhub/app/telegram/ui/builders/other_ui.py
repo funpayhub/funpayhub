@@ -67,7 +67,7 @@ class StartNotificationMenuBuilder(
             button_id='settings',
             text=translater.translate('$settings'),
             callback_data=OpenMenu(
-                menu_id=MenuIds.properties_entry,
+                menu_id=MenuIds.props_node,
                 context_data={
                     'entry_path': [],
                 },
@@ -187,7 +187,7 @@ class MainMenuBuilder(
             button_id='settings',
             text=translater.translate('$props:name'),
             callback_data=OpenMenu(
-                menu_id=MenuIds.properties_entry,
+                menu_id=MenuIds.props_node,
                 history=history,
                 context_data={'entry_path': []},
             ).pack(),

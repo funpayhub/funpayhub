@@ -70,7 +70,8 @@ class FunPayHub(App):
             plugin_manager=PluginManager(self, properties.version.value),
             translater=translater,
             safe_mode=safe_mode,
-            telegram_app=telegram_app
+            telegram_app=telegram_app,
+            workflow_data=self.workflow_data
         )
 
         self._setup_dispatcher()

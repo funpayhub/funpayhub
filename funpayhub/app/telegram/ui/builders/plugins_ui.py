@@ -141,7 +141,7 @@ class PluginInfoMenuBuilder(
                 button_id='plugin_properties',
                 text=translater.translate('$plugin_properties'),
                 callback_data=OpenMenu(
-                    menu_id=MenuIds.properties_entry,
+                    menu_id=MenuIds.props_node,
                     history=ctx.callback_data.as_history() if ctx.callback_data else [],
                     context_data={
                         'entry_path': plugin.properties.path,

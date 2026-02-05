@@ -55,6 +55,7 @@ class App:
         telegram_app: TelegramApp | None = None,
         safe_mode: bool = False,
         telegram_bot_token: str = '',
+        workflow_data: WorkflowData | None = None
     ):
         self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
         self._version = version
@@ -67,7 +68,7 @@ class App:
         self._plugin_manager = plugin_manager
         self._plugin_manager._safe_mode = self._safe_mode
 
-        self._workflow_data = WorkflowData()
+        self._workflow_data = workflow_data if workflow_data is not None else WorkflowData()
         self._dispatcher = dispatcher
 
         self._telegram = telegram_app or TelegramApp(
