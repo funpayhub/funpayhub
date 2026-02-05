@@ -3,7 +3,6 @@ from __future__ import annotations
 
 __all__ = ['PluginManager']
 
-import os
 import sys
 import json
 import asyncio
@@ -18,12 +17,12 @@ from packaging.version import Version
 
 from loggers import plugins as logger
 
-from .types import Plugin, LoadedPlugin, PluginManifest
+from .types import LoadedPlugin, PluginManifest
 from .installers import PluginInstaller
 from ..exceptions import TranslatableException
 
 
-type RESOLVABLE = Plugin | LoadedPlugin | PluginManifest | str
+type RESOLVABLE = LoadedPlugin | PluginManifest | str
 type STEP = Callable[[LoadedPlugin], Awaitable[Any]]
 type INIT_ARGS_FACTORY = Callable[[PluginManifest], tuple[Any, ...]]
 
@@ -31,10 +30,10 @@ type INIT_ARGS_FACTORY = Callable[[PluginManifest], tuple[Any, ...]]
 def _resolve_plugin_id(_v: RESOLVABLE) -> str:
     if isinstance(_v, str):
         return _v
-    if isinstance(_v, (Plugin, LoadedPlugin)):
-        return _v.manifest.plugin_id
     if isinstance(_v, PluginManifest):
         return _v.plugin_id
+    if isinstance(_v, LoadedPlugin):
+        return _v.manifest.plugin_id
 
     raise TypeError(f'Unable to resolve plugin ID for {_v!r}')
 

@@ -12,7 +12,7 @@ from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigat
 
 
 if TYPE_CHECKING:
-    from funpayhub.app import FunPayHub
+    from funpayhub.app.main import FunPayHub
 
 
 class ControlMenuBuilder(MenuBuilder, menu_id=MenuIds.control, context_type=MenuContext):

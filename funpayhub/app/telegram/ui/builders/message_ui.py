@@ -7,6 +7,7 @@ from funpaybotengine import Bot as FPBot
 from funpaybotengine.types.enums import BadgeType
 
 import funpayhub.app.telegram.callbacks as cbs
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, KeyboardBuilder
@@ -141,7 +142,7 @@ class SendMessageMenuBuilder(
                     Button.callback_button(
                         button_id='cancel',
                         text=translater.translate('$clear_state'),
-                        callback_data=cbs.Clear(delete_message=True).pack(),
+                        callback_data=ClearState(delete_message=True).pack(),
                         row=True,
                     ),
                 ],

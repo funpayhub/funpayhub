@@ -6,10 +6,10 @@ __all__ = [
 ]
 
 
-import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import MenuModification
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import Dummy, OpenMenu
 
 
 class AddRemoveButtonBaseModification(
@@ -27,7 +27,7 @@ class AddRemoveButtonBaseModification(
         ctx: MenuContext,
         menu: Menu,
         translater: Translater,
-        delete_callback: str = cbs.Dummy().pack(),
+        delete_callback: str = Dummy().pack(),
     ):
         key = f'{self.modification_id}:confirm_delete'
 
@@ -35,7 +35,7 @@ class AddRemoveButtonBaseModification(
             menu.footer_keyboard.add_callback_button(
                 button_id='delete',
                 text=translater.translate('$delete'),
-                callback_data=cbs.OpenMenu(
+                callback_data=OpenMenu(
                     menu_id=ctx.menu_id,
                     menu_page=ctx.menu_page,
                     view_page=ctx.view_page,
@@ -54,7 +54,7 @@ class AddRemoveButtonBaseModification(
                 Button.callback_button(
                     button_id='cancel_delete',
                     text=translater.translate('$cancel'),
-                    callback_data=cbs.OpenMenu(
+                    callback_data=OpenMenu(
                         menu_id=ctx.menu_id,
                         menu_page=ctx.menu_page,
                         view_page=ctx.view_page,

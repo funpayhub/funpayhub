@@ -65,7 +65,9 @@ class FunPayHub(App):
             config=...,
             dispatcher = HubDispatcher(workflow_data=self._workflow_data),
             properties=properties,
-            plugin_manager=PluginManager(self)
+            plugin_manager=PluginManager(self),
+            translater=translater,
+            safe_mode=safe_mode
         )
 
         self._setup_dispatcher()

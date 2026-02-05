@@ -4,6 +4,7 @@ import html
 from typing import TYPE_CHECKING
 
 from funpayhub.app.telegram import callbacks as cbs
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
@@ -36,7 +37,7 @@ class GoodsSourcesListMenuBuilder(
             kb.add_callback_button(
                 button_id=f'open_source:{source.source_id}',
                 text=f'[{len(source)}] {source.display_id}',
-                callback_data=cbs.OpenMenu(
+                callback_data=OpenMenu(
                     menu_id=MenuIds.goods_source_info,
                     context_data={'source_id': source.source_id},
                     from_callback=ctx.callback_data,

@@ -8,6 +8,7 @@ import html
 from typing import TYPE_CHECKING
 
 from funpayhub.app.telegram import callbacks as cbs
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -37,7 +38,7 @@ class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_
             keyboard.add_callback_button(
                 button_id=f'plugin_info:{i.manifest.plugin_id}',
                 text=prefix + i.manifest.name,
-                callback_data=cbs.OpenMenu(
+                callback_data=OpenMenu(
                     menu_id=MenuIds.plugin_info,
                     context_data={
                         'plugin_id': i.manifest.plugin_id,
@@ -50,7 +51,7 @@ class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_
         footer_keyboard.add_callback_button(
             button_id='open_installation_menu',
             text=translater.translate('$install_plugin'),
-            callback_data=cbs.OpenMenu(
+            callback_data=OpenMenu(
                 menu_id=MenuIds.install_plugin,
                 history=ctx.callback_data.as_history() if ctx.callback_data else [],
             ).pack(),
@@ -139,7 +140,7 @@ class PluginInfoMenuBuilder(
             keyboard.add_callback_button(
                 button_id='plugin_properties',
                 text=translater.translate('$plugin_properties'),
-                callback_data=cbs.OpenMenu(
+                callback_data=OpenMenu(
                     menu_id=MenuIds.properties_entry,
                     history=ctx.callback_data.as_history() if ctx.callback_data else [],
                     context_data={

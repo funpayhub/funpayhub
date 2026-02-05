@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import funpayhub.app.telegram.callbacks as cbs
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
@@ -38,7 +38,7 @@ class FormatterListMenuBuilder(
                 keyboard.add_callback_button(
                     button_id=f'open_formatters_category:{category.id}',
                     text=translater.translate(category.name),
-                    callback_data=cbs.OpenMenu(
+                    callback_data=OpenMenu(
                         menu_id=MenuIds.formatters_list,
                         data={'query': category.id},
                         from_callback=ctx.callback_data,
@@ -55,7 +55,7 @@ class FormatterListMenuBuilder(
                 keyboard.add_callback_button(
                     button_id=f'open_formatter_info:{formatter.key}',
                     text=translater.translate(formatter.name),
-                    callback_data=cbs.OpenMenu(
+                    callback_data=OpenMenu(
                         menu_id=MenuIds.formatter_info,
                         data={'formatter_id': formatter.key},
                         from_callback=ctx.callback_data,
@@ -72,7 +72,7 @@ class FormatterListMenuBuilder(
             footer_keyboard.add_callback_button(
                 button_id='open_formatters_by_category',
                 text=text,
-                callback_data=cbs.OpenMenu(
+                callback_data=OpenMenu(
                     menu_id=MenuIds.formatters_list,
                     data={'by_category': not bool(ctx.data.get('by_category'))},
                     history=ctx.callback_data.history if ctx.callback_data is not None else [],

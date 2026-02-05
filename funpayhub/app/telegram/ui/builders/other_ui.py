@@ -7,6 +7,7 @@ from itertools import chain
 from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedError
 
 import funpayhub.app.telegram.callbacks as cbs
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -35,7 +36,7 @@ class AddCommandMenuBuilder(MenuBuilder, menu_id=MenuIds.add_command, context_ty
                     Button.callback_button(
                         button_id='clear_state',
                         text=translater.translate('$clear_state'),
-                        callback_data=cbs.Clear(
+                        callback_data=ClearState(
                             delete_message=False,
                             open_previous=True,
                             history=ctx.callback_data.history
@@ -59,13 +60,13 @@ class StartNotificationMenuBuilder(
         kb.add_callback_button(
             button_id='main',
             text=translater.translate('$main_menu'),
-            callback_data=cbs.OpenMenu(menu_id=MenuIds.main_menu).pack(),
+            callback_data=OpenMenu(menu_id=MenuIds.main_menu).pack(),
         )
 
         kb.add_callback_button(
             button_id='settings',
             text=translater.translate('$settings'),
-            callback_data=cbs.OpenMenu(
+            callback_data=OpenMenu(
                 menu_id=MenuIds.properties_entry,
                 context_data={
                     'entry_path': [],
@@ -185,7 +186,7 @@ class MainMenuBuilder(
         kb.add_callback_button(
             button_id='settings',
             text=translater.translate('$props:name'),
-            callback_data=cbs.OpenMenu(
+            callback_data=OpenMenu(
                 menu_id=MenuIds.properties_entry,
                 history=history,
                 context_data={'entry_path': []},
@@ -195,25 +196,25 @@ class MainMenuBuilder(
         kb.add_callback_button(
             button_id='open_control_ui',
             text=translater.translate('$control_ui'),
-            callback_data=cbs.OpenMenu(menu_id=MenuIds.control, history=history).pack(),
+            callback_data=OpenMenu(menu_id=MenuIds.control, history=history).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_formatters_list',
             text=translater.translate('$open_formatters_list'),
-            callback_data=cbs.OpenMenu(menu_id=MenuIds.formatters_list, history=history).pack(),
+            callback_data=OpenMenu(menu_id=MenuIds.formatters_list, history=history).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_goods_sources_list',
             text=translater.translate('$goods_sources_list'),
-            callback_data=cbs.OpenMenu(menu_id=MenuIds.goods_sources_list, history=history).pack(),
+            callback_data=OpenMenu(menu_id=MenuIds.goods_sources_list, history=history).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_plugins_list',
             text=translater.translate('$plugins_list'),
-            callback_data=cbs.OpenMenu(menu_id=MenuIds.plugins_list, history=history).pack(),
+            callback_data=OpenMenu(menu_id=MenuIds.plugins_list, history=history).pack(),
         )
 
         return Menu(
@@ -228,7 +229,7 @@ class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=Sta
         kb.add_callback_button(
             button_id='clear_state',
             text=translater.translate('$clear_state'),
-            callback_data=cbs.Clear(
+            callback_data=ClearState(
                 delete_message=ctx.delete_on_clear,
                 open_previous=ctx.open_previous_on_clear,
                 history=ctx.callback_data.history if ctx.callback_data is not None else [],
