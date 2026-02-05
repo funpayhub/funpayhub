@@ -6,27 +6,36 @@ import random
 import string
 import asyncio
 import traceback
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from pathlib import Path
 from contextlib import suppress
-
-from eventry.asyncio.event import Event
-from eventry.asyncio.dispatcher import Dispatcher
 
 import exit_codes
 from loggers import main as logger, plugins as plugins_logger
 from funpayhub.lib.plugins import PluginManager
 from funpayhub.lib.exceptions import GoodsError
-from funpayhub.lib.properties import Parameter, Properties, MutableParameter
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
+from dataclasses import dataclass
 
 from .telegram import TelegramApp
 from .workflow_data import WorkflowData
 
+if TYPE_CHECKING:
+    from collections.abc import Callable, Awaitable
+    from funpayhub.lib.properties import Properties, Parameter, MutableParameter, Node
+    from eventry.asyncio.dispatcher import Dispatcher
+    from eventry.asyncio.event import Event
+
 
 def random_part(length) -> str:
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
+
+
+@dataclass
+class AppConfig:
+    on_parameter_change_event_factory: Callable[[Parameter], Awaitable[Event]]
+    on_node_attached_event_factory: Callable[[Node], Awaitable[Event]]
 
 
 class App:
@@ -34,8 +43,7 @@ class App:
         self,
         dispatcher: Dispatcher,
         properties: Properties,
-        on_parameter_change_event: type[Event],
-        on_node_attached_event: type[Event],
+        config: AppConfig,
         translater: Translater | None = None,
         safe_mode: bool = False,
         telegram_bot_token: str = '',
@@ -43,6 +51,7 @@ class App:
         self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
         logger.info('FunPay Hub initialized. Instance ID: %s', self._instance_id)
 
+        self._config = config
         self._safe_mode = safe_mode
         self._properties = properties
         self._translater = translater or Translater()
@@ -120,104 +129,17 @@ class App:
             f.write(traceback.format_exc())
 
     async def start(self) -> int:
-        if self._running_lock.locked():
-            raise RuntimeError('FunPayHub already running.')
-
-        async def wait_stop_signal() -> None:
-            await self._stop_signal
-
-        self._stop_signal = asyncio.Future()
-        self._stopped_signal.clear()
-
-        async with self._running_lock:
-            try:
-                me = await self.telegram.bot.get_me()
-            except Exception:
-                return exit_codes.TELEGRAM_ERROR
-
-            if not self.setup_completed:
-                if not sys.stdin.isatty() or not sys.stdout.isatty():
-                    return exit_codes.NOT_A_TTY
-
-            tasks = [
-                asyncio.create_task(self.telegram.start(), name='telegram'),
-                asyncio.create_task(wait_stop_signal(), name='stop_signal'),
-            ]
-            if self.setup_completed:
-                tasks.append(asyncio.create_task(self.funpay.start(), name='funpay'))
-            else:
-                self._welcome_tty(me)
-
-            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-            while True:
-                need_to_stop = False
-                for i in done:
-                    if i.get_name() in ['telegram', 'stop_signal']:
-                        need_to_stop = True
-                if need_to_stop:
-                    break
-
-                done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
-
-            exit_code = 1
-            if self._stop_signal.done:
-                exit_code = self._stop_signal.result()
-            try:
-                async with self._stopping_lock:
-                    try:
-                        await self.funpay.bot.stop_listening()
-                    except RuntimeError:
-                        pass
-
-                    try:
-                        await self.telegram.dispatcher.stop_polling()
-                    except RuntimeError:
-                        pass
-
-                    await self.dispatcher.event_entry(FunPayHubStoppedEvent())
-            finally:
-                self._stopped_signal.set()
-
-            return exit_code
+        raise NotImplementedError()
 
     async def shutdown(self, code: int, error_ok: bool = False) -> None:
-        if not self._running_lock.locked():
-            if error_ok:
-                return
-            raise RuntimeError('FunPayHub is not running.')
+        raise NotImplementedError()
 
-        if self._stopping_lock.locked():
-            if error_ok:
-                return
-            raise RuntimeError('FunPayHub is already stopping.')
-        if self._stop_signal.done():
-            if error_ok:
-                return
-            raise RuntimeError('FunPayHub is already stopped.')
-
-        logger.info('Shutting down FunPayHub with exit code %d.', code)
-        self._stop_signal.set_result(code)
-        await self._stopped_signal.wait()
-
-    async def emit_parameter_changed_event(
-        self,
-        parameter: MutableParameter[Any],
-    ) -> None:
-        event = ParameterValueChangedEvent(param=parameter)
+    async def emit_parameter_changed_event(self, parameter: MutableParameter[Any]) -> None:
+        event = await self._config.on_parameter_change_event_factory(parameter)
         await self.dispatcher.event_entry(event)
 
-    async def emit_properties_attached_event(
-        self,
-        properties: Properties,
-    ) -> None:
-        event = PropertiesAttachedEvent(props=properties)
-        await self.dispatcher.event_entry(event)
-
-    async def emit_parameter_attached_event(
-        self,
-        parameter: Parameter[Any] | MutableParameter[Any],
-    ) -> None:
-        event = ParameterAttachedEvent(param=parameter)
+    async def emit_node_attached_event(self, node: Node) -> None:
+        event = await self._config.on_node_attached_event_factory(node)
         await self.dispatcher.event_entry(event)
 
     @property
