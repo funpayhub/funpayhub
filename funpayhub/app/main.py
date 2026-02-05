@@ -67,7 +67,7 @@ class FunPayHub(App):
             config=...,
             dispatcher=HubDispatcher(workflow_data=self._workflow_data),
             properties=properties,
-            plugin_manager=PluginManager(self, properties.version),
+            plugin_manager=PluginManager(self, properties.version.value),
             translater=translater,
             safe_mode=safe_mode,
             telegram_app=telegram_app
@@ -142,6 +142,9 @@ class FunPayHub(App):
                 self._welcome_tty(me)
 
             done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+            for i in done:
+                if i.exception():
+                    raise i.exception()
             while True:
                 need_to_stop = False
                 for i in done:

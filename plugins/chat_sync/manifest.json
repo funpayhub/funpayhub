@@ -1,7 +1,7 @@
 {
   "manifest": 1,
   "plugin_version": "1.0.0",
-  "hub_version": ">=0.2.2",
+  "app_version": ">=0.2.2",
   "plugin_id": "com.github.qvvonk.funpayhub.chat_sync_plugin",
   "name": "Chat Sync",
   "description": "Синхронизирует чаты FunPay с Telegram-чатом. Каждому чату FunPay соответствует отдельная тема в Telegram, что позволяет удобно вести диалоги и не терять контекст. Сообщения автоматически пересылаются в обоих направлениях: из FunPay в Telegram и из Telegram обратно в соответствующий чат FunPay.",

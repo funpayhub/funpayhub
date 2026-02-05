@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Self
-
+from collections import UserDict
 
 if TYPE_CHECKING:
     from aiogram import Bot, Dispatcher
@@ -16,12 +16,12 @@ if TYPE_CHECKING:
     from .telegram import TelegramApp
 
 
-class WorkflowData:
+class WorkflowData(UserDict):
     def __init__(self) -> None:
         super().__init__()
         self._locked = False
 
-        self._data = {}
+        self._data = self.data
 
     def lock(self) -> None:
         self._locked = True
