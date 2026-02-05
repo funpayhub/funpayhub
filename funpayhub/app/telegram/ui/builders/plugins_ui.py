@@ -4,12 +4,18 @@ from __future__ import annotations
 __all__ = ['PluginsListMenuBuilder']
 
 
-import html
 from typing import TYPE_CHECKING
+from html import escape
 
 from funpayhub.app.telegram import callbacks as cbs
-from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
+from funpayhub.lib.exceptions import TranslatableException
+from funpayhub.lib.telegram.ui import (
+    Menu,
+    Button,
+    MenuBuilder,
+    MenuContext as MenuCtx,
+    KeyboardBuilder,
+)
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.builders.context import PluginMenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
@@ -18,16 +24,12 @@ from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigat
 
 if TYPE_CHECKING:
     from funpayhub.lib.plugins import PluginManager
-    from funpayhub.app.properties import FunPayHubProperties
+    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from funpayhub.lib.translater import Translater as Tr
 
 
-class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_type=MenuContext):
-    async def build(
-        self,
-        ctx: MenuContext,
-        plugin_manager: PluginManager,
-        translater: Translater,
-    ) -> Menu:
+class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_type=MenuCtx):
+    async def build(self, ctx: MenuCtx, plugin_manager: PluginManager, translater: Tr) -> Menu:
         keyboard = KeyboardBuilder()
         for i in plugin_manager._plugins.values():
             prefix = '🔴' if i.manifest.plugin_id in plugin_manager.disabled_plugins else '🟢'
@@ -40,10 +42,8 @@ class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_
                 text=prefix + i.manifest.name,
                 callback_data=OpenMenu(
                     menu_id=MenuIds.plugin_info,
-                    context_data={
-                        'plugin_id': i.manifest.plugin_id,
-                    },
-                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                    context_data={'plugin_id': i.manifest.plugin_id},
+                    from_callback=ctx.callback_data,
                 ).pack(),
             )
 
@@ -53,7 +53,7 @@ class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_
             text=translater.translate('$install_plugin'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.install_plugin,
-                history=ctx.callback_data.as_history() if ctx.callback_data else [],
+                from_callback=ctx.callback_data,
             ).pack(),
         )
 
@@ -73,37 +73,34 @@ class PluginInfoMenuBuilder(
     async def build(
         self,
         ctx: PluginMenuContext,
-        translater: Translater,
+        translater: Tr,
         plugin_manager: PluginManager,
-        properties: FunPayHubProperties,
+        properties: FPHProps,
     ) -> Menu:
         plugin = plugin_manager._plugins[ctx.plugin_id]
-        manifest = plugin.manifest
+        man = plugin.manifest
 
         blocks = {
             'name': [],
             'info': [],
             'social': [],
             'description': [],
+            'error': [],
         }
 
         keyboard = KeyboardBuilder()
 
-        blocks['name'].append(
-            f'🧩 <b><u>{html.escape(manifest.name)} v{manifest.plugin_version}</u></b>',
-        )
-        blocks['info'].append(f'🆔 <b>ID: {manifest.plugin_id}</b>')
+        blocks['name'].append(f'🧩 <b><u>{escape(man.name)} v{man.plugin_version}</u></b>')
+        blocks['info'].append(f'🆔 <b>ID: {man.plugin_id}</b>')
 
-        if manifest.repo:
-            blocks['info'].append(
-                f'{translater.translate("$plugin_repo")}: {html.escape(manifest.repo)}',
-            )
+        if man.repo:
+            blocks['info'].append(f'{translater.translate("$plugin_repo")}: {escape(man.repo)}')
 
         author_info = []
-        if manifest.author:
-            author = manifest.author
+        if man.author:
+            author = man.author
             if author.name:
-                author_info.append(f'<b>{html.escape(author.name)}</b>')
+                author_info.append(f'<b>{escape(author.name)}</b>')
             if author.website:
                 author_info.append(
                     f'<b><a href="{author.website}">{translater.translate("$plugin_author_website")}</a></b>',
@@ -114,27 +111,22 @@ class PluginInfoMenuBuilder(
                 f'{translater.translate("$plugin_author")}: {" | ".join(author_info)}',
             )
 
-        if manifest.author and manifest.author.social:
-            for name, link in manifest.author.social.items():
-                blocks['social'].append(
-                    f'<b><i>{html.escape(name)}:</i> {html.escape(link)}</b>',
-                )
+        if man.author and man.author.social:
+            for name, link in man.author.social.items():
+                blocks['social'].append(f'<b><i>{escape(name)}:</i> {escape(link)}</b>')
 
-        if manifest.description:
+        if man.description:
             blocks['description'].append(
-                html.escape(
-                    manifest.get_description(locale=properties.general.language.real_value),
-                ),
+                escape(man.get_description(locale=properties.general.language.real_value)),
             )
 
-        text = ''
-        for block in blocks.values():
-            if not block:
-                continue
+        if plugin.error:
+            if isinstance(plugin.error, TranslatableException):
+                error_text = plugin.error.format_args(translater.translate(plugin.error.message))
+            else:
+                error_text = 'Подробная информация об ошибке в лог файле.'
 
-            text += '\n'.join(block) + '\n\n'
-
-        text = text.strip()
+            blocks['error'].append(f'❌ Плагин не загружен.\n{error_text}')
 
         if plugin.properties:
             keyboard.add_callback_button(
@@ -142,21 +134,19 @@ class PluginInfoMenuBuilder(
                 text=translater.translate('$plugin_properties'),
                 callback_data=OpenMenu(
                     menu_id=MenuIds.props_node,
-                    history=ctx.callback_data.as_history() if ctx.callback_data else [],
-                    context_data={
-                        'entry_path': plugin.properties.path,
-                    },
+                    from_callback=ctx.callback_data,
+                    context_data={'entry_path': plugin.properties.path},
                 ).pack(),
             )
 
         keyboard.add_callback_button(
             button_id='toggle_plugin_state',
             text=translater.translate('$activate_plugin')
-            if manifest.plugin_id in plugin_manager.disabled_plugins
+            if man.plugin_id in plugin_manager.disabled_plugins
             else translater.translate('$deactivate_plugin'),
             callback_data=cbs.SetPluginStatus(
-                plugin_id=manifest.plugin_id,
-                status=manifest.plugin_id in plugin_manager.disabled_plugins,
+                plugin_id=man.plugin_id,
+                status=man.plugin_id in plugin_manager.disabled_plugins,
                 history=ctx.callback_data.history if ctx.callback_data else [],
             ).pack(),
         )
@@ -165,24 +155,20 @@ class PluginInfoMenuBuilder(
             button_id='remove_plugin',
             text=translater.translate('$remove_plugin'),
             callback_data=cbs.RemovePlugin(
-                plugin_id=manifest.plugin_id,
+                plugin_id=man.plugin_id,
                 history=ctx.callback_data.history if ctx.callback_data else [],
             ).pack(),
         )
 
         return Menu(
-            main_text=text,
+            main_text='\n\n'.join('\n'.join(block) for block in blocks.values() if block),
             main_keyboard=keyboard,
             finalizer=StripAndNavigationFinalizer(),
         )
 
 
-class InstallPluginMenuBuilder(
-    MenuBuilder,
-    menu_id=MenuIds.install_plugin,
-    context_type=MenuContext,
-):
-    async def build(self, ctx: MenuContext, translater: Translater) -> Menu:
+class InstallPluginMenuBuilder(MenuBuilder, menu_id=MenuIds.install_plugin, context_type=MenuCtx):
+    async def build(self, ctx: MenuCtx, translater: Tr) -> Menu:
         kb = KeyboardBuilder()
 
         kb.add_rows(

@@ -130,7 +130,7 @@ class PluginManager[PluginCLS]:
             exception = TranslatableException('Safe mode enabled.')
         elif self._app_version not in manifest.app_version:
             exception = TranslatableException(
-                'App version mismatch. Expected: %s. Current: %s',
+                'App version mismatch. Expected: %s. Current: %s.',
                 manifest.app_version,
                 self._app_version,
             )
