@@ -10,20 +10,9 @@ from .builders import (
     formatters_ui,
     notifications_ui,
 )
-from .builders.properties_ui import builders as properties_ui
-from .builders.properties_ui.registry import (
-    PropertiesEntryMenuBuilder,
-    PropertiesEntryButtonBuilder,
-)
 
 
 MENU_BUILDERS = [
-    properties_ui.PropertiesMenuBuilder,
-    properties_ui.ListParameterMenuBuilder,
-    properties_ui.ChoiceParameterMenuBuilder,
-    PropertiesEntryMenuBuilder,
-    properties_ui.ParamValueManualInputMenuBuilder,
-    properties_ui.AddListItemMenuBuilder,
     formatters_ui.FormatterListMenuBuilder,
     formatters_ui.FormatterInfoMenuBuilder,
     notifications_ui.NotificationsMenuBuilder,
@@ -48,12 +37,7 @@ MENU_BUILDERS = [
 ]
 
 
-BUTTON_BUILDERS = [
-    properties_ui.ToggleParamButtonBuilder,
-    properties_ui.ChangeParamValueButtonBuilder,
-    properties_ui.OpenParamMenuButtonBuilder,
-    PropertiesEntryButtonBuilder,
-]
+BUTTON_BUILDERS = []
 
 
 MENU_MODIFICATIONS = {

@@ -3,14 +3,9 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Any
 
-from aiogram import Bot, Dispatcher
-from aiogram.enums import ParseMode
-from aiogram.types import Update, Message, BotCommand, CallbackQuery, InlineKeyboardMarkup
-from aiogram.fsm.strategy import FSMStrategy
-from aiogram.client.default import DefaultBotProperties
+from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 
 from funpayhub.app.setup import TELEGRAM_SETUP_UI, TELEGRAM_SETUP_ROUTERS
-from funpayhub.lib.telegram import CommandsRegistry
 from funpayhub.lib.properties import ListParameter
 from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.app.telegram.routers import ROUTERS
@@ -21,15 +16,14 @@ from funpayhub.app.telegram.middlewares import (
     AddDataMiddleware,
     IsAuthorizedMiddleware,
 )
-from funpayhub.lib.telegram.ui.registry import UIRegistry
-from funpayhub.lib.telegram.callback_data import UnknownCallback
+from funpayhub.lib.base_app.telegram.main import TelegramApp
 
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
 
 
-class Telegram:
+class Telegram(TelegramApp):
     def __init__(
         self,
         hub: FunPayHub,
@@ -37,42 +31,21 @@ class Telegram:
         workflow_data: dict[str, Any],
     ) -> None:
         self._hub = hub
-        self._commands = CommandsRegistry()
-        self._setup_commands()
-        self._dispatcher = Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
-        self._dispatcher.workflow_data = workflow_data
-        self._setup_dispatcher()
 
-        self._bot = Bot(
-            token=bot_token,
-            default=DefaultBotProperties(
-                parse_mode=ParseMode.HTML,
-                disable_notification=False,
-                allow_sending_without_reply=True,
-                link_preview_is_disabled=True,
-            ),
+        super().__init__(
+            bot_token=bot_token,
+            workflow_data=workflow_data
         )
 
-        self._ui_registry = UIRegistry(workflow_data=self.hub.workflow_data)
-        self._setup_ui_defaults()
-
-    @property
-    def dispatcher(self) -> Dispatcher:
-        return self._dispatcher
-
-    @property
-    def ui_registry(self) -> UIRegistry:
-        return self._ui_registry
-
-    @property
-    def bot(self) -> Bot:
-        return self._bot
+        self._setup_commands()
 
     @property
     def hub(self) -> FunPayHub:
         return self._hub
 
     def _setup_dispatcher(self) -> None:
+        super()._setup_dispatcher()
+
         if not self.hub.setup_completed:
             self._dispatcher.include_routers(*TELEGRAM_SETUP_ROUTERS)
             return
@@ -99,20 +72,21 @@ class Telegram:
         self.dispatcher.include_routers(router)
 
     def _setup_commands(self) -> None:
-        self._commands.create_command('start', 'hub', True, '$command:start:description')
-        self._commands.create_command('settings', 'hub', True, '$command:settings:description')
-        self._commands.create_command('help', 'hub', True, '$commands:help:description')
-        self._commands.create_command('shutdown', 'hub', True, '$commands:shutdown:description')
-        self._commands.create_command('restart', 'hub', True, '$commands:restart:description')
-        self._commands.create_command('safe_mode', 'hub', True, '$commands:safe_mode:description')
-        self._commands.create_command(
+        self._commands_registry.create_command('start', 'hub', True, '$command:start:description')
+        self._commands_registry.create_command('settings', 'hub', True, '$command:settings:description')
+        self._commands_registry.create_command('help', 'hub', True, '$commands:help:description')
+        self._commands_registry.create_command('shutdown', 'hub', True, '$commands:shutdown:description')
+        self._commands_registry.create_command('restart', 'hub', True, '$commands:restart:description')
+        self._commands_registry.create_command('safe_mode', 'hub', True, '$commands:safe_mode:description')
+        self._commands_registry.create_command(
             'standard_mode',
             'hub',
             True,
             '$commands.standard_mode:description',
         )
 
-    def _setup_ui_defaults(self) -> None:
+    def _setup_ui(self) -> None:
+        super()._setup_ui()
         for m in default_ui.MENU_BUILDERS:
             self.ui_registry.add_menu_builder(m)
 
@@ -132,7 +106,7 @@ class Telegram:
                 command=cmd.command,
                 description=self.hub.translater.translate(cmd.description),
             )
-            for cmd in self._commands.commands(setup_only=True)
+            for cmd in self._commands_registry.commands(setup_only=True)
         ]
         await self.bot.set_my_commands(commands)
         await self.bot.delete_webhook(drop_pending_updates=True)
@@ -183,23 +157,3 @@ class Telegram:
             )
 
         return tasks
-
-    async def execute_previous_callback(
-        self,
-        callback_data: UnknownCallback | str,
-        query: CallbackQuery,
-    ) -> None:
-        await self.dispatcher.feed_update(
-            self.bot,
-            Update(
-                update_id=-1,
-                callback_query=query.model_copy(
-                    update={
-                        'data': callback_data.pack_history(hash=False)
-                        if isinstance(callback_data, UnknownCallback)
-                        else callback_data,
-                    },
-                ),
-            ),
-            dispatcher=self.dispatcher,
-        )

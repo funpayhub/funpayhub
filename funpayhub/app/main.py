@@ -6,7 +6,7 @@ import random
 import string
 import asyncio
 import traceback
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from colorama import Fore, Style
 from aiogram.types import User
@@ -14,17 +14,14 @@ from aiogram.types import User
 import exit_codes
 from loggers import main as logger
 from funpayhub.app.routers import ROUTERS
-from funpayhub.lib.plugins import PluginManager
+from funpayhub.app.plugins import PluginManager
 from funpayhub.lib.base_app import App
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
-from funpayhub.app.dispatching import (
-    Dispatcher as HubDispatcher,
-)
+from funpayhub.app.dispatching import Dispatcher as HubDispatcher
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.workflow_data import WorkflowData
-from funpayhub.lib.goods_sources import GoodsSourcesManager
 from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 
 from .tty import INIT_SETUP_TEXT_EN, INIT_SETUP_TEXT_RU, box_messages
@@ -35,26 +32,18 @@ def random_part(length) -> str:
 
 
 class FunPayHub(App):
+    if TYPE_CHECKING:
+        properties: FunPayHubProperties
+        telegram: Telegram
+
     def __init__(
         self,
         properties: FunPayHubProperties,
         translater: Translater | None = None,
         safe_mode: bool = False,
     ):
-        self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
-        logger.info('FunPay Hub initialized. Instance ID: %s', self._instance_id)
-
         self._setup_completed = bool(properties.general.golden_key.value)
-        self._safe_mode = safe_mode
-        self._properties = properties
-        self._translater = translater or Translater()
-        self._goods_manager = GoodsSourcesManager()
-        self._plugin_manager = PluginManager(self)
-
         self._workflow_data = WorkflowData
-        self._dispatcher = HubDispatcher(workflow_data=self._workflow_data)
-        self._setup_dispatcher()
-
         self._funpay = FunPay(
             self,
             bot_token=self.properties.general.golden_key.value,
@@ -62,11 +51,24 @@ class FunPayHub(App):
             headers=None,
             workflow_data=self.workflow_data,
         )
-        self._telegram = Telegram(
-            self,
-            bot_token=os.environ.get('FPH_TELEGRAM_TOKEN'),  # todo: or from config
-            workflow_data=self.workflow_data,
+
+        self._stop_signal: asyncio.Future[int] = asyncio.Future()
+        self._stopped_signal = asyncio.Event()
+        self._running_lock = asyncio.Lock()
+        self._stopping_lock = asyncio.Lock()
+
+        self._setup_lock = asyncio.Lock()
+        self._setup = False
+
+        super().__init__(
+            version=self.properties.version.value,
+            config=...,
+            dispatcher = HubDispatcher(workflow_data=self._workflow_data),
+            properties=properties,
+            plugin_manager=PluginManager(self)
         )
+
+        self._setup_dispatcher()
 
         self.workflow_data.update(
             {
@@ -85,14 +87,6 @@ class FunPayHub(App):
                 'goods_manager': self._goods_manager,
             },
         )
-
-        self._stop_signal: asyncio.Future[int] = asyncio.Future()
-        self._stopped_signal = asyncio.Event()
-        self._running_lock = asyncio.Lock()
-        self._stopping_lock = asyncio.Lock()
-
-        self._setup_lock = asyncio.Lock()
-        self._setup = False
 
     async def setup(self) -> None:
         async with self._setup_lock:
@@ -213,10 +207,6 @@ class FunPayHub(App):
             f'{Style.RESET_ALL}',
         )
         print('\033[2J\033[H', end='')
-
-    @property
-    def properties(self) -> FunPayHubProperties:
-        return self._properties
 
     @property
     def funpay(self) -> FunPay:
