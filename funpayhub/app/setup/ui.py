@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from funpayhub.lib import Translater
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, KeyboardBuilder
-from funpayhub.app.telegram.callbacks import OpenMenu
-from funpayhub.app.telegram.ui.premade import StripAndNavigationFinalizer
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from . import callbacks as cbs
 
