@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 import html
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from io import BytesIO
 from pathlib import Path
 
@@ -15,11 +15,14 @@ from aiogram.fsm.context import FSMContext
 from funpayhub.app.telegram import states, callbacks as cbs
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
-from funpayhub.app.workflow_data import WorkflowData as wfd
 from funpayhub.lib.goods_sources import GoodsSource, FileGoodsSource, GoodsSourcesManager
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.builders.context import StateUIContext, GoodsInfoMenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+
+
+if TYPE_CHECKING:
+    from funpayhub.app.workflow_data import WorkflowData as wfd
 
 
 r = router = Router(name='fph:goods')

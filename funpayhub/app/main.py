@@ -21,7 +21,7 @@ from funpayhub.lib.translater import Translater
 from funpayhub.app.dispatching import Dispatcher as HubDispatcher
 from funpayhub.app.funpay.main import FunPay
 from funpayhub.app.telegram.main import Telegram
-from funpayhub.app.workflow_data import WorkflowData
+from funpayhub.app.workflow_data import get_wfd
 from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 
 from .tty import INIT_SETUP_TEXT_EN, INIT_SETUP_TEXT_RU, box_messages
@@ -43,7 +43,7 @@ class FunPayHub(App):
         safe_mode: bool = False,
     ):
         self._setup_completed = bool(properties.general.golden_key.value)
-        self._workflow_data = WorkflowData
+        self._workflow_data = get_wfd()
         self._funpay = FunPay(
             self,
             bot_token=properties.general.golden_key.value,
@@ -71,27 +71,21 @@ class FunPayHub(App):
             translater=translater,
             safe_mode=safe_mode,
             telegram_app=telegram_app,
-            workflow_data=self.workflow_data
+            workflow_data=self.workflow_data,
         )
 
         self._setup_dispatcher()
 
         self.workflow_data.update(
             {
-                'app': self,
                 'hub': self,
-                'properties': self.properties,
-                'translater': self.translater,
-                'fp': self.funpay,
-                'fp_bot': self.funpay.bot,
-                'fp_dp': self.funpay.dispatcher,
-                'fp_formatters': self.funpay.text_formatters,
-                'tg': self._telegram,
-                'tg_bot': self._telegram.bot,
-                'tg_dp': self.telegram.dispatcher,
-                'tg_ui': self.telegram.ui_registry,
-                'plugin_manager': self._plugin_manager,
-                'goods_manager': self._goods_manager,
+                'funpay': self._funpay,
+                'fp': self._funpay,
+                'fp_bot': self._funpay.bot,
+                'fp_dp': self._funpay.dispatcher,
+                'fp_dispatcher': self._funpay.dispatcher,
+                'fp_formatters': self._funpay.text_formatters,
+                'formatters_registry': self._funpay.text_formatters,
             },
         )
 
@@ -115,6 +109,7 @@ class FunPayHub(App):
             f.write(traceback.format_exc())
 
     async def start(self) -> int:
+        await super().start()
         if self._running_lock.locked():
             raise RuntimeError('FunPayHub already running.')
 

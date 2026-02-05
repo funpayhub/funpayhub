@@ -55,7 +55,7 @@ class App:
         telegram_app: TelegramApp | None = None,
         safe_mode: bool = False,
         telegram_bot_token: str = '',
-        workflow_data: WorkflowData | None = None
+        workflow_data: WorkflowData | None = None,
     ):
         self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
         self._version = version
@@ -78,6 +78,22 @@ class App:
 
         self._setup_lock = asyncio.Lock()
         self._setup = False
+
+        self._workflow_data.update(
+            {
+                'app': self,
+                'properties': self.properties,
+                'translater': self.translater,
+                'tg': self._telegram,
+                'tg_dispatcher': self._telegram.dispatcher,
+                'tg_dp': self._telegram.dispatcher,
+                'tg_bot': self._telegram.bot,
+                'tg_ui': self._telegram.ui_registry,
+                'tg_ui_registry': self._telegram.ui_registry,
+                'plugin_manager': self._plugin_manager,
+                'goods_manager': self._goods_manager,
+            }
+        )
 
         logger.info(
             'App initialized. Version: %s. Instance ID: %s',
@@ -138,7 +154,8 @@ class App:
             f.write(traceback.format_exc())
 
     async def start(self) -> int:
-        raise NotImplementedError()
+        self._workflow_data.check_ready()
+        return 0
 
     async def shutdown(self, code: int, error_ok: bool = False) -> None:
         raise NotImplementedError()

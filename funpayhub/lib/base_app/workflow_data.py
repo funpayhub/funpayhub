@@ -23,7 +23,7 @@ class WorkflowData(BaseWorkflowData):
         app: App
         properties: Properties
         translater: Translater
-        telegram: TelegramApp
+        tg: TelegramApp
         tg_bot: Bot
         tg_dispatcher: Dispatcher
         tg_ui_registry: UIRegistry
@@ -32,17 +32,18 @@ class WorkflowData(BaseWorkflowData):
 
     def __init__(self) -> None:
         super().__init__()
-
         from funpayhub.lib.base_app import App
 
-        self.check_items = {
-            'app': lambda v: isinstance(v, App),
-            'properties': lambda v: isinstance(v, Properties),
-            'translater': lambda v: isinstance(v, Translater),
-            'tg': lambda v: isinstance(v, TelegramApp),
-            'tg_bot': lambda v: isinstance(v, Bot),
-            'tg_dispatcher': lambda v: isinstance(v, Dispatcher),
-            'tg_ui_registry': lambda v: isinstance(v, UIRegistry),
-            'formatters_registry': lambda v: isinstance(v, FormattersRegistry),
-            'goods_manager': lambda v: isinstance(v, GoodsSourcesManager),
-        }
+        self.check_items.update(
+            {
+                'app': lambda v: isinstance(v, App),
+                'properties': lambda v: isinstance(v, Properties),
+                'translater': lambda v: isinstance(v, Translater),
+                'tg': lambda v: isinstance(v, TelegramApp),
+                'tg_bot': lambda v: isinstance(v, Bot),
+                'tg_dispatcher': lambda v: isinstance(v, Dispatcher),
+                'tg_ui_registry': lambda v: isinstance(v, UIRegistry),
+                'formatters_registry': lambda v: isinstance(v, FormattersRegistry),
+                'goods_manager': lambda v: isinstance(v, GoodsSourcesManager),
+            }
+        )
