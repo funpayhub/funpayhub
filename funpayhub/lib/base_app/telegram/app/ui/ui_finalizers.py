@@ -3,8 +3,7 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
-from funpayhub.lib.telegram.ui import Button
-from funpayhub.lib.telegram.ui import KeyboardBuilder
+from funpayhub.lib.telegram.ui import Button, KeyboardBuilder
 
 from . import callbacks as cbs
 
@@ -150,7 +149,8 @@ async def build_view_navigation_buttons(
         button_id='menu_page_counter',
         text=f'{ctx.view_page + (1 if unknown_max_pages or total_pages else 0)}'
         + (f' / {total_pages}' if not unknown_max_pages else ''),
-        callback_data=cbs.ChangeViewPageManually(
+        callback_data=cbs.ActivateChangingPageState(
+            mode='text',
             total_pages=total_pages,
             history=callback_data.as_history(),
         ).pack()
