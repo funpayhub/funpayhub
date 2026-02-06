@@ -266,6 +266,15 @@ msgid "$add_offer_rule"
 msgstr "➕ Добавить правило"
 
 
+# Autoresponse
+msgid "$props.auto_response.*:description"
+msgstr "Настройки реакции на команду."
+
+
+msgid "$add_command_message"
+msgstr "➕ Введите команду."
+
+
 
 # ----------------------------------------------------
 # ----------------------- Goods ----------------------

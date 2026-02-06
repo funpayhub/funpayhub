@@ -16,6 +16,7 @@ from funpayhub.app.telegram.states import AddingCommand
 from funpayhub.lib.base_app.telegram import utils
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+from funpayhub.app.telegram.ui.builders.context import StateUIContext
 
 from .router import router as r
 from ...ui.ids import MenuIds
@@ -30,14 +31,18 @@ async def set_adding_command_state(
     query: CallbackQuery,
     callback_data: cbs.AddCommand,
     tg_ui: UIRegistry,
-    data: dict[str, Any],
     state: FSMContext,
+    translater: Translater
 ) -> None:
-    ctx = MenuContext(menu_id=MenuIds.add_command, trigger=query, data=copy(callback_data.data))
-    msg = await (await tg_ui.build_menu(ctx, data)).apply_to(query.message)
+    msg = await StateUIContext(
+        menu_id=MenuIds.state_menu,
+        trigger=query,
+        text=translater.translate('$add_command_message'),
+        delete_on_clear=False,
+        open_previous_on_clear=True,
+    ).build_and_apply(tg_ui, query.message)
 
-    await state.set_state(AddingCommand.__identifier__)
-    await state.set_data({'data': AddingCommand(message=msg, callback_data=callback_data)})
+    await AddingCommand(message=msg, callback_data=callback_data).set(state)
 
 
 @r.message(StateFilter(AddingCommand.identifier))
@@ -53,7 +58,7 @@ async def add_command(
         return
 
     asyncio.create_task(utils.delete_message(message))
-    data: AddingCommand = (await state.get_data())['data']
+    data = await AddingCommand.get(state)
 
     props = properties.auto_response
     if message.text in props.entries:

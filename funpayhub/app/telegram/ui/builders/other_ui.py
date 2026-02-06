@@ -29,8 +29,10 @@ if TYPE_CHECKING:
 
 class AddCommandMenuBuilder(MenuBuilder, menu_id=MenuIds.add_command, context_type=MenuContext):
     async def build(self, ctx: MenuContext, translater: Translater) -> Menu:
+        keyboard = KeyboardBuilder()
+        keyboard.add_callback_button()
         return Menu(
-            main_text='$add_command_message',
+            main_text=translater.translate('$add_command_message'),
             footer_keyboard=KeyboardBuilder(
                 keyboard=[
                     Button.callback_button(
