@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
+from itertools import chain
 
 from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 
 from funpayhub.lib.properties import ListParameter
 from funpayhub.app.telegram.ui import default as default_ui
-from funpayhub.app.telegram.routers import ROUTERS, MENUS, MENU_MODS, BUTTONS, BUTTON_MODS
+from funpayhub.app.telegram.routers import MENUS, BUTTONS, ROUTERS, MENU_MODS, BUTTON_MODS
 from funpayhub.app.dispatching.events import TelegramStartEvent
 from funpayhub.app.telegram.middlewares import (
     OopsMiddleware,
@@ -16,7 +17,6 @@ from funpayhub.app.telegram.middlewares import (
     IsAuthorizedMiddleware,
 )
 from funpayhub.lib.base_app.telegram.main import TelegramApp
-from itertools import chain
 
 
 if TYPE_CHECKING:
@@ -109,7 +109,10 @@ class Telegram(TelegramApp):
         for b in chain(default_ui.BUTTON_BUILDERS, BUTTONS):
             self.ui_registry.add_button_builder(b)
 
-        for menu_id, modifications in chain(default_ui.MENU_MODIFICATIONS.items(), MENU_MODS.items()):
+        for menu_id, modifications in chain(
+            default_ui.MENU_MODIFICATIONS.items(),
+            MENU_MODS.items(),
+        ):
             for mod in modifications:
                 self.ui_registry.add_menu_modification(mod, menu_id)
 

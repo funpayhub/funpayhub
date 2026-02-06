@@ -9,16 +9,17 @@ __all__ = [
     'BUTTON_MODS',
 ]
 
+from collections import defaultdict
+
 from .menu import router as menu_router
 from .goods import router as goods_router
 from .other import router as other_router
 from .plugins import router as plugins_router
-from .updates import router as updates_router
+from .updates import MENUS as UPDATE_MENUS, router as updates_router
+from .autoresponse import MENU_MODS as AUTORESPONSE_MENU_MODS, router as autoresponse_router
 from .auto_delivery import router as auto_delivery_router
 from .help.handlers import router as help_router
 from .funpay_actions import router as funpay_actions_router
-from .autoresponse import router as autoresponse_router, MENU_MODS as AUTORESPONSE_MENU_MODS
-from collections import defaultdict
 
 
 ROUTERS = [
@@ -32,7 +33,10 @@ ROUTERS = [
     auto_delivery_router,
 ]
 
-MENUS = []
+MENUS = [
+    *UPDATE_MENUS,
+]
+
 BUTTONS = []
 
 

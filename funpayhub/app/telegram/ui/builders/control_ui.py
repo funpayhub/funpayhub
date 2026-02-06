@@ -8,6 +8,7 @@ from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import Menu, Button, MenuContext
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import MenuBuilder, KeyboardBuilder
+from funpayhub.app.telegram.routers.updates.callbacks import CheckForUpdates
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 
@@ -47,7 +48,7 @@ class ControlMenuBuilder(MenuBuilder, menu_id=MenuIds.control, context_type=Menu
             Button.callback_button(
                 button_id='update',
                 text=translater.translate('$check_updates'),
-                callback_data=cbs.CheckForUpdates().pack_compact(),
+                callback_data=CheckForUpdates().pack_compact(),
                 row=True,
             ),
         )

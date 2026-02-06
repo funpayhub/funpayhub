@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 __all__ = [
     'AddCommand',
     'RemoveCommand',
@@ -7,9 +10,9 @@ __all__ = [
 from funpayhub.lib.telegram.callback_data import CallbackData
 
 
-class AddCommand(CallbackData, identifier='add_command'): pass
+class AddCommand(CallbackData, identifier='add_command'):
+    pass
 
 
 class RemoveCommand(CallbackData, identifier='remove_command'):
     command: str
-

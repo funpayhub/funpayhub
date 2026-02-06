@@ -13,7 +13,6 @@ import logging
 import os.path
 from typing import Any
 from pathlib import Path
-from argparse import ArgumentParser
 from logging.config import dictConfig
 
 import colorama

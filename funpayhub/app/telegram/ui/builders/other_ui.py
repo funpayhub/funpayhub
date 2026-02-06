@@ -10,14 +10,12 @@ import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
+from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from .context import (
     StateUIContext,
-    UpdateMenuContext,
-    InstallUpdateMenuContext,
     FunPayStartNotificationMenuContext,
 )
 
@@ -87,63 +85,6 @@ class FunPayStartNotificationMenuBuilder(
             text = translater.translate('$funpay_unexpected_error_notification_text')
 
         return Menu(main_text=text)
-
-
-class UpdateMenuBuilder(MenuBuilder, menu_id=MenuIds.update, context_type=UpdateMenuContext):
-    async def build(self, ctx: UpdateMenuContext, translater: Translater) -> Menu:
-        menu = Menu(finalizer=StripAndNavigationFinalizer())
-        if ctx.update_info is None:
-            menu.main_text = translater.translate('$no_updates_available')
-            return menu
-
-        desc = html.escape(ctx.update_info.description)
-        if len(desc) > 3000:
-            desc = (
-                desc[:3000]
-                + '...'
-                + '\n\n'
-                + translater.translate('$full_changelog')
-                + ': https://github.com/funpayhub/funpayhub/releases/latest'
-            )
-
-        menu.main_text = f"""{translater.translate('$new_update_available')}
-
-<b>{html.escape(ctx.update_info.title)}</b>
-
-{desc}"""
-
-        menu.main_keyboard = KeyboardBuilder()
-        menu.main_keyboard.add_callback_button(
-            button_id='download_update',
-            text=translater.translate('$download_update'),
-            callback_data=cbs.DownloadUpdate(url=ctx.update_info.url).pack(),
-        )
-
-        return menu
-
-
-class InstallUpdateMenuBuilder(
-    MenuBuilder,
-    menu_id=MenuIds.install_update,
-    context_type=InstallUpdateMenuContext,
-):
-    async def build(
-        self,
-        ctx: InstallUpdateMenuContext,
-        translater: Translater,
-        hub: FunPayHub,
-    ) -> Menu:
-        kb = KeyboardBuilder()
-        kb.add_callback_button(
-            button_id='install_update',
-            text=translater.translate('$install_update'),
-            callback_data=cbs.InstallUpdate(instance_id=hub.instance_id).pack_compact(),
-        )
-
-        return Menu(
-            main_text=translater.translate('$install_update_text'),
-            main_keyboard=kb,
-        )
 
 
 class MainMenuBuilder(

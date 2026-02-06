@@ -1,15 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from dataclasses import field, dataclass
 
 from funpaybotengine.types import Message
 
 from funpayhub.lib.telegram.ui import MenuContext
-
-
-if TYPE_CHECKING:
-    from updater import UpdateInfo
 
 
 @dataclass(kw_only=True)
@@ -23,16 +18,6 @@ class NewMessageMenuContext(MenuContext):
 class SendMessageMenuContext(MenuContext):
     funpay_chat_id: int | str
     funpay_chat_name: str
-
-
-@dataclass(kw_only=True)
-class UpdateMenuContext(MenuContext):
-    update_info: UpdateInfo | None = None
-
-
-@dataclass(kw_only=True)
-class InstallUpdateMenuContext(MenuContext):
-    instance_id: str
 
 
 @dataclass(kw_only=True)

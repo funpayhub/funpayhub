@@ -9,8 +9,6 @@ import traceback
 from typing import TYPE_CHECKING
 
 from aiogram.utils.token import TokenValidationError
-from colorama import Fore, Style
-from aiogram.types import User
 
 import exit_codes
 from loggers import main as logger
@@ -29,6 +27,7 @@ from funpayhub.lib.base_app.app import AppConfig
 from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.workflow_data import get_wfd
 from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
+
 from .args_parser import args
 
 
@@ -92,7 +91,9 @@ class FunPayHub(App):
             telegram_app=telegram_app,
             workflow_data=self.workflow_data,
         )
-        self._plugin_manager._disabled_plugins = set(properties.plugin_properties.disabled_plugins.value)
+        self._plugin_manager._disabled_plugins = set(
+            properties.plugin_properties.disabled_plugins.value,
+        )
 
         self._setup_dispatcher()
 
@@ -137,7 +138,7 @@ class FunPayHub(App):
             tasks = [
                 asyncio.create_task(self.telegram.start(), name='telegram'),
                 asyncio.create_task(wait_stop_signal(), name='stop_signal'),
-                asyncio.create_task(self.funpay.start(), name='funpay')
+                asyncio.create_task(self.funpay.start(), name='funpay'),
             ]
 
             done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)

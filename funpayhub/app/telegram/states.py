@@ -4,8 +4,8 @@ import warnings
 from typing import TYPE_CHECKING, Any, Self
 from dataclasses import dataclass
 
-from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.context import FSMContext
 
 from funpayhub.lib.core import classproperty
 from funpayhub.lib.telegram.callback_data import UnknownCallback

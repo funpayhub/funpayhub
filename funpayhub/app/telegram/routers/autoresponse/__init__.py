@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+
 __all__ = ['router', 'MENU_MODS']
 
 
-from .router import router
-from .ui import AddCommandButtonModification, AddRemoveButtonToCommandModification
 from funpayhub.app.telegram.ui.ids import MenuIds
+
+from .ui import AddCommandButtonModification, AddRemoveButtonToCommandModification
+from .router import router
 
 
 MENU_MODS = {
