@@ -18,8 +18,13 @@ from funpayhub.app.routers import ROUTERS
 from funpayhub.lib.base_app import App
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
-from funpayhub.app.dispatching import Dispatcher as HubDispatcher
+from funpayhub.app.dispatching import (
+    Dispatcher as HubDispatcher,
+    NodeAttachedEvent,
+    ParameterValueChangedEvent,
+)
 from funpayhub.app.funpay.main import FunPay
+from funpayhub.lib.base_app.app import AppConfig
 from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.workflow_data import get_wfd
 from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
@@ -64,9 +69,14 @@ class FunPayHub(App):
         self._running_lock = asyncio.Lock()
         self._stopping_lock = asyncio.Lock()
 
+        config = AppConfig(
+            on_parameter_change_event_factory=ParameterValueChangedEvent,
+            on_node_attached_event_factory=NodeAttachedEvent,
+        )
+
         super().__init__(
             version=properties.version.value,
-            config=...,
+            config=config,
             dispatcher=HubDispatcher(workflow_data=self._workflow_data),
             properties=properties,
             plugin_manager=PluginManager(self, properties.version.value),
@@ -75,6 +85,7 @@ class FunPayHub(App):
             telegram_app=telegram_app,
             workflow_data=self.workflow_data,
         )
+        self._plugin_manager._disabled_plugins = set(properties.plugin_properties.disabled_plugins.value)
 
         self._setup_dispatcher()
 

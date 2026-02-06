@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
@@ -38,7 +37,7 @@ async def next_param_value(
 ) -> None:
     param = properties.get_parameter(callback_data.path)
     await param.next_value(save=True)
-    asyncio.create_task(app.emit_parameter_changed_event(param))
+    await app.emit_parameter_changed_event(param)
     await app.telegram.fake_query(callback_data.pack_history(hash=False), query)
 
 
@@ -51,7 +50,7 @@ async def choose_param_value(
 ) -> None:
     param = properties.get_parameter(callback_data.path)
     await param.set_value(callback_data.choice_id)
-    asyncio.create_task(app.emit_parameter_changed_event(param))
+    await app.emit_parameter_changed_event(param)
     await app.telegram.fake_query(callback_data, query, pack_history=True)
 
 
@@ -102,7 +101,7 @@ async def edit_parameter(message: Message, app: App, translater: Tr, state: FSMC
         )
         return
 
-    asyncio.create_task(app.emit_parameter_changed_event(data.parameter))
+    await app.emit_parameter_changed_event(data.parameter)
     await app.telegram.fake_query(data.callback_data, data.query, pack_history=True)
 
 
@@ -177,5 +176,5 @@ async def edit_parameter(message: Message, app: App, translater: Tr, state: FSMC
         )
         return
 
-    asyncio.create_task(app.emit_parameter_changed_event(data.parameter))
+    await app.emit_parameter_changed_event(data.parameter)
     await app.telegram.fake_query(data.callback_data, data.query, pack_history=True)

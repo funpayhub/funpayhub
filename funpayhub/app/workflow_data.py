@@ -42,7 +42,7 @@ class WorkflowData(BaseWorkflowData):
                 'funpay': lambda v: isinstance(v, FunPay),
                 'fp_bot': lambda v: isinstance(v, FPBot),
                 'fp_dispatcher': lambda v: isinstance(v, FPDispatcher),
-            }
+            },
         )
 
 

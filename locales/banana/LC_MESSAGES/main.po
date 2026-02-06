@@ -67,10 +67,10 @@ msgstr "banana bee-do"
 msgid "$props.telegram.appearance.show_emoji:description"
 msgstr "lala papoy banana bee-do tatata papple banana poopaye banana buca lala papoy bee-do tatata bello para gelato tulaliloo papaya baboi meena waha po-ka bee-ka haha poy-poy tutu bapple mango kaka blabla bananaaa poyo wii la-la mumu babana zazu"
 
-msgid "$props.telegram.appearance.menu_entries_amount:name"
+msgid "$props.telegram.appearance.max_menu_lines:name"
 msgstr "banana buca papple"
 
-msgid "$props.telegram.appearance.menu_entries_amount:description"
+msgid "$props.telegram.appearance.max_menu_lines:description"
 msgstr "tatata banana buca lala papoy bee-do poopaye banana papple tatata banana buca lala papoy bee-do poopaye banana bello para gelato tulaliloo papaya baboi meena waha po-ka bee-ka haha poy-poy tutu bapple mango kaka blabla bananaaa poyo wii la-la mumu babana zazu"
 
 msgid "$props.auto_delivery:name"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from . import modifications
 from .ids import MenuIds
 from .builders import (
     goods_ui,
@@ -10,7 +11,6 @@ from .builders import (
     formatters_ui,
     notifications_ui,
 )
-from . import modifications
 
 
 MENU_BUILDERS = [

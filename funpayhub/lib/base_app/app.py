@@ -25,12 +25,12 @@ from .workflow_data import WorkflowData
 
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Awaitable
+    from collections.abc import Callable
 
     from eventry.asyncio.event import Event
     from eventry.asyncio.dispatcher import Dispatcher
 
-    from funpayhub.lib.properties import Node, Parameter, Properties, MutableParameter
+    from funpayhub.lib.properties import Node, Properties, MutableParameter
 
 
 def random_part(length) -> str:
@@ -39,8 +39,8 @@ def random_part(length) -> str:
 
 @dataclass
 class AppConfig:
-    on_parameter_change_event_factory: Callable[[Parameter], Awaitable[Event]]
-    on_node_attached_event_factory: Callable[[Node], Awaitable[Event]]
+    on_parameter_change_event_factory: Callable[[MutableParameter], Event]
+    on_node_attached_event_factory: Callable[[Node], Event]
 
 
 class App:
@@ -159,11 +159,11 @@ class App:
         raise NotImplementedError()
 
     async def emit_parameter_changed_event(self, parameter: MutableParameter[Any]) -> None:
-        event = await self._config.on_parameter_change_event_factory(parameter)
+        event = self._config.on_parameter_change_event_factory(parameter)
         await self.dispatcher.event_entry(event)
 
     async def emit_node_attached_event(self, node: Node) -> None:
-        event = await self._config.on_node_attached_event_factory(node)
+        event = self._config.on_node_attached_event_factory(node)
         await self.dispatcher.event_entry(event)
 
     @property

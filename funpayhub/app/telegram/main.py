@@ -74,17 +74,29 @@ class Telegram(TelegramApp):
     def _setup_commands(self) -> None:
         self._commands_registry.create_command('start', 'hub', True, '$command:start:description')
         self._commands_registry.create_command(
-            'settings', 'hub', True, '$command:settings:description'
+            'settings',
+            'hub',
+            True,
+            '$command:settings:description',
         )
         self._commands_registry.create_command('help', 'hub', True, '$commands:help:description')
         self._commands_registry.create_command(
-            'shutdown', 'hub', True, '$commands:shutdown:description'
+            'shutdown',
+            'hub',
+            True,
+            '$commands:shutdown:description',
         )
         self._commands_registry.create_command(
-            'restart', 'hub', True, '$commands:restart:description'
+            'restart',
+            'hub',
+            True,
+            '$commands:restart:description',
         )
         self._commands_registry.create_command(
-            'safe_mode', 'hub', True, '$commands:safe_mode:description'
+            'safe_mode',
+            'hub',
+            True,
+            '$commands:safe_mode:description',
         )
         self._commands_registry.create_command(
             'standard_mode',

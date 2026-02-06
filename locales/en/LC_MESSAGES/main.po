@@ -167,10 +167,10 @@ msgstr "🎨 Appearance"
 msgid "$props.telegram.appearance:description"
 msgstr "Telegram bot appearance settings."
 
-msgid "$props.telegram.appearance.menu_entries_amount:name"
+msgid "$props.telegram.appearance.max_menu_lines:name"
 msgstr "📋 Items per page"
 
-msgid "$props.telegram.appearance.menu_entries_amount:description"
+msgid "$props.telegram.appearance.max_menu_lines:description"
 msgstr ""
 "Maximum number of items on 1 page of the Telegram menu.\n"
 "Navigation buttons are not counted."

@@ -168,10 +168,10 @@ msgstr "🎨 Внешний вид"
 msgid "$props.telegram.appearance:description"
 msgstr "Настройки внешнего вида Telegram бота."
 
-msgid "$props.telegram.appearance.menu_entries_amount:name"
+msgid "$props.telegram.appearance.max_menu_lines:name"
 msgstr "📋 Кол-во элементов на странице"
 
-msgid "$props.telegram.appearance.menu_entries_amount:description"
+msgid "$props.telegram.appearance.max_menu_lines:description"
 msgstr ""
 "Максимальное кол-во элементов на 1 странице Telegam меню.\n"
 "Кнопки навигации не учитываются."

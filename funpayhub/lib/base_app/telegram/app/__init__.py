@@ -8,8 +8,8 @@ __all__ = [
 ]
 
 from .ui.router import router as ui_router
-from .properties.router import router as properties_router
 from .properties.ui import builders
+from .properties.router import router as properties_router
 
 
 ROUTERS = [ui_router, properties_router]
@@ -19,7 +19,7 @@ MENUS = [
     builders.ChoiceParameterMenuBuilder,
     builders.ListParameterMenuBuilder,
     builders.ParamManualInputMenuBuilder,
-    builders.AddListItemMenuBuilder
+    builders.AddListItemMenuBuilder,
 ]
 BUTTONS = [
     builders.NodeButtonBuilder,

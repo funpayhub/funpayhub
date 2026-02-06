@@ -45,5 +45,5 @@ class WorkflowData(BaseWorkflowData):
                 'tg_ui_registry': lambda v: isinstance(v, UIRegistry),
                 'formatters_registry': lambda v: isinstance(v, FormattersRegistry),
                 'goods_manager': lambda v: isinstance(v, GoodsSourcesManager),
-            }
+            },
         )

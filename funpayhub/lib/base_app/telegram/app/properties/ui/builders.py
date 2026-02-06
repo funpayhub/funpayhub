@@ -9,7 +9,7 @@ from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.properties import Properties as Props, parameter as param
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, KeyboardBuilder
 from funpayhub.lib.base_app.telegram.app.ui import callbacks as ui_cbs, ui_finalizers
-from funpayhub.lib.base_app.properties_flags import PropertiesFlags, ParameterFlags
+from funpayhub.lib.base_app.properties_flags import ParameterFlags, PropertiesFlags
 
 from .. import callbacks as cbs
 from .context import NodeMenuContext as MenuCtx, NodeButtonContext as BtnCtx

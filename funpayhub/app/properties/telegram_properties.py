@@ -75,11 +75,11 @@ class TelegramAppearance(Properties):
             description='$props.telegram.appearance:description',
         )
 
-        self.menu_entries_amount = self.attach_node(
+        self.max_menu_lines = self.attach_node(
             IntParameter(
-                id='menu_entries_amount',
-                name='$props.telegram.appearance.menu_entries_amount:name',
-                description='$props.telegram.appearance.menu_entries_amount:description',
+                id='max_menu_lines',
+                name='$props.telegram.appearance.max_menu_lines:name',
+                description='$props.telegram.appearance.max_menu_lines:description',
                 default_value=6,
                 validator=entries_validator,
             ),

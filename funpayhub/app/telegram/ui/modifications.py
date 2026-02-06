@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
+from funpayhub.app.telegram import callbacks as cbs
 from funpayhub.lib.telegram.ui import Button, MenuModification
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
-from .premade import AddRemoveButtonBaseModification
-from funpayhub.app.telegram import callbacks as cbs
+
 from .ids import MenuIds
+from .premade import AddRemoveButtonBaseModification
+
 
 if TYPE_CHECKING:
-    from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
-    from funpayhub.lib.telegram.ui import Menu
-    from funpayhub.lib.translater import Translater as Tr
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from funpayhub.lib.translater import Translater as Tr
+    from funpayhub.lib.telegram.ui import Menu
+    from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
 
 class PropertiesMenuModification(
@@ -163,7 +166,7 @@ class ReplaceSourcesListButtonModification(
                     text=translater.translate('$bind_goods_source'),
                     callback_data=cbs.AutoDeliveryOpenGoodsSourcesList(
                         rule=ctx.entry_path[-1],
-                        from_callback=ctx.callback_data
+                        from_callback=ctx.callback_data,
                     ).pack(),
                 )
                 menu.main_keyboard.keyboard[l_index][b_index] = btn
@@ -197,6 +200,6 @@ class AddRemoveButtonToCommandModification(
     async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr) -> Menu:
         delete_callback = cbs.RemoveCommand(
             command=ctx.entry_path[-1],
-            from_callback=ctx.callback_data
+            from_callback=ctx.callback_data,
         ).pack()
         return await self._modify(ctx, menu, translater, delete_callback=delete_callback)

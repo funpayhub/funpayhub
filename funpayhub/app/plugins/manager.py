@@ -5,24 +5,24 @@ from typing import TYPE_CHECKING, Any
 from pathlib import Path
 from contextlib import suppress
 
-from aiogram import BaseMiddleware
-from eventry.asyncio.middleware_manager import MiddlewareManagerTypes
+from aiogram import Router as AiogramRouter, BaseMiddleware
+from funpaybotengine import Router as FPBERouter
 from packaging.version import Version
+from eventry.asyncio.middleware_manager import MiddlewareManagerTypes
 
 from funpayhub.lib.plugins import PluginManager as BasePluginManager
 from funpayhub.app.dispatching import Router as HubRouter
-from aiogram import Router as AiogramRouter
-from funpaybotengine import Router as FPBERouter
 
 from .plugin import Plugin
 
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Awaitable
+
     from eventry.asyncio.router import Router as EventryRouter
+
     from funpayhub.app.main import FunPayHub
     from funpayhub.lib.plugins import LoadedPlugin, PluginManifest
-
 
 
 class PassPluginAiogramMiddleware(BaseMiddleware):
