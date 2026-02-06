@@ -234,7 +234,7 @@ class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', con
             callback_data=ui_cbs.ClearState(
                 delete_message=False,
                 open_previous=True,
-                from_callback=ctx.callback_data,
+                history=ctx.callback_data.history if ctx.callback_data else [],
             ).pack(),
         )
 

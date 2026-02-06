@@ -5,13 +5,11 @@ import shutil
 from typing import TYPE_CHECKING
 
 from aiogram import Bot, Router
-from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.filters import StateFilter
-from aiogram.fsm.context import FSMContext
 
-import funpayhub.app.telegram.callbacks as cbs
-from funpayhub.lib.plugins import PluginManager
-from funpayhub.app.telegram import states
+import funpayhub.app.telegram.modules.plugins.states
+import funpayhub.app.telegram.modules.plugins.callbacks
 from funpayhub.lib.plugins.installers import (
     HTTPSPluginInstaller,
     AiogramPluginInstaller,
@@ -19,9 +17,15 @@ from funpayhub.lib.plugins.installers import (
 )
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 
+from . import states, callbacks as cbs
+
 
 if TYPE_CHECKING:
-    from funpayhub.lib.translater import Translater
+    from aiogram.types import Message, CallbackQuery
+    from aiogram.fsm.context import FSMContext
+
+    from funpayhub.lib.plugins import PluginManager
+    from funpayhub.lib.translater import Translater as Tr
 
 
 router = r = Router(name='fph:plugins')
@@ -31,7 +35,7 @@ router = r = Router(name='fph:plugins')
 async def set_plugin_status(
     query: CallbackQuery,
     plugin_manager: PluginManager,
-    translater: Translater,
+    translater: Tr,
     callback_data: cbs.SetPluginStatus,
 ) -> None:
     if callback_data.plugin_id not in plugin_manager._plugins:
@@ -61,7 +65,7 @@ async def set_plugin_status(
 async def set_plugin_status(
     query: CallbackQuery,
     plugin_manager: PluginManager,
-    translater: Translater,
+    translater: Tr,
     callback_data: cbs.RemovePlugin,
 ) -> None:
     # todo: move logic to plugin manager
@@ -86,8 +90,8 @@ async def set_plugin_status(
 async def install_plugin(
     query: CallbackQuery,
     state: FSMContext,
-    translater: Translater,
-    callback_data: cbs.InstallPlugin,
+    translater: Tr,
+    callback_data: funpayhub.app.telegram.modules.plugins.callbacks.InstallPlugin,
     plugin_manager: PluginManager,
 ) -> None:
     if plugin_manager.installation_lock.locked():
@@ -108,7 +112,7 @@ async def install_plugin(
         ),
     )
 
-    data = states.InstallingZipPlugin(
+    data = funpayhub.app.telegram.modules.plugins.states.InstallingZipPlugin(
         message=msg,
         callback_query_obj=query,
         callback_data=callback_data,
@@ -122,7 +126,7 @@ async def install_plugin(
 async def install_plugin(
     message: Message,
     plugin_manager: PluginManager,
-    translater: Translater,
+    translater: Tr,
     tg_bot: Bot,
     state: FSMContext,
 ) -> None:
@@ -146,7 +150,9 @@ async def install_plugin(
         await message.reply(translater.translate('$install_plugin_from_zip_text'))
         return
 
-    data: states.InstallingZipPlugin = (await state.get_data())['data']
+    data: funpayhub.app.telegram.modules.plugins.states.InstallingZipPlugin = (
+        await state.get_data()
+    )['data']
     await state.clear()
     await data.message.delete()
 

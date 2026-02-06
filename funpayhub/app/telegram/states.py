@@ -70,13 +70,6 @@ class State:
         return data['data']
 
 
-@dataclass
-class InstallingZipPlugin(State, identifier='fph:installing_zip_plugin'):
-    message: Message
-    callback_query_obj: CallbackQuery
-    callback_data: UnknownCallback
-
-
 # FunPay Actions
 @dataclass
 class SendingFunpayMessage(State, identifier='fph:sending_funpay_message'):

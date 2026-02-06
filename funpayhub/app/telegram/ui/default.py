@@ -7,7 +7,6 @@ from .builders import (
     other_ui,
     control_ui,
     message_ui,
-    plugins_ui,
     formatters_ui,
     notifications_ui,
 )
@@ -29,9 +28,6 @@ MENU_BUILDERS = [
     other_ui.AddAutoDeliveryRuleMenuBuilder,
     other_ui.RequestsMenuBuilder,
     control_ui.ControlMenuBuilder,
-    plugins_ui.PluginsListMenuBuilder,
-    plugins_ui.PluginInfoMenuBuilder,
-    plugins_ui.InstallPluginMenuBuilder,
 ]
 
 

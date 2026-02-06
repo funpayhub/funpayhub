@@ -30,7 +30,7 @@ async def change_language(parameter: ChoiceParameter, translater: Translater) ->
 
 
 @r.on_parameter_value_changed(
-    lambda parameter, properties: parameter is properties.global_toggles.auto_raise,
+    lambda parameter, properties: parameter is properties.toggles.auto_raise,
     handler_id='fph:toggle_auto_raise',
 )
 async def start_stop_auto_raise(parameter: ToggleParameter, fp: FunPay) -> None:

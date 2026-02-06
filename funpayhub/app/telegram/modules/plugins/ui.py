@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 
-__all__ = ['PluginsListMenuBuilder']
+__all__ = [
+    'PluginMenuContext',
+    'PluginsListMenuBuilder',
+    'PluginInfoMenuBuilder',
+]
 
 
 from typing import TYPE_CHECKING
+from dataclasses import dataclass
 from html import escape
 
-from funpayhub.app.telegram import callbacks as cbs
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.telegram.ui import (
     Menu,
@@ -17,15 +21,21 @@ from funpayhub.lib.telegram.ui import (
     KeyboardBuilder,
 )
 from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.builders.context import PluginMenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+
+from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
     from funpayhub.lib.plugins import PluginManager
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
     from funpayhub.lib.translater import Translater as Tr
+
+
+@dataclass(kw_only=True)
+class PluginMenuContext(MenuCtx):
+    plugin_id: str
 
 
 class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_type=MenuCtx):

@@ -14,7 +14,7 @@ from collections import defaultdict
 from .menu import router as menu_router
 from .goods import router as goods_router
 from .other import router as other_router
-from .plugins import router as plugins_router
+from .plugins import MENUS as PLUGIN_MENUS, router as plugins_router
 from .updates import MENUS as UPDATE_MENUS, router as updates_router
 from .autoresponse import MENU_MODS as AUTORESPONSE_MENU_MODS, router as autoresponse_router
 from .auto_delivery import router as auto_delivery_router
@@ -35,6 +35,7 @@ ROUTERS = [
 
 MENUS = [
     *UPDATE_MENUS,
+    *PLUGIN_MENUS,
 ]
 
 BUTTONS = []
