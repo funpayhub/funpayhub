@@ -6,12 +6,16 @@ __all__ = [
 ]
 
 
+from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
-from aiogram.types import Message, CallbackQuery
-
 from funpayhub.lib.telegram.fsm import State
-from funpayhub.lib.telegram.callback_data import UnknownCallback
+
+
+if TYPE_CHECKING:
+    from aiogram.types import Message, CallbackQuery
+
+    from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
 @dataclass

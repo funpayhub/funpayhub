@@ -17,7 +17,7 @@ from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.translater import Translater
+    from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.goods_sources import GoodsSource, GoodsSourcesManager
 
 
@@ -35,7 +35,7 @@ class GoodsSourcesListMenuBuilder(
         self,
         ctx: MenuContext,
         goods_manager: GoodsSourcesManager,
-        translater: Translater,
+        translater: Tr,
     ) -> Menu:
         kb = KeyboardBuilder()
         for source in goods_manager.values():
@@ -73,7 +73,7 @@ class GoodsSourceInfoMenuBuilder(
         self,
         ctx: GoodsInfoMenuContext,
         goods_manager: GoodsSourcesManager,
-        translater: Translater,
+        translater: Tr,
     ) -> Menu:
         source = goods_manager[ctx.source_id]
         kb = KeyboardBuilder()
@@ -155,7 +155,7 @@ class GoodsSourceInfoMenuBuilder(
     async def _generate_text(
         self,
         source: GoodsSource,
-        translater: Translater,
+        translater: Tr,
         page: int = 0,
     ) -> tuple[str, int, int]:
         MAX_LINE_LEN = 120
@@ -183,7 +183,7 @@ class AddRemoveButtonToGoodsSourceInfoModification(
     AddRemoveButtonBaseModification,
     modification_id='fph:add_remove_button_to_goods_source_info',
 ):
-    async def modify(self, ctx: GoodsInfoMenuContext, menu: Menu, translater: Translater) -> Menu:
+    async def modify(self, ctx: GoodsInfoMenuContext, menu: Menu, translater: Tr) -> Menu:
         delete_callback = cbs.RemoveGoodsSource(
             source_id=ctx.source_id,
             from_callback=ctx.callback_data,

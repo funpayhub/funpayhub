@@ -11,10 +11,11 @@ from aiogram.types import Message, CallbackQuery, BufferedInputFile
 from aiogram.filters import StateFilter
 from aiogram.exceptions import TelegramBadRequest
 
-from funpayhub.lib.telegram.ui import MenuContext
 from funpayhub.app.workflow_data import get_wfd
 from funpayhub.lib.goods_sources import GoodsSource, FileGoodsSource
 from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.lib.base_app.telegram import utils
+from funpayhub.lib.telegram.callback_data import join_callbacks
 from funpayhub.app.telegram.ui.builders.context import StateUIContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
 
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry as UI
+    from funpayhub.app.telegram.main import Telegram
     from funpayhub.lib.goods_sources import GoodsSourcesManager
 
 
@@ -49,9 +51,11 @@ async def _set_state_and_send_state_ui(
         trigger=query,
     ).build_and_answer(get_wfd().tg_ui_registry, query.message)
 
-    s = state_cls(source_id=callback_data.source_id, message=msg, callback_data=callback_data)
-    await state.set_state(s.identifier)
-    await state.set_data({'data': s})
+    await state_cls(
+        source_id=callback_data.source_id,
+        message=msg,
+        callback_data=callback_data,
+    ).set(state)
     await query.answer()
 
 
@@ -90,11 +94,7 @@ async def _get_source(trigger: CallbackQuery | Message, source_id: str) -> Goods
     return source
 
 
-async def _get_data_and_clear_state(
-    state: FSMContext,
-    clear: bool = True,
-    delete: bool = True,
-) -> Any:
+async def _get_data_clear_state(state: FSMContext, clear: bool = True, delete: bool = True) -> Any:
     data = (await state.get_data())['data']
     if clear:
         await state.clear()
@@ -128,20 +128,18 @@ async def download_goods(query: CallbackQuery, callback_data: cbs.DownloadGoods)
 
 
 @router.callback_query(cbs.ReloadGoodsSource.filter())
-async def reload_goods(query: CallbackQuery, callback_data: cbs.ReloadGoodsSource) -> None:
-    if (source := await _get_source(query, callback_data.source_id)) is None:
+async def reload_goods(
+    query: CallbackQuery,
+    callback_data: cbs.ReloadGoodsSource,
+    tg: Telegram,
+) -> None:
+    if (await _get_source(query, callback_data.source_id)) is None:
+        await query.answer()
         return
-
-    fake_callback = callback_data.copy_history(
-        OpenMenu(
-            menu_id=MenuIds.goods_source_info,
-            context_data={'source_id': source.source_id},
-        ),
-    )
 
     try:
         await query.answer()
-        await _generate_and_send_new_goods_info(query, source, fake_callback)
+        await tg.fake_query(callback_data, query, pack_history=True)
     except TelegramBadRequest:
         pass
 
@@ -170,7 +168,7 @@ async def upload_goods_set_state(
 @router.message(StateFilter(states.UploadingGoods.identifier))
 @router.message(StateFilter(states.AddingGoods.identifier))
 async def upload_goods(message: Message, state: FSMContext, translater: Tr) -> None:
-    data: states.UploadingGoods = await _get_data_and_clear_state(state)
+    data: states.UploadingGoods = await _get_data_clear_state(state)
     if (source := await _get_source(message, data.source_id)) is None:
         return
 
@@ -193,9 +191,9 @@ amount_re = re.compile(r'(\d+)-(\d+)')
 
 @router.message(StateFilter(states.RemovingGoods.identifier))
 async def remove_goods(message: Message, state: FSMContext, translater: Tr) -> None:
-    data: states.RemovingGoods = (await state.get_data())['data']
+    data = await states.RemovingGoods.get(state)
     if (source := await _get_source(message, data.source_id)) is None:
-        await _get_data_and_clear_state(state)
+        await _get_data_clear_state(state)
         return
 
     start_index, amount = None, None
@@ -211,7 +209,7 @@ async def remove_goods(message: Message, state: FSMContext, translater: Tr) -> N
         await message.reply(translater.translate('$err_removing_goods_wrong_format'))
         return
 
-    await _get_data_and_clear_state(state)
+    await _get_data_clear_state(state)
     await source.remove_goods(start_index, amount)
     await _generate_and_send_new_goods_info(message, source, data.callback_data)
 
@@ -224,19 +222,14 @@ async def set_adding_txt_source_state(
     tg_ui: UI,
     callback_data: cbs.AddGoodsTxtSource,
 ) -> None:
-    ctx = StateUIContext(
+    msg = await StateUIContext(
         menu_id=MenuIds.state_menu,
         delete_on_clear=True,
         text=translater.translate('$add_goods_txt_source_text'),
         trigger=query,
-    )
-    menu = await tg_ui.build_menu(ctx)
-    msg = await menu.answer_to(query.message)
+    ).build_and_answer(tg_ui, query.message)
 
-    state_obj = states.AddingGoodsTxtSource(message=msg, callback_data=callback_data)
-
-    await state.set_state(state_obj.identifier)
-    await state.set_data({'data': state_obj})
+    await states.AddingGoodsTxtSource(message=msg, callback_data=callback_data).set(state)
     await query.answer()
 
 
@@ -252,7 +245,7 @@ async def add_goods_txt_source(
     tg_bot: TGBot,
     goods_manager: GoodsSourcesManager,
 ) -> None:
-    data: states.AddingGoodsTxtSource = (await state.get_data())['data']
+    data = await states.AddingGoodsTxtSource.get(state)
     filename = msg.text if msg.text else msg.document.file_name if msg.document else ''
 
     if not filename:
@@ -278,15 +271,13 @@ async def add_goods_txt_source(
         return
 
     await state.clear()
-    await data.message.delete()
 
     if msg.document:
         file = await tg_bot.get_file(msg.document.file_id)
         buffer = BytesIO()
         await tg_bot.download_file(file.file_path, buffer)
-        decoded = buffer.getvalue().decode('utf-8')
         with open(path, 'w', encoding='utf-8') as f:
-            f.write(decoded)
+            f.write(buffer.getvalue().decode('utf-8'))
 
     source = await goods_manager.add_source(FileGoodsSource, path)
 
@@ -301,18 +292,18 @@ async def add_goods_txt_source(
             ),
         ),
     ).build_and_answer(tg_ui, msg)
+    await utils.delete_message(data.message)
 
 
 @r.callback_query(cbs.RemoveGoodsSource.filter())
-async def delete_auto_delivery_rule(
+async def remove_goods_source(
     query: CallbackQuery,
     callback_data: cbs.RemoveGoodsSource,
     translater: Tr,
-    tg_ui: UI,
     goods_manager: GoodsSourcesManager,
+    tg: Telegram,
 ):
-    source = goods_manager.get(callback_data.source_id)
-    if source is None:
+    if goods_manager.get(callback_data.source_id) is None:
         await query.answer(
             translater.translate('$err_goods_source_does_not_exist'),
             show_alert=True,
@@ -321,12 +312,5 @@ async def delete_auto_delivery_rule(
 
     await goods_manager.remove_source(callback_data.source_id)
 
-    await MenuContext(
-        menu_id=MenuIds.goods_sources_list,
-        trigger=query,
-        callback_override=OpenMenu(
-            menu_id=MenuIds.goods_sources_list,
-            context_data={'source_id': source.source_id},
-            history=callback_data.history[:-2],
-        ),
-    ).build_and_apply(tg_ui, query.message)
+    # Открыть список источников > Открыть меню источника > текущий Query
+    await tg.fake_query(join_callbacks(*callback_data.history[:-1]), query)
