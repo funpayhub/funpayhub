@@ -8,6 +8,7 @@ import asyncio
 import traceback
 from typing import TYPE_CHECKING
 
+from aiogram.utils.token import TokenValidationError
 from colorama import Fore, Style
 from aiogram.types import User
 
@@ -28,8 +29,7 @@ from funpayhub.lib.base_app.app import AppConfig
 from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.workflow_data import get_wfd
 from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
-
-from .tty import INIT_SETUP_TEXT_EN, INIT_SETUP_TEXT_RU, box_messages
+from .args_parser import args
 
 
 if TYPE_CHECKING:
@@ -52,17 +52,24 @@ class FunPayHub(App):
         translater: Translater | None = None,
         safe_mode: bool = False,
     ):
-        self._setup_completed = bool(properties.general.golden_key.value)
         self._workflow_data = get_wfd()
         self._funpay = FunPay(
             self,
-            bot_token=properties.general.golden_key.value,
+            bot_token=properties.general.golden_key.value or '__emtpy_golden_key__',
             proxy=properties.general.proxy.value or None,
             headers=None,
             workflow_data=self.workflow_data,
         )
 
-        telegram_app = Telegram(self, os.environ.get('FPH_TELEGRAM_TOKEN'), self._workflow_data)
+        if args.force_token:
+            token = args.force_token
+        else:
+            token = properties.telegram.general.token.value or args.token
+
+        try:
+            telegram_app = Telegram(self, token, self._workflow_data)
+        except TokenValidationError:
+            sys.exit(exit_codes.TELEGRAM_TOKEN_ERROR)
 
         self._stop_signal: asyncio.Future[int] = asyncio.Future()
         self._stopped_signal = asyncio.Event()
@@ -127,18 +134,11 @@ class FunPayHub(App):
             except Exception:
                 return exit_codes.TELEGRAM_ERROR
 
-            if not self.setup_completed:
-                if not sys.stdin.isatty() or not sys.stdout.isatty():
-                    return exit_codes.NOT_A_TTY
-
             tasks = [
                 asyncio.create_task(self.telegram.start(), name='telegram'),
                 asyncio.create_task(wait_stop_signal(), name='stop_signal'),
+                asyncio.create_task(self.funpay.start(), name='funpay')
             ]
-            if self.setup_completed:
-                tasks.append(asyncio.create_task(self.funpay.start(), name='funpay'))
-            else:
-                self._welcome_tty(me)
 
             done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
             for i in done:
@@ -194,27 +194,6 @@ class FunPayHub(App):
         self._stop_signal.set_result(code)
         await self._stopped_signal.wait()
 
-    def _welcome_tty(self, me: User) -> None:
-        print('\033[2J\033[H', end='')
-        print(
-            box_messages(
-                INIT_SETUP_TEXT_EN.format(
-                    setup_key=self._instance_id,
-                    bot_username=me.username,
-                ),
-                INIT_SETUP_TEXT_RU.format(
-                    setup_key=self._instance_id,
-                    bot_username=me.username,
-                ),
-            ),
-        )
-        input(
-            f'{Fore.GREEN + Style.BRIGHT}'
-            f'Press ENTER to continue / Нажмите ENTER чтобы продолжить...'
-            f'{Style.RESET_ALL}',
-        )
-        print('\033[2J\033[H', end='')
-
     @property
     def funpay(self) -> FunPay:
         return self._funpay
@@ -222,7 +201,3 @@ class FunPayHub(App):
     @property
     def dispatcher(self) -> HubDispatcher:
         return self._dispatcher
-
-    @property
-    def setup_completed(self) -> bool:
-        return self._setup_completed

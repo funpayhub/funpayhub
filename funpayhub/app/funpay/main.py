@@ -32,6 +32,7 @@ from funpayhub.app.utils.get_profile_categories import get_profile_raisable_cate
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
+    from funpayhub.app.workflow_data import WorkflowData
 
 
 P = ParamSpec('P')
@@ -78,7 +79,7 @@ class FunPay:
         bot_token: str,
         proxy: str | None = None,
         headers: dict[str, str] | None = None,
-        workflow_data: dict | None = None,
+        workflow_data: WorkflowData | None = None,
     ):
         workflow_data = workflow_data if workflow_data is not None else {}
 

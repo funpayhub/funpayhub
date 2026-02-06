@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 
-from funpayhub.app.setup import TELEGRAM_SETUP_UI, TELEGRAM_SETUP_ROUTERS
 from funpayhub.lib.properties import ListParameter
 from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.app.telegram.routers import ROUTERS
@@ -21,6 +20,7 @@ from funpayhub.lib.base_app.telegram.main import TelegramApp
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
+    from funpayhub.app.workflow_data import WorkflowData
 
 
 class Telegram(TelegramApp):
@@ -28,7 +28,7 @@ class Telegram(TelegramApp):
         self,
         hub: FunPayHub,
         bot_token: str,
-        workflow_data: dict[str, Any],
+        workflow_data: WorkflowData,
     ) -> None:
         self._hub = hub
 
@@ -45,11 +45,6 @@ class Telegram(TelegramApp):
 
     def _setup_dispatcher(self) -> None:
         super()._setup_dispatcher()
-
-        if not self.hub.setup_completed:
-            self._dispatcher.include_routers(*TELEGRAM_SETUP_ROUTERS)
-            return
-
         self._dispatcher.include_routers(*ROUTERS)
 
         middleware = AddDataMiddleware()
@@ -109,9 +104,6 @@ class Telegram(TelegramApp):
         super()._setup_ui()
         for m in default_ui.MENU_BUILDERS:
             self.ui_registry.add_menu_builder(m)
-
-        for m in TELEGRAM_SETUP_UI:
-            self._ui_registry.add_menu_builder(m)
 
         for b in default_ui.BUTTON_BUILDERS:
             self.ui_registry.add_button_builder(b)

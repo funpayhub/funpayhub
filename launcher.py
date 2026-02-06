@@ -13,7 +13,7 @@ import logging
 import subprocess
 from copy import deepcopy
 from pathlib import Path
-from argparse import Namespace, ArgumentParser
+from argparse import Namespace
 from logging.config import dictConfig
 
 import colorama
@@ -22,6 +22,7 @@ import exit_codes
 from loggers import updater as updater_logger, launcher as logger
 from updater import apply_update, install_dependencies
 from logger_conf import HubLogMessage, FileLoggerFormatter, ConsoleLoggerFormatter
+from funpayhub.app.args_parser import args
 
 
 colorama.just_fix_windows_console()
@@ -110,15 +111,7 @@ if IS_WINDOWS:
     logger.info('Running under windows: need elevation.')
     elevate()
 
-
-parser = ArgumentParser(prog='FunPayHub')
-parser.add_argument(
-    '-s',
-    '--safe',
-    action='store_true',
-    help='Run FunPayHub in safe mode (without plugins).',
-)
-original_args = parser.parse_args()
+original_args = args
 logger.info('Original launch args: %s', original_args)
 
 launch_args = sys.argv[1:]

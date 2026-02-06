@@ -27,23 +27,7 @@ from logger_conf import (
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.translater import Translater
-
-
-# move
-parser = ArgumentParser(prog='FunPayHub')
-parser.add_argument(
-    '-s',
-    '--safe',
-    action='store_true',
-    help='Run FunPayHub in safe mode (without plugins).',
-)
-parser.add_argument(
-    '-d',
-    '--debug',
-    action='store_true',
-    help='Run FunPayHub in debug mode.',
-)
-original_args = parser.parse_args()
+from funpayhub.app.args_parser import args
 
 
 # ---------------------------------------------
@@ -108,12 +92,12 @@ dictConfig(
         },
         'loggers': {
             'aiogram': {
-                'level': logging.INFO if not original_args.debug else logging.DEBUG,
+                'level': logging.INFO if not args.debug else logging.DEBUG,
                 'handlers': ['console_warning', 'file'],
             },
             **{
                 i: {
-                    'level': logging.INFO if not original_args.debug else logging.DEBUG,
+                    'level': logging.INFO if not args.debug else logging.DEBUG,
                     'handlers': ['console_debug', 'file'],
                 }
                 for i in LOGGERS
@@ -153,7 +137,7 @@ async def main() -> None:
     app = FunPayHub(
         properties=props,
         translater=translater,
-        safe_mode=original_args.safe,
+        safe_mode=args.safe,
     )
 
     await app.setup()
