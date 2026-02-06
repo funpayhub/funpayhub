@@ -44,9 +44,7 @@ async def open_add_auto_delivery_rule_menu(
         ),
     ).build_and_apply(tg_ui, query.message)
 
-    state_obj = states.AddingAutoDeliveryRule(message=msg, callback_data=callback_data)
-    await state.set_state(state_obj.identifier)
-    await state.set_data({'data': state_obj})
+    await states.AddingAutoDeliveryRule(message=msg, callback_data=callback_data).set(state)
 
 
 @router.callback_query(cbs.AddAutoDeliveryRule.filter())
@@ -81,7 +79,11 @@ async def add_auto_delivery_rule(
         trigger=query,
         menu_id=MenuIds.props_node,
         entry_path=entry.path,
-        callback_override=UnknownCallback.parse(callback_data.pack_history(hash=False)),
+        callback_override=OpenMenu(
+            menu_id=MenuIds.props_node,
+            context_data={'entry_path': entry.path},
+            history=callback_data.history[:-1],
+        ),
     ).build_and_apply(tg_ui, query.message)
 
 

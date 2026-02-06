@@ -24,4 +24,10 @@ class UnpackMiddleware(BaseMiddleware):
 
         data['unpacked_callback'] = parsed
         event.__dict__.update({'__parsed__': parsed, 'data': callback_data})
+        print(f'Unpacked callback data: {event.data}')
+        print(f'Callback: {parsed.identifier}')
+        print(f'Callback data: {parsed.data}')
+        print('Callback history:')
+        for i in parsed.history:
+            print(f'    {i}')
         await handler(event, data)

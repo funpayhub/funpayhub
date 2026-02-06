@@ -38,7 +38,7 @@ async def next_param_value(
     param = properties.get_parameter(callback_data.path)
     await param.next_value(save=True)
     await app.emit_parameter_changed_event(param)
-    await app.telegram.fake_query(callback_data.pack_history(hash=False), query)
+    await app.telegram.fake_query(callback_data, query, pack_history=True)
 
 
 @router.callback_query(cbs.ChooseParamValue.filter())
