@@ -8,7 +8,7 @@ from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 
 from funpayhub.lib.properties import ListParameter
 from funpayhub.app.telegram.ui import default as default_ui
-from funpayhub.app.telegram.routers import MENUS, BUTTONS, ROUTERS, MENU_MODS, BUTTON_MODS
+from funpayhub.app.telegram.modules import MENUS, BUTTONS, ROUTERS, MENU_MODS, BUTTON_MODS
 from funpayhub.app.dispatching.events import TelegramStartEvent
 from funpayhub.app.telegram.middlewares import (
     OopsMiddleware,
@@ -62,7 +62,7 @@ class Telegram(TelegramApp):
         self.dispatcher.message.outer_middleware(_is_authorized_middleware)
 
         # todo
-        from funpayhub.app.telegram.routers.help.handlers import NeedHelpMiddleware, router
+        from funpayhub.app.telegram.modules.help.handlers import NeedHelpMiddleware, router
 
         self.dispatcher.callback_query.outer_middleware(NeedHelpMiddleware())
         self.dispatcher.include_routers(router)

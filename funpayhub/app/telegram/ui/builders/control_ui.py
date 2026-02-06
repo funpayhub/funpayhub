@@ -8,7 +8,7 @@ from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import Menu, Button, MenuContext
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import MenuBuilder, KeyboardBuilder
-from funpayhub.app.telegram.routers.updates.callbacks import CheckForUpdates
+from funpayhub.app.telegram.modules.updates.callbacks import CheckForUpdates
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 
