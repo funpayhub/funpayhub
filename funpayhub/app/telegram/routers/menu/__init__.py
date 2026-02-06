@@ -1,4 +1,4 @@
 from __future__ import annotations
 
-from . import properties, auto_response
+from . import properties
 from .router import router

@@ -7,7 +7,7 @@ from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 
 from funpayhub.lib.properties import ListParameter
 from funpayhub.app.telegram.ui import default as default_ui
-from funpayhub.app.telegram.routers import ROUTERS
+from funpayhub.app.telegram.routers import ROUTERS, MENUS, MENU_MODS, BUTTONS, BUTTON_MODS
 from funpayhub.app.dispatching.events import TelegramStartEvent
 from funpayhub.app.telegram.middlewares import (
     OopsMiddleware,
@@ -16,6 +16,7 @@ from funpayhub.app.telegram.middlewares import (
     IsAuthorizedMiddleware,
 )
 from funpayhub.lib.base_app.telegram.main import TelegramApp
+from itertools import chain
 
 
 if TYPE_CHECKING:
@@ -102,15 +103,19 @@ class Telegram(TelegramApp):
 
     def _setup_ui(self) -> None:
         super()._setup_ui()
-        for m in default_ui.MENU_BUILDERS:
+        for m in chain(default_ui.MENU_BUILDERS, MENUS):
             self.ui_registry.add_menu_builder(m)
 
-        for b in default_ui.BUTTON_BUILDERS:
+        for b in chain(default_ui.BUTTON_BUILDERS, BUTTONS):
             self.ui_registry.add_button_builder(b)
 
-        for menu_id, modifications in default_ui.MENU_MODIFICATIONS.items():
+        for menu_id, modifications in chain(default_ui.MENU_MODIFICATIONS.items(), MENU_MODS.items()):
             for mod in modifications:
                 self.ui_registry.add_menu_modification(mod, menu_id)
+
+        for button_id, modifications in BUTTON_MODS.items():
+            for mod in modifications:
+                self.ui_registry.add_button_modification(mod, button_id)
 
     async def start(self) -> None:
         commands = [

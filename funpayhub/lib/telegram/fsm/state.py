@@ -5,13 +5,13 @@ __all__ = [
     'State',
 ]
 import warnings
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Self
 
 from funpayhub.lib.core import classproperty
 
 
 if TYPE_CHECKING:
-    pass
+    from aiogram.fsm.context import FSMContext
 
 
 _STATES = set()
@@ -55,6 +55,22 @@ class State:
     @classmethod
     def identifier(cls) -> str:
         return cls.__identifier__
+
+    async def set(self, state: FSMContext) -> None:
+        await state.set_state(self.identifier)
+        await state.set_data({'data': self})
+
+    @classmethod
+    async def get(cls, state: FSMContext) -> Self:
+        state_id = await state.get_state()
+        if state_id != cls.identifier:
+            raise RuntimeError('State mismatch.')
+
+        data = await state.get_data()
+        if data.get('data') is None or not isinstance(data['data'], cls):
+            raise RuntimeError('State mismatch.')
+
+        return data['data']
 
 
 # class StateFilter(Filter):

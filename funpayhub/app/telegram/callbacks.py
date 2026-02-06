@@ -24,14 +24,6 @@ class MuteChat(CallbackData, identifier='mute_chat'):
 
 
 # Other
-class AddCommand(CallbackData, identifier='add_command'):
-    pass
-
-
-class RemoveCommand(CallbackData, identifier='remove_command'):
-    command: str
-
-
 class CheckForUpdates(CallbackData, identifier='check_for_updates'):
     pass
 

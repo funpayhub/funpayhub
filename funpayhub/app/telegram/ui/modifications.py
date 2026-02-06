@@ -101,22 +101,6 @@ class AddFormattersListButtonModification(
         return menu
 
 
-class AddCommandButtonModification(
-    MenuModification,
-    modification_id='fph:add_command_button_modification',
-):
-    async def filter(self, ctx: NodeMenuContext, menu: Menu) -> bool:
-        return ctx.entry_path == ['auto_response']
-
-    async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr) -> Menu:
-        menu.footer_keyboard.add_callback_button(
-            button_id='add_command',
-            text=translater.translate('$add_command'),
-            callback_data=cbs.AddCommand(from_callback=ctx.callback_data).pack(),
-        )
-        return menu
-
-
 class AddOfferButtonModification(
     MenuModification,
     modification_id='fph:add_offer_button_modification',
@@ -187,19 +171,4 @@ class AddRemoveButtonToAutoDeliveryModification(
             from_callback=ctx.callback_data,
         ).pack()
 
-        return await self._modify(ctx, menu, translater, delete_callback=delete_callback)
-
-
-class AddRemoveButtonToCommandModification(
-    AddRemoveButtonBaseModification,
-    modification_id='fph:add_remove_button_to_command',
-):
-    async def filter(self, ctx: NodeMenuContext, menu: Menu) -> bool:
-        return len(ctx.entry_path) == 2 and ctx.entry_path[0] == 'auto_response'
-
-    async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr) -> Menu:
-        delete_callback = cbs.RemoveCommand(
-            command=ctx.entry_path[-1],
-            from_callback=ctx.callback_data,
-        ).pack()
         return await self._modify(ctx, menu, translater, delete_callback=delete_callback)

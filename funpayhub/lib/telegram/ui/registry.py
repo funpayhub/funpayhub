@@ -141,7 +141,7 @@ class UIRegistry:
                 f'not {type(context)!r}.',
             )
 
-        logger.info('Building menu %s.', context.menu_id)
+        logger.debug('Building menu %s.', context.menu_id)
 
         # create new workflow data object and replace 'data' key
 
@@ -215,7 +215,7 @@ class UIRegistry:
                 f'not {type(context)!r}.',
             )
 
-        logger.info('Building button %s.', context.button_id)
+        logger.debug('Building button %s.', context.button_id)
 
         return await builder.build(
             context,

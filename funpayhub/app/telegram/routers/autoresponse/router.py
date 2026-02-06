@@ -1,27 +1,28 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any
-from copy import copy
+from typing import TYPE_CHECKING
 
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import StateFilter
-from aiogram.fsm.context import FSMContext
 
-import funpayhub.app.telegram.callbacks as cbs
-from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
-from funpayhub.app.telegram.states import AddingCommand
+
+from . import callbacks as cbs
+from .states import AddingCommand
 from funpayhub.lib.base_app.telegram import utils
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+from funpayhub.app.telegram.ui.builders.context import StateUIContext
 from aiogram import Router
-from ...ui.ids import MenuIds
+from funpayhub.app.telegram.ui.ids import MenuIds
 
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
+    from funpayhub.lib.translater import Translater
+    from aiogram.fsm.context import FSMContext
+    from funpayhub.lib.telegram.ui import UIRegistry
+    from funpayhub.app.properties import FunPayHubProperties
 
 
 router = r = Router(name='fph:autoresponse')
@@ -33,15 +34,20 @@ async def set_adding_command_state(
     callback_data: cbs.AddCommand,
     tg_ui: UIRegistry,
     state: FSMContext,
+    translater: Translater,
 ) -> None:
-    ctx = MenuContext(menu_id=MenuIds.add_command, trigger=query, data=copy(callback_data.data))
-    msg = await (await tg_ui.build_menu(ctx)).apply_to(query.message)
+    msg = await StateUIContext(
+        menu_id=MenuIds.state_menu,
+        trigger=query,
+        text=translater.translate('$add_command_message'),
+        delete_on_clear=False,
+        open_previous_on_clear=True,
+    ).build_and_apply(tg_ui, query.message)
 
-    await state.set_state(AddingCommand.identifier)
-    await state.set_data({'data': AddingCommand(message=msg, callback_data=callback_data)})
+    await AddingCommand(message=msg, callback_data=callback_data).set(state)
 
 
-@r.message(StateFilter(AddingCommand.identifier))
+@r.message(StateFilter(AddingCommand.identifier), lambda msg: msg.text)
 async def add_command(
     message: Message,
     translater: Translater,
@@ -50,13 +56,11 @@ async def add_command(
     state: FSMContext,
     tg_ui: UIRegistry,
 ) -> None:
-    if not message.text:
-        return
-
     asyncio.create_task(utils.delete_message(message))
-    data: AddingCommand = (await state.get_data())['data']
+    data = await AddingCommand.get(state)
 
-    if message.text in properties.auto_response.entries:
+    props = properties.auto_response
+    if message.text in props.entries:
         await data.message.edit_text(
             text=data.message.text + '\n\n' + translater.translate('$command_exists'),
             reply_markup=data.message.reply_markup,
@@ -64,8 +68,9 @@ async def add_command(
         return
 
     await state.clear()
-    entry = properties.auto_response.add_entry(message.text)
-    await properties.auto_response.save(same_file_only=True)
+    entry = props.add_entry(message.text)
+    await props.save(same_file_only=True)
+
     asyncio.create_task(hub.emit_node_attached_event(entry))
 
     await NodeMenuContext(
@@ -75,11 +80,11 @@ async def add_command(
         callback_override=data.callback_data.copy_history(
             OpenMenu(menu_id=MenuIds.props_node, context_data={'entry_path': entry.path}),
         ),
-    ).build_and_answer(tg_ui, message)
+    ).build_and_apply(tg_ui, data.message)
 
 
 @r.callback_query(cbs.RemoveCommand.filter())
-async def delete_auto_delivery_rule(
+async def delete_command(
     query: CallbackQuery,
     properties: FunPayHubProperties,
     callback_data: cbs.RemoveCommand,

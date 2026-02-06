@@ -71,12 +71,6 @@ class State:
 
 
 @dataclass
-class AddingCommand(State, identifier='fph:adding_command'):
-    message: Message
-    callback_data: UnknownCallback
-
-
-@dataclass
 class InstallingZipPlugin(State, identifier='fph:installing_zip_plugin'):
     message: Message
     callback_query_obj: CallbackQuery
