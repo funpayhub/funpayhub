@@ -187,11 +187,9 @@ class ListParameterMenuBuilder(MenuBuilder, menu_id='list_param_menu', context_t
                     callback_data=ui_cbs.OpenMenu(
                         menu_id=NodeMenuBuilder.menu_id,
                         menu_page=ctx.menu_page,
-                        from_callback=ctx.callback_data,
+                        history=ctx.callback_data.history if ctx.callback_data else [],
                         data={'mode': mode_str},
-                        context_data={
-                            'entry_path': entry.path,
-                        },
+                        context_data={'entry_path': entry.path},
                     ).pack(),
                 ),
             )
