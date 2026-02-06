@@ -2,23 +2,28 @@ from __future__ import annotations
 
 import html
 from typing import TYPE_CHECKING
+from dataclasses import dataclass
 
-from funpayhub.app.telegram import callbacks as cbs
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
-from funpayhub.app.telegram.ui.builders.context import GoodsInfoMenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
-from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import (
     StripAndNavigationFinalizer,
     build_view_navigation_buttons,
 )
 
+from . import callbacks as cbs
+
 
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater
     from funpayhub.lib.goods_sources import GoodsSource, GoodsSourcesManager
+
+
+@dataclass(kw_only=True)
+class GoodsInfoMenuContext(MenuContext):
+    source_id: str
 
 
 class GoodsSourcesListMenuBuilder(
@@ -55,41 +60,6 @@ class GoodsSourcesListMenuBuilder(
             main_text=translater.translate('$goods_sources_list_text'),
             main_keyboard=kb,
             footer_keyboard=footer_kb,
-            finalizer=StripAndNavigationFinalizer(),
-        )
-
-
-class AutoDeliveryGoodsSourcesListMenuBuilder(
-    MenuBuilder,
-    menu_id=MenuIds.autodelivery_goods_sources_list,
-    context_type=NodeMenuContext,
-):
-    """
-    Внимание: в context.entry_path необходимо передавать путь до текущего правила автовыдачи!
-    Например: ['auto_delivery', 'my offer']
-    """
-
-    async def build(
-        self,
-        ctx: NodeMenuContext,
-        goods_manager: GoodsSourcesManager,
-        translater: Translater,
-    ) -> Menu:
-        kb = KeyboardBuilder()
-        for source in goods_manager.values():
-            kb.add_callback_button(
-                button_id=f'bind_goods_source:{source.source_id}',
-                text=f'[{len(source)}] {source.display_id}',
-                callback_data=cbs.BindGoodsSourceToAutoDelivery(
-                    rule=ctx.entry_path[-1],
-                    source_id=source.source_id,
-                    from_callback=ctx.callback_data,
-                ).pack(),
-            )
-
-        return Menu(
-            main_text=translater.translate('$autodelivery_bind_goods_source'),
-            main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )
 

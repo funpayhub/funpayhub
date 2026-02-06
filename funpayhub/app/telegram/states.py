@@ -83,34 +83,6 @@ class SendingReviewReply(State, identifier='fph:sending_review_reply'):
     order_id: str
 
 
-# Goods
-@dataclass
-class UploadingGoods(State, identifier='fph:uploading_goods'):
-    source_id: str
-    message: Message
-    callback_data: UnknownCallback
-
-
-@dataclass
-class RemovingGoods(State, identifier='fph:removing_goods'):
-    source_id: str
-    message: Message
-    callback_data: UnknownCallback
-
-
-@dataclass
-class AddingGoods(State, identifier='fph:adding_goods'):
-    source_id: str
-    message: Message
-    callback_data: UnknownCallback
-
-
-@dataclass
-class AddingGoodsTxtSource(State, identifier='fph:adding_goods_txt_source'):
-    message: Message
-    callback_data: UnknownCallback
-
-
 @dataclass
 class AddingAutoDeliveryRule(State, identifier='fph:adding_autodelivery_rule'):
     message: Message

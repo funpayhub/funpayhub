@@ -12,7 +12,7 @@ __all__ = [
 from collections import defaultdict
 
 from .menu import router as menu_router
-from .goods import router as goods_router
+from .goods import MENUS as GOODS_MENUS, MENUS_MODS as GOODS_MENUS_MODS, router as goods_router
 from .other import router as other_router
 from .plugins import MENUS as PLUGIN_MENUS, router as plugins_router
 from .updates import MENUS as UPDATE_MENUS, router as updates_router
@@ -36,13 +36,17 @@ ROUTERS = [
 MENUS = [
     *UPDATE_MENUS,
     *PLUGIN_MENUS,
+    *GOODS_MENUS,
 ]
 
 BUTTONS = []
 
 
 MENU_MODS = defaultdict(list)
-_mods = [AUTORESPONSE_MENU_MODS]
+_mods = [
+    AUTORESPONSE_MENU_MODS,
+    GOODS_MENUS_MODS,
+]
 
 for mods_dict in _mods:
     for menu_id, mods in mods_dict.items():

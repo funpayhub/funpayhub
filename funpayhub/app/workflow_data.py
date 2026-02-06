@@ -9,13 +9,13 @@ from typing import TYPE_CHECKING
 from funpaybotengine import Bot as FPBot, Dispatcher as FPDispatcher
 
 from funpayhub.lib.base_app import WorkflowData as BaseWorkflowData
-from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.app.funpay.main import FunPay
-from funpayhub.app.telegram.main import Telegram
 
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
+    from funpayhub.app.properties import FunPayHubProperties
+    from funpayhub.app.funpay.main import FunPay
+    from funpayhub.app.telegram.main import Telegram
 
 
 class WorkflowData(BaseWorkflowData):
@@ -32,6 +32,9 @@ class WorkflowData(BaseWorkflowData):
         super().__init__()
 
         from funpayhub.app.main import FunPayHub
+        from funpayhub.app.properties import FunPayHubProperties
+        from funpayhub.app.funpay.main import FunPay
+        from funpayhub.app.telegram.main import Telegram
 
         self.check_items.update(
             {
@@ -42,6 +45,7 @@ class WorkflowData(BaseWorkflowData):
                 'funpay': lambda v: isinstance(v, FunPay),
                 'fp_bot': lambda v: isinstance(v, FPBot),
                 'fp_dispatcher': lambda v: isinstance(v, FPDispatcher),
+                'properties': lambda v: isinstance(v, FunPayHubProperties),
             },
         )
 
