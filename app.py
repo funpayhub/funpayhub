@@ -38,16 +38,6 @@ translater = Translater()
 os.makedirs('logs', exist_ok=True)
 
 
-LOGGERS = [
-    'funpaybotengine.session',
-    'funpaybotengine.runner',
-    'eventry.dispatcher',
-    'eventry.router',
-    'aiogram',
-    'funpayhub',
-]
-
-
 dictConfig(
     config={
         'version': 1,
@@ -69,15 +59,9 @@ dictConfig(
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
             },
-            'console_info': {
+            'console': {
                 'formatter': 'console_formatter',
                 'level': logging.INFO,
-                'class': 'logging.StreamHandler',
-                'stream': sys.stdout,
-            },
-            'console_warning': {
-                'formatter': 'console_formatter',
-                'level': logging.WARNING,
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
             },
@@ -92,17 +76,12 @@ dictConfig(
             },
         },
         'loggers': {
-            'aiogram': {
+            None: {
                 'level': logging.INFO if not args.debug else logging.DEBUG,
-                'handlers': ['console_warning', 'file'],
+                'handlers': ['console', 'file'],
             },
-            **{
-                i: {
-                    'level': logging.INFO if not args.debug else logging.DEBUG,
-                    'handlers': ['console_debug', 'file'],
-                }
-                for i in LOGGERS
-                if i not in ['aiogram']
+            'aiogram': {
+                'level': logging.WARNING if not args.debug else logging.DEBUG,
             },
         },
     },

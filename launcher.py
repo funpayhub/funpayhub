@@ -124,6 +124,8 @@ launch_args = sys.argv[1:]
 def namespace_to_argv(ns: Namespace) -> list[str]:
     argv = []
     for key, value in vars(ns).items():
+        if value is None:
+            continue
         flag = f'--{key.replace("_", "-")}'
         if isinstance(value, bool):
             if value:

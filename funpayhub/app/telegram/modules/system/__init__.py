@@ -6,8 +6,8 @@ __all__ = [
     'MENUS',
 ]
 
-from . import router
 from .ui import ControlMenuBuilder
+from .router import router
 
 
 MENUS = [
