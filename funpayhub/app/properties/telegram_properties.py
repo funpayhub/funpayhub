@@ -11,6 +11,7 @@ from funpayhub.lib.properties import (
     StringParameter,
     ToggleParameter,
 )
+
 from funpayhub.app.properties.flags import ParameterFlags as ParamFlags
 from funpayhub.app.properties.telegram_notifications import TelegramNotificationsProperties
 

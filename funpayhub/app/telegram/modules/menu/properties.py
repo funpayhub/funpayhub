@@ -4,10 +4,11 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram.filters import Command, CommandStart
 
-import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.telegram.ui import MenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+
+import funpayhub.app.telegram.callbacks as cbs
 
 from .router import router as r
 from ...ui.ids import MenuIds
@@ -16,9 +17,10 @@ from ...ui.ids import MenuIds
 if TYPE_CHECKING:
     from aiogram.types import Message, CallbackQuery
 
-    from funpayhub.app.main import FunPayHub
     from funpayhub.lib.properties import ListParameter
     from funpayhub.lib.telegram.ui.registry import UIRegistry
+
+    from funpayhub.app.main import FunPayHub
     from funpayhub.app.properties.properties import FunPayHubProperties
 
 

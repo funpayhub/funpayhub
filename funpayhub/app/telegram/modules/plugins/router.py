@@ -8,8 +8,6 @@ from aiogram import Bot, Router
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.filters import StateFilter
 
-import funpayhub.app.telegram.modules.plugins.states
-import funpayhub.app.telegram.modules.plugins.callbacks
 from funpayhub.lib.plugins.installers import (
     HTTPSPluginInstaller,
     AiogramPluginInstaller,
@@ -17,7 +15,13 @@ from funpayhub.lib.plugins.installers import (
 )
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 
-from . import states, callbacks as cbs
+import funpayhub.app.telegram.modules.plugins.states
+import funpayhub.app.telegram.modules.plugins.callbacks
+
+from . import (
+    states,
+    callbacks as cbs,
+)
 
 
 if TYPE_CHECKING:

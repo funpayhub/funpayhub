@@ -7,6 +7,8 @@ from itertools import chain
 from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 
 from funpayhub.lib.properties import ListParameter
+from funpayhub.lib.base_app.telegram.main import TelegramApp
+
 from funpayhub.app.telegram.ui import default as default_ui
 from funpayhub.app.telegram.modules import MENUS, BUTTONS, ROUTERS, MENU_MODS, BUTTON_MODS
 from funpayhub.app.dispatching.events import TelegramStartEvent
@@ -16,7 +18,6 @@ from funpayhub.app.telegram.middlewares import (
     AddDataMiddleware,
     IsAuthorizedMiddleware,
 )
-from funpayhub.lib.base_app.telegram.main import TelegramApp
 
 
 if TYPE_CHECKING:

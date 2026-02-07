@@ -3,16 +3,28 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
-from aiogram.types import CopyTextButton, InlineKeyboardButton as InlineButton
+from aiogram.types import (
+    CopyTextButton,
+    InlineKeyboardButton as InlineButton,
+)
 
 from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.properties import Properties as Props, parameter as param
+from funpayhub.lib.properties import (
+    Properties as Props,
+    parameter as param,
+)
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, KeyboardBuilder
-from funpayhub.lib.base_app.telegram.app.ui import callbacks as ui_cbs, ui_finalizers
+from funpayhub.lib.base_app.telegram.app.ui import (
+    callbacks as ui_cbs,
+    ui_finalizers,
+)
 from funpayhub.lib.base_app.properties_flags import ParameterFlags, PropertiesFlags
 
 from .. import callbacks as cbs
-from .context import NodeMenuContext as MenuCtx, NodeButtonContext as BtnCtx
+from .context import (
+    NodeMenuContext as MenuCtx,
+    NodeButtonContext as BtnCtx,
+)
 from .registry import NodeMenuBuilder, NodeButtonBuilder
 
 

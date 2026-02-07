@@ -20,17 +20,19 @@ from funpayhub.lib.telegram.ui import (
     MenuContext as MenuCtx,
     KeyboardBuilder,
 )
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+
+from funpayhub.app.telegram.ui.ids import MenuIds
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
     from funpayhub.lib.plugins import PluginManager
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
     from funpayhub.lib.translater import Translater as Tr
+
+    from funpayhub.app.properties import FunPayHubProperties as FPHProps
 
 
 @dataclass(kw_only=True)

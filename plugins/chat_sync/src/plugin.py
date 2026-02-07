@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from funpayhub.app.plugins import Plugin
 from funpayhub.lib.telegram import Command
+
+from funpayhub.app.plugins import Plugin
 
 from .types import Registry, BotRotater
 from .properties import ChatSyncProperties

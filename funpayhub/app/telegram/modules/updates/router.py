@@ -8,6 +8,7 @@ from aiogram.types import CallbackQuery
 
 import exit_codes
 from updater import check_updates, install_update, download_update
+
 from funpayhub.app.telegram.ui.ids import MenuIds
 
 from . import callbacks as cbs
@@ -15,9 +16,10 @@ from .ui import UpdateMenuContext, InstallUpdateMenuContext
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.main import FunPayHub as FPH
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui.registry import UIRegistry as UI
+
+    from funpayhub.app.main import FunPayHub as FPH
 
 
 router = r = Router(name='fph:updates')

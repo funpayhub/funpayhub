@@ -116,9 +116,16 @@ select = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F403"]
+"app.py" = ["E402"]
+"launcher.py" = ["E402"]
+
+
+[tool.ruff.lint.isort.sections]
+fphlib = ["funpayhub.lib.*"]
+fphapp = ["funpayhub.app.*"]
 
 [tool.ruff.lint.isort]
-section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+section-order = ["future", "standard-library", "third-party", "first-party", "fphlib", "fphapp", "local-folder"]
 required-imports = ["from __future__ import annotations"]
 force-to-top = ["typing", "dataclasses"]
 length-sort = true
@@ -126,3 +133,4 @@ lines-between-types = 0
 lines-after-imports = 2
 split-on-trailing-comma = true
 combine-as-imports = true
+force-wrap-aliases = true

@@ -10,7 +10,10 @@ from funpayhub.lib.telegram.callback_data import UnknownCallback
 from funpayhub.lib.base_app.telegram.utils import delete_message
 from funpayhub.lib.base_app.telegram.app.ui import callbacks as ui_cbs
 
-from . import states, callbacks as cbs
+from . import (
+    states,
+    callbacks as cbs,
+)
 from .ui import NodeMenuIds, NodeMenuContext
 
 

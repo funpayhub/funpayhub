@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import funpayhub.app.telegram.callbacks as cbs
-from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import KeyboardBuilder
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, MenuContext
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+
+import funpayhub.app.telegram.callbacks as cbs
+from funpayhub.app.properties import FunPayHubProperties
 
 from ..ids import MenuIds
 

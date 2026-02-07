@@ -14,6 +14,7 @@ if TYPE_CHECKING:
         ToggleParameter,
     )
     from funpayhub.lib.translater import Translater
+
     from funpayhub.app.funpay.main import FunPay
     from funpayhub.app.telegram.main import Telegram
 

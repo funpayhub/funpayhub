@@ -11,7 +11,10 @@ __all__ = [
     'NodeButtonIds',
 ]
 
-from funpayhub.lib.properties import Properties, parameter as p
+from funpayhub.lib.properties import (
+    Properties,
+    parameter as p,
+)
 
 from . import builders
 from .context import NodeMenuContext, NodeButtonContext

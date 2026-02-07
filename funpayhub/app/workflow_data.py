@@ -6,7 +6,10 @@ __all__ = ['WorkflowData', 'get_wfd']
 
 from typing import TYPE_CHECKING
 
-from funpaybotengine import Bot as FPBot, Dispatcher as FPDispatcher
+from funpaybotengine import (
+    Bot as FPBot,
+    Dispatcher as FPDispatcher,
+)
 
 from funpayhub.lib.base_app import WorkflowData as BaseWorkflowData
 

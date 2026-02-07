@@ -7,10 +7,8 @@ if TYPE_CHECKING:
     from aiogram import Router as TGRouter
     from funpaybotengine import Router as FPRouter
 
-    from funpayhub.app.main import FunPayHub
     from funpayhub.lib.plugins import PluginManifest
     from funpayhub.lib.properties import Properties
-    from funpayhub.app.dispatching import Router as HubRouter
     from funpayhub.lib.telegram.ui import (
         MenuBuilder,
         ButtonBuilder,
@@ -19,6 +17,9 @@ if TYPE_CHECKING:
     )
     from funpayhub.lib.hub.text_formatters import Formatter
     from funpayhub.lib.telegram.commands_registry import Command
+
+    from funpayhub.app.main import FunPayHub
+    from funpayhub.app.dispatching import Router as HubRouter
 
 
 class Plugin:

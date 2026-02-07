@@ -5,13 +5,14 @@ from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import (
     StripAndNavigationFinalizer,
     build_view_navigation_buttons,
 )
+
+from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 
 from . import callbacks as cbs
 

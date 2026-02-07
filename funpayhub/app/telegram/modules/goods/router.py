@@ -11,15 +11,19 @@ from aiogram.types import Message, CallbackQuery, BufferedInputFile
 from aiogram.filters import StateFilter
 from aiogram.exceptions import TelegramBadRequest
 
-from funpayhub.app.workflow_data import get_wfd
 from funpayhub.lib.goods_sources import GoodsSource, FileGoodsSource
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.base_app.telegram import utils
 from funpayhub.lib.telegram.callback_data import join_callbacks
-from funpayhub.app.telegram.ui.builders.context import StateUIContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
-from . import states, callbacks as cbs
+from funpayhub.app.workflow_data import get_wfd
+from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.telegram.ui.builders.context import StateUIContext
+
+from . import (
+    states,
+    callbacks as cbs,
+)
 from .ui import GoodsInfoMenuContext
 
 
@@ -29,8 +33,9 @@ if TYPE_CHECKING:
 
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry as UI
-    from funpayhub.app.telegram.main import Telegram
     from funpayhub.lib.goods_sources import GoodsSourcesManager
+
+    from funpayhub.app.telegram.main import Telegram
 
 
 r = router = Router(name='fph:goods')

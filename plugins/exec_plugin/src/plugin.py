@@ -4,11 +4,12 @@ import os
 import json
 from pathlib import Path
 
-from funpayhub.app.plugins import Plugin
 from funpayhub.lib.properties import Properties
 from funpayhub.lib.telegram.ui import MenuBuilder
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.properties.parameter import ListParameter, StringParameter, ToggleParameter
+
+from funpayhub.app.plugins import Plugin
+from funpayhub.app.telegram.ui.ids import MenuIds
 
 from .types import ExecutionResult, ExecutionResultsRegistry
 from .telegram.menus import (

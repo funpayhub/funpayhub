@@ -23,9 +23,11 @@ from logger_conf import (
     FileLoggerFormatter,
     ConsoleLoggerFormatter,
 )
+
+from funpayhub.lib.translater import Translater
+
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.lib.translater import Translater
 from funpayhub.app.args_parser import args
 
 

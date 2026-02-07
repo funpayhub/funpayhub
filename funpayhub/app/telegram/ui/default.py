@@ -4,7 +4,6 @@ from . import modifications
 from .ids import MenuIds
 from .builders import (
     other_ui,
-    control_ui,
     message_ui,
     formatters_ui,
     notifications_ui,
@@ -22,7 +21,6 @@ MENU_BUILDERS = [
     other_ui.FunPayStartNotificationMenuBuilder,
     other_ui.StateMenuBuilder,
     other_ui.RequestsMenuBuilder,
-    control_ui.ControlMenuBuilder,
 ]
 
 

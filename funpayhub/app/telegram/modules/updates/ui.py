@@ -14,16 +14,19 @@ from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
 from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, KeyboardBuilder
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+
+from funpayhub.app.telegram.ui.ids import MenuIds
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
     from updater import UpdateInfo
-    from funpayhub.app.main import FunPayHub
+
     from funpayhub.lib.translater import Translater as Tr
+
+    from funpayhub.app.main import FunPayHub
 
 
 @dataclass(kw_only=True)

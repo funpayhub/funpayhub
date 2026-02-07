@@ -6,14 +6,16 @@ from aiogram import Router, BaseMiddleware
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.base_app.telegram.app.properties import callbacks as props_cbs
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
+from funpayhub.app.telegram.ui.ids import MenuIds
+
 
 if TYPE_CHECKING:
-    from funpayhub.app.properties import FunPayHubProperties
     from funpayhub.lib.translater import Translater
+
+    from funpayhub.app.properties import FunPayHubProperties
 
 
 router = Router(name='fph:help')

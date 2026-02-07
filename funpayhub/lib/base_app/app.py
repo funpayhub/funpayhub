@@ -14,7 +14,11 @@ from contextlib import suppress
 from packaging.version import Version
 
 import exit_codes
-from loggers import main as logger, plugins as plugins_logger
+from loggers import (
+    main as logger,
+    plugins as plugins_logger,
+)
+
 from funpayhub.lib.plugins import PluginManager
 from funpayhub.lib.exceptions import GoodsError
 from funpayhub.lib.translater import Translater

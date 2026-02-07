@@ -8,24 +8,29 @@ from aiogram.types import Message, CallbackQuery
 
 from funpayhub.lib.telegram.ui import MenuContext
 from funpayhub.lib.goods_sources import FileGoodsSource
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.base_app.telegram import utils
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
-from . import states, callbacks as cbs
+from funpayhub.app.telegram.ui.ids import MenuIds
+
+from . import (
+    states,
+    callbacks as cbs,
+)
 
 
 if TYPE_CHECKING:
     from aiogram.types import Message, CallbackQuery
     from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry as UI
-    from funpayhub.app.telegram.main import Telegram
     from funpayhub.lib.goods_sources import GoodsSourcesManager as GoodsManager
+
+    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from funpayhub.app.telegram.main import Telegram
 
 
 r = router = Router(name='fph:auto_delivery')

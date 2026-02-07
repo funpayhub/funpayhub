@@ -19,9 +19,13 @@ from logging.config import dictConfig
 import colorama
 
 import exit_codes
-from loggers import updater as updater_logger, launcher as logger
+from loggers import (
+    updater as updater_logger,
+    launcher as logger,
+)
 from updater import apply_update, install_dependencies
 from logger_conf import HubLogMessage, FileLoggerFormatter, ConsoleLoggerFormatter
+
 from funpayhub.app.args_parser import args
 
 

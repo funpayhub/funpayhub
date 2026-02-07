@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING
 from contextlib import suppress
 
 from aiogram import Router
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.exceptions import AiogramError
 
 import exit_codes
-import funpayhub.app.telegram.callbacks as cbs
+
 from funpayhub.lib.translater import Translater
 
 
@@ -53,29 +53,6 @@ async def standard_mode(message: Message, hub: FunPayHub, translater: Translater
 
     await message.reply(translater.translate('$restarting_in_standard_mode'))
     await hub.shutdown(exit_codes.RESTART_NON_SAFE)
-
-
-@r.callback_query(cbs.ShutDown.filter())
-async def shutdown(
-    query: CallbackQuery,
-    hub: FunPayHub,
-    callback_data: cbs.ShutDown,
-    translater: Translater,
-) -> None:
-    texts = {
-        exit_codes.SHUTDOWN: '$shutting_down',
-        exit_codes.RESTART: '$restarting',
-        exit_codes.RESTART_SAFE: '$restarting_in_safe_mode',
-        exit_codes.RESTART_NON_SAFE: '$restarting_in_standard_mode',
-    }
-    text = texts.get(callback_data.exit_code, '$shutting_down')
-
-    try:
-        await query.answer(text=translater.translate(text), show_alert=True)
-    except:
-        pass
-
-    await hub.shutdown(callback_data.exit_code)
 
 
 @r.startup()

@@ -3,16 +3,18 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from funpayhub.lib.telegram.ui import MenuModification
+
 from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import Menu
     from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+
+    from funpayhub.app.properties import FunPayHubProperties as FPHProps
 
 
 class AddCommandButtonModification(

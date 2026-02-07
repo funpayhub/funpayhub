@@ -8,10 +8,11 @@ from aiogram.types import Message
 from funpaybotengine.types import Category
 from eventry.asyncio.filter import all_of
 
-from funpayhub.app.dispatching import Router
 from funpayhub.lib.telegram.ui import UIRegistry
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import MenuContext
+
+from funpayhub.app.dispatching import Router
+from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.builders.context import FunPayStartNotificationMenuContext
 
 

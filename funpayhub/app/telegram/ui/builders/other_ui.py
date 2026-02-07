@@ -7,9 +7,10 @@ from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedErro
 
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import KeyboardBuilder
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
+
+from funpayhub.app.telegram.ui.ids import MenuIds
 
 from .context import (
     StateUIContext,

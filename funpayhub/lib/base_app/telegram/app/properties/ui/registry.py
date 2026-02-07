@@ -12,9 +12,13 @@ from typing import TYPE_CHECKING
 from dataclasses import replace
 
 from loggers import telegram_ui as logger
+
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
 
-from .context import NodeMenuContext as MenuCtx, NodeButtonContext as BtnCtx
+from .context import (
+    NodeMenuContext as MenuCtx,
+    NodeButtonContext as BtnCtx,
+)
 
 
 if TYPE_CHECKING:

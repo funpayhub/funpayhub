@@ -5,23 +5,31 @@ from typing import TYPE_CHECKING
 from aiogram import Router
 from aiogram.filters import StateFilter
 
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.base_app.telegram import utils
-from funpayhub.app.telegram.ui.builders.context import StateUIContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
-from . import states, callbacks as cbs
+from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.telegram.ui.builders.context import StateUIContext
+
+from . import (
+    states,
+    callbacks as cbs,
+)
 
 
 if TYPE_CHECKING:
-    from aiogram.types import Message, CallbackQuery as Query
+    from aiogram.types import (
+        Message,
+        CallbackQuery as Query,
+    )
     from aiogram.fsm.context import FSMContext as FSM
+
+    from funpayhub.lib.translater import Translater as Tr
+    from funpayhub.lib.telegram.ui import UIRegistry as UI
 
     from funpayhub.app.main import FunPayHub as FPH
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
-    from funpayhub.lib.translater import Translater as Tr
-    from funpayhub.lib.telegram.ui import UIRegistry as UI
 
 
 router = r = Router(name='fph:autoresponse')

@@ -8,13 +8,17 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 
 from funpayhub.lib.telegram.ui import UIRegistry
-from funpayhub.app.telegram.states import SendingFunpayMessage
-from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.base_app.telegram import utils
-from funpayhub.app.telegram.ui.builders.context import SendMessageMenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
-from ... import states, callbacks as cbs
+from funpayhub.app.telegram.states import SendingFunpayMessage
+from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.telegram.ui.builders.context import SendMessageMenuContext
+
+from ... import (
+    states,
+    callbacks as cbs,
+)
 from .router import router
 
 

@@ -4,8 +4,9 @@ from __future__ import annotations
 __all__ = ['GeneralProperties']
 
 from funpayhub.lib.properties import Properties, FloatParameter, ChoiceParameter, StringParameter
-from funpayhub.app.properties.flags import ParameterFlags
 from funpayhub.lib.properties.parameter.choice_parameter import Choice
+
+from funpayhub.app.properties.flags import ParameterFlags
 
 from .validators import proxy_validator
 

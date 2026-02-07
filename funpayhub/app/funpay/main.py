@@ -21,11 +21,13 @@ from funpaybotengine.exceptions import (
 from funpaybotengine.types.pages import ProfilePage
 
 from loggers import main as logger
+
+from funpayhub.lib.hub.text_formatters import FormattersRegistry
+
 from funpayhub.app.funpay import middlewares as mdwr
 from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
 from funpayhub.app.dispatching import FunPayStartEvent, OffersRaisedEvent
 from funpayhub.app.funpay.routers import ALL_ROUTERS
-from funpayhub.lib.hub.text_formatters import FormattersRegistry
 from funpayhub.app.funpay.offers_raiser import OffersRaiser
 from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
 

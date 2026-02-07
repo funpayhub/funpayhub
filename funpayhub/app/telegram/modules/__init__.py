@@ -12,16 +12,33 @@ __all__ = [
 from collections import defaultdict
 
 from .menu import router as menu_router
-from .goods import MENUS as GOODS_MENUS, MENUS_MODS as GOODS_MENU_MODS, router as goods_router
+from .goods import (
+    MENUS as GOODS_MENUS,
+    MENUS_MODS as GOODS_MENU_MODS,
+    router as goods_router,
+)
 from .other import router as other_router
-from .plugins import MENUS as PLUGIN_MENUS, router as plugins_router
-from .updates import MENUS as UPDATE_MENUS, router as updates_router
+from .system import (
+    MENUS as SYSTEM_MENUS,
+    router as system_router,
+)
+from .plugins import (
+    MENUS as PLUGIN_MENUS,
+    router as plugins_router,
+)
+from .updates import (
+    MENUS as UPDATE_MENUS,
+    router as updates_router,
+)
 from .autodelivery import (
     MENUS as AUTODELIVERY_MENUS,
     MENU_MODS as AUTODELIVERY_MENU_MODS,
     router as autodelivery_router,
 )
-from .autoresponse import MENU_MODS as AUTORESPONSE_MENU_MODS, router as autoresponse_router
+from .autoresponse import (
+    MENU_MODS as AUTORESPONSE_MENU_MODS,
+    router as autoresponse_router,
+)
 from .help.handlers import router as help_router
 from .funpay_actions import router as funpay_actions_router
 
@@ -29,12 +46,13 @@ from .funpay_actions import router as funpay_actions_router
 ROUTERS = [
     menu_router,
     funpay_actions_router,
-    updates_router,
     other_router,
+    updates_router,
     plugins_router,
     goods_router,
     autoresponse_router,
     autodelivery_router,
+    system_router,
 ]
 
 MENUS = [
@@ -42,6 +60,7 @@ MENUS = [
     *PLUGIN_MENUS,
     *GOODS_MENUS,
     *AUTODELIVERY_MENUS,
+    *SYSTEM_MENUS,
 ]
 
 BUTTONS = []

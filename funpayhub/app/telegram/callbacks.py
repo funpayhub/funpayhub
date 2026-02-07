@@ -21,8 +21,3 @@ class SendTemplate(CallbackData, identifier='st'):
 
 class MuteChat(CallbackData, identifier='mute_chat'):
     chat_id: int | str
-
-
-# Other
-class ShutDown(CallbackData, identifier='shutdown'):
-    exit_code: int

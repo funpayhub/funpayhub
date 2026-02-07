@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from funpayhub.lib.base_app.telegram import MenuIds as BaseMenuIds, ButtonIds as BaseButtonIds
+from funpayhub.lib.base_app.telegram import (
+    MenuIds as BaseMenuIds,
+    ButtonIds as BaseButtonIds,
+)
 
 
 class MenuIds(BaseMenuIds):

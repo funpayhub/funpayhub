@@ -12,6 +12,7 @@ from aiogram import Bot
 from aiohttp import ClientSession
 
 from loggers import plugins as logger
+
 from funpayhub.lib.exceptions import PluginInstallationError
 
 

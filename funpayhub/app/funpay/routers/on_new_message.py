@@ -5,9 +5,10 @@ from typing import TYPE_CHECKING, Any
 from funpaybotengine import Router
 from funpaybotengine.dispatching.events import RunnerEvent, NewMessageEvent, ChatChangedEvent
 
+from funpayhub.lib.telegram.ui import UIRegistry
+
 from funpayhub.app.formatters import GeneralFormattersCategory, MessageFormattersCategory
 from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.funpay.filters import is_fph_command
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -18,8 +19,9 @@ if TYPE_CHECKING:
     from funpaybotengine import Bot
     from funpaybotengine.types import Message
 
-    from funpayhub.app.funpay.main import FunPay
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
+
+    from funpayhub.app.funpay.main import FunPay
     from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
 
 

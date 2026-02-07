@@ -12,18 +12,20 @@ from aiogram.utils.token import TokenValidationError
 
 import exit_codes
 from loggers import main as logger
+
+from funpayhub.lib.base_app import App
+from funpayhub.lib.translater import Translater
+from funpayhub.lib.base_app.app import AppConfig
+
 from funpayhub.app.plugins import PluginManager
 from funpayhub.app.routers import ROUTERS
-from funpayhub.lib.base_app import App
 from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.lib.translater import Translater
 from funpayhub.app.dispatching import (
     Dispatcher as HubDispatcher,
     NodeAttachedEvent,
     ParameterValueChangedEvent,
 )
 from funpayhub.app.funpay.main import FunPay
-from funpayhub.lib.base_app.app import AppConfig
 from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.workflow_data import get_wfd
 from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
