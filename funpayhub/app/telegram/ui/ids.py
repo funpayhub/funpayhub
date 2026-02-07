@@ -8,8 +8,6 @@ class MenuIds(BaseMenuIds):
     main_menu = 'fph:main_menu'
     formatters_list = 'fph:formatters_list'
     formatter_info = 'fph:formatter_info'
-    hooks_list = 'fph:hooks_list'
-    hook_info = 'fph:hook_info'
     tg_chat_notifications = 'fph:tg_chat_notifications'
     add_command = 'fph:add_command'
     control = 'fph:control'

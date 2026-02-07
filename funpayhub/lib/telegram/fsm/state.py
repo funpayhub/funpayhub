@@ -3,16 +3,25 @@ from __future__ import annotations
 
 __all__ = [
     'State',
+    'StateFromQuery',
+    'StateFilter',
 ]
+
+
 import warnings
 from typing import TYPE_CHECKING, Any, Self
+from dataclasses import field, dataclass
+
+from aiogram.filters import StateFilter as AiogramStateFilter
 
 from funpayhub.lib.core import classproperty
 
 
 if TYPE_CHECKING:
+    from aiogram.types import Message, CallbackQuery
     from aiogram.fsm.context import FSMContext
 
+    from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 _STATES = set()
 
@@ -72,45 +81,42 @@ class State:
 
         return data['data']
 
+    @classmethod
+    async def clear(cls, state: FSMContext, check: bool = True) -> None:
+        if not check:
+            await state.clear()
+            return
 
-# class StateFilter(Filter):
-#     """
-#     State filter
-#     """
-#
-#     __slots__ = ('states',)
-#
-#     def __init__(self, *states: type[State]) -> None:
-#         if not states:
-#             msg = 'At least one state is required'
-#             raise ValueError(msg)
-#
-#         self.states = {i.identifier for i in states}
-#
-#     def __str__(self) -> str:
-#         return self._signature_to_string(
-#             *self.states,
-#         )
-#
-#     async def __call__(
-#         self,
-#         obj: TelegramObject,
-#         event_context: EventContext,
-#         **kwargs,
-#     ) -> bool | dict[str, Any]:
-#         fsm = kwargs[STATES_MANAGER_KEY]
-#         state = fsm.get_state(
-#             event_context.user_id,
-#             event_context.chat_id,
-#             event_context.thread_id,
-#         )
-#         if state is None:
-#             return False
-#
-#         if state.identifier not in self.states:
-#             return False
-#
-#         return {
-#             'state_obj': state,
-#         }
-#
+        obj = await state.get_state()
+        if obj != cls.identifier:
+            return
+        await state.clear()
+
+    @classmethod
+    def filter(cls) -> StateFilter:
+        return StateFilter(cls)
+
+
+@dataclass
+class StateFromQuery(State, identifier='StateFromQuery'):
+    query: CallbackQuery
+    message: Message = field(init=False, default=None)
+    callback_data: UnknownCallback = field(init=False, default=None)
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        if kwargs.get('identifier') == 'StateFromQuery':
+            kwargs.pop('identifier')
+
+        super().__init_subclass__(**kwargs)
+
+    def __post_init__(self) -> None:
+        self.message = self.query.message
+        if hasattr(self.query, '__parsed__'):
+            self.callback_data = getattr(self.query, '__parsed__')
+        else:
+            self.callback_data = UnknownCallback.parse(self.query.data)
+
+
+class StateFilter(AiogramStateFilter):
+    def __init__(self, state: State | type[State]) -> None:
+        super().__init__(state.identifier)

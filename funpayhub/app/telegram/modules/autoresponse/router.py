@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING
 
 from aiogram import Router
@@ -76,7 +75,7 @@ async def add_command(
         ),
     ).build_and_answer(tg_ui, data.message)
 
-    asyncio.create_task(utils.delete_message(data.message))
+    utils.delete_message(data.message)
 
 
 @r.callback_query(cbs.RemoveCommand.filter())

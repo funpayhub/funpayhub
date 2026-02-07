@@ -21,9 +21,7 @@ MENU_BUILDERS = [
     other_ui.StartNotificationMenuBuilder,
     other_ui.FunPayStartNotificationMenuBuilder,
     other_ui.StateMenuBuilder,
-    other_ui.AddAutoDeliveryRuleMenuBuilder,
     other_ui.RequestsMenuBuilder,
-    other_ui.AutoDeliveryGoodsSourcesListMenuBuilder,
     control_ui.ControlMenuBuilder,
 ]
 
@@ -35,9 +33,6 @@ MENU_MODIFICATIONS = {
     MenuIds.props_node: [
         modifications.PropertiesMenuModification,
         modifications.AutoDeliveryPropertiesMenuModification,
-        modifications.AddOfferButtonModification,
-        modifications.AddRemoveButtonToAutoDeliveryModification,
-        modifications.ReplaceSourcesListButtonModification,
     ],
     MenuIds.props_param_manual_input: [
         modifications.AddFormattersListButtonModification,

@@ -2,19 +2,14 @@ from __future__ import annotations
 
 import html
 from typing import TYPE_CHECKING
-from itertools import chain
 
 from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedError
 
-import funpayhub.app.telegram.callbacks as cbs
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import KeyboardBuilder
-from funpayhub.lib.goods_sources import GoodsSourcesManager
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
-from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
-from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from .context import (
     StateUIContext,
@@ -162,36 +157,6 @@ class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=Sta
         )
 
 
-class AddAutoDeliveryRuleMenuBuilder(
-    MenuBuilder,
-    menu_id=MenuIds.add_auto_delivery_rule,
-    context_type=MenuContext,
-):
-    async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub) -> Menu:
-        kb = KeyboardBuilder()
-
-        if hub.funpay.authenticated:
-            profile = await hub.funpay.profile(update=False)
-            for offer in chain(k for i in profile.offers.values() for j in i.values() for k in j):
-                if offer.title in hub.properties.auto_delivery.entries:
-                    continue
-
-                kb.add_callback_button(
-                    button_id=f'add_auto_delivery_rule:{offer.id}',
-                    text=html.escape(offer.title[:128]),
-                    callback_data=cbs.AddAutoDeliveryRule(
-                        rule=offer.title,
-                        from_callback=ctx.callback_data,
-                    ).pack(),
-                )
-
-        return Menu(
-            main_text=translater.translate('$add_auto_delivery_rule_text'),
-            main_keyboard=kb,
-            finalizer=StripAndNavigationFinalizer(),
-        )
-
-
 class RequestsMenuBuilder(MenuBuilder, menu_id='fph:request_menu', context_type=MenuContext):
     async def build(self, ctx: MenuContext, hub: FunPayHub) -> Menu:
         counter = hub.funpay.session.counter
@@ -207,38 +172,3 @@ class RequestsMenuBuilder(MenuBuilder, menu_id='fph:request_menu', context_type=
             text += f'<b>{html.escape(k)}: {v}</b>\n'
 
         return Menu(main_text=text)
-
-
-class AutoDeliveryGoodsSourcesListMenuBuilder(
-    MenuBuilder,
-    menu_id=MenuIds.autodelivery_goods_sources_list,
-    context_type=NodeMenuContext,
-):
-    """
-    Внимание: в context.entry_path необходимо передавать путь до текущего правила автовыдачи!
-    Например: ['auto_delivery', 'my offer']
-    """
-
-    async def build(
-        self,
-        ctx: NodeMenuContext,
-        goods_manager: GoodsSourcesManager,
-        translater: Translater,
-    ) -> Menu:
-        kb = KeyboardBuilder()
-        for source in goods_manager.values():
-            kb.add_callback_button(
-                button_id=f'bind_goods_source:{source.source_id}',
-                text=f'[{len(source)}] {source.display_id}',
-                callback_data=cbs.BindGoodsSourceToAutoDelivery(
-                    rule=ctx.entry_path[-1],
-                    source_id=source.source_id,
-                    from_callback=ctx.callback_data,
-                ).pack(),
-            )
-
-        return Menu(
-            main_text=translater.translate('$autodelivery_bind_goods_source'),
-            main_keyboard=kb,
-            finalizer=StripAndNavigationFinalizer(),
-        )

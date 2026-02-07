@@ -4,11 +4,10 @@ import warnings
 from typing import TYPE_CHECKING, Any, Self
 from dataclasses import dataclass
 
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
 from funpayhub.lib.core import classproperty
-from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
 _STATES: set[str] = set()
@@ -81,19 +80,3 @@ class SendingFunpayMessage(State, identifier='fph:sending_funpay_message'):
 class SendingReviewReply(State, identifier='fph:sending_review_reply'):
     message: Message
     order_id: str
-
-
-@dataclass
-class AddingAutoDeliveryRule(State, identifier='fph:adding_autodelivery_rule'):
-    message: Message
-    callback_data: UnknownCallback
-
-
-@dataclass
-class BindingAutoDeliveryGoodsSource(
-    State,
-    identifier='fph:binding_binding_autodelivery_goods_source',
-):
-    query: CallbackQuery
-    callback_data: UnknownCallback
-    rule: str

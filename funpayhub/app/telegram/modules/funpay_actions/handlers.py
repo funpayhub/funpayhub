@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING
 from io import BytesIO
 
@@ -69,7 +68,7 @@ async def send_funpay_message(
     state: FSMContext,
 ) -> None:
     data: SendingFunpayMessage = (await state.get_data())['data']
-    asyncio.create_task(utils.delete_message(data.message))
+    utils.delete_message(data.message)
     await state.clear()
 
     image = None

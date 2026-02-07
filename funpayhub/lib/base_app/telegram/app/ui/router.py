@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING
 
 from aiogram import Router
@@ -132,7 +131,7 @@ async def activate_manual_page_changing_state(
 
 @router.message(StateFilter(ChangingMenuPage.identifier))
 async def change_page_from_message(message: Message, state: FSMContext, tg: TelegramApp) -> None:
-    asyncio.create_task(utils.delete_message(message))
+    utils.delete_message(message)
 
     if not message.text.isnumeric():
         return
@@ -143,7 +142,7 @@ async def change_page_from_message(message: Message, state: FSMContext, tg: Tele
         return
 
     await state.clear()
-    asyncio.create_task(utils.delete_message(data.message))
+    utils.delete_message(data.message)
 
     old = UnknownCallback.from_string(data.callback_data.history[-1])
     old.data['view_page' if data.mode == 'text' else 'menu_page'] = new_page_index

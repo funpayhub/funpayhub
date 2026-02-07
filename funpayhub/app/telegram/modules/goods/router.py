@@ -292,7 +292,7 @@ async def add_goods_txt_source(
             ),
         ),
     ).build_and_answer(tg_ui, msg)
-    await utils.delete_message(data.message)
+    utils.delete_message(data.message)
 
 
 @r.callback_query(cbs.RemoveGoodsSource.filter())

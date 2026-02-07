@@ -78,6 +78,9 @@ class _ButtonBuilder:
                 try:
                     result = await i(context, result, data)
                 except:
+                    import traceback
+
+                    print(traceback.format_exc())
                     continue  # todo: logging
 
         return result

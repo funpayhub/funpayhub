@@ -84,7 +84,7 @@ async def change_parameter_value(
 
 @router.message(StateFilter(states.ChangingParameterValue.identifier))
 async def edit_parameter(message: Message, app: App, translater: Tr, state: FSMContext) -> None:
-    await delete_message(message)
+    delete_message(message)
 
     data: states.ChangingParameterValue = (await state.get_data())['data']
     new_value = '' if message.text == '-' else message.text
@@ -160,7 +160,7 @@ async def set_adding_list_item_state(
 
 @router.message(StateFilter(states.AddingListItem.identifier))
 async def edit_parameter(message: Message, app: App, translater: Tr, state: FSMContext) -> None:
-    await delete_message(message)
+    delete_message(message)
 
     data: states.AddingListItem = (await state.get_data())['data']
     try:

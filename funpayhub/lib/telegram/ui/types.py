@@ -292,6 +292,10 @@ class MenuContext:
             return UnknownCallback.parse(self.trigger.data)
         return None
 
+    @property
+    def callback_data_history(self) -> list[str]:
+        return self.callback_data.history if self.callback_data is not None else []
+
     async def build_menu(self, registry: UIRegistry) -> Menu:
         return await registry.build_menu(self)
 
