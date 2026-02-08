@@ -7,7 +7,11 @@ from funpaybotengine.dispatching.events import RunnerEvent, NewMessageEvent, Cha
 
 from funpayhub.lib.telegram.ui import UIRegistry
 
-from funpayhub.app.formatters import GeneralFormattersCategory, MessageFormattersCategory
+from funpayhub.app.formatters import (
+    NewMessageContext,
+    GeneralFormattersCategory,
+    MessageFormattersCategory,
+)
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.funpay.filters import is_fph_command
@@ -34,7 +38,6 @@ async def process_command(
     fp_formatters: FormattersRegistry,
     fp_bot: Bot,
     command: AutoResponseEntryProperties,
-    data: dict[str, Any],
 ) -> None:
     """
     Хэндлер ищет команду в списке команд и выполняет ее.
@@ -45,7 +48,7 @@ async def process_command(
         text = await fp_formatters.format_text(
             text=command.response_text.value,
             query=GeneralFormattersCategory.or_(MessageFormattersCategory),
-            data=data,
+            context=NewMessageContext(new_message_event=event),
             raise_on_error=not command.ignore_formatters_errors.value,
         )
 

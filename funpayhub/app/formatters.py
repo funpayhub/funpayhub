@@ -2,6 +2,9 @@ from __future__ import annotations
 
 
 __all__ = [
+    'FormattersContext',
+    'NewMessageContext',
+    'NewOrderContext',
     'DateTimeFormatter',
     'ImageFormatter',
     'OrderFormatter',
@@ -17,6 +20,7 @@ __all__ = [
 import datetime
 from typing import TYPE_CHECKING
 
+from pydantic import BaseModel
 from funpaybotengine.dispatching.events import OrderEvent, NewMessageEvent
 
 from funpayhub.lib.hub.text_formatters import Image, Formatter
@@ -37,13 +41,27 @@ _time_formats = {
 }
 
 
+class FormattersContext(BaseModel): ...
+
+
+class NewMessageContext(FormattersContext):
+    new_message_event: NewMessageEvent
+
+
+class NewOrderContext(NewMessageContext):
+    order_event: OrderEvent
+    goods_to_deliver: list[str]
+
+
 class DateTimeFormatter(
-    Formatter,
+    Formatter[FormattersContext],
     key='datetime',
     name='$formatter:datetime:name',
     description='$formatter:datetime:description',
+    context_type=FormattersContext,
 ):
-    def __init__(self, mode: str = 'time') -> None:
+    def __init__(self, context: FormattersContext, mode: str = 'time') -> None:
+        super().__init__(context)
         self.mode = mode
 
     async def format(self) -> str:
@@ -56,12 +74,14 @@ class DateTimeFormatter(
 
 
 class ImageFormatter(
-    Formatter,
+    Formatter[FormattersContext],
     key='image',
     name='$formatter:image:name',
     description='$formatter:image:description',
+    context_type=FormattersContext,
 ):
-    def __init__(self, path_or_id: int | str) -> None:
+    def __init__(self, context: FormattersContext, path_or_id: int | str) -> None:
+        super().__init__(context)
         self.path_or_id = path_or_id
 
     async def format(self) -> Image:
@@ -72,18 +92,18 @@ class ImageFormatter(
 
 
 class OrderFormatter(
-    Formatter,
+    Formatter[NewOrderContext],
     key='order',
     name='$formatter:order:name',
     description='$formatter:order:description',
+    context_type=NewOrderContext,
 ):
-    def __init__(self, mode: str = 'id') -> None:
+    def __init__(self, context: NewOrderContext, mode: str = 'id') -> None:
+        super().__init__(context)
         self.mode = mode
 
-    async def format(self, event: OrderEvent) -> str:
-        if not isinstance(event, OrderEvent):
-            raise TypeError('$order formatter can only be used in order context.')
-        order = await event.get_order_preview()
+    async def format(self) -> str:
+        order = await self.context.order_event.get_order_preview()
 
         if self.mode == 'id':
             return order.id or ''
@@ -101,18 +121,33 @@ class OrderFormatter(
         raise ValueError(f'Unknown mode for $order formatter: {self.mode!r}')
 
 
+class GoodsFormatter(
+    Formatter[NewOrderContext],
+    key='goods',
+    name='$formatter:goods:name',
+    description='$formatter:goods:description',
+    context_type=NewOrderContext,
+):
+    def __init__(self, context: NewOrderContext, *args, **kwargs) -> None:
+        super().__init__(context)
+
+    async def format(self) -> str:
+        return '\n'.join(self.context.goods_to_deliver)
+
+
 class MessageFormatter(
-    Formatter,
+    Formatter[NewMessageContext],
     key='message',
     name='$formatter:message:name',
     description='$formatter:message:description',
+    context_type=NewMessageContext,
 ):
-    def __init__(self, mode: str) -> None:
+    def __init__(self, context: NewMessageContext, mode: str) -> None:
+        super().__init__(context)
         self.mode = mode
 
-    async def format(self, event: NewMessageEvent) -> str:
-        if not isinstance(event, NewMessageEvent):
-            raise TypeError('$message formatter can only be used with NewMessageEvent context.')
+    async def format(self) -> str:
+        event = await self.context.new_message_event
 
         if self.mode == 'username':
             return event.message.sender_username or ''
@@ -129,12 +164,14 @@ class MessageFormatter(
 
 
 class MeFormatter(
-    Formatter,
+    Formatter[FormattersContext],
     key='me',
     name='$formatter:me:name',
     description='$formatter:me:description',
+    context_type=FormattersContext,
 ):
-    def __init__(self, mode: str = 'username') -> None:
+    def __init__(self, context: FormattersContext, mode: str = 'username') -> None:
+        super().__init__(context)
         self.mode = mode
 
     async def format(self, hub: FunPayHub) -> str:
@@ -158,7 +195,7 @@ class OrderFormattersCategory(FormatterCategory):
     id = 'fph:order'
     name = '$formatters_categories:order:name'
     description = '$formatters_categories:order:description'
-    include_formatters = {OrderFormatter.key}
+    include_formatters = {OrderFormatter.key, GoodsFormatter.key}
 
 
 class MessageFormattersCategory(FormatterCategory):
@@ -174,6 +211,7 @@ FORMATTERS_LIST = [
     OrderFormatter,
     MessageFormatter,
     MeFormatter,
+    GoodsFormatter,
 ]
 
 CATEGORIES_LIST = [

@@ -297,18 +297,23 @@ class GoodsSourcesManager:
             del self._sources[source_id]
 
     async def pop_goods(self, source_id: str, amount: int) -> list[str]:
-        async with self._lock:
-            source = self.get(source_id)
-            if source is None:
-                raise KeyError(f'Source {source_id} does not exist.')
-            return await source.pop_goods(amount)
+        source = self.get(source_id)
+        if source is None:
+            raise KeyError(f'Source {source_id} does not exist.')
+        return await source.pop_goods(amount)
 
     async def get_goods(self, source_id: str, amount: int, start: int = 0) -> list[str]:
+        source = self.get(source_id)
+        if source is None:
+            raise KeyError(f'Source {source_id} does not exist.')
+        return await source.get_goods(amount, start)
+
+    async def add_goods(self, source_id: str, goods: list[str]) -> list[str]:
         async with self._lock:
             source = self.get(source_id)
             if source is None:
                 raise KeyError(f'Source {source_id} does not exist.')
-            return await source.get_goods(amount, start)
+            await source.add_goods(goods)
 
     def __len__(self) -> int:
         return len(self._sources)

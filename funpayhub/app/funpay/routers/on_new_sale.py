@@ -8,6 +8,8 @@ from funpaybotengine.dispatching.filters import all_of
 
 from funpayhub.lib.exceptions import NotEnoughGoodsError
 
+from funpayhub.app.formatters import NewOrderContext
+
 
 if TYPE_CHECKING:
     from funpaybotengine.dispatching.events import NewSaleEvent
@@ -15,6 +17,7 @@ if TYPE_CHECKING:
     from funpayhub.lib.goods_sources import GoodsSourcesManager
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
+    from funpayhub.app.main import FunPayHub
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
     from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
 
@@ -35,10 +38,10 @@ async def auto_delivery_enabled_filter(
 ) -> bool | dict[str, Any]:
     order = await event.get_order_preview()
 
-    for i in properties.auto_delivery.entries:
-        pattern = _offer_name_re_factory(i)
+    for k, v in properties.auto_delivery.entries.items():
+        pattern = _offer_name_re_factory(k)
         if pattern.search(order.title):
-            props = i
+            props = v
             break
     else:
         return False
@@ -53,25 +56,50 @@ async def auto_delivery_enabled_filter(
     all_of(
         lambda properties: properties.toggles.auto_delivery.value,
         auto_delivery_enabled_filter,
-    )
+    ),
 )
 async def deliver_goods(
     event: NewSaleEvent,
     auto_delivery: AutoDeliveryEntryProperties,
     goods_manager: GoodsSourcesManager,
     fp_formatters: FormattersRegistry,
-):
+    hub: FunPayHub,
+) -> None:
     order = await event.get_order_preview()
     amount = 1
     if auto_delivery.multi_delivery.value and auto_delivery.goods_source.value:
         match = PCS_RE.search(order.title)
         amount = int(match.group()) if match else 1
 
+    goods_source_id = auto_delivery.goods_source.value
     try:
-        goods = await goods_manager.pop_goods(auto_delivery.goods_source.value, amount)
+        goods = await goods_manager.pop_goods(goods_source_id, amount)
     except KeyError:
-        return False  # todo logging, notification
+        print('NO GOODS SOURCE')
+        return  # todo logging, notification
     except NotEnoughGoodsError:
-        return False  # todo logging, notification
+        print('NOT ENOUGH GOODS IN SOURCE')
+        return  # todo logging, notification
 
-    fp_formatters
+    context = NewOrderContext(
+        order_event=event,
+        goods_to_deliver=goods,
+        new_message_event=event.related_new_message_event,
+    )
+    response_text = await fp_formatters.format_text(
+        auto_delivery.delivery_text.value, context=context
+    )
+
+    try:
+        # Это очень плохо!
+        # Сейчас подставляется hub, потому что у него есть такой же метод
+        # send_message с такими же сигнатурами, но
+        # нельзя это так оставлять!
+        await response_text.send(hub.funpay, event.message.chat_id)  # todo
+        return
+    except Exception:
+        # todo: logging
+        import traceback
+
+        print(traceback.format_exc())
+        await goods_manager.add_goods(goods_source_id, goods)

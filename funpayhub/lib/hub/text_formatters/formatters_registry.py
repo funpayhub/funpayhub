@@ -67,26 +67,29 @@ if TYPE_CHECKING:
 type FORMATTER_R = str | Image | list[str | Image]
 
 
-class Formatter(ABC):
+class Formatter[CTX](ABC):
     if TYPE_CHECKING:
         __key__: str
         __formatter_name__: str
         __description__: str
+        __context_type__: type[Any]
         key: str
         formatter_name: str
         description: str
+        context_type: type[Any]
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         key = kwargs.pop('key', None)
         name = kwargs.pop('name', None)
         description = kwargs.pop('description', None)
+        context_type = kwargs.pop('context_type', None)
 
         if not getattr(cls, '__key__', None):
-            if any(not i for i in [key, name, description]):
+            if any(not i for i in [key, name, description, context_type]):
                 raise TypeError(
                     f'{cls.__name__} must be defined with keyword arguments '
-                    f"'key', 'name' and 'description'. "
-                    f'Got: {key=}, {name=}, {description=}',
+                    f"'key', 'name', 'description' and 'context_type'. "
+                    f'Got: {key=}, {name=}, {description=}, {context_type=}',
                 )
 
             if any(not isinstance(i, str) for i in [key, name, description]):
@@ -95,17 +98,24 @@ class Formatter(ABC):
                     f'Got: key={type(key)}, name={type(name)}, description={type(description)}.',
                 )
 
+            if not isinstance(context_type, type):
+                raise ValueError(
+                    f"Keyword argument 'context_type' must be a type, not {type(context_type)}.",
+                )
+
         if key is not None:
             cls.__key__ = key
         if name is not None:
             cls.__formatter_name__ = name
         if description is not None:
             cls.__description__ = description
+        if context_type is not None:
+            cls.__context_type__ = context_type
 
         super().__init_subclass__(**kwargs)
 
-    @abstractmethod
-    def __init__(self, *args: Any) -> None: ...
+    def __init__(self, context: CTX, *args: Any) -> None:
+        self.context = context
 
     async def __call__(self, **data: Any) -> str:
         wrapper = CallableWrapper(self.format)
@@ -128,6 +138,11 @@ class Formatter(ABC):
     @classmethod
     def description(cls) -> str:
         return cls.__description__
+
+    @classproperty
+    @classmethod
+    def context_type(cls) -> type[Any]:
+        return cls.__context_type__
 
 
 @dataclass
@@ -223,7 +238,7 @@ class FormattersRegistry:
     async def format_text(
         self,
         text: str,
-        data: dict[str, Any],
+        context: Any,
         query: Type[FormatterCategory] | CategoriesQuery | None = None,
         raise_on_error: bool = True,
     ) -> MessagesStack:
@@ -250,14 +265,17 @@ class FormattersRegistry:
                 result.append(part.string)
                 continue
 
-            try:
-                formatter = formatter_cls(*part.args)
-                data = {
-                    **self._workflow_data,
-                    **data,
-                }
+            if not isinstance(context, formatter_cls.context_type):
+                # todo: logging
+                if raise_on_error:
+                    raise ValueError('Context type mismatch.')
+                result.append(part.string)
+                continue
 
-                formatted = await formatter(**data)
+            try:
+                formatter = formatter_cls(context, *part.args)
+
+                formatted = await formatter(**self._workflow_data)
 
                 if isinstance(formatted, list):
                     result.extend(formatted)
