@@ -60,8 +60,9 @@ from .category import CategoriesQuery, FormatterCategory, CategoriesExistsQuery
 
 
 if TYPE_CHECKING:
-    from funpaybotengine.client.bot import Bot
+    from collections.abc import Mapping
 
+    from funpaybotengine.client.bot import Bot
 
 type FORMATTER_R = str | Image | list[str | Image]
 
@@ -152,7 +153,7 @@ class MessagesStack:
 
 
 class FormattersRegistry:
-    def __init__(self) -> None:
+    def __init__(self, workflow_data: Mapping[str, Any] | None = None) -> None:
         """
         Реестр форматтеров.
         """
@@ -161,6 +162,8 @@ class FormattersRegistry:
 
         self._categories_to_formatters: dict[str, list[str]] = {}
         self._formatters_to_categories: dict[str, list[str]] = {}
+
+        self._workflow_data = workflow_data if workflow_data is not None else {}
 
     def add_formatter(self, formatter: type[Formatter]) -> None:
         """
@@ -249,6 +252,11 @@ class FormattersRegistry:
 
             try:
                 formatter = formatter_cls(*part.args)
+                data = {
+                    **self._workflow_data,
+                    **data,
+                }
+
                 formatted = await formatter(**data)
 
                 if isinstance(formatted, list):

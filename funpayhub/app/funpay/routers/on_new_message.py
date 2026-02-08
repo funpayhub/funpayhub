@@ -51,10 +51,6 @@ async def process_command(
 
         await text.send(bot=fp_bot, chat_id=event.message.chat_id)
 
-    # todo: Реализовать и использовать funpay.send_message обертку над funpay.bot.send_message
-    # которая будет пытаться отправить сообщение несколько раз + разбивать большие сообщения не
-    # более мелкие
-
 
 @r.on_chat_changed(handler_id='fph:new_message_notification')
 async def send_new_message_notification(

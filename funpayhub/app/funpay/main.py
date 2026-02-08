@@ -22,6 +22,7 @@ from funpaybotengine.types.pages import ProfilePage
 
 from loggers import main as logger
 
+from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 from funpayhub.app.funpay import middlewares as mdwr
@@ -87,7 +88,7 @@ class FunPay:
 
         self._hub = hub
 
-        self._text_formatters = FormattersRegistry()
+        self._text_formatters = FormattersRegistry(workflow_data=workflow_data)
         for c in CATEGORIES_LIST:
             self._text_formatters.add_category(c)
         for i in FORMATTERS_LIST:
@@ -177,23 +178,35 @@ class FunPay:
         enforce_whitespaces: bool = True,
         keep_chat_unread: bool = False,
         automatic_message: bool = True,
+        attempts: int = 3,
     ) -> Message | None:
         """
         Обёртка над funpaybotegine.Bot.send_message.
         """
-        async with self._sending_message_lock:
-            result = await self.bot.send_message(
-                chat_id=chat_id,
-                text=text,
-                image=image,
-                enforce_whitespaces=enforce_whitespaces,
-                keep_chat_unread=keep_chat_unread,
-            )
+        while attempts:
+            attempts -= 1
+            try:
+                result = await self.bot.send_message(
+                    chat_id=chat_id,
+                    text=text,
+                    image=image,
+                    enforce_whitespaces=enforce_whitespaces,
+                    keep_chat_unread=keep_chat_unread,
+                )
+                if not automatic_message:
+                    self._manually_sent_messages.add(result.id)
+                return result
+            except RateLimitExceededError:
+                await asyncio.sleep(3)
+            except (BotUnauthenticatedError, UnauthorizedError) as e:
+                raise TranslatableException('Unable to send message.') from e
+            except Exception:
+                logger.error('Unable to send message to %s.', chat_id, exc_info=True)
 
-            if not automatic_message:
-                self._manually_sent_messages.add(result.id)
-
-            return result
+        raise TranslatableException(
+            'Unable to send message to %s. Attempts exceeded.',
+            chat_id,
+        )
 
     def is_manual_message(self, message_id: int) -> bool:
         """

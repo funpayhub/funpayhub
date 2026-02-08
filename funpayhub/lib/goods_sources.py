@@ -7,10 +7,7 @@ from asyncio import Lock
 from pathlib import Path
 from collections.abc import Iterator, KeysView, Sequence, ValuesView
 
-
-class NotEnoughProductsError(RuntimeError):
-    def __init__(self, *args: Any) -> None:
-        super().__init__(*args)
+from funpayhub.lib.exceptions import NotEnoughGoodsError
 
 
 class GoodsSource(ABC):
@@ -162,7 +159,7 @@ class FileGoodsSource(GoodsSource):
             if len(result) < amount:
                 tmp.unlink(missing_ok=True)
                 self._goods_amount = current_index
-                raise NotEnoughProductsError()
+                raise NotEnoughGoodsError(self)
 
             tmp.replace(self._path)
             self._goods_amount = new_amount

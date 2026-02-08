@@ -1,65 +1,77 @@
 from __future__ import annotations
 
-import asyncio
+import re
+from typing import TYPE_CHECKING, Any
 
 from funpaybotengine import Router
-from funpaybotengine.types import Subcategory
-from funpaybotengine.runner import EventsStack
-from funpaybotengine.dispatching import NewSaleEvent
-from funpaybotengine.types.enums import SubcategoryType
+from funpaybotengine.dispatching.filters import all_of
 
-from funpayhub.app.funpay.main import FunPay
+from funpayhub.lib.exceptions import NotEnoughGoodsError
+
+
+if TYPE_CHECKING:
+    from funpaybotengine.dispatching.events import NewSaleEvent
+
+    from funpayhub.lib.goods_sources import GoodsSourcesManager
+    from funpayhub.lib.hub.text_formatters import FormattersRegistry
+
+    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
 
 
 router = Router(name='fph:on_new_sale')
 
 
-@router.on_new_sale(lambda events_stack: events_stack.data.get('offers_info') is not None)
-async def prepare_offers_info(events_stack: EventsStack, fp: FunPay) -> None:
-    """
-    Данный хэндлер (который по сути должен быть миддлварью, (и в будущем будет)) собирает
-    все события о новых продажах из events stack, сортирует их по категориям / подкатегориям и
-    запрашивает лоты получившихся подкатегорий.
+PCS_RE = re.compile(r'(?:^|, )(\d+) (?:шт|pcs)\.(?:,|$)')
 
-    Полученные подкатегории хранятся в EventsStack.data['offers_info'] в словаре вида
-    {subcategory_id: [list of offers]}.
 
-    # todo: должно срабатывать только если есть настройка автовыдачи с идентификатором лота, а не
-    названием
-    """
-    events_to_process = [i for i in events_stack.events if isinstance(i, NewSaleEvent)]
-    subcategories_to_get: set[Subcategory] = set()
+def _offer_name_re_factory(name: str) -> re.Pattern[str]:
+    return re.compile(rf'(?:^|, )({re.escape(name)})(?:,|$)')
 
-    categories = await fp.bot.storage.get_categories()
-    categories_by_name = {i.name: i for i in categories}
 
-    for event in events_to_process:
-        preview = await event.get_order_preview()
+async def auto_delivery_enabled_filter(
+    event: NewSaleEvent,
+    properties: FPHProps,
+) -> bool | dict[str, Any]:
+    order = await event.get_order_preview()
 
-        # todo:
-        # На данный момент нет ни одной подкатегории, в названии которой была бы запятая.
-        # Но данный вариант нестабилен, ибо никто не мешает FunPay добавить такую категорию.
-        # Необходимо использовать другой способ.
-        category_name, subcategory_name = preview.category_text.rsplit(',', 1)
-        category = categories_by_name.get(category_name)
-        if category is None:
-            continue
-
-        subcategories_by_name = {i.name: i for i in category.subcategories}
-        subcategory = subcategories_by_name.get(subcategory_name)
-        if subcategory is None or subcategory.type is not SubcategoryType.COMMON:
-            continue
-
-        subcategories_to_get.add(subcategory)
-        event['assigned_subcategory'] = subcategory
-
-    if len(subcategories_to_get) == 0:
-        return
-
-    if len(subcategories_to_get) <= 2:
-        tasks = [
-            asyncio.create_task(fp.bot.get_my_offers_page(i.id)) for i in subcategories_to_get
-        ]
-        complete, pending = await asyncio.wait(*tasks)
+    for i in properties.auto_delivery.entries:
+        pattern = _offer_name_re_factory(i)
+        if pattern.search(order.title):
+            props = i
+            break
     else:
-        ...
+        return False
+
+    if not props.auto_delivery.value or not props.delivery_text.value:
+        return False
+
+    return {'auto_delivery': props}
+
+
+@router.on_new_sale(
+    all_of(
+        lambda properties: properties.toggles.auto_delivery.value,
+        auto_delivery_enabled_filter,
+    )
+)
+async def deliver_goods(
+    event: NewSaleEvent,
+    auto_delivery: AutoDeliveryEntryProperties,
+    goods_manager: GoodsSourcesManager,
+    fp_formatters: FormattersRegistry,
+):
+    order = await event.get_order_preview()
+    amount = 1
+    if auto_delivery.multi_delivery.value and auto_delivery.goods_source.value:
+        match = PCS_RE.search(order.title)
+        amount = int(match.group()) if match else 1
+
+    try:
+        goods = await goods_manager.pop_goods(auto_delivery.goods_source.value, amount)
+    except KeyError:
+        return False  # todo logging, notification
+    except NotEnoughGoodsError:
+        return False  # todo logging, notification
+
+    fp_formatters
