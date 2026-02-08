@@ -41,6 +41,10 @@ class TextWithFormattersInvocations:
         """Возвращает список всех объектов `Invocation` в порядке следования."""
         return [i for i in self.split if isinstance(i, Invocation)]
 
+    @property
+    def invocation_names(self) -> set[str]:
+        return {i.name for i in self.invocations}
+
     @classmethod
     def from_text(cls, text: str) -> TextWithFormattersInvocations:
         return extract_calls(text)

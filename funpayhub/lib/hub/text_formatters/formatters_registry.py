@@ -55,7 +55,7 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.core import classproperty
 
-from .parser import extract_calls
+from .parser import TextWithFormattersInvocations, extract_calls
 from .category import CategoriesQuery, FormatterCategory, CategoriesExistsQuery
 
 
@@ -237,7 +237,7 @@ class FormattersRegistry:
 
     async def format_text(
         self,
-        text: str,
+        text: str | TextWithFormattersInvocations,
         context: Any,
         query: Type[FormatterCategory] | CategoriesQuery | None = None,
         raise_on_error: bool = True,
@@ -252,10 +252,19 @@ class FormattersRegistry:
         if query is not None and not isinstance(query, CategoriesQuery):
             query = CategoriesExistsQuery(query)
 
-        parsed = extract_calls(text)
+        parsed = extract_calls(text) if isinstance(text, str) else text
+        return await self.execute_formatters(parsed, context, query, raise_on_error)
+
+    async def execute_formatters(
+        self,
+        calls: TextWithFormattersInvocations,
+        context: Any,
+        query: Type[FormatterCategory] | CategoriesQuery | None = None,
+        raise_on_error: bool = True,
+    ) -> MessagesStack:
         result: list[str | Image] = []
 
-        for part in parsed.split:
+        for part in calls.split:
             if isinstance(part, str):
                 result.append(part)
                 continue
@@ -266,7 +275,6 @@ class FormattersRegistry:
                 continue
 
             if not isinstance(context, formatter_cls.context_type):
-                # todo: logging
                 if raise_on_error:
                     raise ValueError('Context type mismatch.')
                 result.append(part.string)
@@ -274,7 +282,6 @@ class FormattersRegistry:
 
             try:
                 formatter = formatter_cls(context, *part.args)
-
                 formatted = await formatter(**self._workflow_data)
 
                 if isinstance(formatted, list):
@@ -288,6 +295,10 @@ class FormattersRegistry:
                 result.append(part.string)
 
         return MessagesStack(normalize_messages(result))
+
+    @staticmethod
+    def extract_calls(text: str) -> TextWithFormattersInvocations:
+        return extract_calls(text)
 
 
 def normalize_messages(items: list[str | Image]) -> list[str | Image]:
