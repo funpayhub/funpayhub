@@ -165,17 +165,18 @@ async def deliver_goods(
 
 @router.on_new_sale()
 async def send_notification(event: NewSaleEvent, tg: Telegram):
-    text = 'Новый заказ'
+    order = await event.get_order_preview()
+    text = f'Новый заказ {order.title}'
 
-    if event.data.get('delivered_goods'):
-        text += '\nДоставленные товары: ...'
-    elif event.data.get('deliver_error'):
-        text += '\nТовары не доставлены.'
+    if delivered_goods := event.data.get('delivered_goods'):
+        text += f'\nДоставлено {len(delivered_goods)} товаров.'
+    elif (error := event.data.get('deliver_error')) is not None:
+        text += f'\nТовары не доставлены. {error}'
     else:
-        text += '\n'
+        text += '\nНе найдено подходящее правило для данного товара.'
 
     await tg.send_notification(NotificationChannels.NEW_SALE, text=text)
 
-    if event.data.get('deliver_error'):
-        text = 'Произошла ошибка при доставке товара ...'
+    if (error := event.data.get('deliver_error')) is not None:
+        text = f'Произошла ошибка при доставке товара {error}'
         await tg.send_notification(NotificationChannels.ERROR, text=text)
