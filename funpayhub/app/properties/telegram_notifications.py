@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from funpayhub.lib.properties import Properties, ListParameter
+from funpayhub.app.notification_channels import NotificationChannels
 
 
 class TelegramNotificationsProperties(Properties):
@@ -14,7 +15,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.system: ListParameter[str] = self.attach_node(
             ListParameter(
-                id='system',
+                id=NotificationChannels.SYSTEM,
                 name='$telegram_notifications.system:name',
                 description='$telegram_notifications.system:description',
                 default_factory=list,
@@ -23,7 +24,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.error: ListParameter[str] = self.attach_node(
             ListParameter(
-                id='error',
+                id=NotificationChannels.ERROR,
                 name='$telegram_notifications.error:name',
                 description='$telegram_notifications.error:description',
                 default_factory=list,
@@ -32,7 +33,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.offers_raised: ListParameter[str] = self.attach_node(
             ListParameter(
-                id='offers_raised',
+                id=NotificationChannels.OFFER_RAISED,
                 name='$telegram_notifications.offers_raised:name',
                 description='$telegram_notifications.offers_raised:description',
                 default_factory=list,
@@ -41,7 +42,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.new_message: ListParameter[str] = self.attach_node(
             ListParameter(
-                id='new_message',
+                id=NotificationChannels.NEW_MESSAGE,
                 name='$telegram_notifications.new_message:name',
                 description='$telegram_notifications.new_message:description',
                 default_factory=list,
@@ -50,7 +51,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.new_sale: ListParameter[str] = self.attach_node(
             ListParameter(
-                id='new_sale',
+                id=NotificationChannels.NEW_SALE,
                 name='$telegram_notifications.new_sale:name',
                 description='$telegram_notifications.new_sale:description',
                 default_factory=list,
@@ -59,7 +60,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.sale_status_changed: ListParameter[str] = self.attach_node(
             ListParameter(
-                id='sale_status_changed',
+                id=NotificationChannels.SALE_STATUS_CHANGED,
                 name='$telegram_notifications.sale_status_changed:name',
                 description='$telegram_notifications.sale_status_changed:description',
                 default_factory=list,
@@ -68,7 +69,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.review_1: ListParameter[str] = self.attach_node(
             ListParameter(
-                id='review_1',
+                id=NotificationChannels.REVIEW_1,
                 name='$telegram_notifications.review_1:name',
                 description='$telegram_notifications.review_1:description',
                 default_factory=list,
@@ -77,7 +78,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.review_2: ListParameter[str] = self.attach_node(
             ListParameter(
-                id='review_2',
+                id=NotificationChannels.REVIEW_2,
                 name='$telegram_notifications.review_2:name',
                 description='$telegram_notifications.review_2:description',
                 default_factory=list,
@@ -86,7 +87,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.review_3: ListParameter[str] = self.attach_node(
             ListParameter(
-                id='review_3',
+                id=NotificationChannels.REVIEW_3,
                 name='$telegram_notifications.review_3:name',
                 description='$telegram_notifications.review_3:description',
                 default_factory=list,
@@ -95,7 +96,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.review_4: ListParameter[str] = self.attach_node(
             ListParameter(
-                id='review_4',
+                id=NotificationChannels.REVIEW_4,
                 name='$telegram_notifications.review_4:name',
                 description='$telegram_notifications.review_4:description',
                 default_factory=list,
@@ -104,7 +105,7 @@ class TelegramNotificationsProperties(Properties):
 
         self.review_5: ListParameter[str] = self.attach_node(
             ListParameter(
-                id='review_5',
+                id=NotificationChannels.REVIEW_5,
                 name='$telegram_notifications.review_5:name',
                 description='$telegram_notifications.review_5:description',
                 default_factory=list,

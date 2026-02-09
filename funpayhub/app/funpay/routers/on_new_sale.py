@@ -7,8 +7,9 @@ from funpaybotengine import Router
 from funpaybotengine.dispatching.filters import all_of
 
 from loggers import main as logger
+from funpayhub.app.notification_channels import NotificationChannels
 
-from funpayhub.lib.exceptions import NotEnoughGoodsError
+from funpayhub.lib.exceptions import NotEnoughGoodsError, TranslatableException
 
 from funpayhub.app.formatters import GoodsFormatter, NewOrderContext
 
@@ -22,6 +23,8 @@ if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
     from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
+    from funpaybotengine.types import OrderPreview
+    from funpayhub.app.telegram.main import Telegram
 
 
 router = Router(name='fph:on_new_sale')
@@ -54,6 +57,11 @@ async def auto_delivery_enabled_filter(
     return {'auto_delivery': props}
 
 
+
+class _Exception(TranslatableException):
+    ...
+
+
 class DeliverGoodsHandler:
     async def __call__(
         self,
@@ -62,35 +70,23 @@ class DeliverGoodsHandler:
         goods_manager: GoodsSourcesManager,
         fp_formatters: FormattersRegistry,
         hub: FunPayHub,
+        tg: Telegram
     ) -> None:
         order = await event.get_order_preview()
+        goods_source_id = auto_delivery.goods_source.value
 
         calls = fp_formatters.extract_calls(auto_delivery.delivery_text.value)
+        goods = []
         if GoodsFormatter.key in calls.invocation_names:
-            amount = 1
-            if auto_delivery.multi_delivery.value and auto_delivery.goods_source.value:
-                match = PCS_RE.search(order.title)
-                amount = int(match.group()) if match else 1
-
-            goods_source_id = auto_delivery.goods_source.value
             try:
-                goods = await goods_manager.pop_goods(goods_source_id, amount)
-            except KeyError:
-                logger.error(
-                    'Unable to issue goods for order %s: goods source %s not found.',
-                    order.id,
-                    goods_source_id,
-                )  # todo: notification
+                goods = await self.get_goods(auto_delivery, order, goods_manager)
+            except _Exception as e:
+                logger.error(e.message, *e.args)
+                event['deliver_error'] = e
                 return
-            except NotEnoughGoodsError:
-                logger.error(
-                    'Unable to issue goods for order %s: not enough goods in bound source %s.',
-                    order.id,
-                    goods_source_id,
-                )  # todo: notification
-                return
-        else:
-            goods = []
+            except Exception as e:
+                event['deliver_error'] = e
+                raise
 
         context = NewOrderContext(
             order_event=event,
@@ -103,20 +99,51 @@ class DeliverGoodsHandler:
         )
 
         try:
-            # Это очень плохо!
-            # Сейчас подставляется hub, потому что у него есть такой же метод
-            # send_message с такими же сигнатурами, но
-            # нельзя это так оставлять!
-            await response_text.send(hub.funpay, event.message.chat_id)  # todo
+            # todo:
+            #  Это очень плохо!
+            #  Сейчас подставляется hub.funpay,
+            #  потому что у него есть такой же метод send_message с такими же сигнатурами,
+            #  нельзя это так оставлять!
+            await response_text.send(hub.funpay, event.message.chat_id)
+            event['delivered_goods'] = goods
+            event['source_id'] = goods_source_id
             return
-        except Exception:
-            # todo: logging
-            import traceback
+        except Exception as e:
+            event['deliver_error'] = e
+            if goods:
+                await goods_manager.add_goods(goods_source_id, goods)
+            raise
 
-            print(traceback.format_exc())
-            await goods_manager.add_goods(goods_source_id, goods)
+    async def get_goods(
+        self,
+        auto_delivery: AutoDeliveryEntryProperties,
+        order: OrderPreview,
+        goods_manager: GoodsSourcesManager
+    ) -> list[str]:
+        if not (goods_source_id := auto_delivery.goods_source.value):
+            return []
 
-    async def get_goods(self): ...
+        amount = 1
+        if auto_delivery.multi_delivery.value:
+            match = PCS_RE.search(order.title)
+            amount = int(match.group()) if match else 1
+
+        try:
+            goods = await goods_manager.pop_goods(goods_source_id, amount)
+        except KeyError:
+            raise _Exception(
+                'Unable to issue goods for order %s: goods source %s not found.',
+                order.id,
+                goods_source_id
+            )
+        except NotEnoughGoodsError:
+            raise _Exception(
+                'Unable to issue goods for order %s: not enough goods in bound source %s.',
+                order.id,
+                goods_source_id,
+            )
+
+        return goods
 
 
 @router.on_new_sale(
@@ -125,5 +152,30 @@ class DeliverGoodsHandler:
         auto_delivery_enabled_filter,
     ),
 )
-async def deliver_goods():
-    await DeliverGoodsHandler()()
+async def deliver_goods(
+    event: NewSaleEvent,
+    auto_delivery: AutoDeliveryEntryProperties,
+    goods_manager: GoodsSourcesManager,
+    fp_formatters: FormattersRegistry,
+    hub: FunPayHub,
+    tg: Telegram
+):
+    await DeliverGoodsHandler()(event, auto_delivery, goods_manager, fp_formatters, hub, tg)
+
+
+@router.on_new_sale()
+async def send_notification(event: NewSaleEvent, tg: Telegram):
+    text = 'Новый заказ'
+
+    if event.data.get('delivered_goods'):
+        text += '\nДоставленные товары: ...'
+    elif event.data.get('deliver_error'):
+        text += '\nТовары не доставлены.'
+    else:
+        text += '\n'
+
+    await tg.send_notification(NotificationChannels.NEW_SALE, text=text)
+
+    if event.data.get('deliver_error'):
+        text = 'Произошла ошибка при доставке товара ...'
+        await tg.send_notification(NotificationChannels.ERROR, text=text)

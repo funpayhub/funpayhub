@@ -55,7 +55,7 @@ class NotificationsMenuBuilder(
                 text=f'{indicator} {notifications_channel}',
                 callback_data=cbs.ToggleNotificationChannel(
                     channel=entry.id,
-                    history=callback_data.as_history() if callback_data is not None else [],
+                    from_callback=ctx.callback_data,
                 ).pack(),
             )
 
