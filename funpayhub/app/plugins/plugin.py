@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 import logging
-from logger_conf import HubLogMessage
+
 
 if TYPE_CHECKING:
     from aiogram import Router as TGRouter
@@ -39,10 +39,10 @@ class Plugin:
         self._manifest = manifest
         self._hub = hub
 
-        self._logger = PluginLogger(
-            f"funpayhub.plugin.{manifest.plugin_id.replace('.', '_')}",
-            plugin=self
-        )
+        logger_name = f'funpayhub.{manifest.plugin_id.replace('.', '_')}'
+        self._logger = PluginLogger(logger_name, plugin=self)
+        logging.Logger.manager.loggerDict[logger_name] = self._logger
+        logging.Logger.manager._fixupParents(self._logger)
 
     @property
     def manifest(self) -> PluginManifest:
