@@ -17,6 +17,7 @@ __all__ = [
     'CATEGORIES_LIST',
 ]
 
+import re
 import datetime
 from typing import TYPE_CHECKING
 
@@ -25,7 +26,6 @@ from funpaybotengine.dispatching.events import OrderEvent, NewMessageEvent
 
 from funpayhub.lib.hub.text_formatters import Image, Formatter
 from funpayhub.lib.hub.text_formatters.category import FormatterCategory
-import re
 
 
 if TYPE_CHECKING:
@@ -173,7 +173,9 @@ class MeFormatter(
     description='$formatter:me:description',
     context_type=FormattersContext,
 ):
-    def __init__(self, context: FormattersContext, mode: str = 'username', *args, **kwargs) -> None:
+    def __init__(
+        self, context: FormattersContext, mode: str = 'username', *args, **kwargs
+    ) -> None:
         super().__init__(context)
         self.mode = mode
 

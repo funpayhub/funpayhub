@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 from typing import TYPE_CHECKING
+from dataclasses import dataclass
 from itertools import chain
 
 from funpayhub.lib.exceptions import TranslatableException
@@ -18,25 +19,25 @@ from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext as
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.telegram.callbacks import SendMessage
 from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
-from dataclasses import dataclass
 
 from . import callbacks as cbs
-from funpayhub.app.telegram.callbacks import SendMessage
+
 
 if TYPE_CHECKING:
+    from funpaybotengine.dispatching.events import NewSaleEvent
+
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.goods_sources import GoodsSourcesManager as GoodsManager
 
     from funpayhub.app.main import FunPayHub as FPH
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
-    from funpaybotengine.dispatching.events import NewSaleEvent
 
 
 @dataclass(kw_only=True)
 class NewSaleMenuContext(MenuContext):
     new_sale_event: NewSaleEvent
-
 
 
 class AddAutoDeliveryRuleMenuBuilder(
@@ -118,43 +119,43 @@ class NewSaleNotificationMenuBuilder(
 
         order = await ctx.new_sale_event.get_order_preview()
 
-        menu.header_text = f"💰 Новый заказ: <b>{html.escape(order.title)}</b>"
+        menu.header_text = f'💰 Новый заказ: <b>{html.escape(order.title)}</b>'
 
         menu.main_text = (
-            f'<b><i>👤 Покупатель: <a href=\"https://funpay.com/users/{order.counterparty.id}/\">'
+            f'<b><i>👤 Покупатель: <a href="https://funpay.com/users/{order.counterparty.id}/">'
             f'{order.counterparty.username}'
             f'</a></i></b>\n'
             f'<b><i>💵 Сумма:</i></b> <code>{order.total.value} {order.total.character}</code>\n'
-            f'<b><i>🆔 ID: <a href=\"https://funpay.com/orders/{order.id}/\">#{order.id}</a></i></b>'
+            f'<b><i>🆔 ID: <a href="https://funpay.com/orders/{order.id}/">#{order.id}</a></i></b>'
         )
 
         if delivered_goods := ctx.new_sale_event.data.get('delivered_goods'):
-            menu.footer_text = f"<i>📦 Успешно доставлено {len(delivered_goods)} товаров.</i>"
+            menu.footer_text = f'<i>📦 Успешно доставлено {len(delivered_goods)} товаров.</i>'
         elif (error := ctx.new_sale_event.data.get('deliver_error')) is not None:
             if isinstance(error, TranslatableException):
-                menu.footer_text = \
-                    f'<i>❌ Не удалось выдать товары.\n'\
+                menu.footer_text = (
+                    f'<i>❌ Не удалось выдать товары.\n'
                     f'{html.escape(error.format_args(translater.translate(error.message)))}</i>'
+                )
             else:
-                menu.footer_text = \
-                    f'<i>❌ Не удалось выдать товары.\nПодробности в логах.</i>'
+                menu.footer_text = '<i>❌ Не удалось выдать товары.\nПодробности в логах.</i>'
         else:
-            menu.footer_text = \
-                f'<i>ℹ️ Товары не были выданы, т.к. не было найдено подходящего правила.</i>'
-
+            menu.footer_text = (
+                '<i>ℹ️ Товары не были выданы, т.к. не было найдено подходящего правила.</i>'
+            )
 
         menu.header_keyboard.add_callback_button(
             button_id='refund',
             text=translater.translate('$refund'),
-            callback_data='dummy'
+            callback_data='dummy',
         )
         menu.header_keyboard.add_callback_button(
             button_id='response',
             text=translater.translate('$new_message_ui.reply'),
             callback_data=SendMessage(
                 to=ctx.new_sale_event.message.chat_id,
-                name=order.counterparty.username
-            ).pack_compact()
+                name=order.counterparty.username,
+            ).pack_compact(),
         )
 
         return menu

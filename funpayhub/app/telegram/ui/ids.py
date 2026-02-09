@@ -32,7 +32,6 @@ class MenuIds(BaseMenuIds):
     autodelivery_goods_sources_list = 'fph:autodelivery_goods_sources_list'
     new_sale_notification = 'fph:new_sale_notification'
 
-
     add_auto_delivery_rule = 'fph:add_auto_delivery_rule'
 
 

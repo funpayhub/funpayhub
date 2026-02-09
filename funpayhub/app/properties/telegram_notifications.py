@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from funpayhub.lib.properties import Properties, ListParameter
+
 from funpayhub.app.notification_channels import NotificationChannels
 
 

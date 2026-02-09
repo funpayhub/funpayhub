@@ -12,8 +12,8 @@ from funpayhub.app.telegram.ui.ids import MenuIds
 from .ui import (
     AddOfferButtonModification,
     AddAutoDeliveryRuleMenuBuilder,
-    ReplaceSourcesListButtonModification,
     NewSaleNotificationMenuBuilder,
+    ReplaceSourcesListButtonModification,
     AutoDeliveryGoodsSourcesListMenuBuilder,
     AddRemoveButtonToAutoDeliveryModification,
 )

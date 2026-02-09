@@ -6,29 +6,28 @@ from typing import TYPE_CHECKING, Any
 from funpaybotengine import Router
 from funpaybotengine.dispatching.filters import all_of
 
-from funpayhub.app.telegram.ui.ids import MenuIds
-
 from loggers import main as logger
-from funpayhub.app.notification_channels import NotificationChannels
 
 from funpayhub.lib.exceptions import NotEnoughGoodsError, TranslatableException
 
 from funpayhub.app.formatters import GoodsFormatter, NewOrderContext
+from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.notification_channels import NotificationChannels
 from funpayhub.app.telegram.modules.autodelivery.ui import NewSaleMenuContext
 
 
 if TYPE_CHECKING:
+    from funpaybotengine.types import OrderPreview
     from funpaybotengine.dispatching.events import NewSaleEvent
 
+    from funpayhub.lib.telegram.ui import UIRegistry
     from funpayhub.lib.goods_sources import GoodsSourcesManager
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
     from funpayhub.app.main import FunPayHub
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
-    from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
-    from funpaybotengine.types import OrderPreview
     from funpayhub.app.telegram.main import Telegram
-    from funpayhub.lib.telegram.ui import UIRegistry
+    from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
 
 
 router = Router(name='fph:on_new_sale')
@@ -61,9 +60,7 @@ async def auto_delivery_enabled_filter(
     return {'auto_delivery': props}
 
 
-
-class _Exception(TranslatableException):
-    ...
+class _Exception(TranslatableException): ...
 
 
 class DeliverGoodsHandler:
@@ -74,7 +71,7 @@ class DeliverGoodsHandler:
         goods_manager: GoodsSourcesManager,
         fp_formatters: FormattersRegistry,
         hub: FunPayHub,
-        tg: Telegram
+        tg: Telegram,
     ) -> None:
         order = await event.get_order_preview()
         goods_source_id = auto_delivery.goods_source.value
@@ -122,7 +119,7 @@ class DeliverGoodsHandler:
         self,
         auto_delivery: AutoDeliveryEntryProperties,
         order: OrderPreview,
-        goods_manager: GoodsSourcesManager
+        goods_manager: GoodsSourcesManager,
     ) -> list[str]:
         if not (goods_source_id := auto_delivery.goods_source.value):
             return []
@@ -138,7 +135,7 @@ class DeliverGoodsHandler:
             raise _Exception(
                 'Unable to issue goods for order %s: goods source %s not found.',
                 order.id,
-                goods_source_id
+                goods_source_id,
             )
         except NotEnoughGoodsError:
             raise _Exception(
@@ -162,7 +159,7 @@ async def deliver_goods(
     goods_manager: GoodsSourcesManager,
     fp_formatters: FormattersRegistry,
     hub: FunPayHub,
-    tg: Telegram
+    tg: Telegram,
 ):
     await DeliverGoodsHandler()(event, auto_delivery, goods_manager, fp_formatters, hub, tg)
 
@@ -172,13 +169,13 @@ async def send_notification(event: NewSaleEvent, tg: Telegram, tg_ui: UIRegistry
     menu = await NewSaleMenuContext(
         menu_id=MenuIds.new_sale_notification,
         chat_id=-1,
-        new_sale_event=event
+        new_sale_event=event,
     ).build_menu(tg_ui)
 
     await tg.send_notification(
         NotificationChannels.NEW_SALE,
         text=menu.total_text,
-        reply_markup=menu.total_keyboard(convert=True)
+        reply_markup=menu.total_keyboard(convert=True),
     )
 
     if (error := event.data.get('deliver_error')) is not None:

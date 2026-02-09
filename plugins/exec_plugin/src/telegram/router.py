@@ -9,6 +9,7 @@ import contextlib
 from typing import Any
 from io import StringIO
 from copy import copy
+from pathlib import Path
 
 from aiogram import Router
 from aiogram.types import Message, CallbackQuery, BufferedInputFile, InputMediaDocument
@@ -17,7 +18,6 @@ from exec_plugin.src.types import ExecutionResult, ExecutionResultsRegistry
 
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
-from pathlib import Path
 
 from .callbacks import SaveExecCode, SendExecFile
 
