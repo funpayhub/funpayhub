@@ -28,8 +28,10 @@ class MenuIds(BaseMenuIds):
     install_plugin = 'fph:install_plugin'
 
     goods_sources_list = 'fph:goods_sources_list'
-    autodelivery_goods_sources_list = 'fph:autodelivery_goods_sources_list'
     goods_source_info = 'fph:goods_source_info'
+    autodelivery_goods_sources_list = 'fph:autodelivery_goods_sources_list'
+    new_sale_notification = 'fph:new_sale_notification'
+
 
     add_auto_delivery_rule = 'fph:add_auto_delivery_rule'
 

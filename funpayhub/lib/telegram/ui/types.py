@@ -190,7 +190,7 @@ class Menu:
             raise ValueError('Inaccessible message.')
 
         return await msg.answer(
-            text=self.full_text,
+            text=self.total_text,
             reply_markup=self.total_keyboard(convert=True),
         )
 
@@ -206,12 +206,12 @@ class Menu:
             raise ValueError('Inaccessible message.')
 
         return await msg.edit_text(
-            text=self.full_text if text else msg.text,
+            text=self.total_text if text else msg.text,
             reply_markup=self.total_keyboard(convert=True) if keyboard else msg.reply_markup,
         )
 
     @property
-    def full_text(self) -> str:
+    def total_text(self) -> str:
         return '\n\n'.join(i for i in [self.header_text, self.main_text, self.footer_text] if i)
 
 

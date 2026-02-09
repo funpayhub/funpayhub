@@ -13,6 +13,7 @@ from .ui import (
     AddOfferButtonModification,
     AddAutoDeliveryRuleMenuBuilder,
     ReplaceSourcesListButtonModification,
+    NewSaleNotificationMenuBuilder,
     AutoDeliveryGoodsSourcesListMenuBuilder,
     AddRemoveButtonToAutoDeliveryModification,
 )
@@ -22,6 +23,7 @@ from .router import router
 MENUS = [
     AddAutoDeliveryRuleMenuBuilder,
     AutoDeliveryGoodsSourcesListMenuBuilder,
+    NewSaleNotificationMenuBuilder,
 ]
 
 MENU_MODS = {

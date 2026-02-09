@@ -6,12 +6,15 @@ from typing import TYPE_CHECKING, Any
 from funpaybotengine import Router
 from funpaybotengine.dispatching.filters import all_of
 
+from funpayhub.app.telegram.ui.ids import MenuIds
+
 from loggers import main as logger
 from funpayhub.app.notification_channels import NotificationChannels
 
 from funpayhub.lib.exceptions import NotEnoughGoodsError, TranslatableException
 
 from funpayhub.app.formatters import GoodsFormatter, NewOrderContext
+from funpayhub.app.telegram.modules.autodelivery.ui import NewSaleMenuContext
 
 
 if TYPE_CHECKING:
@@ -25,6 +28,7 @@ if TYPE_CHECKING:
     from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
     from funpaybotengine.types import OrderPreview
     from funpayhub.app.telegram.main import Telegram
+    from funpayhub.lib.telegram.ui import UIRegistry
 
 
 router = Router(name='fph:on_new_sale')
@@ -164,18 +168,18 @@ async def deliver_goods(
 
 
 @router.on_new_sale()
-async def send_notification(event: NewSaleEvent, tg: Telegram):
-    order = await event.get_order_preview()
-    text = f'Новый заказ {order.title}'
+async def send_notification(event: NewSaleEvent, tg: Telegram, tg_ui: UIRegistry):
+    menu = await NewSaleMenuContext(
+        menu_id=MenuIds.new_sale_notification,
+        chat_id=-1,
+        new_sale_event=event
+    ).build_menu(tg_ui)
 
-    if delivered_goods := event.data.get('delivered_goods'):
-        text += f'\nДоставлено {len(delivered_goods)} товаров.'
-    elif (error := event.data.get('deliver_error')) is not None:
-        text += f'\nТовары не доставлены. {error}'
-    else:
-        text += '\nНе найдено подходящее правило для данного товара.'
-
-    await tg.send_notification(NotificationChannels.NEW_SALE, text=text)
+    await tg.send_notification(
+        NotificationChannels.NEW_SALE,
+        text=menu.total_text,
+        reply_markup=menu.total_keyboard(convert=True)
+    )
 
     if (error := event.data.get('deliver_error')) is not None:
         text = f'Произошла ошибка при доставке товара {error}'

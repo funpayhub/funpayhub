@@ -17,6 +17,7 @@ from exec_plugin.src.types import ExecutionResult, ExecutionResultsRegistry
 
 from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+from pathlib import Path
 
 from .callbacks import SaveExecCode, SendExecFile
 
@@ -93,10 +94,16 @@ async def execute_python_code(
         )
         return
     if exec_id and not source:
-        if exec_id not in exec_registry.registry:
-            await message.answer(f'Исполнение {exec_id!r} не найдено.')
-            return
-        source = exec_registry.registry[exec_id].code
+        path = Path(exec_id)
+        if path.exists() and path.is_file():
+            with path.open('r', encoding='utf-8') as f:
+                source = f.read()
+
+        else:
+            if exec_id not in exec_registry.registry:
+                await message.answer(f'Исполнение {exec_id!r} не найдено.')
+                return
+            source = exec_registry.registry[exec_id].code
         exec_id = None
 
     data = data | {'message': message}
