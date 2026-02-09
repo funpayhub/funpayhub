@@ -11,6 +11,7 @@ from colorama import Back, Fore, Style
 
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater
+    from funpayhub.app.plugins import Plugin
 
 
 COLORS = {
@@ -56,6 +57,9 @@ class HubLogMessage(logging.LogRecord):
             msg = self._translater.translate(str(self.msg), language=language)
         else:
             msg = str(self.msg)
+
+        if getattr(self, 'plugin', None) is not None:
+            msg = f'[{getattr(self, 'plugin').manifest.name}] {msg}'
 
         if not self.args:
             return msg

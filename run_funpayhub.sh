@@ -91,4 +91,4 @@ printf "${C_GREEN}°˖✧◝(⁰▿⁰)◜✧˖°${C_RESET} Токен прин�
 printf "${C_CYAN}(⌐■_■)${C_RESET} Запускаю FunPay Hub.\n"
 printf ""
 
-exec "$PYTHON_BIN" bootstrap.py --init-tg-token "$TG_TOKEN"
+exec "$PYTHON_BIN" bootstrap.py --t "$TG_TOKEN"

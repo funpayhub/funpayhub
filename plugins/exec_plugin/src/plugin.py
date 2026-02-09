@@ -59,6 +59,9 @@ class ExecPluginProperties(Properties):
 
 
 class ExecPlugin(Plugin):
+    async def pre_setup(self) -> None:
+        self.logger.info('Exec plugin ready to setup!')
+
     async def properties(self) -> Properties:
         return ExecPluginProperties()
 

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+from typing import TYPE_CHECKING, Any
+import logging
+from logger_conf import HubLogMessage
 
 if TYPE_CHECKING:
     from aiogram import Router as TGRouter
@@ -22,10 +23,26 @@ if TYPE_CHECKING:
     from funpayhub.app.dispatching import Router as HubRouter
 
 
+class PluginLogger(logging.Logger):
+    def __init__(self, name: str, plugin: Plugin, *args, **kwargs):
+        super().__init__(name, *args, **kwargs)
+        self._plugin = plugin
+
+    def makeRecord(self, *args, **kwargs):
+        record = super().makeRecord(*args, **kwargs)
+        record.plugin = self._plugin
+        return record
+
+
 class Plugin:
     def __init__(self, manifest: PluginManifest, hub: FunPayHub) -> None:
         self._manifest = manifest
         self._hub = hub
+
+        self._logger = PluginLogger(
+            f"funpayhub.plugin.{manifest.plugin_id.replace('.', '_')}",
+            plugin=self
+        )
 
     @property
     def manifest(self) -> PluginManifest:
@@ -104,3 +121,7 @@ class Plugin:
 
     async def post_setup(self) -> None:
         raise NotImplementedError()
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
