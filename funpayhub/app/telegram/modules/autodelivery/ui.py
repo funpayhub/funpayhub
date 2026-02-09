@@ -124,7 +124,7 @@ class NewSaleNotificationMenuBuilder(
             f'<b><i>👤 Покупатель: <a href=\"https://funpay.com/users/{order.counterparty.id}/\">'
             f'{order.counterparty.username}'
             f'</a></i></b>\n'
-            f'<b><i>💵 Сумма: {order.total.value} {order.total.character}</i></b>\n'
+            f'<b><i>💵 Сумма:</i></b> <code>{order.total.value} {order.total.character}</code>\n'
             f'<b><i>🆔 ID: <a href=\"https://funpay.com/orders/{order.id}/\">#{order.id}</a></i></b>'
         )
 
