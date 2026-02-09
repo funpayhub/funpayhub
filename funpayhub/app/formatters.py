@@ -25,6 +25,7 @@ from funpaybotengine.dispatching.events import OrderEvent, NewMessageEvent
 
 from funpayhub.lib.hub.text_formatters import Image, Formatter
 from funpayhub.lib.hub.text_formatters.category import FormatterCategory
+import re
 
 
 if TYPE_CHECKING:
@@ -39,6 +40,8 @@ _time_formats = {
     'datetime': '%d.%m %H:%M',
     'fulldatetime': '%d.%m.%Y %H:%M:%S',
 }
+
+NEW_LINE_RE = re.compile(r'(?<!\\)\\n')
 
 
 class FormattersContext(BaseModel): ...
@@ -60,7 +63,7 @@ class DateTimeFormatter(
     description='$formatter:datetime:description',
     context_type=FormattersContext,
 ):
-    def __init__(self, context: FormattersContext, mode: str = 'time') -> None:
+    def __init__(self, context: FormattersContext, mode: str = 'time', *args, **kwargs) -> None:
         super().__init__(context)
         self.mode = mode
 
@@ -80,7 +83,7 @@ class ImageFormatter(
     description='$formatter:image:description',
     context_type=FormattersContext,
 ):
-    def __init__(self, context: FormattersContext, path_or_id: int | str) -> None:
+    def __init__(self, context: FormattersContext, path_or_id: int | str, *args, **kwargs) -> None:
         super().__init__(context)
         self.path_or_id = path_or_id
 
@@ -98,7 +101,7 @@ class OrderFormatter(
     description='$formatter:order:description',
     context_type=NewOrderContext,
 ):
-    def __init__(self, context: NewOrderContext, mode: str = 'id') -> None:
+    def __init__(self, context: NewOrderContext, mode: str = 'id', *args, **kwargs) -> None:
         super().__init__(context)
         self.mode = mode
 
@@ -132,7 +135,7 @@ class GoodsFormatter(
         super().__init__(context)
 
     async def format(self) -> str:
-        return '\n'.join(self.context.goods_to_deliver)
+        return NEW_LINE_RE.sub('\n', '\n'.join(self.context.goods_to_deliver))
 
 
 class MessageFormatter(
@@ -142,7 +145,7 @@ class MessageFormatter(
     description='$formatter:message:description',
     context_type=NewMessageContext,
 ):
-    def __init__(self, context: NewMessageContext, mode: str) -> None:
+    def __init__(self, context: NewMessageContext, mode: str, *args, **kwargs) -> None:
         super().__init__(context)
         self.mode = mode
 
@@ -170,7 +173,7 @@ class MeFormatter(
     description='$formatter:me:description',
     context_type=FormattersContext,
 ):
-    def __init__(self, context: FormattersContext, mode: str = 'username') -> None:
+    def __init__(self, context: FormattersContext, mode: str = 'username', *args, **kwargs) -> None:
         super().__init__(context)
         self.mode = mode
 
