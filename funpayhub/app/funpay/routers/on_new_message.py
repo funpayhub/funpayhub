@@ -69,13 +69,16 @@ async def send_new_message_notification(
     appearance_props = properties.telegram.appearance.new_message_appearance
 
     for i in events_stack:
-        if isinstance(i, NewMessageEvent) and i.message.chat_id == event.chat_preview.id:
-            if fp.is_manual_message(i.message.id) and appearance_props.show_mine_from_hub.value:
-                msgs.append(i.message)
-            elif await i.message.is_sent_by_bot() and appearance_props.show_automatic.value:
-                msgs.append(i.message)
-            elif i.message.from_me and appearance_props.show_mine.value:
-                msgs.append(i.message)
+        if i.name != NewMessageEvent.__event_name__ or i.message.chat_id != event.chat_preview.id:
+            continue
+
+        if fp.is_manual_message(i.message.id) and not appearance_props.show_mine_from_hub.value:
+            continue
+        elif await i.message.is_sent_by_bot() and not appearance_props.show_automatic.value:
+            continue
+        elif i.message.from_me and not appearance_props.show_mine.value:
+            continue
+        msgs.append(i.message)
 
     if not msgs:
         return
@@ -92,6 +95,8 @@ async def send_new_message_notification(
         only_mine &= i.from_me and not is_manual and not by_bot
         only_mine_from_hub &= is_manual
         only_automatic &= automatic
+
+    print(f'{only_mine=}, {only_automatic=}, {only_mine_from_hub=}')
 
     if any(
         [
