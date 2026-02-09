@@ -61,7 +61,7 @@ dictConfig(
             },
             'console': {
                 'formatter': 'console_formatter',
-                'level': logging.INFO,
+                'level': logging.DEBUG,
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout,
             },
@@ -77,11 +77,11 @@ dictConfig(
         },
         'loggers': {
             None: {
-                'level': logging.INFO if not args.debug else logging.DEBUG,
+                'level': logging.DEBUG if args.debug else logging.INFO,
                 'handlers': ['console', 'file'],
             },
             'aiogram': {
-                'level': logging.WARNING if not args.debug else logging.DEBUG,
+                'level': logging.DEBUG if args.debug else logging.WARNING,
             },
         },
     },

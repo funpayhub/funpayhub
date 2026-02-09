@@ -75,7 +75,7 @@ async def sync_new_message(
     messages = [
         i.message
         for i in events_stack.events
-        if isinstance(i, NewMessageEvent) and i.message.chat_id == message.chat_id
+        if i.name == NewMessageEvent.__event_name__ and i.message.chat_id == message.chat_id
     ]
 
     ctx = NewMessageMenuContext(
