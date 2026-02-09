@@ -22,7 +22,7 @@ from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 from dataclasses import dataclass
 
 from . import callbacks as cbs
-
+from funpayhub.app.telegram.callbacks import SendMessage
 
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater as Tr
@@ -141,6 +141,22 @@ class NewSaleNotificationMenuBuilder(
         else:
             menu.footer_text = \
                 f'<i>ℹ️ Товары не были выданы, т.к. не было найдено подходящего правила.</i>'
+
+
+        menu.header_keyboard.add_callback_button(
+            button_id='refund',
+            text=translater.translate('$refund'),
+            callback_data='dummy'
+        )
+        menu.header_keyboard.add_callback_button(
+            button_id='response',
+            text=translater.translate('$new_message_ui.reply'),
+            callback_data=SendMessage(
+                to=ctx.new_sale_event.message.chat_id,
+                name=order.counterparty.username
+            ).pack_compact()
+        )
+
         return menu
 
 
