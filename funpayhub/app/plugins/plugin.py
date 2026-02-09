@@ -24,13 +24,13 @@ if TYPE_CHECKING:
 
 
 class PluginLogger(logging.Logger):
-    def __init__(self, name: str, plugin: Plugin, *args, **kwargs):
+    def __init__(self, name: str, *args, **kwargs):
         super().__init__(name, *args, **kwargs)
-        self._plugin = plugin
+        self.plugin = None
 
     def makeRecord(self, *args, **kwargs):
         record = super().makeRecord(*args, **kwargs)
-        record.plugin = self._plugin
+        record.plugin = self.plugin
         return record
 
 
@@ -39,10 +39,11 @@ class Plugin:
         self._manifest = manifest
         self._hub = hub
 
-        logger_name = f'funpayhub.{manifest.plugin_id.replace('.', '_')}'
-        self._logger = PluginLogger(logger_name, plugin=self)
-        logging.Logger.manager.loggerDict[logger_name] = self._logger
-        logging.Logger.manager._fixupParents(self._logger)
+        logger_class = logging.getLoggerClass()
+        logging.setLoggerClass(PluginLogger)
+        self._logger = logging.getLogger(f'funpayhub.{manifest.plugin_id.replace('.', '_')}')
+        self._logger.plugin = self
+        logging.setLoggerClass(logger_class)
 
     @property
     def manifest(self) -> PluginManifest:
