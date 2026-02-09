@@ -58,9 +58,6 @@ class HubLogMessage(logging.LogRecord):
         else:
             msg = str(self.msg)
 
-        if getattr(self, 'plugin', None) is not None:
-            msg = f'[{getattr(self, 'plugin').manifest.name}] {msg}'
-
         if not self.args:
             return msg
 
@@ -103,17 +100,28 @@ class ConsoleLoggerFormatter(logging.Formatter):
 
         text = (
             record.getColorizedMessage()
-            if isinstance(record, HubLogMessage) and sys.stdout.isatty()
+            if isinstance(record, HubLogMessage) and self.support_color
             else record.getMessage()
         )
 
         text = RESET_RE.sub(reset, text)
-        if not sys.stdout.isatty():
+        if not self.support_color:
             ESC_RE.sub('', text)
+
+        plugin_name = ''
+        if (plugin := getattr(record, 'plugin', None)) is not None:
+            if self.support_color:
+                plugin_name = (
+                    f'{Style.RESET_ALL}'
+                    f'{Fore.CYAN}{Style.BRIGHT}[{plugin.manifest.name}]{Style.RESET_ALL}'
+                )
+            else:
+                plugin_name = f'[{plugin.manifest.name}]'
+            plugin_name = ' ' + plugin_name
 
         text = (
             f'{reset}{EMOJIS[record.levelno] if sys.stdout.isatty() else ""} {time_str} '
-            f'[{color}{record.levelname:^9}{reset}] '
+            f'[{color}{record.levelname:^9}{reset}]{plugin_name} '
             f'{text}{reset}'
         )
 
@@ -122,6 +130,10 @@ class ConsoleLoggerFormatter(logging.Formatter):
             exc_text = f'{Style.RESET_ALL + Fore.RED + Style.BRIGHT}{exc_text}{Style.RESET_ALL}'
             text += '\n' + exc_text
         return text
+
+    @property
+    def support_color(self) -> bool:
+        return sys.stdout.isatty()
 
 
 class FileLoggerFormatter(logging.Formatter):
