@@ -34,6 +34,7 @@ class Button:
         button_id: str,
         text: str,
         callback_data: str,
+        style: Literal['danger', 'success', 'primary'] | None = None,
         row: Literal[False] = ...,
     ) -> Button:
         pass
@@ -45,6 +46,7 @@ class Button:
         button_id: str,
         text: str,
         callback_data: str,
+        style: Literal['danger', 'success', 'primary'] | None = None,
         row: Literal[True] = ...,
     ) -> list[Button]:
         pass
@@ -55,11 +57,12 @@ class Button:
         button_id: str,
         text: str,
         callback_data: str,
+        style: Literal['danger', 'success', 'primary'] | None = None,
         row: bool = False,
     ) -> Button | list[Button]:
         btn = Button(
             button_id=button_id,
-            obj=InlineKeyboardButton(text=text, callback_data=callback_data),
+            obj=InlineKeyboardButton(text=text, callback_data=callback_data, style=style),
         )
         if row:
             return [btn]
@@ -67,12 +70,26 @@ class Button:
 
     @overload
     @classmethod
-    def url_button(cls, button_id: str, text: str, url: str, row: Literal[False] = ...) -> Button:
+    def url_button(
+        cls,
+        button_id: str,
+        text: str,
+        url: str,
+        style: Literal['danger', 'success', 'primary'] | None = None,
+        row: Literal[False] = ...,
+    ) -> Button:
         pass
 
     @overload
     @classmethod
-    def url_button(cls, button_id: str, text: str, url: str, row: Literal[True]) -> list[Button]:
+    def url_button(
+        cls,
+        button_id: str,
+        text: str,
+        url: str,
+        style: Literal['danger', 'success', 'primary'] | None = None,
+        row: Literal[True] = ...,
+    ) -> list[Button]:
         pass
 
     @classmethod
@@ -81,11 +98,12 @@ class Button:
         button_id: str,
         text: str,
         url: str,
+        style: Literal['danger', 'success', 'primary'] | None = None,
         row: bool = False,
     ) -> Button | list[Button]:
         btn = Button(
             button_id=button_id,
-            obj=InlineKeyboardButton(text=text, url=url),
+            obj=InlineKeyboardButton(text=text, url=url, style=style),
         )
         if row:
             return [btn]
@@ -105,11 +123,23 @@ class KeyboardBuilder:
     def add_button(self, button: Button) -> None:
         self.keyboard.append([button])
 
-    def add_callback_button(self, button_id: str, text: str, callback_data: str) -> None:
-        self.add_button(Button.callback_button(button_id, text, callback_data))
+    def add_callback_button(
+        self,
+        button_id: str,
+        text: str,
+        callback_data: str,
+        style: Literal['danger', 'success', 'primary'] | None = None,
+    ) -> None:
+        self.add_button(Button.callback_button(button_id, text, callback_data, style=style))
 
-    def add_url_button(self, button_id: str, text: str, url: str) -> None:
-        self.add_button(Button.url_button(button_id, text, url))
+    def add_url_button(
+        self,
+        button_id: str,
+        text: str,
+        url: str,
+        style: Literal['danger', 'success', 'primary'] | None = None,
+    ) -> None:
+        self.add_button(Button.url_button(button_id, text, url, style=style))
 
     @overload
     def __getitem__(self, index: int) -> list[Button]: ...

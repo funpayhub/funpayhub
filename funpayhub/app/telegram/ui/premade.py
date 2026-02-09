@@ -43,6 +43,7 @@ class AddRemoveButtonBaseModification(
                     data={**ctx.data, key: True},
                     history=ctx.callback_data.history if ctx.callback_data is not None else [],
                 ).pack(),
+                style='danger',
             )
         else:
             menu.footer_keyboard.add_row(
@@ -50,6 +51,7 @@ class AddRemoveButtonBaseModification(
                     button_id='confirm_delete',
                     text=translater.translate('$delete'),
                     callback_data=delete_callback,
+                    style='danger',
                 ),
                 Button.callback_button(
                     button_id='cancel_delete',
