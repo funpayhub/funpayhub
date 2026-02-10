@@ -19,7 +19,8 @@ from loggers import (
     plugins as plugins_logger,
 )
 
-from funpayhub.lib.plugins import PluginManager, RepositoriesManager
+from funpayhub.lib.plugins import PluginManager
+from ..plugins.repository.manager import RepositoriesManager
 from funpayhub.lib.exceptions import GoodsError
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager

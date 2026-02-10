@@ -4,23 +4,16 @@ from __future__ import annotations
 __all__ = [
     'PluginManifest',
     'LoadedPlugin',
-    'RepoPluginInfo',
-    'RepoSpecificPluginVersionInfo',
-    'PluginsRepository',
 ]
 
 
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Self
 from dataclasses import dataclass
 from pathlib import Path
 
-from aiohttp import ClientSession
 from pydantic import Field, BaseModel, field_validator, model_validator
 from packaging.version import Version
 from packaging.specifiers import SpecifierSet
-
-from funpayhub.lib.exceptions import PluginRepositoryLoadingError
-
 
 if TYPE_CHECKING:
     from funpayhub.lib.properties import Properties
@@ -102,67 +95,3 @@ class LoadedPlugin[PluginCLS]:
     plugin: PluginCLS | None
     properties: Properties | None = None
     error: Exception | None = None
-
-
-class RepoSpecificPluginVersionInfo(BaseModel):
-    model_config = {
-        'arbitrary_types_allowed': True,
-        'extra': 'allow',
-    }
-
-    app_version: SpecifierSet
-    url: str
-    change_log: str = ''
-
-    @field_validator('app_version', mode='before')
-    @classmethod
-    def convert_hub_version(cls, value: str | SpecifierSet) -> SpecifierSet:
-        if isinstance(value, str):
-            value = SpecifierSet(value)
-        return value
-
-
-class RepoPluginInfo(_WithDescription):
-    model_config = {
-        'arbitrary_types_allowed': True,
-        'extra': 'allow',
-    }
-
-    name: str
-    description: str
-    versions: dict[Version, RepoSpecificPluginVersionInfo]
-    more_versions: str = ''
-
-    @field_validator('versions', mode='before')
-    @classmethod
-    def convert_to_version(cls, value: dict[str | Version, Any]) -> dict[Version, Any]:
-        return {Version(k) if not isinstance(k, Version) else k: v for k, v in value.items()}
-
-
-class PluginsRepository(_WithDescription):
-    model_config = {
-        'arbitrary_types_allowed': True,
-        'extra': 'allow',
-    }
-
-    version: int = 1
-    id: str
-    url: str
-    name: str
-    description: str
-    plugins: dict[str, RepoPluginInfo]
-
-    # На данный момент не планируется каких-либо других лоадеров, потому
-    # какого-то отдельного RepositoryLoader'а нет.
-    # Если появится надобность, будет создан, а from_url и другие конструкторы будут оставлены
-    # в качестве шорткатов, которые будут вызывать эти лоадеры.
-    @classmethod
-    async def from_url(cls, url: str, headers: dict[str, str] | None = None) -> Self:
-        try:
-            async with ClientSession(headers=headers) as session:
-                async with session.get(url) as resp:
-                    result = await resp.json()
-
-            return cls.model_validate(result)
-        except Exception as e:
-            raise PluginRepositoryLoadingError from e

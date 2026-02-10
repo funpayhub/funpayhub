@@ -10,7 +10,8 @@ from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.lib.goods_sources import GoodsSourcesManager
 from funpayhub.lib.workflow_data import WorkflowData as BaseWorkflowData
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
-from funpayhub.lib.plugins import PluginManager, RepositoriesManager
+from funpayhub.lib.plugins import PluginManager
+from ..plugins.repository.manager import RepositoriesManager
 
 from .telegram import TelegramApp
 
