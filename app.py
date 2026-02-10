@@ -16,7 +16,6 @@ from pathlib import Path
 from logging.config import dictConfig
 
 import colorama
-from load_dotenv import load_dotenv
 
 from logger_conf import (
     HubLogMessage,
@@ -99,9 +98,6 @@ colorama.just_fix_windows_console()
 # ---------------------------------------------
 # |                 App start                 |
 # ---------------------------------------------
-load_dotenv()
-
-
 async def main() -> None:
     props = FunPayHubProperties()
     await props.load()
