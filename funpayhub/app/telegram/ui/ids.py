@@ -27,6 +27,10 @@ class MenuIds(BaseMenuIds):
     plugin_info = 'fph:plugin_info'
     install_plugin = 'fph:install_plugin'
 
+    repositories_list = 'fph:repositories_list'
+    repository_info = 'fph:repository_info'
+    repo_plugin_info = 'fph:repo_plugin_info'
+
     goods_sources_list = 'fph:goods_sources_list'
     goods_source_info = 'fph:goods_source_info'
     autodelivery_goods_sources_list = 'fph:autodelivery_goods_sources_list'

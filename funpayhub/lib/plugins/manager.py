@@ -9,6 +9,7 @@ import asyncio
 import keyword
 import importlib
 from typing import Any
+from copy import copy
 from types import MappingProxyType
 from pathlib import Path
 from collections.abc import Callable, Awaitable
@@ -358,3 +359,7 @@ class RepositoriesManager:
 
     def _repository_file_path(self, repository_id: str) -> Path:
         return self._repositories_path / (repository_id + '.json')
+
+    @property
+    def repositories(self) -> dict[str, PluginsRepository]:
+        return copy(self._repositories)

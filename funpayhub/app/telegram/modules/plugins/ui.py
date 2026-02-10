@@ -5,9 +5,11 @@ __all__ = [
     'PluginMenuContext',
     'PluginsListMenuBuilder',
     'PluginInfoMenuBuilder',
+    'ReposListMenuBuilder',
+    'RepoInfoMenuBuilder',
 ]
 
-
+import html
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
 from html import escape
@@ -29,15 +31,28 @@ from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.plugins import PluginManager
+    from funpayhub.lib.plugins import PluginManager, RepositoriesManager
     from funpayhub.lib.translater import Translater as Tr
 
+    from funpayhub.app.main import FunPayHub
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
 
 
 @dataclass(kw_only=True)
 class PluginMenuContext(MenuCtx):
     plugin_id: str
+
+
+@dataclass(kw_only=True)
+class RepoInfoMenuContext(MenuCtx):
+    repo_id: str
+
+
+@dataclass(kw_only=True)
+class RepoPluginInfoMenuContext(MenuCtx):
+    repo_id: str
+    plugin_id: str
+    version: str | None = None
 
 
 class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_type=MenuCtx):
@@ -65,6 +80,15 @@ class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_
             text=translater.translate('$install_plugin'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.install_plugin,
+                from_callback=ctx.callback_data,
+            ).pack(),
+        )
+
+        footer_keyboard.add_callback_button(
+            button_id='open_repositories',
+            text=translater.translate('$open_repositories'),
+            callback_data=OpenMenu(
+                menu_id=MenuIds.repositories_list,
                 from_callback=ctx.callback_data,
             ).pack(),
         )
@@ -197,3 +221,106 @@ class InstallPluginMenuBuilder(MenuBuilder, menu_id=MenuIds.install_plugin, cont
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )
+
+
+class ReposListMenuBuilder(MenuBuilder, menu_id=MenuIds.repositories_list, context_type=MenuCtx):
+    async def build(
+        self,
+        ctx: MenuCtx,
+        repositories_manager: RepositoriesManager,
+        translater: Tr,
+    ) -> Menu:
+        menu = Menu(finalizer=StripAndNavigationFinalizer())
+
+        for repo_id, repo in repositories_manager.repositories.items():
+            menu.main_keyboard.add_callback_button(
+                button_id=f'open_repository:{repo_id}',
+                text=html.escape(repo.name),
+                callback_data=OpenMenu(
+                    menu_id=MenuIds.repository_info,
+                    context_data={'repo_id': repo_id},
+                    from_callback=ctx.callback_data,
+                ).pack(),
+            )
+
+        menu.footer_keyboard.add_callback_button(
+            button_id='add_repository',
+            text=translater.translate('$add_repository'),
+            callback_data='dummy',
+        )
+
+        menu.main_text = translater.translate('$repositories_list_menu_text')
+
+        return menu
+
+
+class RepoInfoMenuBuilder(
+    MenuBuilder, menu_id=MenuIds.repository_info, context_type=RepoInfoMenuContext
+):
+    async def build(
+        self,
+        ctx: RepoInfoMenuContext,
+        repositories_manager: RepositoriesManager,
+        translater: Tr,
+    ) -> Menu:
+        menu = Menu(finalizer=StripAndNavigationFinalizer())
+
+        repo = repositories_manager.repositories[ctx.repo_id]
+        for plugin_id, plugin in repo.plugins.items():
+            menu.main_keyboard.add_callback_button(
+                button_id=f'open_plugin_info:{plugin_id}',
+                text=html.escape(plugin.name),
+                callback_data=OpenMenu(
+                    menu_id=MenuIds.repo_plugin_info,
+                    context_data={'repo_id': ctx.repo_id, 'plugin_id': plugin_id},
+                    from_callback=ctx.callback_data,
+                ).pack(),
+            )
+
+        menu.header_text = f'<b><u>{html.escape(repo.name)}</u></b>'
+        menu.main_text = html.escape(repo.get_description(translater.current_language))
+        return menu
+
+
+class RepoPluginInfoMenuBuilder(
+    MenuBuilder, menu_id=MenuIds.repo_plugin_info, context_type=RepoPluginInfoMenuContext
+):
+    async def build(
+        self,
+        ctx: RepoPluginInfoMenuContext,
+        repositories_manager: RepositoriesManager,
+        translater: Tr,
+        hub: FunPayHub,
+    ) -> Menu:
+        menu = Menu(finalizer=StripAndNavigationFinalizer())
+
+        repo = repositories_manager.repositories[ctx.repo_id]
+        plugin = repo.plugins[ctx.plugin_id]
+
+        menu.header_text = f'<b><u>{html.escape(plugin.name)}</u></b>'
+        menu.main_text = html.escape(plugin.get_description(translater.current_language))
+
+        for v, info in plugin.versions.items():
+            if hub.version not in info.app_version:
+                continue
+
+            menu.main_keyboard.add_row(
+                Button.callback_button(
+                    button_id=f'install_version:{v}',
+                    text=translater.translate('$install') + f' v{v}',
+                    callback_data='dummy',
+                ),
+                Button.callback_button(
+                    button_id=f'change_log:{v}',
+                    text=translater.translate('$change_log'),
+                    callback_data='dummy',
+                ),
+            )
+
+        menu.footer_keyboard.add_callback_button(
+            button_id='install_latest_version',
+            text=translater.translate('$install_latest_version'),
+            callback_data='dummy',
+        )
+
+        return menu

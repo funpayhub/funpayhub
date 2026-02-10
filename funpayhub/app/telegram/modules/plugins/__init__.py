@@ -7,11 +7,22 @@ __all__ = [
 ]
 
 
-from .ui import PluginInfoMenuBuilder, PluginsListMenuBuilder
+from .ui import (
+    RepoInfoMenuBuilder,
+    ReposListMenuBuilder,
+    PluginInfoMenuBuilder,
+    PluginsListMenuBuilder,
+    InstallPluginMenuBuilder,
+    RepoPluginInfoMenuBuilder,
+)
 from .router import router
 
 
 MENUS = [
     PluginsListMenuBuilder,
     PluginInfoMenuBuilder,
+    ReposListMenuBuilder,
+    RepoInfoMenuBuilder,
+    RepoPluginInfoMenuBuilder,
+    InstallPluginMenuBuilder,
 ]
