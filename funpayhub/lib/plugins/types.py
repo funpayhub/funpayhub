@@ -4,10 +4,13 @@ from __future__ import annotations
 __all__ = [
     'PluginManifest',
     'LoadedPlugin',
+    'RepoPluginInfo',
+    'RepoSpecificPluginVersionInfo',
+    'PluginsRepository'
 ]
 
 
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Self, Any
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -20,38 +23,8 @@ if TYPE_CHECKING:
     from funpayhub.lib.properties import Properties
 
 
-class PluginManifest(BaseModel):
-    model_config = {
-        'extra': 'allow',
-        'frozen': True,
-        'arbitrary_types_allowed': True,
-    }
-
-    manifest: int
-    plugin_version: Version
-    app_version: SpecifierSet
-    plugin_id: str
-    name: str
-    repo: str | None = Field(default=None)
+class _WithDescription(BaseModel):
     description: str = Field(default='')
-    entry_point: str = Field(pattern=r'^([a-zA-Z_][a-zA-Z0-9_]*\.)+[a-zA-Z_][a-zA-Z0-9_]*$')
-    author: PluginAuthor | None = Field(default=None)
-    dependencies: list[str] = Field(default_factory=list)
-    locales_path: str | None = None
-
-    @field_validator('plugin_version', mode='before')
-    @classmethod
-    def convert_version(cls, value: str | Version) -> Version:
-        if isinstance(value, str):
-            value = Version(value)
-        return value
-
-    @field_validator('app_version', mode='before')
-    @classmethod
-    def convert_hub_version(cls, value: str | SpecifierSet) -> SpecifierSet:
-        if isinstance(value, str):
-            value = SpecifierSet(value)
-        return value
 
     @model_validator(mode='after')
     def check_dependencies(self) -> Self:
@@ -74,6 +47,39 @@ class PluginManifest(BaseModel):
         return self.description
 
 
+class PluginManifest(_WithDescription):
+    model_config = {
+        'extra': 'allow',
+        'frozen': True,
+        'arbitrary_types_allowed': True,
+    }
+
+    manifest: int
+    plugin_version: Version
+    app_version: SpecifierSet
+    plugin_id: str
+    name: str
+    repo: str | None = Field(default=None)
+    entry_point: str = Field(pattern=r'^([a-zA-Z_][a-zA-Z0-9_]*\.)+[a-zA-Z_][a-zA-Z0-9_]*$')
+    author: PluginAuthor | None = Field(default=None)
+    dependencies: list[str] = Field(default_factory=list)
+    locales_path: str | None = None
+
+    @field_validator('plugin_version', mode='before')
+    @classmethod
+    def convert_version(cls, value: str | Version) -> Version:
+        if isinstance(value, str):
+            value = Version(value)
+        return value
+
+    @field_validator('app_version', mode='before')
+    @classmethod
+    def convert_hub_version(cls, value: str | SpecifierSet) -> SpecifierSet:
+        if isinstance(value, str):
+            value = SpecifierSet(value)
+        return value
+
+
 class PluginAuthor(BaseModel):
     model_config = {
         'extra': 'allow',
@@ -93,3 +99,37 @@ class LoadedPlugin[PluginCLS]:
     plugin: PluginCLS | None
     properties: Properties | None = None
     error: Exception | None = None
+
+
+class RepoSpecificPluginVersionInfo(BaseModel):
+    app_version: SpecifierSet
+    url: str
+    change_log: str = ''
+
+    @field_validator('app_version', mode='before')
+    @classmethod
+    def convert_hub_version(cls, value: str | SpecifierSet) -> SpecifierSet:
+        if isinstance(value, str):
+            value = SpecifierSet(value)
+        return value
+
+
+class RepoPluginInfo(_WithDescription):
+    name: str
+    description: str
+    versions: dict[Version, RepoSpecificPluginVersionInfo]
+    more_versions: str = ''
+
+    @field_validator('versions', mode='before')
+    @classmethod
+    def convert_to_version(cls, value: dict[str | Version, Any]) -> dict[Version, Any]:
+        return {Version(k) if not isinstance(k, Version) else k: v for k, v in value.items()}
+
+
+class PluginsRepository(_WithDescription):
+    version: int = 1
+    url: str
+    name: str
+    description: str
+    plugins: dict[str, str]
+
