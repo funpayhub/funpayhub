@@ -19,7 +19,7 @@ from loggers import plugins as logger
 
 from .types import LoadedPlugin, PluginManifest
 from .installers import PluginInstaller
-from ..exceptions import TranslatableException
+from funpayhub.lib.exceptions import PluginInstantiationError
 
 
 type RESOLVABLE = LoadedPlugin | PluginManifest | str
@@ -93,21 +93,23 @@ class PluginManager[PluginCLS]:
         return plugin not in self.disabled_plugins
 
     async def load_plugins(self) -> None:
+        logger.info('Loading plugins...')
         for i in self._plugins_path.iterdir():
+            logger.debug('Checking %s...', str(i))
             if not i.is_dir():
                 logger.debug('Ignoring %s: not a directory.', str(i))
                 continue
             self.load_plugin(i)
 
     def load_plugin(self, plugin_path: str | Path, instantiate: bool = True) -> None:
-        logger.info('Loading plugin %s.', str(plugin_path))
+        logger.info('Loading plugin %s...', str(plugin_path))
 
         module_name = Path(plugin_path).name
         if not module_name.isidentifier() or keyword.iskeyword(module_name):
             logger.warning('Ignoring %s: not a valid plugin directory.', str(plugin_path))
             return
 
-        logger.info('Loading manifest for %s.', str(plugin_path))
+        logger.info('Loading plugin manifest from %s.', str(plugin_path))
         try:
             manifest = self._load_plugin_manifest(plugin_path)
         except:
@@ -119,43 +121,48 @@ class PluginManager[PluginCLS]:
             return
 
         if manifest.plugin_id in self._plugins:
-            logger.warning('Plugin %s is already loaded. Skipping.', manifest.plugin_id)
+            logger.warning('Plugin %s already loaded. Skipping.', manifest.plugin_id)
             return
 
-        exception: Exception | None = None
+        exception: PluginInstantiationError | None = None
 
         if not instantiate:
-            exception = TranslatableException('Instantiation for this plugin disabled.')
+            exception = PluginInstantiationError('Instantiation for this plugin disabled.')
         if self._safe_mode:
-            exception = TranslatableException('Safe mode enabled.')
+            exception = PluginInstantiationError('Safe mode enabled.')
         elif self._app_version not in manifest.app_version:
-            exception = TranslatableException(
-                'App version mismatch. Expected: %s. Current: %s.',
+            exception = PluginInstantiationError(
+                'App version mismatch. Plugin requires: %s. Current: %s.',
                 manifest.app_version,
                 self._app_version,
             )
         elif not self.is_enabled(manifest.plugin_id):
-            exception = TranslatableException('Plugin %s is disabled.', manifest.plugin_id)
+            exception = PluginInstantiationError('Plugin disabled.', manifest.plugin_id)
 
         plugin_instance = None
         if exception is not None:
-            if isinstance(exception, TranslatableException):
-                logger.error(exception.message, *exception.args)
-            else:
-                logger.error('An error occurred while loading plugin %s.', exc_info=True)
+            logger.error(exception.message, *exception.args)
 
         else:
             logger.info('Loading entry point %s of %s.', manifest.entry_point, manifest.plugin_id)
             try:
                 plugin_instance = self._load_entry_point(plugin_path, manifest)
             except Exception as e:
-                logger.error(
-                    'An error occurred while loading entry point %s of %s.',
-                    manifest.entry_point,
-                    manifest.plugin_id,
-                    exc_info=True,
-                )
-                exception = e
+                if isinstance(e, PluginInstantiationError):
+                    logger.error(e.message, *e.args)
+                    exception = e
+                else:
+                    logger.error(
+                        'An error occurred while loading entry point %s of %s.',
+                        manifest.entry_point,
+                        manifest.plugin_id,
+                        exc_info=True,
+                    )
+                    exception = PluginInstantiationError(
+                        f'An unexpected error occurred while instantiating plugin %s. See logs.',
+                        manifest.plugin_id,
+                    )
+                    exception.__cause__ = e
 
         plugin = LoadedPlugin(
             path=Path(plugin_path),
@@ -208,14 +215,14 @@ class PluginManager[PluginCLS]:
         plugin_class: type[PluginCLS] | None = getattr(module, class_name, None)
 
         if plugin_class is None:
-            raise TranslatableException(
+            raise PluginInstantiationError(
                 'Unable to find entry point %s of %s.',
                 manifest.entry_point,
                 manifest.plugin_id,
             )
 
         if not issubclass(plugin_class, self._plugin_cls):
-            raise TranslatableException(
+            raise PluginInstantiationError(
                 'Entry point of plugin must be a subclass of %s, not %s.',
                 self._plugin_cls.__name__,
                 plugin_class.__name__,
