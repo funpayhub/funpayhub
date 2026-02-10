@@ -74,9 +74,9 @@ async def send_new_message_notification(
 
         if fp.is_manual_message(i.message.id) and not appearance_props.show_mine_from_hub.value:
             continue
-        elif await i.message.is_sent_by_bot() and not appearance_props.show_automatic.value:
+        if await i.message.is_sent_by_bot() and not appearance_props.show_automatic.value:
             continue
-        elif i.message.from_me and not appearance_props.show_mine.value:
+        if i.message.from_me and not appearance_props.show_mine.value:
             continue
         msgs.append(i.message)
 

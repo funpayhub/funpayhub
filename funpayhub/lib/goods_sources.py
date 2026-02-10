@@ -7,7 +7,7 @@ from asyncio import Lock
 from pathlib import Path
 from collections.abc import Iterator, KeysView, Sequence, ValuesView
 
-from funpayhub.lib.exceptions import NotEnoughGoodsError, GoodsSourceNotFoundError, GoodsError
+from funpayhub.lib.exceptions import GoodsError, NotEnoughGoodsError, GoodsSourceNotFoundError
 
 
 class GoodsSource(ABC):
@@ -331,7 +331,7 @@ class GoodsSourcesManager:
             except GoodsError:
                 raise
             except Exception as e:
-                raise GoodsError(f'Unable to add goods to %s.', source_id) from e
+                raise GoodsError('Unable to add goods to %s.', source_id) from e
 
     def __len__(self) -> int:
         return len(self._sources)

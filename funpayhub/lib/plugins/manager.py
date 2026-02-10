@@ -17,9 +17,10 @@ from packaging.version import Version
 
 from loggers import plugins as logger
 
+from funpayhub.lib.exceptions import PluginInstantiationError
+
 from .types import LoadedPlugin, PluginManifest
 from .installers import PluginInstaller
-from funpayhub.lib.exceptions import PluginInstantiationError
 
 
 type RESOLVABLE = LoadedPlugin | PluginManifest | str
@@ -159,7 +160,7 @@ class PluginManager[PluginCLS]:
                         exc_info=True,
                     )
                     exception = PluginInstantiationError(
-                        f'An unexpected error occurred while instantiating plugin %s. See logs.',
+                        'An unexpected error occurred while instantiating plugin %s. See logs.',
                         manifest.plugin_id,
                     )
                     exception.__cause__ = e

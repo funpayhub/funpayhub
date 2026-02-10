@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 from typing import TYPE_CHECKING, Any, Type, Literal, overload
 from dataclasses import field, fields, dataclass
-from collections.abc import Iterable, Iterator, Mapping, KeysView
+from collections.abc import Mapping, Iterable, Iterator, KeysView
 
 from aiogram.types import (
     Message,
@@ -247,7 +247,7 @@ class Menu(Mapping):
     def __getitem__(self, item: str) -> Any:
         if item == 'reply_markup':
             return self.total_keyboard(convert=True)
-        elif item == 'text':
+        if item == 'text':
             return self.total_text
         raise KeyError(item)
 

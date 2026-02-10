@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from typing import TYPE_CHECKING, Any
+from contextlib import suppress
 
 from funpaybotengine import Router
 from funpaybotengine.dispatching.filters import all_of
@@ -14,13 +15,13 @@ from funpayhub.app.formatters import GoodsFormatter, NewOrderContext
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.notification_channels import NotificationChannels
 from funpayhub.app.telegram.modules.autodelivery.ui import NewSaleMenuContext
-from contextlib import suppress
 
 
 if TYPE_CHECKING:
     from funpaybotengine.types import OrderPreview
     from funpaybotengine.dispatching.events import NewSaleEvent
 
+    from funpayhub.lib.translater import Translater
     from funpayhub.lib.telegram.ui import UIRegistry
     from funpayhub.lib.goods_sources import GoodsSourcesManager
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
@@ -29,17 +30,18 @@ if TYPE_CHECKING:
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
     from funpayhub.app.telegram.main import Telegram
     from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
-    from funpayhub.lib.translater import Translater
 
 
 router = Router(name='fph:on_new_sale')
 
 
 PCS_RE = re.compile(r'(?:^|, )(\d+) (?:шт|pcs)\.(?:,|$)')
-ERR_TEXT = f'❌ Не удалось выдать товары по заказу '\
-           f'<b><i><a href=https://funpay.com/orders/{{order_id}}/>#{{order_id}}</a></i></b>.\n\n'\
-           f'<b>{{order_title}}</b>\n\n'\
-           f'<b><i>Причина: {{reason}}</i></b>'
+ERR_TEXT = (
+    '❌ Не удалось выдать товары по заказу '
+    '<b><i><a href=https://funpay.com/orders/{order_id}/>#{order_id}</a></i></b>.\n\n'
+    '<b>{order_title}</b>\n\n'
+    '<b><i>Причина: {reason}</i></b>'
+)
 
 
 def _offer_name_re_factory(name: str) -> re.Pattern[str]:
@@ -145,7 +147,7 @@ async def deliver_goods(
     fp_formatters: FormattersRegistry,
     hub: FunPayHub,
     tg: Telegram,
-    translater: Translater
+    translater: Translater,
 ):
     order = await event.get_order_preview()
 
@@ -161,13 +163,13 @@ async def deliver_goods(
             logger.error(
                 'Произошла непредвиденная ошибка при выдаче товаров по заказу %s.',
                 order.id,
-                exc_info=True
+                exc_info=True,
             )
 
         error_text = ERR_TEXT.format(
             order_id=order.id,
             order_title=order.title,
-            reason=reason
+            reason=reason,
         )
 
         tg.send_notification(NotificationChannels.ERROR, error_text)

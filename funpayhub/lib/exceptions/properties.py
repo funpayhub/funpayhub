@@ -1,16 +1,22 @@
+from __future__ import annotations
+
+
 __all__ = [
     'PropertiesError',
     'ValidationError',
-    'ConvertionError'
+    'ConvertionError',
 ]
 
 from .base import FunPayHubError
 
 
-class PropertiesError(FunPayHubError): pass
+class PropertiesError(FunPayHubError):
+    pass
 
 
-class ValidationError(PropertiesError): pass
+class ValidationError(PropertiesError):
+    pass
 
 
-class ConvertionError(PropertiesError): pass
+class ConvertionError(PropertiesError):
+    pass

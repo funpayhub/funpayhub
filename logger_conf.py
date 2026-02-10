@@ -11,7 +11,6 @@ from colorama import Back, Fore, Style
 
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater
-    from funpayhub.app.plugins import Plugin
 
 
 COLORS = {

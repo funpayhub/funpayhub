@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
 import logging
+from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
@@ -41,7 +41,7 @@ class Plugin:
 
         logger_class = logging.getLoggerClass()
         logging.setLoggerClass(PluginLogger)
-        self._logger = logging.getLogger(f'funpayhub.{manifest.plugin_id.replace('.', '_')}')
+        self._logger = logging.getLogger(f'funpayhub.{manifest.plugin_id.replace(".", "_")}')
         self._logger.plugin = self
         logging.setLoggerClass(logger_class)
 

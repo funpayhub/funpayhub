@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 __all__ = [
     'GoodsError',
     'NotEnoughGoodsError',
@@ -7,6 +8,7 @@ __all__ = [
 ]
 
 from typing import TYPE_CHECKING
+
 from .base import FunPayHubError
 
 
@@ -23,7 +25,7 @@ class NotEnoughGoodsError(GoodsError):
             'Not enough goods in source %s. Available amount: %d. Requested: %d.',
             source.source_id,
             len(source),
-            requested
+            requested,
         )
         self._source = source
         self._requested = requested

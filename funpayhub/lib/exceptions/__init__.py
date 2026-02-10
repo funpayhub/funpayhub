@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 __all__ = [
     'TranslatableException',
     'FunPayHubError',
@@ -9,11 +12,11 @@ __all__ = [
     'ConvertionError',
     'PluginError',
     'PluginInstallationError',
-    'PluginInstantiationError'
+    'PluginInstantiationError',
 ]
 
 
-from .base import TranslatableException, FunPayHubError
-from .goods import GoodsError, GoodsSourceNotFoundError, NotEnoughGoodsError
-from .properties import PropertiesError, ValidationError, ConvertionError
+from .base import FunPayHubError, TranslatableException
+from .goods import GoodsError, NotEnoughGoodsError, GoodsSourceNotFoundError
 from .plugins import PluginError, PluginInstallationError, PluginInstantiationError
+from .properties import ConvertionError, PropertiesError, ValidationError

@@ -1,16 +1,22 @@
+from __future__ import annotations
+
+
 __all__ = [
     'PluginError',
     'PluginInstallationError',
-    'PluginInstantiationError'
+    'PluginInstantiationError',
 ]
 
 from .base import FunPayHubError
 
 
-class PluginError(FunPayHubError): pass
+class PluginError(FunPayHubError):
+    pass
 
 
-class PluginInstallationError(PluginError): pass
+class PluginInstallationError(PluginError):
+    pass
 
 
-class PluginInstantiationError(PluginError): pass
+class PluginInstantiationError(PluginError):
+    pass

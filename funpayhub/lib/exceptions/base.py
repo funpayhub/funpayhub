@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+
 __all__ = [
     'TranslatableException',
-    'FunPayHubError'
+    'FunPayHubError',
 ]
 
 from typing import Any
+
 
 class _SafeTuple(tuple[Any, ...]):
     def __getitem__(self, index: int) -> Any:
@@ -29,4 +33,3 @@ class TranslatableException(Exception):
 
 class FunPayHubError(TranslatableException):
     pass
-

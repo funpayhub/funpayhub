@@ -174,7 +174,11 @@ class MeFormatter(
     context_type=FormattersContext,
 ):
     def __init__(
-        self, context: FormattersContext, mode: str = 'username', *args, **kwargs
+        self,
+        context: FormattersContext,
+        mode: str = 'username',
+        *args,
+        **kwargs,
     ) -> None:
         super().__init__(context)
         self.mode = mode
