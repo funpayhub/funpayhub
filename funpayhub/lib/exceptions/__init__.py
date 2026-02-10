@@ -13,10 +13,22 @@ __all__ = [
     'PluginError',
     'PluginInstallationError',
     'PluginInstantiationError',
+    'PluginRepositoryError',
+    'PluginRepositoryAlreadyExist',
+    'InvalidPluginRepositoryError',
+    'SaveRepositoryError',
 ]
 
 
 from .base import FunPayHubError, TranslatableException
 from .goods import GoodsError, NotEnoughGoodsError, GoodsSourceNotFoundError
-from .plugins import PluginError, PluginInstallationError, PluginInstantiationError
+from .plugins import (
+    PluginError,
+    SaveRepositoryError,
+    PluginRepositoryError,
+    PluginInstallationError,
+    PluginInstantiationError,
+    InvalidPluginRepositoryError,
+    PluginRepositoryAlreadyExist,
+)
 from .properties import ConvertionError, PropertiesError, ValidationError

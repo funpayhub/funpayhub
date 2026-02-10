@@ -6,11 +6,11 @@ __all__ = [
     'LoadedPlugin',
     'RepoPluginInfo',
     'RepoSpecificPluginVersionInfo',
-    'PluginsRepository'
+    'PluginsRepository',
 ]
 
 
-from typing import TYPE_CHECKING, Self, Any
+from typing import TYPE_CHECKING, Any, Self
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -128,8 +128,8 @@ class RepoPluginInfo(_WithDescription):
 
 class PluginsRepository(_WithDescription):
     version: int = 1
+    id: str
     url: str
     name: str
     description: str
     plugins: dict[str, str]
-

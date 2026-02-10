@@ -13,13 +13,19 @@ from types import MappingProxyType
 from pathlib import Path
 from collections.abc import Callable, Awaitable
 
+from pydantic.errors import PydanticErrorMixin
 from packaging.version import Version
 
 from loggers import plugins as logger
 
-from funpayhub.lib.exceptions import PluginInstantiationError
+from funpayhub.lib.exceptions import (
+    SaveRepositoryError,
+    PluginInstantiationError,
+    InvalidPluginRepositoryError,
+    PluginRepositoryAlreadyExist,
+)
 
-from .types import LoadedPlugin, PluginManifest
+from .types import LoadedPlugin, PluginManifest, PluginsRepository
 from .installers import PluginInstaller
 
 
@@ -250,3 +256,32 @@ class PluginManager[PluginCLS]:
     @property
     def steps(self) -> MappingProxyType[str, STEP]:
         return MappingProxyType(self._steps)
+
+
+class RepositoryManager:
+    def __init__(self, repositories_path: str | Path) -> None:
+        self._repositories_path = Path(repositories_path)
+        self._repositories: dict[str, PluginsRepository] = {}
+
+    def load_repository(self, repository: dict[str, Any] | PluginsRepository) -> None:
+        if not isinstance(repository, PluginsRepository):
+            try:
+                repository = PluginsRepository.model_validate(repository)
+            except PydanticErrorMixin:
+                raise InvalidPluginRepositoryError()
+
+        if repository.id in self._repositories:
+            raise PluginRepositoryAlreadyExist(repository.id)
+
+        self._repositories[repository.id] = repository
+
+    def _save_repository(self, repository: PluginsRepository, path: Path) -> None:
+        with path.open('w', encoding='utf-8') as f:
+            f.write(repository.to_json())
+
+    def save_repository(self, repository: PluginsRepository) -> None:
+        save_path = self._repositories_path / (repository.id + '.json')
+        try:
+            self._save_repository(repository, save_path)
+        except:
+            raise SaveRepositoryError(repository.id, save_path)
