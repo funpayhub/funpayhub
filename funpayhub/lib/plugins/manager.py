@@ -13,16 +13,18 @@ from types import MappingProxyType
 from pathlib import Path
 from collections.abc import Callable, Awaitable
 
-from pydantic.errors import PydanticErrorMixin
+from pydantic import ValidationError
 from packaging.version import Version
 
 from loggers import plugins as logger
 
 from funpayhub.lib.exceptions import (
     SaveRepositoryError,
+    RemoveRepositoryError,
+    TranslatableException,
     PluginInstantiationError,
     InvalidPluginRepositoryError,
-    PluginRepositoryAlreadyExist, RemoveRepositoryError, TranslatableException,
+    PluginRepositoryAlreadyExist,
 )
 
 from .types import LoadedPlugin, PluginManifest, PluginsRepository
@@ -268,13 +270,13 @@ class RepositoriesManager:
         self,
         repository: dict[str, Any],
         register: bool = True,
-        save: bool = False
+        save: bool = False,
     ) -> PluginsRepository:
         if not isinstance(repository, PluginsRepository):
             try:
                 repository = PluginsRepository.model_validate(repository)
-            except PydanticErrorMixin:
-                raise InvalidPluginRepositoryError()
+            except ValidationError as e:
+                raise InvalidPluginRepositoryError() from e
 
         if save:
             if repository.id in self._repositories:
@@ -300,30 +302,38 @@ class RepositoriesManager:
         logger.info('Loading plugins repositories from %s...', str(self._repositories_path))
         if not self._repositories_path.exists():
             return
-        if not self._repositories_path.is_file():
+        if self._repositories_path.is_file():
             return
 
         for i in self._repositories_path.iterdir():
             if i.is_dir():
-                logger.debug(f'%s is a directory. Skipping.', str(i))
+                logger.debug('%s is a directory. Skipping.', str(i))
                 continue
             if not i.suffix == '.json':
-                logger.debug(f'%s is not a JSON file. Skipping.', str(i))
+                logger.warning('%s is not a JSON file. Skipping.', str(i))
                 continue
 
             logger.info('Loading plugins repository from %s...', str(i))
             try:
                 with i.open('r', encoding='utf-8') as f:
                     data = json.load(f)
-                    self.load_repository(data, save=False, register=True)
+                    repo = self.load_repository(data, save=False, register=False)
+                    if repo.id != i.stem:
+                        logger.warning(
+                            'Repository ID %s does not match repo file %s. Skipping.',
+                            repo.id,
+                            i.name,
+                        )
+                        continue
+                    self.register_repository(repo)
             except Exception as e:
                 if isinstance(e, TranslatableException):
                     logger.error(e.message, *e.args, exc_info=True)
                 else:
-                    logger.errror(
+                    logger.error(
                         'An error occurred while loading plugin repository from %s.',
                         str(i),
-                        exc_info=True
+                        exc_info=True,
                     )
 
     def save_repository(self, repository: PluginsRepository) -> None:

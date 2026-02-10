@@ -147,4 +147,4 @@ class PluginsRepository(_WithDescription):
     url: str
     name: str
     description: str
-    plugins: dict[str, str]
+    plugins: dict[str, RepoPluginInfo]
