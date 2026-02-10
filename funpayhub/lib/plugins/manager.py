@@ -272,6 +272,7 @@ class RepositoriesManager:
         repository: dict[str, Any],
         register: bool = True,
         save: bool = False,
+        overwrite: bool = False,
     ) -> PluginsRepository:
         if not isinstance(repository, PluginsRepository):
             try:
@@ -280,17 +281,17 @@ class RepositoriesManager:
                 raise InvalidPluginRepositoryError() from e
 
         if save:
-            if repository.id in self._repositories:
+            if repository.id in self._repositories and not overwrite:
                 raise PluginRepositoryAlreadyExist(repository.id)
             self.save_repository(repository)
 
         if register:
-            self.register_repository(repository)
+            self.register_repository(repository, overwrite=overwrite)
 
         return repository
 
-    def register_repository(self, repository: PluginsRepository) -> None:
-        if repository.id in self._repositories:
+    def register_repository(self, repository: PluginsRepository, overwrite: bool = False) -> None:
+        if repository.id in self._repositories and not overwrite:
             raise PluginRepositoryAlreadyExist(repository.id)
         self._repositories[repository.id] = repository
 
