@@ -7,7 +7,7 @@ from asyncio import Lock
 from pathlib import Path
 from collections.abc import Iterator, KeysView, Sequence, ValuesView
 
-from funpayhub.lib.exceptions import NotEnoughGoodsError
+from funpayhub.lib.exceptions import NotEnoughGoodsError, GoodsSourceNotFoundError, GoodsError
 
 
 class GoodsSource(ABC):
@@ -299,21 +299,39 @@ class GoodsSourcesManager:
     async def pop_goods(self, source_id: str, amount: int) -> list[str]:
         source = self.get(source_id)
         if source is None:
-            raise KeyError(f'Source {source_id} does not exist.')
-        return await source.pop_goods(amount)
+            raise GoodsSourceNotFoundError(source_id)
+
+        try:
+            return await source.pop_goods(amount)
+        except GoodsError:
+            raise
+        except Exception as e:
+            raise GoodsError('Unable to pop goods from source %s.', source_id) from e
 
     async def get_goods(self, source_id: str, amount: int, start: int = 0) -> list[str]:
         source = self.get(source_id)
         if source is None:
-            raise KeyError(f'Source {source_id} does not exist.')
-        return await source.get_goods(amount, start)
+            raise GoodsSourceNotFoundError(source_id)
 
-    async def add_goods(self, source_id: str, goods: list[str]) -> list[str]:
+        try:
+            return await source.get_goods(amount, start)
+        except GoodsError:
+            raise
+        except Exception as e:
+            raise GoodsError('Unable to get goods from source %s.', source_id) from e
+
+    async def add_goods(self, source_id: str, goods: list[str]) -> None:
         async with self._lock:
             source = self.get(source_id)
             if source is None:
-                raise KeyError(f'Source {source_id} does not exist.')
-            await source.add_goods(goods)
+                raise GoodsSourceNotFoundError(source_id)
+
+            try:
+                await source.add_goods(goods)
+            except GoodsError:
+                raise
+            except Exception as e:
+                raise GoodsError(f'Unable to add goods to %s.', source_id) from e
 
     def __len__(self) -> int:
         return len(self._sources)
