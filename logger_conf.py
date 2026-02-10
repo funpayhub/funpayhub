@@ -30,6 +30,14 @@ EMOJIS = {
     logging.CRITICAL: '🔥',
 }
 
+NAMES = {
+    logging.DEBUG: 'DBUG',
+    logging.INFO: 'INFO',
+    logging.WARNING: 'WARN',
+    logging.ERROR: 'ERRR',
+    logging.CRITICAL: 'CRIT',
+}
+
 
 RESET_MARKER = '\ue000'
 RESET_RE = re.compile(rf'((?<!\$)\$RESET)|({RESET_MARKER})')
@@ -120,7 +128,7 @@ class ConsoleLoggerFormatter(logging.Formatter):
 
         text = (
             f'{reset}{EMOJIS[record.levelno] if sys.stdout.isatty() else ""} {time_str} '
-            f'[{color}{record.levelname:^9}{reset}]{plugin_name} '
+            f'[{color}{NAMES[record.levelno]:^6}{reset}]{plugin_name} '
             f'{text}{reset}'
         )
 

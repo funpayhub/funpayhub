@@ -9,6 +9,7 @@ from aiogram.types import CallbackQuery
 
 from funpayhub.lib.telegram.callback_data import CallbackData
 from funpayhub.lib.telegram.callback_data.hashinator import BadHashError, HashinatorT1000
+from loggers import telegram as logger
 
 
 class UnpackMiddleware(BaseMiddleware):
@@ -18,16 +19,17 @@ class UnpackMiddleware(BaseMiddleware):
             try:
                 HashinatorT1000.unhash(event.data)
             except BadHashError:
-                await event.answer(text='Ваще не знаю че это за кнопка', show_alert=True)
+                await event.answer(text='@whodax нагло стырил эту кнопку.', show_alert=True)
                 return
         parsed = CallbackData.parse(callback_data)
 
         data['unpacked_callback'] = parsed
         event.__dict__.update({'__parsed__': parsed, 'data': callback_data})
-        print(f'Unpacked callback data: {event.data}')
-        print(f'Callback: {parsed.identifier}')
-        print(f'Callback data: {parsed.data}')
-        print('Callback history:')
-        for i in parsed.history:
-            print(f'    {i}')
+        logger.debug(
+            'Unpacked callback data: %s\nCallback: %s\nData: %s\nHistory: %s',
+            event.data,
+            parsed.identifier,
+            parsed.data,
+            parsed.history
+        )
         await handler(event, data)
