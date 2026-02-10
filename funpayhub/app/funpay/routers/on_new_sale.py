@@ -92,10 +92,14 @@ class DeliverGoodsHandler:
             goods_to_deliver=goods,
             new_message_event=event.related_new_message_event,
         )
-        response_text = await fp_formatters.format_text(
-            auto_delivery.delivery_text.value,
-            context=context,
-        ) # todo: добавить formatters query
+
+        try:
+            response_text = await fp_formatters.format_text(
+                auto_delivery.delivery_text.value,
+                context=context,
+            ) # todo: добавить formatters query
+        except Exception as e:
+            ...
 
         try:
             # todo:
