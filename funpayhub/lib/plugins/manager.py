@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-__all__ = ['PluginManager', 'RepositoryManager']
+__all__ = ['PluginManager', 'RepositoriesManager']
 
 import sys
 import json

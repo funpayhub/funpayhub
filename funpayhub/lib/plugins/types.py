@@ -102,6 +102,11 @@ class LoadedPlugin[PluginCLS]:
 
 
 class RepoSpecificPluginVersionInfo(BaseModel):
+    model_config = {
+        'arbitrary_types_allowed': True,
+        'extra': 'allow',
+    }
+
     app_version: SpecifierSet
     url: str
     change_log: str = ''
@@ -115,6 +120,11 @@ class RepoSpecificPluginVersionInfo(BaseModel):
 
 
 class RepoPluginInfo(_WithDescription):
+    model_config = {
+        'arbitrary_types_allowed': True,
+        'extra': 'allow',
+    }
+
     name: str
     description: str
     versions: dict[Version, RepoSpecificPluginVersionInfo]
@@ -127,6 +137,11 @@ class RepoPluginInfo(_WithDescription):
 
 
 class PluginsRepository(_WithDescription):
+    model_config = {
+        'arbitrary_types_allowed': True,
+        'extra': 'allow',
+    }
+
     version: int = 1
     id: str
     url: str

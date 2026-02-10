@@ -19,14 +19,13 @@ from loggers import (
     plugins as plugins_logger,
 )
 
-from funpayhub.lib.plugins import PluginManager
+from funpayhub.lib.plugins import PluginManager, RepositoriesManager
 from funpayhub.lib.exceptions import GoodsError
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
 
 from .telegram import TelegramApp
 from .workflow_data import WorkflowData
-
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -55,6 +54,7 @@ class App:
         dispatcher: Dispatcher,
         properties: Properties,
         plugin_manager: PluginManager,
+        repositories_manager: RepositoriesManager | None = None,
         translater: Translater | None = None,
         telegram_app: TelegramApp | None = None,
         safe_mode: bool = False,
@@ -71,6 +71,8 @@ class App:
         self._goods_manager = GoodsSourcesManager()
         self._plugin_manager = plugin_manager
         self._plugin_manager._safe_mode = self._safe_mode
+        self._repositories_manager = repositories_manager if repositories_manager is not None \
+            else RepositoriesManager('storage/repositories')
 
         self._workflow_data = workflow_data if workflow_data is not None else WorkflowData()
         self._dispatcher = dispatcher
@@ -92,6 +94,8 @@ class App:
                 'tg_ui': self._telegram.ui_registry,
                 'tg_ui_registry': self._telegram.ui_registry,
                 'plugin_manager': self._plugin_manager,
+                'plugins_manager': self._plugin_manager,
+                'repositories_manager': self._repositories_manager,
                 'goods_manager': self._goods_manager,
             },
         )
@@ -205,3 +209,11 @@ class App:
     @property
     def safe_mode(self) -> bool:
         return self._safe_mode
+
+    @property
+    def plugin_manager(self) -> PluginManager:
+        return self._plugin_manager
+
+    @property
+    def repositories_manager(self) -> RepositoriesManager:
+        return self._repositories_manager

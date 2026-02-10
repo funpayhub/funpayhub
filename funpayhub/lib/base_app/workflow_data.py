@@ -10,9 +10,9 @@ from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.lib.goods_sources import GoodsSourcesManager
 from funpayhub.lib.workflow_data import WorkflowData as BaseWorkflowData
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
+from funpayhub.lib.plugins import PluginManager, RepositoriesManager
 
 from .telegram import TelegramApp
-
 
 if TYPE_CHECKING:
     from .app import App
@@ -29,6 +29,8 @@ class WorkflowData(BaseWorkflowData):
         tg_ui_registry: UIRegistry
         formatters_registry: FormattersRegistry
         goods_manager: GoodsSourcesManager
+        plugins_manager: PluginManager
+        repositories_manager: RepositoriesManager
 
     def __init__(self) -> None:
         super().__init__()
@@ -45,5 +47,7 @@ class WorkflowData(BaseWorkflowData):
                 'tg_ui_registry': lambda v: isinstance(v, UIRegistry),
                 'formatters_registry': lambda v: isinstance(v, FormattersRegistry),
                 'goods_manager': lambda v: isinstance(v, GoodsSourcesManager),
+                'plugins_manager': lambda v: isinstance(v, PluginManager),
+                'repositories_manager': lambda v: isinstance(v, RepositoriesManager),
             },
         )
