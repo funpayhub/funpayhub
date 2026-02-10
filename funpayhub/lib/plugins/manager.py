@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-__all__ = ['PluginManager']
+__all__ = ['PluginManager', 'RepositoryManager']
 
 import sys
 import json
@@ -22,7 +22,7 @@ from funpayhub.lib.exceptions import (
     SaveRepositoryError,
     PluginInstantiationError,
     InvalidPluginRepositoryError,
-    PluginRepositoryAlreadyExist,
+    PluginRepositoryAlreadyExist, RemoveRepositoryError, TranslatableException,
 )
 
 from .types import LoadedPlugin, PluginManifest, PluginsRepository
@@ -258,30 +258,93 @@ class PluginManager[PluginCLS]:
         return MappingProxyType(self._steps)
 
 
-class RepositoryManager:
+class RepositoriesManager:
     def __init__(self, repositories_path: str | Path) -> None:
         self._repositories_path = Path(repositories_path)
         self._repositories: dict[str, PluginsRepository] = {}
+        self._load_repositories()
 
-    def load_repository(self, repository: dict[str, Any] | PluginsRepository) -> None:
+    def load_repository(
+        self,
+        repository: dict[str, Any],
+        register: bool = True,
+        save: bool = False
+    ) -> PluginsRepository:
         if not isinstance(repository, PluginsRepository):
             try:
                 repository = PluginsRepository.model_validate(repository)
             except PydanticErrorMixin:
                 raise InvalidPluginRepositoryError()
 
+        if save:
+            if repository.id in self._repositories:
+                raise PluginRepositoryAlreadyExist(repository.id)
+            self.save_repository(repository)
+
+        if register:
+            self.register_repository(repository)
+
+        return repository
+
+    def register_repository(self, repository: PluginsRepository) -> None:
         if repository.id in self._repositories:
             raise PluginRepositoryAlreadyExist(repository.id)
-
         self._repositories[repository.id] = repository
 
     def _save_repository(self, repository: PluginsRepository, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
         with path.open('w', encoding='utf-8') as f:
             f.write(repository.to_json())
 
+    def _load_repositories(self) -> None:
+        logger.info('Loading plugins repositories from %s...', str(self._repositories_path))
+        if not self._repositories_path.exists():
+            return
+        if not self._repositories_path.is_file():
+            return
+
+        for i in self._repositories_path.iterdir():
+            if i.is_dir():
+                logger.debug(f'%s is a directory. Skipping.', str(i))
+                continue
+            if not i.suffix == '.json':
+                logger.debug(f'%s is not a JSON file. Skipping.', str(i))
+                continue
+
+            logger.info('Loading plugins repository from %s...', str(i))
+            try:
+                with i.open('r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    self.load_repository(data, save=False, register=True)
+            except Exception as e:
+                if isinstance(e, TranslatableException):
+                    logger.error(e.message, *e.args, exc_info=True)
+                else:
+                    logger.errror(
+                        'An error occurred while loading plugin repository from %s.',
+                        str(i),
+                        exc_info=True
+                    )
+
     def save_repository(self, repository: PluginsRepository) -> None:
-        save_path = self._repositories_path / (repository.id + '.json')
+        save_path = self._repository_file_path(repository.id)
         try:
             self._save_repository(repository, save_path)
         except:
             raise SaveRepositoryError(repository.id, save_path)
+
+    def remove_repository(self, repository_id: str) -> None:
+        if repository_id not in self._repositories:
+            return
+
+        repository_path = self._repository_file_path(repository_id)
+        if repository_path.exists() and repository_path.is_file():
+            try:
+                repository_path.unlink()
+            except:
+                raise RemoveRepositoryError(repository_id, repository_path)
+
+        self._repositories.pop(repository_id, None)
+
+    def _repository_file_path(self, repository_id: str) -> Path:
+        return self._repositories_path / (repository_id + '.json')

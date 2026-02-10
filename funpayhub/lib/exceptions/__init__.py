@@ -17,6 +17,7 @@ __all__ = [
     'PluginRepositoryAlreadyExist',
     'InvalidPluginRepositoryError',
     'SaveRepositoryError',
+    'RemoveRepositoryError',
 ]
 
 
@@ -30,5 +31,6 @@ from .plugins import (
     PluginInstantiationError,
     InvalidPluginRepositoryError,
     PluginRepositoryAlreadyExist,
+    RemoveRepositoryError
 )
 from .properties import ConvertionError, PropertiesError, ValidationError

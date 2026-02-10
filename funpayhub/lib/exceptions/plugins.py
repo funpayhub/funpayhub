@@ -9,6 +9,7 @@ __all__ = [
     'PluginRepositoryAlreadyExist',
     'InvalidPluginRepositoryError',
     'SaveRepositoryError',
+    'RemoveRepositoryError',
 ]
 
 from pathlib import Path
@@ -58,4 +59,20 @@ class SaveRepositoryError(PluginRepositoryError):
 
     @property
     def path(self) -> Path:
+        return self._path
+
+
+class RemoveRepositoryError(PluginRepositoryError):
+    def __init__(self, repository_id: str, path: str | Path | None) -> None:
+        self._repository_id = repository_id
+        self._path = Path(path) if path is not None else None
+
+        super().__init__('Unable to remove repository %s. (file: %s).', repository_id, str(path))
+
+    @property
+    def repository_id(self) -> str:
+        return self._repository_id
+
+    @property
+    def path(self) -> Path | None:
         return self._path
