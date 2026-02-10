@@ -10,6 +10,7 @@ __all__ = [
     'InvalidPluginRepositoryError',
     'SaveRepositoryError',
     'RemoveRepositoryError',
+    'PluginRepositoryLoadingError',
 ]
 
 from pathlib import Path
@@ -76,3 +77,8 @@ class RemoveRepositoryError(PluginRepositoryError):
     @property
     def path(self) -> Path | None:
         return self._path
+
+
+class PluginRepositoryLoadingError(PluginRepositoryError):
+    def __init__(self) -> None:
+        super().__init__('Unable to load plugins repository.')

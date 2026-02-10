@@ -14,9 +14,12 @@ from typing import TYPE_CHECKING, Any, Self
 from dataclasses import dataclass
 from pathlib import Path
 
+from aiohttp import ClientSession
 from pydantic import Field, BaseModel, field_validator, model_validator
 from packaging.version import Version
 from packaging.specifiers import SpecifierSet
+
+from funpayhub.lib.exceptions import PluginRepositoryLoadingError
 
 
 if TYPE_CHECKING:
@@ -148,3 +151,18 @@ class PluginsRepository(_WithDescription):
     name: str
     description: str
     plugins: dict[str, RepoPluginInfo]
+
+    # На данный момент не планируется каких-либо других лоадеров, потому
+    # какого-то отдельного RepositoryLoader'а нет.
+    # Если появится надобность, будет создан, а from_url и другие конструкторы будут оставлены
+    # в качестве шорткатов, которые будут вызывать эти лоадеры.
+    @classmethod
+    async def from_url(cls, url: str, headers: dict[str, str] | None = None) -> Self:
+        try:
+            async with ClientSession(headers=headers) as session:
+                async with session.get(url) as resp:
+                    result = await resp.json()
+
+            return cls.model_validate(result)
+        except Exception as e:
+            raise PluginRepositoryLoadingError from e

@@ -18,6 +18,7 @@ __all__ = [
     'InvalidPluginRepositoryError',
     'SaveRepositoryError',
     'RemoveRepositoryError',
+    'PluginRepositoryLoadingError',
 ]
 
 
@@ -27,10 +28,11 @@ from .plugins import (
     PluginError,
     SaveRepositoryError,
     PluginRepositoryError,
+    RemoveRepositoryError,
     PluginInstallationError,
     PluginInstantiationError,
     InvalidPluginRepositoryError,
     PluginRepositoryAlreadyExist,
-    RemoveRepositoryError
+    PluginRepositoryLoadingError,
 )
 from .properties import ConvertionError, PropertiesError, ValidationError
