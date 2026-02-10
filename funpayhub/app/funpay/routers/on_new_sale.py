@@ -8,7 +8,7 @@ from funpaybotengine.dispatching.filters import all_of
 
 from loggers import main as logger
 
-from funpayhub.lib.exceptions import NotEnoughGoodsError, TranslatableException
+from funpayhub.lib.exceptions import TranslatableException
 
 from funpayhub.app.formatters import GoodsFormatter, NewOrderContext
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -66,9 +66,6 @@ async def auto_delivery_enabled_filter(
     return {'auto_delivery': props}
 
 
-class _Exception(TranslatableException): ...
-
-
 class DeliverGoodsHandler:
     async def __call__(
         self,
@@ -93,13 +90,11 @@ class DeliverGoodsHandler:
             new_message_event=event.related_new_message_event,
         )
 
-        try:
-            response_text = await fp_formatters.format_text(
-                auto_delivery.delivery_text.value,
-                context=context,
-            ) # todo: добавить formatters query
-        except Exception as e:
-            ...
+        response_text = await fp_formatters.format_text(
+            auto_delivery.delivery_text.value,
+            context=context,
+            raise_on_error=True,
+        )
 
         try:
             # todo:
@@ -132,20 +127,7 @@ class DeliverGoodsHandler:
             match = PCS_RE.search(order.title)
             amount = int(match.group(1)) if match else 1
 
-        try:
-            goods = await goods_manager.pop_goods(goods_source_id, amount)
-        except KeyError:
-            raise _Exception(
-                'Unable to issue goods for order %s: goods source %s not found.',
-                order.id,
-                goods_source_id,
-            )
-        except NotEnoughGoodsError:
-            raise _Exception(
-                'Unable to issue goods for order %s: not enough goods in bound source %s.',
-                order.id,
-                goods_source_id,
-            )
+        goods = await goods_manager.pop_goods(goods_source_id, amount)
 
         return goods
 
@@ -175,7 +157,12 @@ async def deliver_goods(
         if isinstance(e, TranslatableException):
             reason = e.format_args(translater.translate(e.message))
         else:
-            reason = 'Произошла непредвиденная ошибка. Смотрите подробности в лог файле.'
+            reason = 'Произошла непредвиденная ошибка. Подробности в логах.'
+            logger.error(
+                'Произошла непредвиденная ошибка при выдаче товаров по заказу %s.',
+                order.id,
+                exc_info=True
+            )
 
         error_text = ERR_TEXT.format(
             order_id=order.id,
