@@ -38,7 +38,7 @@ async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub) -> None:
     menu = await tg_ui.build_menu(ctx)
 
     async def send_notifications() -> None:
-        tasks = await hub.telegram.send_notification(
+        tasks = hub.telegram.send_notification(
             'system',
             menu.total_text,
             menu.total_keyboard(True),
@@ -93,4 +93,4 @@ async def start_auto_raise(fp: FunPay) -> None:
 @router.on_offers_raised(lambda properties: properties.telegram.notifications.offers_raised.value)
 async def send_offers_raised_notification(category: Category, tg: Telegram) -> None:
     text = f'🔺 Все лоты категории <b>{escape(category.full_name)}</b> успешно подняты.'
-    await tg.send_notification('offers_raised', text)
+    tg.send_notification('offers_raised', text)

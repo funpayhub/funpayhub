@@ -96,8 +96,6 @@ async def send_new_message_notification(
         only_mine_from_hub &= is_manual
         only_automatic &= automatic
 
-    print(f'{only_mine=}, {only_automatic=}, {only_mine_from_hub=}')
-
     if any(
         [
             only_mine and not appearance_props.show_if_mine_only.value,
@@ -116,7 +114,7 @@ async def send_new_message_notification(
     )
     menu = await tg_ui.build_menu(context, data)
 
-    await tg.send_notification(
+    tg.send_notification(
         'new_message',
         text=menu.total_text,
         reply_markup=menu.total_keyboard(convert=True),

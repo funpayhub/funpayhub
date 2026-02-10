@@ -14,6 +14,7 @@ from funpayhub.app.formatters import GoodsFormatter, NewOrderContext
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.notification_channels import NotificationChannels
 from funpayhub.app.telegram.modules.autodelivery.ui import NewSaleMenuContext
+from contextlib import suppress
 
 
 if TYPE_CHECKING:
@@ -28,12 +29,17 @@ if TYPE_CHECKING:
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
     from funpayhub.app.telegram.main import Telegram
     from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
+    from funpayhub.lib.translater import Translater
 
 
 router = Router(name='fph:on_new_sale')
 
 
 PCS_RE = re.compile(r'(?:^|, )(\d+) (?:шт|pcs)\.(?:,|$)')
+ERR_TEXT = f'❌ Не удалось выдать товары по заказу '\
+           f'<b><i><a href=https://funpay.com/orders/{{order_id}}/>#{{order_id}}</a></i></b>.\n\n'\
+           f'<b>{{order_title}}</b>\n\n'\
+           f'<b><i>Причина: {{reason}}</i></b>'
 
 
 def _offer_name_re_factory(name: str) -> re.Pattern[str]:
@@ -79,15 +85,7 @@ class DeliverGoodsHandler:
         calls = fp_formatters.extract_calls(auto_delivery.delivery_text.value)
         goods = []
         if GoodsFormatter.key in calls.invocation_names:
-            try:
-                goods = await self.get_goods(auto_delivery, order, goods_manager)
-            except _Exception as e:
-                logger.error(e.message, *e.args)
-                event['deliver_error'] = e
-                return
-            except Exception as e:
-                event['deliver_error'] = e
-                raise
+            goods = await self.get_goods(auto_delivery, order, goods_manager)
 
         context = NewOrderContext(
             order_event=event,
@@ -97,7 +95,7 @@ class DeliverGoodsHandler:
         response_text = await fp_formatters.format_text(
             auto_delivery.delivery_text.value,
             context=context,
-        )
+        ) # todo: добавить formatters query
 
         try:
             # todo:
@@ -105,14 +103,15 @@ class DeliverGoodsHandler:
             #  Сейчас подставляется hub.funpay,
             #  потому что у него есть такой же метод send_message с такими же сигнатурами,
             #  нельзя это так оставлять!
+            #  (да благослови пайтон за дактайпинг)
             await response_text.send(hub.funpay, event.message.chat_id)
             event['delivered_goods'] = goods
-            event['source_id'] = goods_source_id
+            event['delivered_from_source_id'] = goods_source_id
             return
-        except Exception as e:
-            event['deliver_error'] = e
+        except Exception:
             if goods:
-                await goods_manager.add_goods(goods_source_id, goods)
+                with suppress:
+                    await goods_manager.add_goods(goods_source_id, goods)
             raise
 
     async def get_goods(
@@ -127,7 +126,7 @@ class DeliverGoodsHandler:
         amount = 1
         if auto_delivery.multi_delivery.value:
             match = PCS_RE.search(order.title)
-            amount = int(match.group()) if match else 1
+            amount = int(match.group(1)) if match else 1
 
         try:
             goods = await goods_manager.pop_goods(goods_source_id, amount)
@@ -160,8 +159,27 @@ async def deliver_goods(
     fp_formatters: FormattersRegistry,
     hub: FunPayHub,
     tg: Telegram,
+    translater: Translater
 ):
-    await DeliverGoodsHandler()(event, auto_delivery, goods_manager, fp_formatters, hub, tg)
+    order = await event.get_order_preview()
+
+    try:
+        await DeliverGoodsHandler()(event, auto_delivery, goods_manager, fp_formatters, hub, tg)
+    except Exception as e:
+        event['delivery_error'] = e
+
+        if isinstance(e, TranslatableException):
+            reason = e.format_args(translater.translate(e.message))
+        else:
+            reason = 'Произошла непредвиденная ошибка. Смотрите подробности в лог файле.'
+
+        error_text = ERR_TEXT.format(
+            order_id=order.id,
+            order_title=order.title,
+            reason=reason
+        )
+
+        tg.send_notification(NotificationChannels.ERROR, error_text)
 
 
 @router.on_new_sale()
@@ -172,12 +190,4 @@ async def send_notification(event: NewSaleEvent, tg: Telegram, tg_ui: UIRegistry
         new_sale_event=event,
     ).build_menu(tg_ui)
 
-    await tg.send_notification(
-        NotificationChannels.NEW_SALE,
-        text=menu.total_text,
-        reply_markup=menu.total_keyboard(convert=True),
-    )
-
-    if (error := event.data.get('deliver_error')) is not None:
-        text = f'Произошла ошибка при доставке товара {error}'
-        await tg.send_notification(NotificationChannels.ERROR, text=text)
+    tg.send_notification(NotificationChannels.NEW_SALE, **menu)

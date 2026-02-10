@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 from typing import TYPE_CHECKING, Any, Type, Literal, overload
 from dataclasses import field, fields, dataclass
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Mapping, KeysView
 
 from aiogram.types import (
     Message,
@@ -181,7 +181,7 @@ class KeyboardBuilder:
 
 
 @dataclass
-class Menu:
+class Menu(Mapping):
     header_text: str = ''
     main_text: str = ''
     footer_text: str = ''
@@ -243,6 +243,22 @@ class Menu:
     @property
     def total_text(self) -> str:
         return '\n\n'.join(i for i in [self.header_text, self.main_text, self.footer_text] if i)
+
+    def __getitem__(self, item: str) -> Any:
+        if item == 'reply_markup':
+            return self.total_keyboard(convert=True)
+        elif item == 'text':
+            return self.total_text
+        raise KeyError(item)
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(['reply_markup', 'text'])
+
+    def __len__(self) -> int:
+        return 2
+
+    def keys(self) -> KeysView[str]:
+        return KeysView(self)
 
 
 @dataclass(kw_only=True)

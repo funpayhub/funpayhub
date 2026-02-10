@@ -134,7 +134,7 @@ class Telegram(TelegramApp):
         await self.hub.dispatcher.event_entry(TelegramStartEvent())
         await self.dispatcher.start_polling(self.bot)
 
-    async def send_notification(
+    def send_notification(
         self,
         notification_channel_id: str,
         text: str,
