@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+
+__all__ = ['Translater', '_']
+
+
 import re
 import gettext
 from pathlib import Path
@@ -61,3 +65,7 @@ class Translater:
             text,
         )
         return text.replace('__ESCAPED_DOLLAR__', '$')
+
+
+def _(_: str, /) -> str:
+    return _
