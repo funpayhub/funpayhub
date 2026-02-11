@@ -11,6 +11,7 @@ from funpayhub.lib.properties import (
     StringParameter,
     ToggleParameter,
 )
+from funpayhub.lib.translater import _
 
 
 class AutoResponseEntryProperties(Properties):
@@ -18,14 +19,16 @@ class AutoResponseEntryProperties(Properties):
         super().__init__(
             id=command,
             name=command,
-            description='$props.auto_response.*:description',
+            description=_('Настройки реакции на команду.'),
         )
 
         self.case_sensitive = self.attach_node(
             ToggleParameter(
                 id='case_sensitive',
-                name='$props.auto_response.*.case_sensitive:name',
-                description='$props.auto_response.*.case_sensitive:description',
+                name=_('Учитывать регистр'),
+                description=_(
+                    'Вкл.: различает заглавные и строчные.\nВыкл.: регистр игнорируется.'
+                ),
                 default_value=False,
             ),
         )
@@ -33,8 +36,10 @@ class AutoResponseEntryProperties(Properties):
         self.reply = self.attach_node(
             ToggleParameter(
                 id='reply',
-                name='$props.auto_response.*.reply:name',
-                description='$props.auto_response.*.reply:description',
+                name=_('Отвечать'),
+                description=_(
+                    'Вкл.: бот отвечает на команду (если указан текст ответа).\nВыкл.: бот не отвечает на команду.'
+                ),
                 default_value=True,
             ),
         )
@@ -42,8 +47,10 @@ class AutoResponseEntryProperties(Properties):
         self.ignore_formatters_errors = self.attach_node(
             ToggleParameter(
                 id='ignore_formatters_errors',
-                name='$props.auto_response.*.ignore_formatters_errors:name',
-                description='$props.auto_response.*.ignore_formatters_errors:description',
+                name=_('Игнорировать ошибки форматтеров'),
+                description=_(
+                    'Вкл.: если произошла ошибка в каком-либо форматтере, бот подставляет вместо него пустоту.\nВыкл.: бот не отправляет сообщение, если произошла ошибка хотя бы в 1 из форматтеров.'
+                ),
                 default_value=True,
             ),
         )
@@ -51,8 +58,10 @@ class AutoResponseEntryProperties(Properties):
         self.ignore_hooks_errors = self.attach_node(
             ToggleParameter(
                 id='ignore_hooks_errors',
-                name='$props.auto_response.*.ignore_hooks_errors:name',
-                description='$props.auto_response.*.ignore_hooks_errors:description',
+                name=_('Игнорировать ошибки хуков'),
+                description=_(
+                    'Вкл.: если произошла ошибка в каком-либо хуке, бот продолжает выполнять другие хуки.\nВыкл.: бот прерывает цепочку выполнения хуков, если хотя бы 1 из хуков завершился с ошибкой.'
+                ),
                 default_value=True,
             ),
         )
@@ -60,8 +69,10 @@ class AutoResponseEntryProperties(Properties):
         self.react_on_me = self.attach_node(
             ToggleParameter(
                 id='react_on_me',
-                name='$props.auto_response.*.react_on_me:name',
-                description='$props.auto_response.*.react_on_me:description',
+                name=_('Реагировать, если отправитель - я'),
+                description=_(
+                    'Вкл.: бот обрабатывает команду, если ее отправили вы.\nВыкл.: бот не обрабатывает команду, если ее отправили вы.'
+                ),
                 default_value=True,
             ),
         )
@@ -69,8 +80,10 @@ class AutoResponseEntryProperties(Properties):
         self.react_on_others = self.attach_node(
             ToggleParameter(
                 id='react_on_others',
-                name='$props.auto_response.*.react_on_others:name',
-                description='$props.auto_response.*.react_on_others:description',
+                name=_('Реагировать, если отправитель - не я'),
+                description=_(
+                    'Вкл.: бот обрабатывает команду, если ее отправили не вы.\nВыкл.: бот не обрабатывает команду, если ее отправили не вы.'
+                ),
                 default_value=True,
             ),
         )
@@ -78,8 +91,8 @@ class AutoResponseEntryProperties(Properties):
         self.response_text = self.attach_node(
             StringParameter(
                 id='response_text',
-                name='$props.auto_response.*.response_text:name',
-                description='$props.auto_response.*.response_text:description',
+                name=_('Текст ответа'),
+                description=_('Текст ответа на команду.'),
                 default_value='',
             ),
         )
@@ -98,8 +111,8 @@ class AutoResponseProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='auto_response',
-            name='$props.auto_response:name',
-            description='$props.auto_response:description',
+            name=_('💬 Команды'),
+            description=_('nodesc'),
             file='config/auto_response.toml',
         )
 

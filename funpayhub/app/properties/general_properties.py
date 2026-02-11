@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from funpayhub.lib.translater import _
+
 
 __all__ = ['GeneralProperties']
 
@@ -15,15 +17,15 @@ class GeneralProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='general',
-            name='$props.general:name',
-            description='$props.general:description',
+            name=_('🔧 Общие'),
+            description=_('nodesc'),
         )
 
         self.language = self.attach_node(
             ChoiceParameter(
                 id='language',
-                name='$props.general.language:name',
-                description='$props.general.language:description',
+                name=_('🌎 Язык'),
+                description=_('nodesc'),
                 choices=(
                     Choice('ru', '🇷🇺 Русский', 'ru'),
                     Choice('en', '🇬🇧 English', 'en'),
@@ -37,8 +39,10 @@ class GeneralProperties(Properties):
         self.proxy = self.attach_node(
             StringParameter(
                 id='proxy',
-                name='$props.general.proxy:name',
-                description='$props.general.proxy:description',
+                name=_('🌐 Прокси'),
+                description=_(
+                    'Позволяет скрыть ваш IP-адрес при работе с FunPay.\nИспользуется только для запросов к FunPay, на остальной трафик не влияет.\nПоддерживаются прокси HTTP(S) и SOCKS5.\n'
+                ),
                 default_value='',
                 flags=[ParameterFlags.PROTECT_VALUE],
                 validator=proxy_validator,
@@ -48,8 +52,10 @@ class GeneralProperties(Properties):
         self.user_agent = self.attach_node(
             StringParameter(
                 id='user_agent',
-                name='$props.general.user_agent:name',
-                description='$props.general.user_agent:description',
+                name=_('🌐 User Agent'),
+                description=_(
+                    'Строка, которая сообщает FunPay, какой браузер и устройство используются.\nПомогает избежать лишних проверок и блокировок.\nИспользуйте User Agent бразуера, из которого вы взяли golden key.'
+                ),
                 flags=[ParameterFlags.PROTECT_VALUE],
                 default_value='',
             ),
@@ -58,8 +64,10 @@ class GeneralProperties(Properties):
         self.golden_key = self.attach_node(
             StringParameter(
                 id='golden_key',
-                name='$props.general.golden_key:name',
-                description='$props.general.golden_key:description',
+                name=_('🔑 Golden Key (токен)'),
+                description=_(
+                    'Ключ доступа к вашему аккаунту FunPay.\nНужен для работы бота и выполнения запросов от вашего имени.'
+                ),
                 default_value='',
                 flags=[ParameterFlags.PROTECT_VALUE],
             ),
@@ -68,8 +76,10 @@ class GeneralProperties(Properties):
         self.runner_request_interval = self.attach_node(
             FloatParameter(
                 id='runner_request_interval',
-                name='$props.general.runner_request_interval:name',
-                description='$props.general.runner_request_interval:description',
+                name=_('⏱️ Интервал получения событий'),
+                description=_(
+                    'Интервал между запросами к FunPay на получение событий.\nЧем меньше интервал, тем быстрее FunPay Hub получает информацию о новых сообщениях / заказах и т.д.\n\n'
+                ),
                 default_value=5.0,
             ),
         )

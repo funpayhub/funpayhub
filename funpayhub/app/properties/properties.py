@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TypeVar
 
 from funpayhub.lib.properties import Parameter, Properties, ListParameter
+from funpayhub.lib.translater import _
 
 from .review_reply import ReviewReplyProperties
 from .auto_response import AutoResponseProperties
@@ -20,8 +21,8 @@ class FunPayHubProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='props',
-            name='$props:name',
-            description='$props:description',
+            name=_('⚙️ Настройки'),
+            description=_('Корневой раздел настроек FunPay Hub.'),
             file='config/funpayhub.toml',
         )
 
@@ -42,8 +43,10 @@ class FunPayHubProperties(Properties):
         self.message_templates = self.attach_node(
             ListParameter[str](
                 id='message_templates',
-                name='$props.message_templates:names',
-                description='$props:message_templates:description',
+                name=_('📑 Быстрые сообщения'),
+                description=_(
+                    'Список заранее подготовленных текстов для быстрого ответа.\nВы можете сохранить часто используемые сообщения и затем выбирать их из списка при ответе на входящие сообщения, не вводя текст вручную.'
+                ),
                 default_factory=list,
             ),
         )
