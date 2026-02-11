@@ -19,6 +19,7 @@ from funpaybotengine.exceptions import (
     BotUnauthenticatedError,
 )
 from funpaybotengine.types.pages import ProfilePage
+from funpaybotengine.runner.config import RunnerConfig
 
 from loggers import main as logger
 
@@ -104,6 +105,9 @@ class FunPay:
         self._sending_message_lock = asyncio.Lock()
         self._manually_sent_messages: set[int] = set()
         self._authenticated = False
+        self._runner_config = RunnerConfig(
+            interval=self._hub.properties.general.runner_request_interval.value,
+        )
         self.setup_dispatcher()
 
     async def start(self) -> None:
@@ -113,7 +117,7 @@ class FunPay:
         except:
             return
         self._authenticated = True
-        await self._bot.listen_events(self._dispatcher)
+        await self._bot.listen_events(self._dispatcher, config=self._runner_config)
 
     async def _init_bot_engine(self) -> None:
         exception: FunPayBotEngineError | None = None

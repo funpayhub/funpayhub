@@ -55,3 +55,10 @@ async def change_max_menu_lines(parameter: IntParameter, tg: Telegram):
 )
 async def update_disabled_plugins(parameter: ListParameter, plugin_manager: PluginManager):
     plugin_manager._disabled_plugins = set(parameter.value)
+
+
+@r.on_parameter_value_changed(
+    lambda parameter, properties: parameter is properties.general.runner_request_interval,
+)
+async def update_runner_requests_interval(parameter: IntParameter, fp: FunPay) -> None:
+    fp._runner_config.interval = parameter.value
