@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _
+from funpayhub.lib.translater import _en
 
 
 __all__ = ['UIRegistry']
@@ -103,7 +103,7 @@ class UIRegistry:
         if builder.menu_id in self._menus and not overwrite:
             raise KeyError(f'Menu {builder.menu_id!r} already exists.')
 
-        logger.info(_('Adding menu builder %s to registry...'), builder.menu_id)
+        logger.info(_en('Adding menu builder %s to registry...'), builder.menu_id)
         self._menus[builder.menu_id] = _MenuBuilder(builder())
 
     def add_menu_modification(
@@ -137,7 +137,7 @@ class UIRegistry:
         try:
             builder = self.get_menu_builder(context.menu_id)
         except KeyError:
-            logger.error(_('Menu %s not found.'), context.menu_id)
+            logger.error(_en('Menu %s not found.'), context.menu_id)
             raise  # todo: custom error
 
         if not isinstance(context, builder.builder.context_type):
@@ -146,7 +146,7 @@ class UIRegistry:
                 f'not {type(context)!r}.',
             )
 
-        logger.debug(_('Building menu %s.'), context.menu_id)
+        logger.debug(_en('Building menu %s.'), context.menu_id)
 
         # create new workflow data object and replace 'data' key
 
@@ -172,7 +172,7 @@ class UIRegistry:
         if builder.button_id in self._buttons and not overwrite:
             raise KeyError(f'Button {builder.button_id!r} already exists.')
 
-        logger.info(_('Adding button builder %s to registry...'), builder.button_id)
+        logger.info(_en('Adding button builder %s to registry...'), builder.button_id)
         self._buttons[builder.button_id] = _ButtonBuilder(builder())
 
     def add_button_modification(
@@ -194,7 +194,7 @@ class UIRegistry:
             )
         self._buttons[button_id].modifications[modification.modification_id] = modification()
         logger.info(
-            _('Modification %s for button %s has been added to registry.'),
+            _en('Modification %s for button %s has been added to registry.'),
             modification.modification_id,
             button_id,
         )
@@ -211,7 +211,7 @@ class UIRegistry:
         try:
             builder = self.get_button_builder(context.button_id)
         except KeyError:
-            logger.error(_('Button %s not found.'), context.button_id)
+            logger.error(_en('Button %s not found.'), context.button_id)
             raise
 
         if not isinstance(context, builder.builder.context_type):
@@ -220,7 +220,7 @@ class UIRegistry:
                 f'not {type(context)!r}.',
             )
 
-        logger.debug(_('Building button %s.'), context.button_id)
+        logger.debug(_en('Building button %s.'), context.button_id)
 
         return await builder.build(
             context,

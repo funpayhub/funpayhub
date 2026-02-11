@@ -21,7 +21,7 @@ from loggers import (
 
 from funpayhub.lib.plugins import PluginManager
 from funpayhub.lib.exceptions import GoodsError
-from funpayhub.lib.translater import Translater, _
+from funpayhub.lib.translater import Translater, _en
 from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
 
 from .telegram import TelegramApp
@@ -109,7 +109,7 @@ class App:
         self._setup_completed = False
 
         logger.info(
-            _('App initialized. Version: %s. Instance ID: %s'),
+            _en('App initialized. Version: %s. Instance ID: %s'),
             self._version,
             self._instance_id,
         )
@@ -130,13 +130,15 @@ class App:
             await self._plugin_manager.load_plugins()
             await self._plugin_manager.setup_plugins()
         except Exception:
-            plugins_logger.critical(_('Failed to load plugins. Creating crashlog.'), exc_info=True)
+            plugins_logger.critical(
+                _en('Failed to load plugins. Creating crashlog.'), exc_info=True
+            )
             with suppress(Exception):
                 await self.create_crash_log()
             sys.exit(exit_codes.RESTART_SAFE)  # todo: graceful shutdown before start
 
     async def _load_file_goods_sources(self) -> None:
-        logger.info(_('Loading goods files.'))
+        logger.info(_en('Loading goods files.'))
 
         base_path = Path('storage/goods')
         if not base_path.exists():
@@ -149,13 +151,13 @@ class App:
             if not file.suffix == '.txt':
                 continue
 
-            logger.info(_('Loading goods file %s.'), file)
+            logger.info(_en('Loading goods file %s.'), file)
 
             try:
                 await self._goods_manager.add_source(FileGoodsSource, file)
             except GoodsError as e:
                 logger.error(
-                    _('An error occurred while loading goods file %s: %s'),
+                    _en('An error occurred while loading goods file %s: %s'),
                     file,
                     e.format_args(self.translater.translate(e.message)),
                 )
