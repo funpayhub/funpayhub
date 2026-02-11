@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from funpayhub.lib.properties import Properties, ListParameter
 from funpayhub.lib.translater import _
+from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 from funpayhub.app.notification_channels import NotificationChannels
 
@@ -10,9 +11,10 @@ class TelegramNotificationsProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='telegram_notifications',
-            name=_('🔔 Telegram уведомления'),
+            name=_('Telegram уведомления'),
             description=_('nodesc'),
             file='config/telegram_notifications.toml',
+            flags=[TelegramUIEmojiFlag('🔔')],
         )
 
         self.system: ListParameter[str] = self.attach_node(
@@ -20,7 +22,8 @@ class TelegramNotificationsProperties(Properties):
                 id=NotificationChannels.SYSTEM,
                 name=_('Системные'),
                 description=_(
-                    'Список чатов, подписанных на уведомления о запуске / остановке FunPayHub и прочих системных событиях (формат: "chat_id.thread_it").'
+                    'Список чатов, подписанных на уведомления о запуске / остановке FunPayHub '
+                    'и прочих системных событиях (формат: "chat_id.thread_it").',
                 ),
                 default_factory=list,
             ),
@@ -31,7 +34,8 @@ class TelegramNotificationsProperties(Properties):
                 id=NotificationChannels.ERROR,
                 name=_('Ошибки'),
                 description=_(
-                    'Список чатов, подписанных на уведомления об ошибках в работе FunPayHub (формат: "chat_id.thread_it").'
+                    'Список чатов, подписанных на уведомления об ошибках в работе FunPayHub '
+                    '(формат: "chat_id.thread_it").',
                 ),
                 default_factory=list,
             ),
@@ -42,7 +46,8 @@ class TelegramNotificationsProperties(Properties):
                 id=NotificationChannels.OFFER_RAISED,
                 name=_('Поднятие лотов'),
                 description=_(
-                    'Список чатов, подписанных на уведомления о поднятии лотов (формат: "chat_id.thread_it").'
+                    'Список чатов, подписанных на уведомления о поднятии лотов '
+                    '(формат: "chat_id.thread_it").',
                 ),
                 default_factory=list,
             ),
@@ -53,7 +58,8 @@ class TelegramNotificationsProperties(Properties):
                 id=NotificationChannels.NEW_MESSAGE,
                 name=_('Новое сообщение'),
                 description=_(
-                    'Список чатов, подписанных на уведомления о новых сообщениях (формат: "chat_id.thread_it").'
+                    'Список чатов, подписанных на уведомления о новых сообщениях '
+                    '(формат: "chat_id.thread_it").',
                 ),
                 default_factory=list,
             ),
@@ -64,7 +70,8 @@ class TelegramNotificationsProperties(Properties):
                 id=NotificationChannels.NEW_SALE,
                 name=_('Новый заказ'),
                 description=_(
-                    'Список чатов, подписанных на уведомления о новых заказах (формат: "chat_id.thread_it").'
+                    'Список чатов, подписанных на уведомления о новых заказах '
+                    '(формат: "chat_id.thread_it").',
                 ),
                 default_factory=list,
             ),
@@ -75,7 +82,9 @@ class TelegramNotificationsProperties(Properties):
                 id=NotificationChannels.SALE_STATUS_CHANGED,
                 name=_('Изменение статуса заказа'),
                 description=_(
-                    'Список чатов, подписанных на уведомления об изменениях статус заказа (завершение, возврат средств, переоткрытие и т.д.) (формат: "chat_id.thread_it").'
+                    'Список чатов, подписанных на уведомления об изменениях статус заказа '
+                    '(завершение, возврат средств, переоткрытие и т.д.) '
+                    '(формат: "chat_id.thread_it").',
                 ),
                 default_factory=list,
             ),

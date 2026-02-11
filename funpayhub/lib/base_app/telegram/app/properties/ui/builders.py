@@ -19,7 +19,11 @@ from funpayhub.lib.base_app.telegram.app.ui import (
     callbacks as ui_cbs,
     ui_finalizers,
 )
-from funpayhub.lib.base_app.properties_flags import ParameterFlags, PropertiesFlags
+from funpayhub.lib.base_app.properties_flags import (
+    ParameterFlags,
+    PropertiesFlags,
+    TelegramUIEmojiFlag,
+)
 
 from .. import callbacks as cbs
 from .context import (
@@ -33,6 +37,13 @@ if TYPE_CHECKING:
     from funpayhub.lib.properties import Node
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry as UI
+
+
+def _emoji(node: Node) -> str:
+    for i in node.flags:
+        if isinstance(i, TelegramUIEmojiFlag):
+            return f'{i.emoji} '
+    return ''
 
 
 class ToggleParamButtonBuilder(ButtonBuilder, button_id='toggle_parameter', context_type=BtnCtx):
@@ -67,7 +78,7 @@ class ChangeParamValueButtonBuilder(ButtonBuilder, button_id='change_param', con
 
         return Button.callback_button(
             button_id=f'param_change:{entry.path}',
-            text=f'{translater.translate(entry.name)} 【 {val_str} 】',
+            text=f'{_emoji(entry)}{translater.translate(entry.name)} 【 {val_str} 】',
             callback_data=cbs.ManualParamValueInput(
                 path=entry.path,
                 from_callback=ctx.menu_render_context.callback_data,
@@ -82,7 +93,7 @@ class OpenParamMenuButtonBuilder(ButtonBuilder, button_id='open_param', context_
 
         return Button.callback_button(
             button_id=f'param_change:{entry.path}',
-            text=translater.translate(entry.name),
+            text=f'{_emoji(entry)}{translater.translate(entry.name)}',
             callback_data=ui_cbs.OpenMenu(
                 menu_id=NodeMenuBuilder.menu_id,
                 from_callback=ctx.menu_render_context.callback_data,
@@ -94,7 +105,7 @@ class OpenParamMenuButtonBuilder(ButtonBuilder, button_id='open_param', context_
 # Menus
 def _entry_text(entry: Node, translater: Tr) -> str:
     return (
-        f'<u><b>{translater.translate(entry.name)}</b></u>\n\n'
+        f'{_emoji(entry)}<u><b>{translater.translate(entry.name)}</b></u>\n\n'
         f'<i>{translater.translate(entry.description)}</i>'
     )
 

@@ -2,14 +2,16 @@ from __future__ import annotations
 
 from funpayhub.lib.properties import Properties, ToggleParameter
 from funpayhub.lib.translater import _
+from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class TogglesProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='toggles',
-            name=_('🕹️ Глобальные переключатели'),
+            name=_('Глобальные переключатели'),
             description=_('nodesc'),
+            flags=[TelegramUIEmojiFlag('🕹️')],
         )
 
         self.auto_delivery = self.attach_node(

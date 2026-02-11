@@ -20,7 +20,7 @@ class ReviewReplyPropertiesEntry(Properties):
         self.reply_in_chat = self.attach_node(
             ToggleParameter(
                 id='reply_in_chat',
-                name=_('Отправлять ответное сообщение'),
+                name=_('Отвечать сообщением'),
                 description=_('Отправлять ли ответное сообщение в чат.'),
                 default_value=False,
             ),
@@ -58,7 +58,7 @@ class ReviewReplyProperties(Properties):
                 id='five_stars',
                 name=_('⭐⭐⭐⭐⭐'),
                 description=_(
-                    'Настройки ответа на отзыв / ответного сообщения на 5-зведночный отзыв.'
+                    'Настройки ответа на отзыв / ответного сообщения на 5-зведночный отзыв.',
                 ),
             ),
         )
@@ -68,7 +68,7 @@ class ReviewReplyProperties(Properties):
                 id='four_stars',
                 name=_('⭐⭐⭐⭐'),
                 description=_(
-                    'Настройки ответа на отзыв / ответного сообщения на 4-зведночный отзыв.'
+                    'Настройки ответа на отзыв / ответного сообщения на 4-зведночный отзыв.',
                 ),
             ),
         )
@@ -78,7 +78,7 @@ class ReviewReplyProperties(Properties):
                 id='three_stars',
                 name=_('⭐⭐⭐'),
                 description=_(
-                    'Настройки ответа на отзыв / ответного сообщения на 3-зведночный отзыв.'
+                    'Настройки ответа на отзыв / ответного сообщения на 3-зведночный отзыв.',
                 ),
             ),
         )
@@ -88,7 +88,7 @@ class ReviewReplyProperties(Properties):
                 id='two_stars',
                 name=_('⭐⭐'),
                 description=_(
-                    'Настройки ответа на отзыв / ответного сообщения на 2-зведночный отзыв.'
+                    'Настройки ответа на отзыв / ответного сообщения на 2-зведночный отзыв.',
                 ),
             ),
         )
@@ -98,7 +98,7 @@ class ReviewReplyProperties(Properties):
                 id='one_stars',
                 name=_('⭐'),
                 description=_(
-                    'Настройки ответа на отзыв / ответного сообщения на 1-зведночный отзыв.'
+                    'Настройки ответа на отзыв / ответного сообщения на 1-зведночный отзыв.',
                 ),
             ),
         )

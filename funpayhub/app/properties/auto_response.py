@@ -7,11 +7,11 @@ from types import MappingProxyType
 from funpayhub.lib.properties import (
     Node,
     Properties,
-    ListParameter,
     StringParameter,
     ToggleParameter,
 )
 from funpayhub.lib.translater import _
+from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class AutoResponseEntryProperties(Properties):
@@ -27,7 +27,7 @@ class AutoResponseEntryProperties(Properties):
                 id='case_sensitive',
                 name=_('Учитывать регистр'),
                 description=_(
-                    'Вкл.: различает заглавные и строчные.\nВыкл.: регистр игнорируется.'
+                    'Вкл.: различает заглавные и строчные.\nВыкл.: регистр игнорируется.',
                 ),
                 default_value=False,
             ),
@@ -38,7 +38,8 @@ class AutoResponseEntryProperties(Properties):
                 id='reply',
                 name=_('Отвечать'),
                 description=_(
-                    'Вкл.: бот отвечает на команду (если указан текст ответа).\nВыкл.: бот не отвечает на команду.'
+                    'Вкл.: бот отвечает на команду (если указан текст ответа).\n'
+                    'Выкл.: бот не отвечает на команду.',
                 ),
                 default_value=True,
             ),
@@ -49,18 +50,10 @@ class AutoResponseEntryProperties(Properties):
                 id='ignore_formatters_errors',
                 name=_('Игнорировать ошибки форматтеров'),
                 description=_(
-                    'Вкл.: если произошла ошибка в каком-либо форматтере, бот подставляет вместо него пустоту.\nВыкл.: бот не отправляет сообщение, если произошла ошибка хотя бы в 1 из форматтеров.'
-                ),
-                default_value=True,
-            ),
-        )
-
-        self.ignore_hooks_errors = self.attach_node(
-            ToggleParameter(
-                id='ignore_hooks_errors',
-                name=_('Игнорировать ошибки хуков'),
-                description=_(
-                    'Вкл.: если произошла ошибка в каком-либо хуке, бот продолжает выполнять другие хуки.\nВыкл.: бот прерывает цепочку выполнения хуков, если хотя бы 1 из хуков завершился с ошибкой.'
+                    'Вкл.: если произошла ошибка в каком-либо форматтере, '
+                    'бот подставляет вместо него пустоту.\n'
+                    'Выкл.: бот не отправляет сообщение, если произошла ошибка хотя бы в '
+                    '1 из форматтеров.',
                 ),
                 default_value=True,
             ),
@@ -71,7 +64,8 @@ class AutoResponseEntryProperties(Properties):
                 id='react_on_me',
                 name=_('Реагировать, если отправитель - я'),
                 description=_(
-                    'Вкл.: бот обрабатывает команду, если ее отправили вы.\nВыкл.: бот не обрабатывает команду, если ее отправили вы.'
+                    'Вкл.: бот обрабатывает команду, если ее отправили вы.\n'
+                    'Выкл.: бот не обрабатывает команду, если ее отправили вы.',
                 ),
                 default_value=True,
             ),
@@ -82,7 +76,8 @@ class AutoResponseEntryProperties(Properties):
                 id='react_on_others',
                 name=_('Реагировать, если отправитель - не я'),
                 description=_(
-                    'Вкл.: бот обрабатывает команду, если ее отправили не вы.\nВыкл.: бот не обрабатывает команду, если ее отправили не вы.'
+                    'Вкл.: бот обрабатывает команду, если ее отправили не вы.\n'
+                    'Выкл.: бот не обрабатывает команду, если ее отправили не вы.',
                 ),
                 default_value=True,
             ),
@@ -97,23 +92,15 @@ class AutoResponseEntryProperties(Properties):
             ),
         )
 
-        self.hooks = self.attach_node(
-            ListParameter(
-                id='hooks',
-                name='$props.auto_response.*.hooks:name',
-                description='$props.auto_response.*.hooks:description',
-                default_factory=list,
-            ),
-        )
-
 
 class AutoResponseProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='auto_response',
-            name=_('💬 Команды'),
+            name=_('Команды'),
             description=_('nodesc'),
             file='config/auto_response.toml',
+            flags=[TelegramUIEmojiFlag('💬')],
         )
 
     @property

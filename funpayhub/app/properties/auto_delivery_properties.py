@@ -5,6 +5,7 @@ from types import MappingProxyType
 
 from funpayhub.lib.properties import Node, Properties, StringParameter, ToggleParameter
 from funpayhub.lib.translater import _
+from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class AutoDeliveryEntryProperties(Properties):
@@ -39,9 +40,10 @@ class AutoDeliveryEntryProperties(Properties):
         self.goods_source = self.attach_node(
             StringParameter(
                 id='goods_source',
-                name=_('🗳 Источник товаров'),
+                name=_('Источник товаров'),
                 description=_('nodesc'),
                 default_value='',
+                flags=[TelegramUIEmojiFlag('🗳')],
             ),
         )
 
@@ -50,7 +52,7 @@ class AutoDeliveryEntryProperties(Properties):
                 id='delivery_text',
                 name=_('Текст выдачи'),
                 description=_('nodesc'),
-                default_value='Thank you for buying this staff!',
+                default_value='',
             ),
         )
 
@@ -59,9 +61,10 @@ class AutoDeliveryProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='auto_delivery',
-            name=_('📦 Настройки автовыдачи'),
+            name=_('Настройки автовыдачи'),
             description=_('nodesc'),
             file='config/auto_delivery.toml',
+            flags=[TelegramUIEmojiFlag('📦')],
         )
 
     @property

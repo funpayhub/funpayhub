@@ -12,6 +12,7 @@ from .plugin_properties import PluginProperties
 from .general_properties import GeneralProperties
 from .telegram_properties import TelegramProperties
 from .auto_delivery_properties import AutoDeliveryProperties
+from ...lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 T = TypeVar('T', bound=Properties)
@@ -21,9 +22,10 @@ class FunPayHubProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='props',
-            name=_('⚙️ Настройки'),
+            name=_('️Настройки'),
             description=_('Корневой раздел настроек FunPay Hub.'),
             file='config/funpayhub.toml',
+            flags=[TelegramUIEmojiFlag('⚙')],
         )
 
         self.version = self.attach_node(
@@ -43,11 +45,14 @@ class FunPayHubProperties(Properties):
         self.message_templates = self.attach_node(
             ListParameter[str](
                 id='message_templates',
-                name=_('📑 Быстрые сообщения'),
+                name=_('Быстрые сообщения'),
                 description=_(
-                    'Список заранее подготовленных текстов для быстрого ответа.\nВы можете сохранить часто используемые сообщения и затем выбирать их из списка при ответе на входящие сообщения, не вводя текст вручную.'
+                    'Список заранее подготовленных текстов для быстрого ответа.\n'
+                    'Вы можете сохранить часто используемые сообщения и затем выбирать их '
+                    'из списка при ответе на входящие сообщения, не вводя текст вручную.',
                 ),
                 default_factory=list,
+                flags=[TelegramUIEmojiFlag('📑')],
             ),
         )
         self.plugin_properties = self.attach_node(PluginProperties())

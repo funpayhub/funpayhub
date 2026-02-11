@@ -22,3 +22,24 @@ class ParameterFlags:
 
 class PropertiesFlags:
     HIDE = auto()
+
+
+class TelegramUIEmojiFlag:
+    def __init__(self, emoji: str) -> None:
+        self._emoji = emoji
+
+    @property
+    def emoji(self) -> str:
+        return self._emoji
+
+    def __eq__(self, o: object) -> bool:
+        if isinstance(o, type) and issubclass(o, TelegramUIEmojiFlag):
+            return True
+        if isinstance(o, TelegramUIEmojiFlag):
+            return self.emoji == o.emoji
+        if isinstance(o, str):
+            return self.emoji == o
+        return False
+
+    def __hash__(self) -> int:
+        return id(self)
