@@ -1,5 +1,14 @@
 from __future__ import annotations
 
+
+__all__ = [
+    'Translater',
+    'set_translater',
+    'get_translater',
+    '_',
+]
+
+
 import re
 import gettext
 from pathlib import Path
@@ -7,6 +16,7 @@ from collections import defaultdict
 
 
 TRANSLATION_RE = re.compile(r'(?<!\$)\$[a-zA-Z0-9._\-:]+')
+__TRANSLATER__: Translater | None = None
 
 
 class Translater:
@@ -61,3 +71,28 @@ class Translater:
             text,
         )
         return text.replace('__ESCAPED_DOLLAR__', '$')
+
+
+class TranslatableStr(str):
+    def __new__(cls, *args, **kwargs):
+        return super().__new__(cls, *args, **kwargs)
+
+    def __str__(self) -> str:
+        tr = get_translater()
+        return tr.translate(self)
+
+
+def set_translater(translater: Translater) -> None:
+    global __TRANSLATER__
+    __TRANSLATER__ = translater
+
+
+def get_translater() -> Translater:
+    global __TRANSLATER__
+    if __TRANSLATER__ is None:
+        __TRANSLATER__ = Translater()
+    return __TRANSLATER__
+
+
+def _(_: str, /) -> TranslatableStr:
+    return TranslatableStr(_)
