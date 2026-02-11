@@ -91,7 +91,7 @@ async def build_menu_navigation_buttons(
     if ctx.callback_data.history and back_button:
         kb.add_callback_button(
             button_id='back',
-            text=translater.translate('$back'),
+            text=translater.translate('◀️ Назад'),
             callback_data=ctx.callback_data.pack_history(),
         )
 

@@ -230,7 +230,7 @@ async def handler(
             or any(c in INVALID_CHARS for c in filename)
             or any(ord(c) < 32 for c in filename)
         ):
-            await message.reply(translater.translate('$err_goods_txt_source_invalid_name'))
+            await message.reply(translater.translate('❌ Невалидное имя файла.'))
             return
 
         source = await goods_manager.add_source(FileGoodsSource, Path('storage/goods') / filename)

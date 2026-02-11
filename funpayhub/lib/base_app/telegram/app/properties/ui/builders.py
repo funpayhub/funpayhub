@@ -231,7 +231,9 @@ class ListParameterMenuBuilder(MenuBuilder, menu_id='list_param_menu', context_t
 class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', context_type=MenuCtx):
     async def build(self, ctx: MenuCtx, translater: Tr, properties: Props) -> Menu:
         entry = properties.get_node(ctx.entry_path)
-        text = translater.translate('$enter_new_value_message').format(
+        text = translater.translate(
+            'Введите новое значение для <b>{parameter_name}</b>\n\n{parameter_description}\n\nТекущее значение:\n<b>{current_parameter_value}</b>'
+        ).format(
             parameter_name=translater.translate(entry.name),
             parameter_description=translater.translate(entry.description),
             current_parameter_value=html.escape(str(entry.value)),
@@ -240,7 +242,7 @@ class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', con
         footer_keyboard = KeyboardBuilder()
         footer_keyboard.add_callback_button(
             button_id='clear_state',
-            text=translater.translate('$clear_state'),
+            text=translater.translate('🔘 Отмена'),
             callback_data=ui_cbs.ClearState(
                 delete_message=False,
                 open_previous=True,
@@ -262,7 +264,7 @@ class AddListItemMenuBuilder(MenuBuilder, menu_id='add_list_param_item', context
         footer_keyboard = KeyboardBuilder()
         footer_keyboard.add_callback_button(
             button_id='clear_state',
-            text=translater.translate('$clear_state'),
+            text=translater.translate('🔘 Отмена'),
             callback_data=ui_cbs.ClearState(
                 delete_message=False,
                 open_previous=True,

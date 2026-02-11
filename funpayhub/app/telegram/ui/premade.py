@@ -34,7 +34,7 @@ class AddRemoveButtonBaseModification(
         if not ctx.data.get(key):
             menu.footer_keyboard.add_callback_button(
                 button_id='delete',
-                text=translater.translate('$delete'),
+                text=translater.translate('🗑️ Удалить'),
                 callback_data=OpenMenu(
                     menu_id=ctx.menu_id,
                     menu_page=ctx.menu_page,
@@ -49,13 +49,13 @@ class AddRemoveButtonBaseModification(
             menu.footer_keyboard.add_row(
                 Button.callback_button(
                     button_id='confirm_delete',
-                    text=translater.translate('$delete'),
+                    text=translater.translate('🗑️ Удалить'),
                     callback_data=delete_callback,
                     style='danger',
                 ),
                 Button.callback_button(
                     button_id='cancel_delete',
-                    text=translater.translate('$cancel'),
+                    text=translater.translate('🔘 Отмена'),
                     callback_data=OpenMenu(
                         menu_id=ctx.menu_id,
                         menu_page=ctx.menu_page,

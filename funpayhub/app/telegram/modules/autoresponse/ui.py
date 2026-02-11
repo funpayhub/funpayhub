@@ -27,7 +27,7 @@ class AddCommandButtonModification(
     async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr) -> Menu:
         menu.footer_keyboard.add_callback_button(
             button_id='add_command',
-            text=translater.translate('$add_command'),
+            text=translater.translate('➕ Добавить команду'),
             callback_data=cbs.AddCommand(from_callback=ctx.callback_data).pack(),
         )
         return menu

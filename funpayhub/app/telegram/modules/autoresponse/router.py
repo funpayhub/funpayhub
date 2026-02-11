@@ -46,7 +46,7 @@ async def set_state(
     msg = await StateUIContext(
         menu_id=MenuIds.state_menu,
         trigger=query,
-        text=translater.translate('$add_command_message'),
+        text=translater.translate('➕ Введите команду.'),
         delete_on_clear=False,
         open_previous_on_clear=True,
     ).build_and_apply(tg_ui, query.message)

@@ -90,7 +90,7 @@ async def _generate_and_send_new_goods_info(
 async def _get_source(trigger: CallbackQuery | Message, source_id: str) -> GoodsSource | None:
     source = get_wfd().goods_manager.get(source_id)
     if source is None:
-        text = get_wfd().translater.translate('$goods_source_not_found')
+        text = get_wfd().translater.translate('❌ Источник товаров %s не найден.')
         if isinstance(trigger, CallbackQuery):
             await trigger.answer(text, show_alert=True)
         elif isinstance(trigger, Message):
@@ -180,7 +180,11 @@ async def upload_goods(message: Message, state: FSMContext, translater: Tr) -> N
     try:
         new_goods = await _get_goods_from_message(message)
     except:
-        await message.reply(translater.translate('$err_fetching_goods'))
+        await message.reply(
+            translater.translate(
+                '❌ Не удалось получить товары из сообщения или файла. Проверьте корректность данных. Подробности в логах.'
+            )
+        )
         return
 
     if isinstance(data, states.UploadingGoods):
@@ -211,7 +215,11 @@ async def remove_goods(message: Message, state: FSMContext, translater: Tr) -> N
             amount = end_index - start_index + 1
 
     if start_index is None or amount is None or start_index < 0:
-        await message.reply(translater.translate('$err_removing_goods_wrong_format'))
+        await message.reply(
+            translater.translate(
+                '❌ Неверный формат ввода. Укажите номер товара или диапазон через дефис, например: <code>1</code> или <code>1-7</code>.'
+            )
+        )
         return
 
     await _get_data_clear_state(state)
@@ -230,7 +238,9 @@ async def set_adding_txt_source_state(
     msg = await StateUIContext(
         menu_id=MenuIds.state_menu,
         delete_on_clear=True,
-        text=translater.translate('$add_goods_txt_source_text'),
+        text=translater.translate(
+            '📄 Отправьте название файла или сам файл. Если вы пришлете файл, будет использовать его имя.'
+        ),
         trigger=query,
     ).build_and_answer(tg_ui, query.message)
 
@@ -254,7 +264,7 @@ async def add_goods_txt_source(
     filename = msg.text if msg.text else msg.document.file_name if msg.document else ''
 
     if not filename:
-        await msg.reply(translater.translate('$err_goods_txt_source_name_empty'))
+        await msg.reply(translater.translate('❌ Имя файла не может быть пустым.'))
         return
 
     if (
@@ -263,7 +273,7 @@ async def add_goods_txt_source(
         or any(c in INVALID_CHARS for c in filename)
         or any(ord(c) < 32 for c in filename)
     ):
-        await msg.reply(translater.translate('$err_goods_txt_source_invalid_name'))
+        await msg.reply(translater.translate('❌ Невалидное имя файла.'))
         return
 
     path = Path('storage/goods') / filename
@@ -272,7 +282,7 @@ async def add_goods_txt_source(
     new_id = 'file://' + str(path)
 
     if new_id in goods_manager:
-        await msg.reply(translater.translate('$err_goods_txt_source_already_exists'))
+        await msg.reply(translater.translate('❌ Файл %s уже существует.'))
         return
 
     await state.clear()

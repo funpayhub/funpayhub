@@ -68,7 +68,7 @@ class AddAutoDeliveryRuleMenuBuilder(
 
         menu.footer_keyboard.add_callback_button(
             button_id='cancel',
-            text=translater.translate('$clear_state'),
+            text=translater.translate('🔘 Отмена'),
             callback_data=ClearState(
                 delete_message=False,
                 open_previous=True,
@@ -151,7 +151,7 @@ class NewSaleNotificationMenuBuilder(
         )
         menu.header_keyboard.add_callback_button(
             button_id='response',
-            text=translater.translate('$new_message_ui.reply'),
+            text=translater.translate('🗨️ Ответить'),
             callback_data=SendMessage(
                 to=ctx.new_sale_event.message.chat_id,
                 name=order.counterparty.username,
@@ -173,7 +173,7 @@ class AddOfferButtonModification(
     async def modify(self, ctx: NodeMenuCtx, menu: Menu, translater: Tr) -> Menu:
         btn = Button.callback_button(
             button_id='add_rule',
-            text=translater.translate('$add_offer_rule'),
+            text=translater.translate('➕ Добавить правило'),
             callback_data=cbs.OpenAddAutoDeliveryRuleMenu(from_callback=ctx.callback_data).pack(),
             row=True,
         )
@@ -207,7 +207,7 @@ class ReplaceSourcesListButtonModification(
 
                 btn = Button.callback_button(
                     button_id='bind_goods_source',
-                    text=translater.translate('$bind_goods_source'),
+                    text=translater.translate('🗳 Источник товаров'),
                     callback_data=cbs.AutoDeliveryOpenGoodsSourcesList(
                         rule=ctx.entry_path[-1],
                         from_callback=ctx.callback_data,

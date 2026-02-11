@@ -68,7 +68,7 @@ class FormatterListMenuBuilder(
             text = translater.translate(
                 '$formatters:show_all'
                 if ctx.data.get('by_category')
-                else '$formatters:show_categories',
+                else '$formatters:show_categories'
             )
             footer_keyboard.add_callback_button(
                 button_id='open_formatters_by_category',
@@ -106,7 +106,7 @@ class FormatterInfoMenuBuilder(
 
         text = f"""{translater.translate(formatter.name)}
 
-{translater.translate('$formatters:categories')}: <i>{categories_text}.</i>
+{translater.translate('Категории')}: <i>{categories_text}.</i>
 
 {translater.translate(formatter.description)}
 """

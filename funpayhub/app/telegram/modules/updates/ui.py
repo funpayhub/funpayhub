@@ -43,18 +43,18 @@ class UpdateMenuBuilder(MenuBuilder, menu_id=MenuIds.update, context_type=Update
     async def build(self, ctx: UpdateMenuContext, translater: Tr) -> Menu:
         menu = Menu(finalizer=StripAndNavigationFinalizer())
         if ctx.update_info is None:
-            menu.main_text = translater.translate('$no_updates_available')
+            menu.main_text = translater.translate('✅ Установлена последняя версия FunPay Hub.')
             return menu
 
         desc = html.escape(ctx.update_info.description)
         if len(desc) > 3000:
             desc = (
-                f'{desc[:3000]}...\n\n{translater.translate("$full_changelog")}'
+                f'{desc[:3000]}...\n\n{translater.translate("Полный список изменений")}'
                 ': https://github.com/funpayhub/funpayhub/releases/latest'
             )
 
         menu.main_text = (
-            f'{translater.translate("$new_update_available")}\n\n'
+            f'{translater.translate("🔥 <b>Доступно новое обновление</b>!")}\n\n'
             f'<b>{html.escape(ctx.update_info.title)}</b>\n\n'
             f'{desc}'
         )
@@ -62,7 +62,7 @@ class UpdateMenuBuilder(MenuBuilder, menu_id=MenuIds.update, context_type=Update
         menu.main_keyboard = KeyboardBuilder()
         menu.main_keyboard.add_callback_button(
             button_id='download_update',
-            text=translater.translate('$download_update'),
+            text=translater.translate('🔽 Скачать обновление'),
             callback_data=cbs.DownloadUpdate(url=ctx.update_info.url).pack(),
         )
 
@@ -78,11 +78,11 @@ class InstallUpdateMenuBuilder(
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='install_update',
-            text=translater.translate('$install_update'),
+            text=translater.translate('⏬ Установить обновление'),
             callback_data=cbs.InstallUpdate(instance_id=hub.instance_id).pack_compact(),
         )
 
         return Menu(
-            main_text=translater.translate('$install_update_text'),
+            main_text=translater.translate('✅ Обновление скачано.'),
             main_keyboard=kb,
         )
