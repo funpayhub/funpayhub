@@ -8,17 +8,23 @@ from aiogram import Bot, Router
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.filters import StateFilter
 
+from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.plugins.installers import (
     HTTPSPluginInstaller,
     AiogramPluginInstaller,
     PluginInstallationError,
 )
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
+from funpayhub.lib.base_app.telegram.utils import delete_message
+from funpayhub.lib.plugins.repository.loaders import URLRepositoryLoader
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
 
 import funpayhub.app.telegram.modules.plugins.states
 import funpayhub.app.telegram.modules.plugins.callbacks
+from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.telegram.ui.builders.context import StateUIContext
 
 from . import (
+    ui,
     states,
     callbacks as cbs,
 )
@@ -30,6 +36,8 @@ if TYPE_CHECKING:
 
     from funpayhub.lib.plugins import PluginManager
     from funpayhub.lib.translater import Translater as Tr
+    from funpayhub.lib.telegram.ui import UIRegistry
+    from funpayhub.lib.plugins.repository.manager import RepositoriesManager
 
 
 router = r = Router(name='fph:plugins')
@@ -171,3 +179,57 @@ async def install_plugin(
         return
 
     await message.answer(translater.translate('$plugin_installed_successfully'))
+
+
+# Repos
+@router.callback_query(cbs.AddRepository.filter())
+async def activate_add_repository_state(
+    query: CallbackQuery,
+    translater: Tr,
+    tg_ui: UIRegistry,
+    state: FSMContext,
+) -> None:
+    msg = await StateUIContext(
+        trigger=query,
+        menu_id=MenuIds.state_menu,
+        text=translater.translate('$add_repository_state_text'),
+    ).build_and_answer(tg_ui, query.message)
+
+    await states.AddingRepository(state_message=msg, query=query).set(state)
+    await query.answer()
+
+
+@router.message(states.AddingRepository.filter(), lambda msg: msg.text)
+async def add_repository_state(
+    message: Message,
+    state: FSMContext,
+    repositories_manager: RepositoriesManager,
+    translater: Tr,
+    tg_ui: UIRegistry,
+) -> None:
+    data = await states.AddingRepository.get(state)
+    await states.AddingRepository.clear(state)
+    delete_message(data.state_message)
+
+    try:
+        repo = await URLRepositoryLoader(url=message.text).load()
+        repositories_manager.register_repository(repo)
+    except Exception as e:
+        msg = translater.translate('$error_downloading_repository')
+        if isinstance(e, TranslatableException):
+            msg += '\n\n' + e.format_args(translater.translate(e.message))
+        else:
+            msg += '\n\n' + translater.translate('$see_logs')
+
+        await message.reply(msg)
+        return
+
+    await ui.RepoInfoMenuContext(
+        trigger=message,
+        menu_id=MenuIds.repository_info,
+        repo_id=repo.id,
+        callback_override=OpenMenu(
+            menu_id=MenuIds.repository_info,
+            history=data.callback_data.history,
+        ),
+    ).build_and_answer(tg_ui, message)

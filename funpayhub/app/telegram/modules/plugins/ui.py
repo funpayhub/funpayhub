@@ -3,6 +3,8 @@ from __future__ import annotations
 
 __all__ = [
     'PluginMenuContext',
+    'RepoInfoMenuContext',
+    'RepoPluginInfoMenuContext',
     'PluginsListMenuBuilder',
     'PluginInfoMenuBuilder',
     'ReposListMenuBuilder',
@@ -32,8 +34,8 @@ from . import callbacks as cbs
 
 if TYPE_CHECKING:
     from funpayhub.lib.plugins import PluginManager
-    from funpayhub.lib.plugins.repository.manager import RepositoriesManager
     from funpayhub.lib.translater import Translater as Tr
+    from funpayhub.lib.plugins.repository.manager import RepositoriesManager
 
     from funpayhub.app.main import FunPayHub
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
@@ -247,7 +249,7 @@ class ReposListMenuBuilder(MenuBuilder, menu_id=MenuIds.repositories_list, conte
         menu.footer_keyboard.add_callback_button(
             button_id='add_repository',
             text=translater.translate('$add_repository'),
-            callback_data='dummy',
+            callback_data=cbs.AddRepository(from_callback=ctx.callback_data).pack(),
         )
 
         menu.main_text = translater.translate('$repositories_list_menu_text')
@@ -256,7 +258,9 @@ class ReposListMenuBuilder(MenuBuilder, menu_id=MenuIds.repositories_list, conte
 
 
 class RepoInfoMenuBuilder(
-    MenuBuilder, menu_id=MenuIds.repository_info, context_type=RepoInfoMenuContext
+    MenuBuilder,
+    menu_id=MenuIds.repository_info,
+    context_type=RepoInfoMenuContext,
 ):
     async def build(
         self,
@@ -284,7 +288,9 @@ class RepoInfoMenuBuilder(
 
 
 class RepoPluginInfoMenuBuilder(
-    MenuBuilder, menu_id=MenuIds.repo_plugin_info, context_type=RepoPluginInfoMenuContext
+    MenuBuilder,
+    menu_id=MenuIds.repo_plugin_info,
+    context_type=RepoPluginInfoMenuContext,
 ):
     async def build(
         self,

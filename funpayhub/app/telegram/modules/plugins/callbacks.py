@@ -32,3 +32,7 @@ class InstallPlugin(CallbackData, identifier='install_plugin'):
     2 - from repository
     3 - etc
     """  # todo
+
+
+# Repos
+class AddRepository(CallbackData, identifier='add_repository'): ...
