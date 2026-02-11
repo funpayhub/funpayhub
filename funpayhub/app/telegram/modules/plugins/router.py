@@ -69,7 +69,7 @@ async def set_plugin_status(
 
     text = translater.translate('$plugin_enabled' if callback_data.status else '$plugin_disabled')
     text += '\n' + translater.translate(
-        '🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub.'
+        '🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub.',
     )
 
     await query.answer(text, show_alert=True)
@@ -113,7 +113,7 @@ async def install_plugin(
     if plugin_manager.installation_lock.locked():
         await query.answer(
             translater.translate(
-                '❌ В данный момент уже устанавливается какой-то плагин.\nДождитесь окончания текущей установки и повторите попытку.'
+                '❌ В данный момент уже устанавливается какой-то плагин.\nДождитесь окончания текущей установки и повторите попытку.',
             ),
             show_alert=True,
         )
@@ -121,7 +121,7 @@ async def install_plugin(
 
     msg = await query.message.answer(
         text=translater.translate(
-            'Пришлите или перешлите сообщение с ZIP архивом плагина / ссылкой на ZIP архив плагина.'
+            'Пришлите или перешлите сообщение с ZIP архивом плагина / ссылкой на ZIP архив плагина.',
         ),
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
@@ -156,8 +156,8 @@ async def install_plugin(
     if plugin_manager.installation_lock.locked():
         await message.reply(
             translater.translate(
-                '❌ В данный момент уже устанавливается какой-то плагин.\nДождитесь окончания текущей установки и повторите попытку.'
-            )
+                '❌ В данный момент уже устанавливается какой-то плагин.\nДождитесь окончания текущей установки и повторите попытку.',
+            ),
         )
 
     args = ()
@@ -176,8 +176,8 @@ async def install_plugin(
     else:
         await message.reply(
             translater.translate(
-                'Пришлите или перешлите сообщение с ZIP архивом плагина / ссылкой на ZIP архив плагина.'
-            )
+                'Пришлите или перешлите сообщение с ZIP архивом плагина / ссылкой на ZIP архив плагина.',
+            ),
         )
         return
 
@@ -211,7 +211,7 @@ async def activate_add_repository_state(
     msg = await StateUIContext(
         trigger=query,
         menu_id=MenuIds.state_menu,
-        text=translater.translate('$add_repository_state_text'),
+        text=translater.translate('🔗 Пришлите ссылку на репозиторий.'),
     ).build_and_answer(tg_ui, query.message)
 
     await states.AddingRepository(state_message=msg, query=query).set(state)
@@ -234,11 +234,11 @@ async def add_repository_state(
         repo = await URLRepositoryLoader(url=message.text).load()
         repositories_manager.register_repository(repo)
     except Exception as e:
-        msg = translater.translate('$error_downloading_repository')
+        msg = translater.translate('❌ Не удалось установить репозиторий.')
         if isinstance(e, TranslatableException):
             msg += '\n\n' + e.format_args(translater.translate(e.message))
         else:
-            msg += '\n\n' + translater.translate('$see_logs')
+            msg += '\n\n' + translater.translate('Подробности в логах.')
 
         await message.reply(msg)
         return
