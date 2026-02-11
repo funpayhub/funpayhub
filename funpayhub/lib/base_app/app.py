@@ -20,13 +20,14 @@ from loggers import (
 )
 
 from funpayhub.lib.plugins import PluginManager
-from ..plugins.repository.manager import RepositoriesManager
 from funpayhub.lib.exceptions import GoodsError
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
 
 from .telegram import TelegramApp
 from .workflow_data import WorkflowData
+from ..plugins.repository.manager import RepositoriesManager
+
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -72,8 +73,11 @@ class App:
         self._goods_manager = GoodsSourcesManager()
         self._plugin_manager = plugin_manager
         self._plugin_manager._safe_mode = self._safe_mode
-        self._repositories_manager = repositories_manager if repositories_manager is not None \
+        self._repositories_manager = (
+            repositories_manager
+            if repositories_manager is not None
             else RepositoriesManager('storage/repositories')
+        )
 
         self._workflow_data = workflow_data if workflow_data is not None else WorkflowData()
         self._dispatcher = dispatcher
@@ -115,6 +119,7 @@ class App:
             if self._setup_completed:
                 return
 
+            await self._repositories_manager._load_repositories()
             await self._load_file_goods_sources()
             await self._load_plugins()
 
