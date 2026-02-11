@@ -45,7 +45,7 @@ msgid "$props:description"
 msgstr "Корневой раздел настроек FunPay Hub."
 
 msgid "$props.message_templates:names"
-msgstr "📑 Быстре сообщения"
+msgstr "📑 Быстрые сообщения"
 
 msgid "$props:message_templates:description"
 msgstr ""
@@ -160,6 +160,13 @@ msgstr "🔑 Пароль"
 
 msgid "$props.telegram.general.password:description"
 msgstr "Пароль от Telegram панели управления FunPayHub."
+
+msgid "$props.telegram.general.authorized_users:name"
+msgstr "Авторизированые пользователи"
+
+msgid "$props.telegram.general.authorized_users:description"
+msgstr "ID пользователей, у которых есть доступ к телеграм боту."
+
 
 # Telegram appearance
 msgid "$props.telegram.appearance:name"
@@ -501,6 +508,11 @@ msgstr "Текст ответного сообщения."
 msgid "$telegram_notifications"
 msgstr "🔔 Уведомления"
 
+msgid "$telegram_notifications:name"
+msgstr "🔔 Telegram уведомления"
+
+msgid "$telegram_notifications:description"
+msgstr "__empty__"
 
 msgid "$telegram_notifications.system:name"
 msgstr "Системные"
@@ -557,6 +569,53 @@ msgid "$telegram_notifications.review:description"
 msgstr ""
 "Список чатов, подписанных на уведомления о новых / измененных и удаленных отзывах "
 "(формат: \"chat_id.thread_it\")."
+
+
+msgid "$telegram_notifications.review_1:name"
+msgstr "Отзывы с 1 звездой"
+
+msgid "$telegram_notifications.review_2:name"
+msgstr "Отзывы с 2 звездами"
+
+msgid "$telegram_notifications.review_3:name"
+msgstr "Отзывы с 3 звездами"
+
+msgid "$telegram_notifications.review_4:name"
+msgstr "Отзывы с 4 звездами"
+
+msgid "$telegram_notifications.review_5:name"
+msgstr "Отзывы с 5 звездами"
+
+msgid "$telegram_notifications.review_1:description"
+msgstr "__empty__"
+
+msgid "$telegram_notifications.review_2:description"
+msgstr "__empty__"
+
+msgid "$telegram_notifications.review_3:description"
+msgstr "__empty__"
+
+msgid "$telegram_notifications.review_4:description"
+msgstr "__empty__"
+
+msgid "$telegram_notifications.review_5:description"
+msgstr "__empty__"
+
+
+# ----------------------------------------------------
+# ------------------ Plugins props -------------------
+# ----------------------------------------------------
+msgid "$props:plugin_properties:name"
+msgstr "🧩 Плагины"
+
+msgid "$props:plugin_properties:description"
+msgstr "Настройки плагинов."
+
+msgid "$props:plugin_properties:disabled_plugins:name"
+msgstr "⛔ Отключенные плагины"
+
+msgid "$props:plugin_properties:disabled_plugins:description"
+msgstr "Список ID отключенных плагинов."
 
 
 # Messages
@@ -731,6 +790,13 @@ msgstr ""
 "Пример вывода: <code>16161616</code>\n\n"
 
 
+msgid "$formatter:goods:name"
+msgstr "🗳 Товары ($goods)"
+
+msgid "$formatter:goods:description"
+msgstr "Подставляет товары."
+
+
 # ----------------------------------------------------
 # ----------------------- Logs -----------------------
 # ----------------------------------------------------
@@ -890,7 +956,7 @@ msgstr "⤵ Установить"
 
 
 msgid "$install_plugin_choice"
-msgstr "⤵ sВыберите вариант установки плагина."
+msgstr "⤵ Выберите вариант установки плагина."
 
 msgid "$install_plugin_from_zip"
 msgstr "📦 Из ZIP архива"
