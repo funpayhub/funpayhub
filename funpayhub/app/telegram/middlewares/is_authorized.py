@@ -47,11 +47,15 @@ class IsAuthorizedMiddleware(BaseMiddleware):
         properties: FunPayHubProperties = data['properties']
 
         if from_user.id not in properties.telegram.general.authorized_users.value:
-            logger.warning(
-                'Пользователь %s (%d) пытается получить доступ к Telegram боту!',
-                from_user.username,
-                from_user.id,
-            )
+            if isinstance(event, CallbackQuery) or (
+                isinstance(event, Message) and event.chat.type == 'private'
+            ):
+                logger.warning(
+                    'Пользователь %s (%d) пытается получить доступ к Telegram боту!',
+                    from_user.username,
+                    from_user.id,
+                )
+
             if isinstance(event, CallbackQuery):
                 await event.answer(random.choice(messages), show_alert=True)
             return None
