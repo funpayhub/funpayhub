@@ -14,6 +14,7 @@ from aiohttp import ClientSession
 from loggers import plugins as logger
 
 from funpayhub.lib.exceptions import PluginInstallationError
+from funpayhub.lib.translater import _
 
 
 class PluginInstaller[T: Any](ABC):
@@ -51,11 +52,11 @@ class PluginInstaller[T: Any](ABC):
         pass
 
     async def install_wrapped(self, overwrite: bool = False) -> Path:
-        logger.info('Installing plugin from source %s ...', self._source)
+        logger.info(_('Installing plugin from source %s ...'), self._source)
         try:
             return await self.install(overwrite=overwrite)
         except Exception as e:
-            logger.error('Failed to install plugin from source %s.', self.source, exc_info=True)
+            logger.error(_('Failed to install plugin from source %s.'), self.source, exc_info=True)
             if isinstance(e, PluginInstallationError):
                 raise
             raise PluginInstallationError('See logs.') from e

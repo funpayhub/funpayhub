@@ -1,4 +1,5 @@
 from __future__ import annotations
+from funpayhub.lib.translater import _
 
 import re
 from typing import TYPE_CHECKING, Any
@@ -161,9 +162,9 @@ async def deliver_goods(
         else:
             reason = 'Произошла непредвиденная ошибка. Подробности в логах.'
             logger.error(
-                'Произошла непредвиденная ошибка при выдаче товаров по заказу %s.',
+                _('Произошла непредвиденная ошибка при выдаче товаров по заказу %s.',
                 order.id,
-                exc_info=True,
+                exc_info=)True,
             )
 
         error_text = ERR_TEXT.format(

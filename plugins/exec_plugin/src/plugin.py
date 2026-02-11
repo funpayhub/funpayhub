@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from funpayhub.lib.properties import Properties
+from funpayhub.lib.translater import _
 from funpayhub.lib.telegram.ui import MenuBuilder
 from funpayhub.lib.properties.parameter import ListParameter, StringParameter, ToggleParameter
 
@@ -60,7 +61,7 @@ class ExecPluginProperties(Properties):
 
 class ExecPlugin(Plugin):
     async def pre_setup(self) -> None:
-        self.logger.info('Exec plugin ready to setup!')
+        self.logger.info(_('Exec plugin ready to setup!'))
 
     async def properties(self) -> Properties:
         return ExecPluginProperties()

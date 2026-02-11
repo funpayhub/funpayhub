@@ -13,6 +13,7 @@ from funpayhub.lib.properties import (
     Properties as Props,
     parameter as param,
 )
+from funpayhub.lib.translater import _
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, KeyboardBuilder
 from funpayhub.lib.base_app.telegram.app.ui import (
     callbacks as ui_cbs,
@@ -39,7 +40,7 @@ class ToggleParamButtonBuilder(ButtonBuilder, button_id='toggle_parameter', cont
         entry = properties.get_node(ctx.entry_path)
         if not isinstance(entry, param.ToggleParameter):
             raise TranslatableException(
-                '%s is %s, not a `ToggleParameter`.',
+                _('%s is %s, not a `ToggleParameter`.'),
                 ctx.entry_path,
                 type(entry),
             )
@@ -232,7 +233,7 @@ class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', con
     async def build(self, ctx: MenuCtx, translater: Tr, properties: Props) -> Menu:
         entry = properties.get_node(ctx.entry_path)
         text = translater.translate(
-            'Введите новое значение для <b>{parameter_name}</b>\n\n{parameter_description}\n\nТекущее значение:\n<b>{current_parameter_value}</b>'
+            'Введите новое значение для <b>{parameter_name}</b>\n\n{parameter_description}\n\nТекущее значение:\n<b>{current_parameter_value}</b>',
         ).format(
             parameter_name=translater.translate(entry.name),
             parameter_description=translater.translate(entry.description),

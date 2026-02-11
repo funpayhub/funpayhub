@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from funpayhub.lib.translater import _
+
 
 __all__ = ['PluginManager']
 
@@ -63,7 +65,7 @@ class PluginManager[PluginCLS]:
         self._disabled_plugins: set[str] = set()
 
         if self._plugins_path not in sys.path:
-            logger.info('Adding %s to sys.path.', str(self._plugins_path))
+            logger.info(_('Adding %s to sys.path.'), str(self._plugins_path))
             sys.path.append(str(self._plugins_path))
 
         self._installation_lock = asyncio.Lock()
@@ -96,35 +98,35 @@ class PluginManager[PluginCLS]:
         return plugin not in self.disabled_plugins
 
     async def load_plugins(self) -> None:
-        logger.info('Loading plugins...')
+        logger.info(_('Loading plugins...'))
         for i in self._plugins_path.iterdir():
-            logger.debug('Checking %s...', str(i))
+            logger.debug(_('Checking %s...'), str(i))
             if not i.is_dir():
-                logger.debug('Ignoring %s: not a directory.', str(i))
+                logger.debug(_('Ignoring %s: not a directory.'), str(i))
                 continue
             self.load_plugin(i)
 
     def load_plugin(self, plugin_path: str | Path, instantiate: bool = True) -> None:
-        logger.info('Loading plugin %s...', str(plugin_path))
+        logger.info(_('Loading plugin %s...'), str(plugin_path))
 
         module_name = Path(plugin_path).name
         if not module_name.isidentifier() or keyword.iskeyword(module_name):
-            logger.warning('Ignoring %s: not a valid plugin directory.', str(plugin_path))
+            logger.warning(_('Ignoring %s: not a valid plugin directory.'), str(plugin_path))
             return
 
-        logger.info('Loading plugin manifest from %s.', str(plugin_path))
+        logger.info(_('Loading plugin manifest from %s.'), str(plugin_path))
         try:
             manifest = self._load_plugin_manifest(plugin_path)
         except:
             logger.error(
-                'Unable to load plugin manifest for %s. Skipping.',
+                _('Unable to load plugin manifest for %s. Skipping.'),
                 str(plugin_path),
                 exc_info=True,
             )
             return
 
         if manifest.plugin_id in self._plugins:
-            logger.warning('Plugin %s already loaded. Skipping.', manifest.plugin_id)
+            logger.warning(_('Plugin %s already loaded. Skipping.'), manifest.plugin_id)
             return
 
         exception: PluginInstantiationError | None = None
@@ -147,7 +149,9 @@ class PluginManager[PluginCLS]:
             logger.error(exception.message, *exception.args)
 
         else:
-            logger.info('Loading entry point %s of %s.', manifest.entry_point, manifest.plugin_id)
+            logger.info(
+                _('Loading entry point %s of %s.'), manifest.entry_point, manifest.plugin_id
+            )
             try:
                 plugin_instance = self._load_entry_point(plugin_path, manifest)
             except Exception as e:
@@ -156,7 +160,7 @@ class PluginManager[PluginCLS]:
                     exception = e
                 else:
                     logger.error(
-                        'An error occurred while loading entry point %s of %s.',
+                        _('An error occurred while loading entry point %s of %s.'),
                         manifest.entry_point,
                         manifest.plugin_id,
                         exc_info=True,
@@ -196,18 +200,20 @@ class PluginManager[PluginCLS]:
         for step_name in self.steps_order:
             step = self._steps.get(step_name)
             if step is None:
-                logger.warning('Step %s is not in plugin manager. Skipping.', step_name)
+                logger.warning(_('Step %s is not in plugin manager. Skipping.'), step_name)
                 continue
 
             for plugin_id, plugin in self._plugins.items():
                 if not plugin.plugin:
                     logger.debug(
-                        'Plugin %s does not have a plugin instance. Skipping step %s.',
+                        _('Plugin %s does not have a plugin instance. Skipping step %s.'),
                         plugin.manifest.plugin_id,
                         step_name,
                     )
                     continue
-                logger.info('Running %s step for plugin %s.', step_name, plugin.manifest.plugin_id)
+                logger.info(
+                    _('Running %s step for plugin %s.'), step_name, plugin.manifest.plugin_id
+                )
                 await step(plugin)
 
     def _load_entry_point(self, plugin_path: str | Path, manifest: PluginManifest) -> PluginCLS:
