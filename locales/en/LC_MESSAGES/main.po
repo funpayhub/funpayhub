@@ -312,16 +312,16 @@ msgstr ""
 #: funpayhub/app/funpay/middlewares/log_message_middleware.py:16
 #, python-brace-format
 msgid "Новое сообщение от {author_username} в чате {chat_id}: {text}"
-msgstr ""
+msgstr "New message from {author_username} in chat {chat_id}: {text}"
 
 #: funpayhub/app/funpay/routers/on_new_sale.py:165
 #, python-format
 msgid "Произошла непредвиденная ошибка при выдаче товаров по заказу %s."
-msgstr ""
+msgstr "An unexpected error occurred while delivering goods for order %s."
 
 #: funpayhub/app/properties/auto_delivery_properties.py:24
 msgid "Автовыдача"
-msgstr ""
+msgstr "Auto delivery"
 
 #: funpayhub/app/properties/auto_delivery_properties.py:25
 #: funpayhub/app/properties/auto_delivery_properties.py:34
@@ -349,48 +349,48 @@ msgstr ""
 
 #: funpayhub/app/properties/auto_delivery_properties.py:33
 msgid "Определять к-во товара"
-msgstr ""
+msgstr "Determine item quantity"
 
 #: funpayhub/app/properties/auto_delivery_properties.py:42
 #: funpayhub/app/telegram/modules/autodelivery/ui.py:210
 msgid "🗳 Источник товаров"
-msgstr ""
+msgstr "🗳 Goods source"
 
 #: funpayhub/app/properties/auto_delivery_properties.py:51
 msgid "Текст выдачи"
-msgstr ""
+msgstr "Delivery text"
 
 #: funpayhub/app/properties/auto_delivery_properties.py:62
 msgid "📦 Настройки автовыдачи"
-msgstr ""
+msgstr "📦 Auto delivery settings"
 
 #: funpayhub/app/properties/auto_response.py:22
 msgid "Настройки реакции на команду."
-msgstr ""
+msgstr "Command response settings."
 
 #: funpayhub/app/properties/auto_response.py:28
 msgid "Учитывать регистр"
-msgstr ""
+msgstr "Case sensitive"
 
 #: funpayhub/app/properties/auto_response.py:30
 msgid ""
 "Вкл.: различает заглавные и строчные.\n"
 "Выкл.: регистр игнорируется."
-msgstr ""
+msgstr "On: distinguishes uppercase and lowercase.\nOff: case is ignored."
 
 #: funpayhub/app/properties/auto_response.py:39
 msgid "Отвечать"
-msgstr ""
+msgstr "Reply"
 
 #: funpayhub/app/properties/auto_response.py:41
 msgid ""
 "Вкл.: бот отвечает на команду (если указан текст ответа).\n"
 "Выкл.: бот не отвечает на команду."
-msgstr ""
+msgstr "On: the bot replies to the command (if a reply text is set).\nOff: the bot does not reply to the command."
 
 #: funpayhub/app/properties/auto_response.py:50
 msgid "Игнорировать ошибки форматтеров"
-msgstr ""
+msgstr "Ignore formatter errors"
 
 #: funpayhub/app/properties/auto_response.py:52
 msgid ""
@@ -398,11 +398,11 @@ msgid ""
 "вместо него пустоту.\n"
 "Выкл.: бот не отправляет сообщение, если произошла ошибка хотя бы в 1 из "
 "форматтеров."
-msgstr ""
+msgstr "On: if a formatter fails, the bot inserts empty text instead.\nOff: the bot does not send the message if at least one formatter fails."
 
 #: funpayhub/app/properties/auto_response.py:61
 msgid "Игнорировать ошибки хуков"
-msgstr ""
+msgstr "Ignore hook errors"
 
 #: funpayhub/app/properties/auto_response.py:63
 msgid ""
@@ -410,52 +410,52 @@ msgid ""
 "другие хуки.\n"
 "Выкл.: бот прерывает цепочку выполнения хуков, если хотя бы 1 из хуков "
 "завершился с ошибкой."
-msgstr ""
+msgstr "On: if a hook fails, the bot continues executing other hooks.\nOff: the bot stops the hook chain if at least one hook fails."
 
 #: funpayhub/app/properties/auto_response.py:72
 msgid "Реагировать, если отправитель - я"
-msgstr ""
+msgstr "React if sender is me"
 
 #: funpayhub/app/properties/auto_response.py:74
 msgid ""
 "Вкл.: бот обрабатывает команду, если ее отправили вы.\n"
 "Выкл.: бот не обрабатывает команду, если ее отправили вы."
-msgstr ""
+msgstr "On: the bot processes the command if you sent it.\nOff: the bot ignores the command if you sent it."
 
 #: funpayhub/app/properties/auto_response.py:83
 msgid "Реагировать, если отправитель - не я"
-msgstr ""
+msgstr "React if sender is not me"
 
 #: funpayhub/app/properties/auto_response.py:85
 msgid ""
 "Вкл.: бот обрабатывает команду, если ее отправили не вы.\n"
 "Выкл.: бот не обрабатывает команду, если ее отправили не вы."
-msgstr ""
+msgstr "On: the bot processes the command if someone else sent it.\nOff: the bot ignores the command if someone else sent it."
 
 #: funpayhub/app/properties/auto_response.py:94
 #: funpayhub/app/properties/review_reply.py:32
 msgid "Текст ответа"
-msgstr ""
+msgstr "Reply text"
 
 #: funpayhub/app/properties/auto_response.py:95
 msgid "Текст ответа на команду."
-msgstr ""
+msgstr "Reply text for the command."
 
 #: funpayhub/app/properties/auto_response.py:114
 msgid "💬 Команды"
-msgstr ""
+msgstr "💬 Commands"
 
 #: funpayhub/app/properties/general_properties.py:20
 msgid "🔧 Общие"
-msgstr ""
+msgstr "🔧 General"
 
 #: funpayhub/app/properties/general_properties.py:27
 msgid "🌎 Язык"
-msgstr ""
+msgstr "🌎 Language"
 
 #: funpayhub/app/properties/general_properties.py:42
 msgid "🌐 Прокси"
-msgstr ""
+msgstr "🌐 Proxy"
 
 #: funpayhub/app/properties/general_properties.py:44
 msgid ""
@@ -463,7 +463,7 @@ msgid ""
 "Используется только для запросов к FunPay, на остальной трафик не влияет."
 "\n"
 "Поддерживаются прокси HTTP(S) и SOCKS5.\n"
-msgstr ""
+msgstr "Allows you to hide your IP address when working with FunPay.\nUsed only for FunPay requests and does not affect other traffic.\nHTTP(S) and SOCKS5 proxies are supported.\n"
 
 #: funpayhub/app/properties/general_properties.py:55
 msgid "🌐 User Agent"
@@ -475,21 +475,21 @@ msgid ""
 "\n"
 "Помогает избежать лишних проверок и блокировок.\n"
 "Используйте User Agent бразуера, из которого вы взяли golden key."
-msgstr ""
+msgstr "A string that tells FunPay which browser and device are used.\nHelps avoid extra checks and blocks.\nUse the User Agent of the browser where you got the golden key."
 
 #: funpayhub/app/properties/general_properties.py:67
 msgid "🔑 Golden Key (токен)"
-msgstr ""
+msgstr "🔑 Golden Key (token)"
 
 #: funpayhub/app/properties/general_properties.py:69
 msgid ""
 "Ключ доступа к вашему аккаунту FunPay.\n"
 "Нужен для работы бота и выполнения запросов от вашего имени."
-msgstr ""
+msgstr "Access key to your FunPay account.\nRequired for the bot to work and make requests on your behalf."
 
 #: funpayhub/app/properties/general_properties.py:79
 msgid "⏱️ Интервал получения событий"
-msgstr ""
+msgstr "⏱️ Event polling interval"
 
 #: funpayhub/app/properties/general_properties.py:81
 msgid ""
@@ -497,97 +497,97 @@ msgid ""
 "Чем меньше интервал, тем быстрее FunPay Hub получает информацию о новых "
 "сообщениях / заказах и т.д.\n"
 "\n"
-msgstr ""
+msgstr "Interval between FunPay requests for events.\nThe smaller the interval, the faster FunPay Hub receives info about new messages / orders, etc.\n\n"
 
 #: funpayhub/app/properties/global_toggles.py:11
 msgid "🕹️ Глобальные переключатели"
-msgstr ""
+msgstr "🕹️ Global toggles"
 
 #: funpayhub/app/properties/global_toggles.py:18
 msgid "Выдача товаров"
-msgstr ""
+msgstr "Goods delivery"
 
 #: funpayhub/app/properties/global_toggles.py:27
 msgid "Автоответ"
-msgstr ""
+msgstr "Auto reply"
 
 #: funpayhub/app/properties/global_toggles.py:36
 #: funpayhub/app/properties/telegram_notifications.py:43
 msgid "Поднятие лотов"
-msgstr ""
+msgstr "Offer bumping"
 
 #: funpayhub/app/properties/plugin_properties.py:23
 msgid "🧩 Плагины"
-msgstr ""
+msgstr "🧩 Plugins"
 
 #: funpayhub/app/properties/plugin_properties.py:24
 msgid "Настройки плагинов."
-msgstr ""
+msgstr "Plugin settings."
 
 #: funpayhub/app/properties/plugin_properties.py:30
 msgid "⛔ Отключенные плагины"
-msgstr ""
+msgstr "⛔ Disabled plugins"
 
 #: funpayhub/app/properties/plugin_properties.py:31
 msgid "Список ID отключенных плагинов."
-msgstr ""
+msgstr "List of disabled plugin IDs."
 
 #: funpayhub/app/properties/properties.py:24
 #: funpayhub/app/telegram/modules/plugins/ui.py:175
 #: funpayhub/app/telegram/ui/builders/other_ui.py:114
 msgid "⚙️ Настройки"
-msgstr ""
+msgstr "⚙️ Settings"
 
 #: funpayhub/app/properties/properties.py:25
 msgid "Корневой раздел настроек FunPay Hub."
-msgstr ""
+msgstr "Root settings section of FunPay Hub."
 
 #: funpayhub/app/properties/properties.py:46
 msgid "📑 Быстрые сообщения"
-msgstr ""
+msgstr "📑 Quick messages"
 
 #: funpayhub/app/properties/properties.py:48
 msgid ""
 "Список заранее подготовленных текстов для быстрого ответа.\n"
 "Вы можете сохранить часто используемые сообщения и затем выбирать их из "
 "списка при ответе на входящие сообщения, не вводя текст вручную."
-msgstr ""
+msgstr "List of prewritten texts for quick replies.\nYou can save frequently used messages and then select them from the list when replying to incoming messages without typing manually."
 
 #: funpayhub/app/properties/review_reply.py:14
 msgid "Отвечать на отзыв"
-msgstr ""
+msgstr "Reply to review"
 
 #: funpayhub/app/properties/review_reply.py:15
 msgid "Оставлять ли ответ на отзыв."
-msgstr ""
+msgstr "Whether to leave a reply to the review."
 
 #: funpayhub/app/properties/review_reply.py:23
 msgid "Отправлять ответное сообщение"
-msgstr ""
+msgstr "Send reply message"
 
 #: funpayhub/app/properties/review_reply.py:24
 msgid "Отправлять ли ответное сообщение в чат."
-msgstr ""
+msgstr "Whether to send a reply message in chat."
 
 #: funpayhub/app/properties/review_reply.py:33
 msgid "Текст ответа на отзыв."
-msgstr ""
+msgstr "Review reply text."
 
 #: funpayhub/app/properties/review_reply.py:41
 msgid "Текст ответного сообщения"
-msgstr ""
+msgstr "Reply message text"
 
 #: funpayhub/app/properties/review_reply.py:42
 msgid "Текст ответного сообщения."
-msgstr ""
+msgstr "Reply message text."
 
 #: funpayhub/app/properties/review_reply.py:52
 msgid "⭐ Ответ на отзыв"
-msgstr ""
+msgstr "⭐ Review reply"
 
 #: funpayhub/app/properties/review_reply.py:53
 msgid "Настройки ответа на отзыв / ответного сообщения."
-msgstr ""
+msgstr "Review reply / response message settings."
 
 #: funpayhub/app/properties/review_reply.py:59
 msgid "⭐⭐⭐⭐⭐"
@@ -595,7 +595,7 @@ msgstr ""
 
 #: funpayhub/app/properties/review_reply.py:61
 msgid "Настройки ответа на отзыв / ответного сообщения на 5-зведночный отзыв."
-msgstr ""
+msgstr "Review reply / response message settings for a 5-star review."
 
 #: funpayhub/app/properties/review_reply.py:69
 msgid "⭐⭐⭐⭐"
@@ -603,7 +603,7 @@ msgstr ""
 
 #: funpayhub/app/properties/review_reply.py:71
 msgid "Настройки ответа на отзыв / ответного сообщения на 4-зведночный отзыв."
-msgstr ""
+msgstr "Review reply / response message settings for a 4-star review."
 
 #: funpayhub/app/properties/review_reply.py:79
 msgid "⭐⭐⭐"
@@ -611,7 +611,7 @@ msgstr ""
 
 #: funpayhub/app/properties/review_reply.py:81
 msgid "Настройки ответа на отзыв / ответного сообщения на 3-зведночный отзыв."
-msgstr ""
+msgstr "Review reply / response message settings for a 3-star review."
 
 #: funpayhub/app/properties/review_reply.py:89
 msgid "⭐⭐"
@@ -619,7 +619,7 @@ msgstr ""
 
 #: funpayhub/app/properties/review_reply.py:91
 msgid "Настройки ответа на отзыв / ответного сообщения на 2-зведночный отзыв."
-msgstr ""
+msgstr "Review reply / response message settings for a 2-star review."
 
 #: funpayhub/app/properties/review_reply.py:99
 msgid "⭐"
@@ -627,209 +627,209 @@ msgstr ""
 
 #: funpayhub/app/properties/review_reply.py:101
 msgid "Настройки ответа на отзыв / ответного сообщения на 1-зведночный отзыв."
-msgstr ""
+msgstr "Review reply / response message settings for a 1-star review."
 
 #: funpayhub/app/properties/telegram_notifications.py:13
 msgid "🔔 Telegram уведомления"
-msgstr ""
+msgstr "🔔 Telegram notifications"
 
 #: funpayhub/app/properties/telegram_notifications.py:21
 msgid "Системные"
-msgstr ""
+msgstr "System"
 
 #: funpayhub/app/properties/telegram_notifications.py:23
 msgid ""
 "Список чатов, подписанных на уведомления о запуске / остановке FunPayHub "
 "и прочих системных событиях (формат: \"chat_id.thread_it\")."
-msgstr ""
+msgstr "List of chats subscribed to notifications about FunPayHub start/stop and other system events (format: \"chat_id.thread_it\")."
 
 #: funpayhub/app/properties/telegram_notifications.py:32
 msgid "Ошибки"
-msgstr ""
+msgstr "Errors"
 
 #: funpayhub/app/properties/telegram_notifications.py:34
 msgid ""
 "Список чатов, подписанных на уведомления об ошибках в работе FunPayHub "
 "(формат: \"chat_id.thread_it\")."
-msgstr ""
+msgstr "List of chats subscribed to error notifications in FunPayHub (format: \"chat_id.thread_it\")."
 
 #: funpayhub/app/properties/telegram_notifications.py:45
 msgid ""
 "Список чатов, подписанных на уведомления о поднятии лотов (формат: "
 "\"chat_id.thread_it\")."
-msgstr ""
+msgstr "List of chats subscribed to offer bump notifications (format: \"chat_id.thread_it\")."
 
 #: funpayhub/app/properties/telegram_notifications.py:54
 msgid "Новое сообщение"
-msgstr ""
+msgstr "New message"
 
 #: funpayhub/app/properties/telegram_notifications.py:56
 msgid ""
 "Список чатов, подписанных на уведомления о новых сообщениях (формат: "
 "\"chat_id.thread_it\")."
-msgstr ""
+msgstr "List of chats subscribed to new message notifications (format: \"chat_id.thread_it\")."
 
 #: funpayhub/app/properties/telegram_notifications.py:65
 msgid "Новый заказ"
-msgstr ""
+msgstr "New order"
 
 #: funpayhub/app/properties/telegram_notifications.py:67
 msgid ""
 "Список чатов, подписанных на уведомления о новых заказах (формат: "
 "\"chat_id.thread_it\")."
-msgstr ""
+msgstr "List of chats subscribed to new order notifications (format: \"chat_id.thread_it\")."
 
 #: funpayhub/app/properties/telegram_notifications.py:76
 msgid "Изменение статуса заказа"
-msgstr ""
+msgstr "Order status change"
 
 #: funpayhub/app/properties/telegram_notifications.py:78
 msgid ""
 "Список чатов, подписанных на уведомления об изменениях статус заказа "
 "(завершение, возврат средств, переоткрытие и т.д.) (формат: "
 "\"chat_id.thread_it\")."
-msgstr ""
+msgstr "List of chats subscribed to order status change notifications (completion, refunds, reopening, etc.) (format: \"chat_id.thread_it\")."
 
 #: funpayhub/app/properties/telegram_notifications.py:87
 msgid "Отзывы с 1 звездой"
-msgstr ""
+msgstr "1-star reviews"
 
 #: funpayhub/app/properties/telegram_notifications.py:96
 msgid "Отзывы с 2 звездами"
-msgstr ""
+msgstr "2-star reviews"
 
 #: funpayhub/app/properties/telegram_notifications.py:105
 msgid "Отзывы с 3 звездами"
-msgstr ""
+msgstr "3-star reviews"
 
 #: funpayhub/app/properties/telegram_notifications.py:114
 msgid "Отзывы с 4 звездами"
-msgstr ""
+msgstr "4-star reviews"
 
 #: funpayhub/app/properties/telegram_notifications.py:123
 msgid "Отзывы с 5 звездами"
-msgstr ""
+msgstr "5-star reviews"
 
 #: funpayhub/app/properties/telegram_properties.py:27
 msgid "🔷 Настройки Telegram бота"
-msgstr ""
+msgstr "🔷 Telegram bot settings"
 
 #: funpayhub/app/properties/telegram_properties.py:40
 msgid "🔧  Общие"
-msgstr ""
+msgstr "🔧  General"
 
 #: funpayhub/app/properties/telegram_properties.py:47
 msgid "🔑 Токен"
-msgstr ""
+msgstr "🔑 Token"
 
 #: funpayhub/app/properties/telegram_properties.py:56
 msgid "🔑 Пароль"
-msgstr ""
+msgstr "🔑 Password"
 
 #: funpayhub/app/properties/telegram_properties.py:57
 msgid "Пароль от Telegram панели управления FunPayHub."
-msgstr ""
+msgstr "Password for the FunPayHub Telegram control panel."
 
 #: funpayhub/app/properties/telegram_properties.py:66
 msgid "Авторизированые пользователи"
-msgstr ""
+msgstr "Authorized users"
 
 #: funpayhub/app/properties/telegram_properties.py:67
 msgid "ID пользователей, у которых есть доступ к телеграм боту."
-msgstr ""
+msgstr "IDs of users who have access to the Telegram bot."
 
 #: funpayhub/app/properties/telegram_properties.py:77
 msgid "🎨 Внешний вид"
-msgstr ""
+msgstr "🎨 Appearance"
 
 #: funpayhub/app/properties/telegram_properties.py:78
 msgid "Настройки внешнего вида Telegram бота."
-msgstr ""
+msgstr "Telegram bot appearance settings."
 
 #: funpayhub/app/properties/telegram_properties.py:84
 msgid "📋 Кол-во элементов на странице"
-msgstr ""
+msgstr "📋 Items per page"
 
 #: funpayhub/app/properties/telegram_properties.py:86
 msgid ""
 "Максимальное кол-во элементов на 1 странице Telegam меню.\n"
 "Кнопки навигации не учитываются."
-msgstr ""
+msgstr "Maximum number of items on one Telegram menu page.\nNavigation buttons are not counted."
 
 #: funpayhub/app/properties/telegram_properties.py:100
 msgid "💬 Вид увед. о новых сообщениях"
-msgstr ""
+msgstr "💬 New message notification view"
 
 #: funpayhub/app/properties/telegram_properties.py:102
 msgid "Настройки вида Telegram уведомлений о новых сообщениях в чатах FunPay."
-msgstr ""
+msgstr "Display settings for Telegram notifications about new messages in FunPay chats."
 
 #: funpayhub/app/properties/telegram_properties.py:109
 msgid "Отображать мои"
-msgstr ""
+msgstr "Show mine"
 
 #: funpayhub/app/properties/telegram_properties.py:111
 msgid ""
 "Отображать ли сообщения, отправленные вами через FunPay (не через FunPay "
 "Hub!)"
-msgstr ""
+msgstr "Whether to show messages sent by you via FunPay (not via FunPay Hub!)"
 
 #: funpayhub/app/properties/telegram_properties.py:120
 msgid "Увед., если только мои"
-msgstr ""
+msgstr "Notify if only mine"
 
 #: funpayhub/app/properties/telegram_properties.py:122
 msgid ""
 "Присылать ли уведомление о новых сообщениях в чате, если все новые "
 "сообщения отправлены вами через FunPay (не через FunPay Hub!)"
-msgstr ""
+msgstr "Whether to send a new message notification if all new messages in the chat were sent by you via FunPay (not via FunPay Hub!)"
 
 #: funpayhub/app/properties/telegram_properties.py:131
 msgid "Отображать автоматические"
-msgstr ""
+msgstr "Show automatic"
 
 #: funpayhub/app/properties/telegram_properties.py:133
 msgid ""
 "Отображать ли сообщения, отправленные FunPay Hub в автоматическом режиме "
 "(автовыдача / автоответ / хуки / плагины и т.д.)"
-msgstr ""
+msgstr "Whether to show messages sent by FunPay Hub automatically (auto delivery / auto reply / hooks / plugins, etc.)"
 
 #: funpayhub/app/properties/telegram_properties.py:142
 msgid "Увед., если только автоматические"
-msgstr ""
+msgstr "Notify if only automatic"
 
 #: funpayhub/app/properties/telegram_properties.py:144
 msgid ""
 "Присылать ли уведомление о новых сообщениях в чате, если все новые "
 "сообщения отправлены FunPay Hub в автоматическом режиме (автовыдача / "
 "автоответ / хуки / плагины и т.д.)"
-msgstr ""
+msgstr "Whether to send a new message notification if all new messages in the chat were sent by FunPay Hub automatically (auto delivery / auto reply / hooks / plugins, etc.)"
 
 #: funpayhub/app/properties/telegram_properties.py:153
 msgid "Отображать мои через Hub"
-msgstr ""
+msgstr "Show mine via Hub"
 
 #: funpayhub/app/properties/telegram_properties.py:155
 msgid ""
 "Отображать ли сообщения, которые были отправлены вами с помощью FunPay "
 "Hub (через Telegram меню ответа на сообщения и т.д.)"
-msgstr ""
+msgstr "Whether to show messages you sent using FunPay Hub (via the Telegram reply menu, etc.)"
 
 #: funpayhub/app/properties/telegram_properties.py:164
 msgid "Увед., если только мои через Hub"
-msgstr ""
+msgstr "Notify if only mine via Hub"
 
 #: funpayhub/app/properties/telegram_properties.py:166
 msgid ""
 "Присылать ли уведомление о новых сообщениях в чате, если все новые "
 "сообщения отправлены вами через Hub (через Telegram меню ответа на "
 "сообщения и т.д.)"
-msgstr ""
+msgstr "Whether to send a new message notification if all new messages in the chat were sent by you via Hub (via the Telegram reply menu, etc.)"
 
 #: funpayhub/app/telegram/middlewares/is_authorized.py:55
 #, python-format
 msgid "Пользователь %s (%d) пытается получить доступ к Telegram боту!"
-msgstr ""
+msgstr "User %s (%d) is trying to access the Telegram bot!"
 
 #: funpayhub/app/telegram/middlewares/oops_middleware.py:42
 #, python-brace-format
@@ -838,7 +838,7 @@ msgid ""
 "Бот отправил слишком много запросов Telegram, и теперь нужно подождать {}"
 " сек.!\n"
 "Подожди и попробуй снова."
-msgstr ""
+msgstr "🗣️👾⏳🤐\nThe bot sent too many requests to Telegram, so you need to wait {} sec.!\nPlease wait and try again."
 
 #: funpayhub/app/telegram/middlewares/oops_middleware.py:52
 #: funpayhub/app/telegram/middlewares/oops_middleware.py:59
@@ -846,7 +846,7 @@ msgid ""
 "🫨🤬😵☠️\n"
 "Упс! Произошла какая-то ошибка, которую никто не смог предвидеть!\n"
 "Сообщи об этом разработчику! (Ну или живи с этим)."
-msgstr ""
+msgstr "🫨🤬😵☠️\nOops! An unexpected error occurred that nobody could have predicted!\nReport it to the developer! (Or just live with it)."
 
 #: funpayhub/app/telegram/middlewares/oops_middleware.py:62
 msgid "Caught an error!"
@@ -863,23 +863,23 @@ msgstr ""
 
 #: funpayhub/app/telegram/modules/other.py:34
 msgid "♻️ Перезапускаюсь..."
-msgstr ""
+msgstr "♻️ Restarting..."
 
 #: funpayhub/app/telegram/modules/other.py:41
 msgid "⚠️ Уже в безопасном режиме."
-msgstr ""
+msgstr "⚠️ Already in safe mode."
 
 #: funpayhub/app/telegram/modules/other.py:44
 msgid "♻️ Перезапускаюсь в безопасный режим..."
-msgstr ""
+msgstr "♻️ Restarting in safe mode..."
 
 #: funpayhub/app/telegram/modules/other.py:51
 msgid "⚠️ Уже в стандартном режиме."
-msgstr ""
+msgstr "⚠️ Already in standard mode."
 
 #: funpayhub/app/telegram/modules/other.py:54
 msgid "♻️ Перезапускаюсь в стандартный режим..."
-msgstr ""
+msgstr "♻️ Restarting in standard mode..."
 
 #: funpayhub/app/telegram/modules/autodelivery/router.py:76
 #: funpayhub/app/telegram/modules/autodelivery/router.py:112
@@ -893,7 +893,7 @@ msgstr ""
 #: funpayhub/app/telegram/modules/autodelivery/router.py:233
 #: funpayhub/app/telegram/modules/goods/router.py:276
 msgid "❌ Невалидное имя файла."
-msgstr ""
+msgstr "❌ Invalid file name."
 
 #: funpayhub/app/telegram/modules/autodelivery/ui.py:50
 msgid "$add_auto_delivery_rule_text"
@@ -907,7 +907,7 @@ msgstr ""
 #: funpayhub/lib/base_app/telegram/app/properties/ui/builders.py:246
 #: funpayhub/lib/base_app/telegram/app/properties/ui/builders.py:268
 msgid "🔘 Отмена"
-msgstr ""
+msgstr "🔘 Cancel"
 
 #: funpayhub/app/telegram/modules/autodelivery/ui.py:106
 msgid "$autodelivery_bind_goods_source"
@@ -920,15 +920,15 @@ msgstr ""
 #: funpayhub/app/telegram/modules/autodelivery/ui.py:154
 #: funpayhub/app/telegram/ui/builders/message_ui.py:50
 msgid "🗨️ Ответить"
-msgstr ""
+msgstr "🗨️ Reply"
 
 #: funpayhub/app/telegram/modules/autodelivery/ui.py:176
 msgid "➕ Добавить правило"
-msgstr ""
+msgstr "➕ Add rule"
 
 #: funpayhub/app/telegram/modules/autoresponse/router.py:49
 msgid "➕ Введите команду."
-msgstr ""
+msgstr "➕ Enter a command."
 
 #: funpayhub/app/telegram/modules/autoresponse/router.py:69
 msgid "$command_exists"
@@ -940,39 +940,39 @@ msgstr ""
 
 #: funpayhub/app/telegram/modules/autoresponse/ui.py:30
 msgid "➕ Добавить команду"
-msgstr ""
+msgstr "➕ Add command"
 
 #: funpayhub/app/telegram/modules/goods/router.py:93
 #, python-format
 msgid "❌ Источник товаров %s не найден."
-msgstr ""
+msgstr "❌ Goods source %s not found."
 
 #: funpayhub/app/telegram/modules/goods/router.py:185
 msgid ""
 "❌ Не удалось получить товары из сообщения или файла. Проверьте "
 "корректность данных. Подробности в логах."
-msgstr ""
+msgstr "❌ Failed to get goods from the message or file. Check the data. Details in logs."
 
 #: funpayhub/app/telegram/modules/goods/router.py:220
 msgid ""
 "❌ Неверный формат ввода. Укажите номер товара или диапазон через дефис, "
 "например: <code>1</code> или <code>1-7</code>."
-msgstr ""
+msgstr "❌ Invalid input format. Specify an item number or a range with a dash, for example: <code>1</code> or <code>1-7</code>."
 
 #: funpayhub/app/telegram/modules/goods/router.py:242
 msgid ""
 "📄 Отправьте название файла или сам файл. Если вы пришлете файл, будет "
 "использовать его имя."
-msgstr ""
+msgstr "📄 Send the file name or the file itself. If you send a file, its name will be used."
 
 #: funpayhub/app/telegram/modules/goods/router.py:267
 msgid "❌ Имя файла не может быть пустым."
-msgstr ""
+msgstr "❌ File name cannot be empty."
 
 #: funpayhub/app/telegram/modules/goods/router.py:285
 #, python-format
 msgid "❌ Файл %s уже существует."
-msgstr ""
+msgstr "❌ File %s already exists."
 
 #: funpayhub/app/telegram/modules/goods/router.py:323
 msgid "$err_goods_source_does_not_exist"
@@ -980,33 +980,33 @@ msgstr ""
 
 #: funpayhub/app/telegram/modules/goods/ui.py:56
 msgid "➕ Добавить файл с товарами"
-msgstr ""
+msgstr "➕ Add goods file"
 
 #: funpayhub/app/telegram/modules/goods/ui.py:61
 #: funpayhub/app/telegram/ui/builders/other_ui.py:136
 #: funpayhub/app/telegram/ui/modifications.py:51
 msgid "🗳 Источники товаров"
-msgstr ""
+msgstr "🗳 Goods sources"
 
 #: funpayhub/app/telegram/modules/goods/ui.py:85
 msgid "⤵ Скачать товары"
-msgstr ""
+msgstr "⤵ Download goods"
 
 #: funpayhub/app/telegram/modules/goods/ui.py:93
 msgid "⤴ Выгрузить товары"
-msgstr ""
+msgstr "⤴ Upload goods"
 
 #: funpayhub/app/telegram/modules/goods/ui.py:104
 msgid "➕ Добавить довары"
-msgstr ""
+msgstr "➕ Add goods"
 
 #: funpayhub/app/telegram/modules/goods/ui.py:112
 msgid "🗑️ Удалить товары"
-msgstr ""
+msgstr "🗑️ Remove goods"
 
 #: funpayhub/app/telegram/modules/goods/ui.py:122
 msgid "🔄 Перезагрузить источник"
-msgstr ""
+msgstr "🔄 Reload source"
 
 #: funpayhub/app/telegram/modules/goods/ui.py:135
 #, python-brace-format
@@ -1016,28 +1016,28 @@ msgid ""
 "📊 Кол-во товаров: <b><i>{goods_amount}</i></b>.\n"
 "🧩 Тип источника: <b><i>{goods_source_type}</i></b>.\n"
 "🧭 Источник: <code class=\"language-Источник\">{goods_source}</code>"
-msgstr ""
+msgstr "🗳 Goods source <b><i>{goods_source_id}</i></b>.\n\n📊 Goods count: <b><i>{goods_amount}</i></b>.\n🧩 Source type: <b><i>{goods_source_type}</i></b>.\n🧭 Source: <code class=\"language-Источник\">{goods_source}</code>"
 
 #: funpayhub/app/telegram/modules/goods/ui.py:145
 msgid "Товары"
-msgstr ""
+msgstr "Goods"
 
 #: funpayhub/app/telegram/modules/goods/ui.py:177
 msgid "❌ Товар слишком длинный."
-msgstr ""
+msgstr "❌ Item is too long."
 
 #: funpayhub/app/telegram/modules/plugins/router.py:54
 #: funpayhub/app/telegram/modules/plugins/router.py:87
 msgid "❌ Плагин не найден."
-msgstr ""
+msgstr "❌ Plugin not found."
 
 #: funpayhub/app/telegram/modules/plugins/router.py:58
 msgid "❌ Плагин уже активирован."
-msgstr ""
+msgstr "❌ Plugin is already activated."
 
 #: funpayhub/app/telegram/modules/plugins/router.py:62
 msgid "❌ Плагин уже деактивирован."
-msgstr ""
+msgstr "❌ Plugin is already deactivated."
 
 #: funpayhub/app/telegram/modules/plugins/router.py:70
 msgid "$plugin_enabled$plugin_disabled"
@@ -1046,7 +1046,7 @@ msgstr ""
 #: funpayhub/app/telegram/modules/plugins/router.py:72
 #: funpayhub/app/telegram/modules/plugins/router.py:97
 msgid "🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub."
-msgstr ""
+msgstr "🔃 To apply changes, restart FunPay Hub."
 
 #: funpayhub/app/telegram/modules/plugins/router.py:95
 msgid "$plugin_removed"
@@ -1057,22 +1057,22 @@ msgstr ""
 msgid ""
 "❌ В данный момент уже устанавливается какой-то плагин.\n"
 "Дождитесь окончания текущей установки и повторите попытку."
-msgstr ""
+msgstr "❌ A plugin is already being installed right now.\nWait for the current installation to finish and try again."
 
 #: funpayhub/app/telegram/modules/plugins/router.py:124
 #: funpayhub/app/telegram/modules/plugins/router.py:179
 msgid ""
 "Пришлите или перешлите сообщение с ZIP архивом плагина / ссылкой на ZIP "
 "архив плагина."
-msgstr ""
+msgstr "Send or forward a message with the plugin ZIP archive or a link to the plugin ZIP archive."
 
 #: funpayhub/app/telegram/modules/plugins/router.py:194
 msgid "Не удалось установить плагин."
-msgstr ""
+msgstr "Failed to install plugin."
 
 #: funpayhub/app/telegram/modules/plugins/router.py:200
 msgid "Плагин успешно установлен!"
-msgstr ""
+msgstr "Plugin installed successfully!"
 
 #: funpayhub/app/telegram/modules/plugins/router.py:214
 msgid "$add_repository_state_text"
@@ -1088,7 +1088,7 @@ msgstr ""
 
 #: funpayhub/app/telegram/modules/plugins/ui.py:83
 msgid "⤵ Установить"
-msgstr ""
+msgstr "⤵ Install"
 
 #: funpayhub/app/telegram/modules/plugins/ui.py:92
 msgid "$open_repositories"
@@ -1097,41 +1097,41 @@ msgstr ""
 #: funpayhub/app/telegram/modules/plugins/ui.py:100
 #: funpayhub/app/telegram/ui/builders/other_ui.py:142
 msgid "🧩 Расширения"
-msgstr ""
+msgstr "🧩 Extensions"
 
 #: funpayhub/app/telegram/modules/plugins/ui.py:137
 msgid "⬛ <b>Репозиторий</b>"
-msgstr ""
+msgstr "⬛ <b>Repository</b>"
 
 #: funpayhub/app/telegram/modules/plugins/ui.py:147
 msgid "🌐 Вебсайт"
-msgstr ""
+msgstr "🌐 Website"
 
 #: funpayhub/app/telegram/modules/plugins/ui.py:152
 msgid "👤 <b>Разработчик</b>"
-msgstr ""
+msgstr "👤 <b>Developer</b>"
 
 #: funpayhub/app/telegram/modules/plugins/ui.py:185
 msgid "🟢 Активировать"
-msgstr ""
+msgstr "🟢 Activate"
 
 #: funpayhub/app/telegram/modules/plugins/ui.py:187
 msgid "🔴 Деактивировать"
-msgstr ""
+msgstr "🔴 Deactivate"
 
 #: funpayhub/app/telegram/modules/plugins/ui.py:197
 #: funpayhub/app/telegram/ui/premade.py:37
 #: funpayhub/app/telegram/ui/premade.py:52
 msgid "🗑️ Удалить"
-msgstr ""
+msgstr "🗑️ Delete"
 
 #: funpayhub/app/telegram/modules/plugins/ui.py:218
 msgid "📦 Из ZIP архива"
-msgstr ""
+msgstr "📦 From ZIP archive"
 
 #: funpayhub/app/telegram/modules/plugins/ui.py:225
 msgid "⤵ Выберите вариант установки плагина."
-msgstr ""
+msgstr "⤵ Choose a plugin installation method."
 
 #: funpayhub/app/telegram/modules/plugins/ui.py:253
 msgid "$add_repository"
@@ -1155,93 +1155,93 @@ msgstr ""
 
 #: funpayhub/app/telegram/modules/system/ui.py:29
 msgid "⏻ Выключить FPH"
-msgstr ""
+msgstr "⏻ Shut down FPH"
 
 #: funpayhub/app/telegram/modules/system/ui.py:35
 msgid "🔄 Перезапустить FPH"
-msgstr ""
+msgstr "🔄 Restart FPH"
 
 #: funpayhub/app/telegram/modules/system/ui.py:41
 msgid "🛡️ Безопасный режим"
-msgstr ""
+msgstr "🛡️ Safe mode"
 
 #: funpayhub/app/telegram/modules/system/ui.py:48
 msgid "🚀 Стандартный режим"
-msgstr ""
+msgstr "🚀 Standard mode"
 
 #: funpayhub/app/telegram/modules/system/ui.py:54
 msgid "🔍 Проверить наличие обновлений"
-msgstr ""
+msgstr "🔍 Check for updates"
 
 #: funpayhub/app/telegram/modules/system/ui.py:61
 msgid "🔌 <b>Системное меню</b>"
-msgstr ""
+msgstr "🔌 <b>System menu</b>"
 
 #: funpayhub/app/telegram/modules/updates/router.py:36
 msgid ""
 "❌ Произошла ошибка при получении данных об обновлениях.\n"
 "Подробности в лог файле."
-msgstr ""
+msgstr "❌ An error occurred while fetching update data.\nDetails in the log file."
 
 #: funpayhub/app/telegram/modules/updates/router.py:61
 #: funpayhub/app/telegram/modules/updates/router.py:103
 msgid "❌ Процесс установки обновления уже запущен. Пожалуйста, подождите."
-msgstr ""
+msgstr "❌ The update installation process is already running. Please wait."
 
 #: funpayhub/app/telegram/modules/updates/router.py:73
 msgid ""
 "❌ Произошла ошибка при скачивании обновления.\n"
 "Подробности в лог файле."
-msgstr ""
+msgstr "❌ An error occurred while downloading the update.\nDetails in the log file."
 
 #: funpayhub/app/telegram/modules/updates/router.py:95
 msgid ""
 "❌ Эта кнопка устарела :(\n"
 "Откройте меню заного."
-msgstr ""
+msgstr "❌ This button is outdated :(\nOpen the menu again."
 
 #: funpayhub/app/telegram/modules/updates/router.py:115
 msgid ""
 "❌ Произошла ошибка при распаковке обновления.\n"
 "Подробнее в лог файле."
-msgstr ""
+msgstr "❌ An error occurred while unpacking the update.\nDetails in the log file."
 
 #: funpayhub/app/telegram/modules/updates/router.py:121
 msgid "⏳ Установка обновления ..."
-msgstr ""
+msgstr "⏳ Installing update ..."
 
 #: funpayhub/app/telegram/modules/updates/ui.py:46
 msgid "✅ Установлена последняя версия FunPay Hub."
-msgstr ""
+msgstr "✅ The latest version of FunPay Hub is installed."
 
 #: funpayhub/app/telegram/modules/updates/ui.py:52
 msgid "Полный список изменений"
-msgstr ""
+msgstr "Full changelog"
 
 #: funpayhub/app/telegram/modules/updates/ui.py:57
 msgid "🔥 <b>Доступно новое обновление</b>!"
-msgstr ""
+msgstr "🔥 <b>New update available</b>!"
 
 #: funpayhub/app/telegram/modules/updates/ui.py:65
 msgid "🔽 Скачать обновление"
-msgstr ""
+msgstr "🔽 Download update"
 
 #: funpayhub/app/telegram/modules/updates/ui.py:81
 msgid "⏬ Установить обновление"
-msgstr ""
+msgstr "⏬ Install update"
 
 #: funpayhub/app/telegram/modules/updates/ui.py:86
 msgid "✅ Обновление скачано."
-msgstr ""
+msgstr "✅ Update downloaded."
 
 #: funpayhub/app/telegram/ui/modifications.py:30
 msgid "🔔 Уведомления"
-msgstr ""
+msgstr "🔔 Notifications"
 
 #: funpayhub/app/telegram/ui/builders/other_ui.py:130
 #: funpayhub/app/telegram/ui/modifications.py:91
 msgid "🔖 Форматтеры"
-msgstr ""
+msgstr "🔖 Formatters"
 
 #: funpayhub/app/telegram/ui/builders/formatters_ui.py:69
 msgid "$formatters:show_all$formatters:show_categories"
@@ -1249,22 +1249,22 @@ msgstr ""
 
 #: funpayhub/app/telegram/ui/builders/formatters_ui.py:109
 msgid "Категории"
-msgstr ""
+msgstr "Categories"
 
 #: funpayhub/app/telegram/ui/builders/message_ui.py:58
 msgid "🔕 Не уведомлять"
-msgstr ""
+msgstr "🔕 Do not notify"
 
 #: funpayhub/app/telegram/ui/builders/message_ui.py:63
 msgid "🌐 Чат"
-msgstr ""
+msgstr "🌐 Chat"
 
 #: funpayhub/app/telegram/ui/builders/message_ui.py:138
 #, python-brace-format
 msgid ""
 "<b>Отправьте сообщение или изображение пользователю <a "
 "href=\"https://funpay.com/chat/?node={chat_id}\">{chat_name}</a>.</b>"
-msgstr ""
+msgstr "<b>Send a message or image to user <a href=\"https://funpay.com/chat/?node={chat_id}\">{chat_name}</a>.</b>"
 
 #: funpayhub/app/telegram/ui/builders/other_ui.py:35
 msgid "$main_menu"
@@ -1291,11 +1291,11 @@ msgid ""
 "\n"
 "📝 После подключения к FunPay аккаунту данное сообщение будет "
 "обновлено.</i>"
-msgstr ""
+msgstr "🐙 <b><u>FunPay Hub {version} started!</u></b>\n\n\n<b>🔄 Connecting to FunPay account ...</b>\n\n\n<i>⚙️ You can already use the control panel, configure the bot, etc.\n\nTo open the main menu, enter /menu\nTo open settings, enter /settings\n\n📝 After connecting to the FunPay account, this message will be updated.</i>"
 
 #: funpayhub/app/telegram/ui/builders/other_ui.py:58
 msgid "🛡️ <b><u>FunPayHub запущен в безопасном режиме!</u></b>"
-msgstr ""
+msgstr "🛡️ <b><u>FunPayHub started in safe mode!</u></b>"
 
 #: funpayhub/app/telegram/ui/builders/other_ui.py:76
 #, python-brace-format
@@ -1312,7 +1312,7 @@ msgid ""
 "💰 <b><i>Баланс: {rub_balance}₽, {usd_balance}$, {eur_balance}€</i></b>\n"
 "💰 <b><i>Сделки: {rub_balance}₽</i></b>\n"
 "\n"
-msgstr ""
+msgstr "🎉 <b><u>FunPay Hub is ready to work!</u></b>\n\n\n👤 <b><i>Account: {username} (<a href=\"https://funpay.com/users/{user_id}/\">{user_id}</a>)</i></b>\n\n📊 <b><i>Active sales: {active_sells}</i></b>\n📊 <b><i>Active purchases: {active_purchases}</i></b>\n\n💰 <b><i>Balance: {rub_balance}₽, {usd_balance}$, {eur_balance}€</i></b>\n💰 <b><i>Deals: {rub_balance}₽</i></b>\n\n"
 
 #: funpayhub/app/telegram/ui/builders/other_ui.py:88
 msgid ""
@@ -1325,7 +1325,7 @@ msgid ""
 "\n"
 "Для открытия основного меню введите команду /menu\n"
 "Для открытия настроек используйте команду /settings"
-msgstr ""
+msgstr "⚠️ <b><u>FunPay Hub started, but authorization failed!</u></b>\n\n\nℹ️ Check your <b>golden_key</b> and try again.\n\n🐙 You can still use the control panel via the Telegram bot.\n\nTo open the main menu, enter /menu\nTo open settings, use /settings"
 
 #: funpayhub/app/telegram/ui/builders/other_ui.py:92
 msgid ""
@@ -1339,11 +1339,11 @@ msgid ""
 "Для открытия настроек используйте команду /settings\n"
 "\n"
 "📝 Подробности об ошибке можно найти в логах."
-msgstr ""
+msgstr "❌ <b><u>An unexpected error occurred in FunPay Hub!</u></b>\n\n\nℹ️ The error was logged, but you can still use the Telegram bot.\n\nTo open the main menu, enter /menu\nTo open settings, use /settings\n\n📝 Error details can be found in the logs."
 
 #: funpayhub/app/telegram/ui/builders/other_ui.py:124
 msgid "🔌 Системное меню"
-msgstr ""
+msgstr "🔌 System menu"
 
 #: funpayhub/lib/base_app/app.py:113
 #, python-format
@@ -1382,7 +1382,7 @@ msgid ""
 "\n"
 "Текущее значение:\n"
 "<b>{current_parameter_value}</b>"
-msgstr ""
+msgstr "Enter a new value for <b>{parameter_name}</b>\n\n{parameter_description}\n\nCurrent value:\n<b>{current_parameter_value}</b>"
 
 #: funpayhub/lib/base_app/telegram/app/properties/ui/builders.py:263
 msgid "$enter_new_list_item_message"
@@ -1400,7 +1400,7 @@ msgstr ""
 
 #: funpayhub/lib/base_app/telegram/app/ui/ui_finalizers.py:94
 msgid "◀️ Назад"
-msgstr ""
+msgstr "◀️ Back"
 
 #: funpayhub/lib/exceptions/goods.py:26
 #, python-format
