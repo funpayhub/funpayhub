@@ -9,6 +9,7 @@ import traceback
 from typing import TYPE_CHECKING
 
 from aiogram.utils.token import TokenValidationError
+from funpaybotengine.runner.config import RunnerConfig
 
 import exit_codes
 from loggers import main as logger
@@ -54,14 +55,6 @@ class FunPayHub(App):
         safe_mode: bool = False,
     ):
         self._workflow_data = get_wfd()
-        self._funpay = FunPay(
-            self,
-            bot_token=properties.general.golden_key.value or '__emtpy_golden_key__',
-            proxy=properties.general.proxy.value or None,
-            headers=None,
-            workflow_data=self.workflow_data,
-        )
-
         if args.force_token:
             token = args.force_token
         else:
@@ -93,6 +86,16 @@ class FunPayHub(App):
             telegram_app=telegram_app,
             workflow_data=self.workflow_data,
         )
+
+        self._funpay = FunPay(
+            self,
+            bot_token=properties.general.golden_key.value or '__emtpy_golden_key__',
+            proxy=properties.general.proxy.value or None,
+            headers=None,
+            workflow_data=self.workflow_data,
+            runner_config=RunnerConfig(interval=properties.general.runner_request_interval.value),
+        )
+
         self._plugin_manager._disabled_plugins = set(
             properties.plugin_properties.disabled_plugins.value,
         )

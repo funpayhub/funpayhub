@@ -3,7 +3,6 @@ from __future__ import annotations
 from logging import getLogger
 
 
-bootstrap = getLogger('funpayhub.bootstrap')
 launcher = getLogger('funpayhub.launcher')
 updater = getLogger('funpayhub.updater')
 plugins = getLogger('funpayhub.plugins')

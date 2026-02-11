@@ -84,6 +84,7 @@ class FunPay:
         proxy: str | None = None,
         headers: dict[str, str] | None = None,
         workflow_data: WorkflowData | None = None,
+        runner_config: RunnerConfig | None = None,
     ):
         workflow_data = workflow_data if workflow_data is not None else {}
 
@@ -105,9 +106,7 @@ class FunPay:
         self._sending_message_lock = asyncio.Lock()
         self._manually_sent_messages: set[int] = set()
         self._authenticated = False
-        self._runner_config = RunnerConfig(
-            interval=self._hub.properties.general.runner_request_interval.value,
-        )
+        self._runner_config = runner_config if runner_config is not None else RunnerConfig()
         self.setup_dispatcher()
 
     async def start(self) -> None:
