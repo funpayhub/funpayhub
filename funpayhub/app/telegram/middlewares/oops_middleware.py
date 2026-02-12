@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from funpayhub.lib.translater import _
+
 
 __all__ = [
     'OopsMiddleware',
@@ -37,15 +39,26 @@ class OopsMiddleware(BaseMiddleware):
         except TelegramRetryAfter as e:
             if isinstance(event, CallbackQuery):
                 await event.answer(
-                    translater.translate('$oops_ratelimit').format(e.retry_after),
+                    translater.translate(
+                        '🗣️👾⏳🤐\nБот отправил слишком много запросов Telegram, и теперь нужно подождать {} сек.!\nПодожди и попробуй снова.',
+                    ).format(e.retry_after),
                     show_alert=True,
                 )
                 return
 
         except Exception:
             if isinstance(event, CallbackQuery):
-                await event.answer(translater.translate('$oops'), show_alert=True)
+                await event.answer(
+                    translater.translate(
+                        '🫨🤬😵☠️\nУпс! Произошла какая-то ошибка, которую никто не смог предвидеть!\nСообщи об этом разработчику! (Ну или живи с этим).',
+                    ),
+                    show_alert=True,
+                )
             elif isinstance(event, Message):
-                await event.reply(translater.translate('$oops'))
-            logger.error('Caught an error!', exc_info=True)
+                await event.reply(
+                    translater.translate(
+                        '🫨🤬😵☠️\nУпс! Произошла какая-то ошибка, которую никто не смог предвидеть!\nСообщи об этом разработчику! (Ну или живи с этим).',
+                    ),
+                )
+            logger.error(_('Caught an error!'), exc_info=True)
             raise

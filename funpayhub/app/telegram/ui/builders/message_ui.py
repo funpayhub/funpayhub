@@ -47,7 +47,7 @@ class NewMessageNotificationMenuBuilder(
         keyboard.add_row(
             Button.callback_button(
                 button_id='reply',
-                text=translater.translate('$new_message_ui.reply'),
+                text=translater.translate('🗨️ Ответить'),
                 callback_data=cbs.SendMessage(
                     to=ctx.funpay_chat_id,
                     name=ctx.funpay_chat_name,
@@ -55,12 +55,12 @@ class NewMessageNotificationMenuBuilder(
             ),
             Button.callback_button(
                 button_id='mute',
-                text=translater.translate('$new_message_ui.mute'),
+                text=translater.translate('🔕 Не уведомлять'),
                 callback_data=cbs.MuteChat(chat_id=ctx.funpay_chat_id).pack_compact(),
             ),
             Button.url_button(
                 button_id='open_chat',
-                text=translater.translate('$new_message_ui.open_chat'),
+                text=translater.translate('🌐 Чат'),
                 url=f'https://funpay.com/chat/?node={ctx.funpay_chat_id}',
             ),
         )
@@ -134,7 +134,9 @@ class SendMessageMenuBuilder(
             )
 
         return Menu(
-            main_text=translater.translate('$new_message_ui.enter_reply_text').format(
+            main_text=translater.translate(
+                '<b>Отправьте сообщение или изображение пользователю <a href="https://funpay.com/chat/?node={chat_id}">{chat_name}</a>.</b>',
+            ).format(
                 chat_id=ctx.funpay_chat_id,
                 chat_name=ctx.funpay_chat_name,
             ),
@@ -142,7 +144,7 @@ class SendMessageMenuBuilder(
                 keyboard=[
                     Button.callback_button(
                         button_id='cancel',
-                        text=translater.translate('$clear_state'),
+                        text=translater.translate('🔘 Отмена'),
                         callback_data=ClearState(delete_message=True).pack(),
                         row=True,
                     ),

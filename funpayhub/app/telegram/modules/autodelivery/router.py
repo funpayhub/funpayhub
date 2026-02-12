@@ -73,7 +73,7 @@ async def add_auto_delivery_rule(
     """
     if callback_data.rule in properties.auto_delivery.entries:
         await query.answer(
-            translater.translate('$err_auto_delivery_rule_already_exists'),
+            translater.translate('❌ Правило уже существует.'),
             show_alert=True,
         )
         return
@@ -109,7 +109,7 @@ async def add_autodelivery_rule_from_msg(
     Открывает меню настроек правила автовыдачи.
     """
     if msg.text in properties.auto_delivery.entries:
-        await msg.reply(translater.translate('$err_auto_delivery_rule_already_exists'))
+        await msg.reply(translater.translate('❌ Правило уже существует.'))
         return
 
     data = await states.AddingAutoDeliveryRule.get(state)
@@ -142,7 +142,7 @@ async def delete_auto_delivery_rule(
 ) -> None:
     if callback_data.rule not in properties.auto_delivery.entries:
         await query.answer(
-            translater.translate('$err_auto_delivery_rule_does_not_exist'),
+            translater.translate('❌ Правило не найдено'),
             show_alert=True,
         )
         return
@@ -191,7 +191,7 @@ async def bind_goods_source(
 ) -> None:
     source = goods_manager.get(callback_data.source_id)
     if source is None:
-        await query.answer('$goods_source_does_not_exist', show_alert=True)
+        await query.answer('❌ Источник товаров не найден.', show_alert=True)
         return
 
     await states.BindingGoodsSource.clear(state)
@@ -230,7 +230,7 @@ async def handler(
             or any(c in INVALID_CHARS for c in filename)
             or any(ord(c) < 32 for c in filename)
         ):
-            await message.reply(translater.translate('$err_goods_txt_source_invalid_name'))
+            await message.reply(translater.translate('❌ Невалидное имя файла.'))
             return
 
         source = await goods_manager.add_source(FileGoodsSource, Path('storage/goods') / filename)

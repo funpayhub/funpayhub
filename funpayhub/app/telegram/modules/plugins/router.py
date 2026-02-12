@@ -51,15 +51,15 @@ async def set_plugin_status(
     callback_data: cbs.SetPluginStatus,
 ) -> None:
     if callback_data.plugin_id not in plugin_manager._plugins:
-        await query.answer(translater.translate('$plugin_not_found'), show_alert=True)
+        await query.answer(translater.translate('❌ Плагин не найден.'), show_alert=True)
         return
 
     if callback_data.status and callback_data.plugin_id not in plugin_manager.disabled_plugins:
-        await query.answer(translater.translate('$plugin_already_enabled'), show_alert=True)
+        await query.answer(translater.translate('❌ Плагин уже активирован.'), show_alert=True)
         return
 
     if not callback_data.status and callback_data.plugin_id in plugin_manager.disabled_plugins:
-        await query.answer(translater.translate('$plugin_already_disabled'), show_alert=True)
+        await query.answer(translater.translate('❌ Плагин уже деактивирован.'), show_alert=True)
         return
 
     if callback_data.status:
@@ -67,8 +67,12 @@ async def set_plugin_status(
     else:
         await plugin_manager.disable_plugin(plugin=callback_data.plugin_id)
 
-    text = translater.translate('$plugin_enabled' if callback_data.status else '$plugin_disabled')
-    text += '\n' + translater.translate('$restart_required')
+    text = translater.translate(
+        '✅ Плагин активирован.' if callback_data.status else '✅ Плагин деактивирован.',
+    )
+    text += '\n' + translater.translate(
+        '🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub.',
+    )
 
     await query.answer(text, show_alert=True)
 
@@ -82,7 +86,7 @@ async def set_plugin_status(
 ) -> None:
     # todo: move logic to plugin manager
     if callback_data.plugin_id not in plugin_manager._plugins:
-        await query.answer(translater.translate('$plugin_not_found'), show_alert=True)
+        await query.answer(translater.translate('❌ Плагин не найден.'), show_alert=True)
         return
 
     plugin = plugin_manager._plugins[callback_data.plugin_id]
@@ -90,7 +94,9 @@ async def set_plugin_status(
     del plugin_manager._plugins[callback_data.plugin_id]
 
     await query.answer(
-        translater.translate('$plugin_removed') + '\n' + translater.translate('$restart_required'),
+        translater.translate('✅ Плагин удален.')
+        + '\n'
+        + translater.translate('🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub.'),
         show_alert=True,
     )
 
@@ -107,16 +113,24 @@ async def install_plugin(
     plugin_manager: PluginManager,
 ) -> None:
     if plugin_manager.installation_lock.locked():
-        await query.answer(translater.translate('$plugin_installation_locked'), show_alert=True)
+        await query.answer(
+            translater.translate(
+                '❌ В данный момент уже устанавливается какой-то плагин.\n'
+                'Дождитесь окончания текущей установки и повторите попытку.',
+            ),
+            show_alert=True,
+        )
         return
 
     msg = await query.message.answer(
-        text=translater.translate('$install_plugin_from_zip_text'),
+        text=translater.translate(
+            'Пришлите или перешлите сообщение с ZIP архивом плагина / ссылкой на ZIP архив плагина.',
+        ),
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=translater.translate('$clear_state'),
+                        text=translater.translate('🔘 Отмена'),
                         callback_data=ClearState(delete_message=True).pack(),
                     ),
                 ],
@@ -143,7 +157,11 @@ async def install_plugin(
     state: FSMContext,
 ) -> None:
     if plugin_manager.installation_lock.locked():
-        await message.reply(translater.translate('$plugin_installation_locked'))
+        await message.reply(
+            translater.translate(
+                '❌ В данный момент уже устанавливается какой-то плагин.\nДождитесь окончания текущей установки и повторите попытку.',
+            ),
+        )
 
     args = ()
     kwargs = {}
@@ -159,7 +177,11 @@ async def install_plugin(
         installer = HTTPSPluginInstaller
         source = message.text
     else:
-        await message.reply(translater.translate('$install_plugin_from_zip_text'))
+        await message.reply(
+            translater.translate(
+                'Пришлите или перешлите сообщение с ZIP архивом плагина / ссылкой на ZIP архив плагина.',
+            ),
+        )
         return
 
     data: funpayhub.app.telegram.modules.plugins.states.InstallingZipPlugin = (
@@ -172,13 +194,13 @@ async def install_plugin(
         await plugin_manager.install_plugin_from_source(installer, source, *args, **kwargs)
     except PluginInstallationError as e:
         await message.answer(
-            translater.translate('$plugin_installation_error')
+            translater.translate('Не удалось установить плагин.')
             + '\n'
             + html.escape(translater.translate(e.args[0]) % e.args[1:]),
         )
         return
 
-    await message.answer(translater.translate('$plugin_installed_successfully'))
+    await message.answer(translater.translate('Плагин успешно установлен!'))
 
 
 # Repos
@@ -192,7 +214,7 @@ async def activate_add_repository_state(
     msg = await StateUIContext(
         trigger=query,
         menu_id=MenuIds.state_menu,
-        text=translater.translate('$add_repository_state_text'),
+        text=translater.translate('🔗 Пришлите ссылку на репозиторий.'),
     ).build_and_answer(tg_ui, query.message)
 
     await states.AddingRepository(state_message=msg, query=query).set(state)
@@ -215,11 +237,11 @@ async def add_repository_state(
         repo = await URLRepositoryLoader(url=message.text).load()
         repositories_manager.register_repository(repo)
     except Exception as e:
-        msg = translater.translate('$error_downloading_repository')
+        msg = translater.translate('❌ Не удалось установить репозиторий.')
         if isinstance(e, TranslatableException):
             msg += '\n\n' + e.format_args(translater.translate(e.message))
         else:
-            msg += '\n\n' + translater.translate('$see_logs')
+            msg += '\n\n' + translater.translate('Подробности в логах.')
 
         await message.reply(msg)
         return

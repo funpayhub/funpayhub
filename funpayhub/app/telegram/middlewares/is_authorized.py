@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from funpayhub.lib.translater import _
+
 
 __all__ = ['IsAuthorizedMiddleware']
 
@@ -51,7 +53,7 @@ class IsAuthorizedMiddleware(BaseMiddleware):
                 isinstance(event, Message) and event.chat.type == 'private'
             ):
                 logger.warning(
-                    'Пользователь %s (%d) пытается получить доступ к Telegram боту!',
+                    _('Пользователь %s (%d) пытается получить доступ к Telegram боту!'),
                     from_user.username,
                     from_user.id,
                 )

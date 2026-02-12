@@ -13,12 +13,17 @@ from funpayhub.lib.properties import (
     Properties as Props,
     parameter as param,
 )
+from funpayhub.lib.translater import _
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, KeyboardBuilder
 from funpayhub.lib.base_app.telegram.app.ui import (
     callbacks as ui_cbs,
     ui_finalizers,
 )
-from funpayhub.lib.base_app.properties_flags import ParameterFlags, PropertiesFlags
+from funpayhub.lib.base_app.properties_flags import (
+    ParameterFlags,
+    PropertiesFlags,
+    TelegramUIEmojiFlag,
+)
 
 from .. import callbacks as cbs
 from .context import (
@@ -34,12 +39,19 @@ if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui import UIRegistry as UI
 
 
+def _emoji(node: Node) -> str:
+    for i in node.flags:
+        if isinstance(i, TelegramUIEmojiFlag):
+            return f'{i.emoji} '
+    return ''
+
+
 class ToggleParamButtonBuilder(ButtonBuilder, button_id='toggle_parameter', context_type=BtnCtx):
     async def build(self, ctx: BtnCtx, translater: Tr, properties: Props) -> Button:
         entry = properties.get_node(ctx.entry_path)
         if not isinstance(entry, param.ToggleParameter):
             raise TranslatableException(
-                '%s is %s, not a `ToggleParameter`.',
+                _('%s is %s, not a `ToggleParameter`.'),
                 ctx.entry_path,
                 type(entry),
             )
@@ -66,7 +78,7 @@ class ChangeParamValueButtonBuilder(ButtonBuilder, button_id='change_param', con
 
         return Button.callback_button(
             button_id=f'param_change:{entry.path}',
-            text=f'{translater.translate(entry.name)} 【 {val_str} 】',
+            text=f'{_emoji(entry)}{translater.translate(entry.name)} 【 {val_str} 】',
             callback_data=cbs.ManualParamValueInput(
                 path=entry.path,
                 from_callback=ctx.menu_render_context.callback_data,
@@ -81,7 +93,7 @@ class OpenParamMenuButtonBuilder(ButtonBuilder, button_id='open_param', context_
 
         return Button.callback_button(
             button_id=f'param_change:{entry.path}',
-            text=translater.translate(entry.name),
+            text=f'{_emoji(entry)}{translater.translate(entry.name)}',
             callback_data=ui_cbs.OpenMenu(
                 menu_id=NodeMenuBuilder.menu_id,
                 from_callback=ctx.menu_render_context.callback_data,
@@ -93,7 +105,7 @@ class OpenParamMenuButtonBuilder(ButtonBuilder, button_id='open_param', context_
 # Menus
 def _entry_text(entry: Node, translater: Tr) -> str:
     return (
-        f'<u><b>{translater.translate(entry.name)}</b></u>\n\n'
+        f'{_emoji(entry)}<u><b>{translater.translate(entry.name)}</b></u>\n\n'
         f'<i>{translater.translate(entry.description)}</i>'
     )
 
@@ -231,7 +243,12 @@ class ListParameterMenuBuilder(MenuBuilder, menu_id='list_param_menu', context_t
 class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', context_type=MenuCtx):
     async def build(self, ctx: MenuCtx, translater: Tr, properties: Props) -> Menu:
         entry = properties.get_node(ctx.entry_path)
-        text = translater.translate('$enter_new_value_message').format(
+        text = translater.translate(
+            'Введите новое значение для <b>{parameter_name}</b>\n\n'
+            '{parameter_description}\n\n'
+            'Текущее значение:\n'
+            '<b>{current_parameter_value}</b>',
+        ).format(
             parameter_name=translater.translate(entry.name),
             parameter_description=translater.translate(entry.description),
             current_parameter_value=html.escape(str(entry.value)),
@@ -240,12 +257,8 @@ class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', con
         footer_keyboard = KeyboardBuilder()
         footer_keyboard.add_callback_button(
             button_id='clear_state',
-            text=translater.translate('$clear_state'),
-            callback_data=ui_cbs.ClearState(
-                delete_message=False,
-                open_previous=True,
-                history=ctx.callback_data.history if ctx.callback_data else [],
-            ).pack(),
+            text=translater.translate('🔘 Отмена'),
+            callback_data=ui_cbs.ClearState().pack(),
         )
 
         return Menu(
@@ -257,17 +270,13 @@ class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', con
 
 class AddListItemMenuBuilder(MenuBuilder, menu_id='add_list_param_item', context_type=MenuCtx):
     async def build(self, ctx: MenuCtx, translater: Tr) -> Menu:
-        text = translater.translate('$enter_new_list_item_message')
+        text = translater.translate('➕ Введите новый элемнт, который хотите добавить в список.')
 
         footer_keyboard = KeyboardBuilder()
         footer_keyboard.add_callback_button(
             button_id='clear_state',
-            text=translater.translate('$clear_state'),
-            callback_data=ui_cbs.ClearState(
-                delete_message=False,
-                open_previous=True,
-                from_callback=ctx.callback_data,
-            ).pack(),
+            text=translater.translate('🔘 Отмена'),
+            callback_data=ui_cbs.ClearState().pack(),
         )
 
         return Menu(

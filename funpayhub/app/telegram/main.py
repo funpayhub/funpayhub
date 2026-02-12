@@ -7,6 +7,7 @@ from itertools import chain
 from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 
 from funpayhub.lib.properties import ListParameter
+from funpayhub.lib.translater import _
 from funpayhub.lib.base_app.telegram.main import TelegramApp
 
 from funpayhub.app.telegram.ui import default as default_ui
@@ -69,37 +70,17 @@ class Telegram(TelegramApp):
         self.dispatcher.include_routers(router)
 
     def _setup_commands(self) -> None:
-        self._commands_registry.create_command('start', 'hub', True, '$command:start:description')
-        self._commands_registry.create_command(
-            'settings',
-            'hub',
-            True,
-            '$command:settings:description',
-        )
-        self._commands_registry.create_command('help', 'hub', True, '$commands:help:description')
-        self._commands_registry.create_command(
-            'shutdown',
-            'hub',
-            True,
-            '$commands:shutdown:description',
-        )
-        self._commands_registry.create_command(
-            'restart',
-            'hub',
-            True,
-            '$commands:restart:description',
-        )
-        self._commands_registry.create_command(
-            'safe_mode',
-            'hub',
-            True,
-            '$commands:safe_mode:description',
-        )
+        self._commands_registry.create_command('start', 'hub', True, _('Главное меню.'))
+        self._commands_registry.create_command('settings', 'hub', True, _('Меню настроек.'))
+        self._commands_registry.create_command('help', 'hub', True, _('Режим справки.'))
+        self._commands_registry.create_command('shutdown', 'hub', True, _('Завершение работы.'))
+        self._commands_registry.create_command('restart', 'hub', True, _('Перезапуск.'))
+        self._commands_registry.create_command('safe_mode', 'hub', True, _('Безопасный режим.'))
         self._commands_registry.create_command(
             'standard_mode',
             'hub',
             True,
-            '$commands.standard_mode:description',
+            _('Стандартный режим.'),
         )
 
     def _setup_ui(self) -> None:

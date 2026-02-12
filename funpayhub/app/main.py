@@ -15,7 +15,7 @@ import exit_codes
 from loggers import main as logger
 
 from funpayhub.lib.base_app import App
-from funpayhub.lib.translater import Translater
+from funpayhub.lib.translater import Translater, _
 from funpayhub.lib.base_app.app import AppConfig
 
 from funpayhub.app.plugins import PluginManager
@@ -196,7 +196,7 @@ class FunPayHub(App):
                 return
             raise RuntimeError('FunPayHub is already stopped.')
 
-        logger.info('Shutting down FunPayHub with exit code %d.', code)
+        logger.info(_('Shutting down FunPayHub with exit code %d.'), code)
         self._stop_signal.set_result(code)
         await self._stopped_signal.wait()
 

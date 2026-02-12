@@ -10,6 +10,7 @@ from funpaybotengine.dispatching.filters import all_of
 from loggers import main as logger
 
 from funpayhub.lib.exceptions import TranslatableException
+from funpayhub.lib.translater import _
 
 from funpayhub.app.formatters import GoodsFormatter, NewOrderContext
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -161,7 +162,7 @@ async def deliver_goods(
         else:
             reason = 'Произошла непредвиденная ошибка. Подробности в логах.'
             logger.error(
-                'Произошла непредвиденная ошибка при выдаче товаров по заказу %s.',
+                _('Произошла непредвиденная ошибка при выдаче товаров по заказу %s.'),
                 order.id,
                 exc_info=True,
             )

@@ -53,12 +53,12 @@ class GoodsSourcesListMenuBuilder(
         footer_kb = KeyboardBuilder()
         footer_kb.add_callback_button(
             button_id='add_text_source',
-            text=translater.translate('$add_txt_goods_source'),
+            text=translater.translate('➕ Добавить файл с товарами'),
             callback_data=cbs.AddGoodsTxtSource(from_callback=ctx.callback_data).pack(),
         )
 
         return Menu(
-            main_text=translater.translate('$goods_sources_list_text'),
+            main_text=translater.translate('🗳 Источники товаров'),
             main_keyboard=kb,
             footer_keyboard=footer_kb,
             finalizer=StripAndNavigationFinalizer(),
@@ -82,7 +82,7 @@ class GoodsSourceInfoMenuBuilder(
         kb.add_row(
             Button.callback_button(
                 button_id='download_goods',
-                text=translater.translate('$download_goods'),
+                text=translater.translate('⤵ Скачать товары'),
                 callback_data=cbs.DownloadGoods(
                     source_id=source.source_id,
                     from_callback=ctx.callback_data,
@@ -90,7 +90,7 @@ class GoodsSourceInfoMenuBuilder(
             ),
             Button.callback_button(
                 button_id='upload_goods',
-                text=translater.translate('$upload_goods'),
+                text=translater.translate('⤴ Выгрузить товары'),
                 callback_data=cbs.UploadGoods(
                     source_id=source.source_id,
                     from_callback=ctx.callback_data,
@@ -101,7 +101,7 @@ class GoodsSourceInfoMenuBuilder(
         kb.add_row(
             Button.callback_button(
                 button_id='add_goods',
-                text=translater.translate('$add_goods'),
+                text=translater.translate('➕ Добавить довары'),
                 callback_data=cbs.AddGoods(
                     source_id=source.source_id,
                     from_callback=ctx.callback_data,
@@ -109,7 +109,7 @@ class GoodsSourceInfoMenuBuilder(
             ),
             Button.callback_button(
                 button_id='remove_goods',
-                text=translater.translate('$remove_goods'),
+                text=translater.translate('🗑️ Удалить товары'),
                 callback_data=cbs.RemoveGoods(
                     source_id=source.source_id,
                     from_callback=ctx.callback_data,
@@ -119,7 +119,7 @@ class GoodsSourceInfoMenuBuilder(
 
         kb.add_callback_button(
             button_id='reload_source',
-            text=translater.translate('$reload_goods_source'),
+            text=translater.translate('🔄 Перезагрузить источник'),
             callback_data=cbs.ReloadGoodsSource(
                 source_id=source.source_id,
                 from_callback=ctx.callback_data,
@@ -131,7 +131,9 @@ class GoodsSourceInfoMenuBuilder(
             translater,
             ctx.view_page,
         )
-        text = translater.translate('$goods_info_text').format(
+        text = translater.translate(
+            '🗳 Источник товаров <b><i>{goods_source_id}</i></b>.\n\n📊 Кол-во товаров: <b><i>{goods_amount}</i></b>.\n🧩 Тип источника: <b><i>{goods_source_type}</i></b>.\n🧭 Источник: <code class="language-Источник">{goods_source}</code>',
+        ).format(
             goods_source_id=source.display_id,
             goods_amount=len(source),
             goods_source_type=translater.translate(source.display_source_type),
@@ -140,7 +142,7 @@ class GoodsSourceInfoMenuBuilder(
         text += '\n\n'
         text += (
             f'<pre>'
-            f'<code class="language-{translater.translate("$goods_inline_text")} '
+            f'<code class="language-{translater.translate("Товары")} '
             f'{min_index + 1}-{max_index + 1}">'
             f'{goods_text}'
             f'</code></pre>\n'
@@ -172,7 +174,7 @@ class GoodsSourceInfoMenuBuilder(
         for index, product in enumerate(goods_batch):
             product = html.escape(product).strip()
             if len(product) > MAX_LINE_LEN:
-                product = translater.translate('$product_too_long')
+                product = translater.translate('❌ Товар слишком длинный.')
 
             line = f'{START + index + 1}. {product}\n'
             text += line

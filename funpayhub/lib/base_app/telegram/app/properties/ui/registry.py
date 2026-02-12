@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from funpayhub.lib.translater import _en
+
 
 __all__ = [
     'NodesUIRegistry',
@@ -62,7 +64,7 @@ class _NodesUIRegistry:
         self._buttons[entry_type] = button_builder_id
 
         logger.info(
-            'Button builder %s assigned as button builder for entries of type %s.',
+            _en('Button builder %s assigned as button builder for entries of type %s.'),
             button_builder_id,
             entry_type,
         )
@@ -77,7 +79,7 @@ class _NodesUIRegistry:
             raise KeyError(f'Menu builder for entry of type {entry_type!r} already exists.')
         self._menus[entry_type] = menu_builder_id
         logger.info(
-            'Menu builder %s assigned as menu builder for entries of type %r.',
+            _en('Menu builder %s assigned as menu builder for entries of type %r.'),
             menu_builder_id,
             entry_type,
         )

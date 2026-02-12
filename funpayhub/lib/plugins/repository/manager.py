@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from funpayhub.lib.translater import _en
+
 
 __all__ = ['RepositoriesManager']
 
@@ -43,7 +45,7 @@ class RepositoriesManager:
             f.write(repository.model_dump_json(indent=4))
 
     async def _load_repositories(self) -> None:
-        logger.info('Loading plugins repositories from %s...', str(self._repositories_path))
+        logger.info(_en('Loading plugins repositories from %s...'), str(self._repositories_path))
         if not self._repositories_path.exists():
             return
         if self._repositories_path.is_file():
@@ -51,18 +53,18 @@ class RepositoriesManager:
 
         for i in self._repositories_path.iterdir():
             if i.is_dir():
-                logger.debug('%s is a directory. Skipping.', str(i))
+                logger.debug(_en('%s is a directory. Skipping.'), str(i))
                 continue
             if not i.suffix == '.json':
-                logger.warning('%s is not a JSON file. Skipping.', str(i))
+                logger.warning(_en('%s is not a JSON file. Skipping.'), str(i))
                 continue
 
-            logger.info('Loading plugins repository from %s...', str(i))
+            logger.info(_en('Loading plugins repository from %s...'), str(i))
             try:
                 repo = await FileRepositoryLoader(i).load()
                 if repo.id != i.stem:
                     logger.warning(
-                        'Repository ID %s does not match repo file %s. Skipping.',
+                        _en('Repository ID %s does not match repo file %s. Skipping.'),
                         repo.id,
                         i.name,
                     )
@@ -73,7 +75,7 @@ class RepositoriesManager:
                     logger.error(e.message, *e.args, exc_info=True)
                 else:
                     logger.error(
-                        'An error occurred while loading plugin repository from %s.',
+                        _en('An error occurred while loading plugin repository from %s.'),
                         str(i),
                         exc_info=True,
                     )

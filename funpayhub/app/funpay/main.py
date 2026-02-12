@@ -24,6 +24,7 @@ from funpaybotengine.runner.config import RunnerConfig
 from loggers import main as logger
 
 from funpayhub.lib.exceptions import TranslatableException
+from funpayhub.lib.translater import _
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
 from funpayhub.app.funpay import middlewares as mdwr
@@ -121,7 +122,7 @@ class FunPay:
     async def _init_bot_engine(self) -> None:
         exception: FunPayBotEngineError | None = None
         for i in range(10):
-            logger.info('Trying to make a first request to FunPay...')
+            logger.info(_('Trying to make a first request to FunPay...'))
             try:
                 await self._bot.update()
                 await self.profile(update=True)
@@ -129,7 +130,7 @@ class FunPay:
                 return
             except (BotUnauthenticatedError, UnauthorizedError) as e:
                 logger.error(
-                    'An error occurred while making first request to FunPay: unauthenticated.',
+                    _('An error occurred while making first request to FunPay: unauthenticated.'),
                 )
                 exception = e
                 break
@@ -137,26 +138,30 @@ class FunPay:
             except (RateLimitExceededError, FunPayServerError) as e:
                 if isinstance(e, RateLimitExceededError):
                     logger.warning(
-                        'An error occurred while making first request to FunPay: '
-                        'rate limit exceeded. Retrying in 5 seconds.',
+                        _(
+                            'An error occurred while making first request to FunPay: '
+                            'rate limit exceeded. Retrying in 5 seconds.',
+                        ),
                     )
                 else:
                     logger.warning(
-                        'An error occurred while making first request to FunPay: '
-                        'FunPay server error. Retrying in 5 seconds.',
+                        _(
+                            'An error occurred while making first request to FunPay: '
+                            'FunPay server error. Retrying in 5 seconds.',
+                        ),
                     )
 
                 await asyncio.sleep(5)
                 exception = e
             except Exception as e:
                 logger.error(
-                    'An error occurred while making first request to FunPay.',
+                    _('An error occurred while making first request to FunPay.'),
                     exc_info=e,
                 )
                 exception = e
                 break
 
-        logger.error('Failed to make first request to FunPay.')
+        logger.error(_('Failed to make first request to FunPay.'))
         await self.hub.dispatcher.event_entry(FunPayStartEvent(error=exception))
         raise exception
 
@@ -202,12 +207,12 @@ class FunPay:
             except RateLimitExceededError:
                 await asyncio.sleep(3)
             except (BotUnauthenticatedError, UnauthorizedError) as e:
-                raise TranslatableException('Unable to send message.') from e
+                raise TranslatableException(_('Unable to send message.')) from e
             except Exception:
-                logger.error('Unable to send message to %s.', chat_id, exc_info=True)
+                logger.error(_('Unable to send message to %s.'), chat_id, exc_info=True)
 
         raise TranslatableException(
-            'Unable to send message to %s. Attempts exceeded.',
+            _('Unable to send message to %s. Attempts exceeded.'),
             chat_id,
         )
 

@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING, Any
 import colorama
 from colorama import Back, Fore, Style
 
+from funpayhub.lib.translater import _
+
 
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater
@@ -160,13 +162,13 @@ if __name__ == '__main__':
     logger.addHandler(console_handler)
     logger.setLevel(logging.DEBUG)
 
-    logger.debug('Debug Log')
-    logger.info('Info Log')
-    logger.warning('Warning Log')
-    logger.error('Error Log')
-    logger.critical('Critical Log')
+    logger.debug(_('Debug Log'))
+    logger.info(_('Info Log'))
+    logger.warning(_('Warning Log'))
+    logger.error(_('Error Log'))
+    logger.critical(_('Critical Log'))
 
     try:
         1 / 0
     except:
-        logger.error('Some error occurred', exc_info=True)
+        logger.error(_('Some error occurred'), exc_info=True)

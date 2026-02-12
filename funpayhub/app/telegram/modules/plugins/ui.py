@@ -80,7 +80,7 @@ class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_
         footer_keyboard = KeyboardBuilder()
         footer_keyboard.add_callback_button(
             button_id='open_installation_menu',
-            text=translater.translate('$install_plugin'),
+            text=translater.translate('⤵ Установить'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.install_plugin,
                 from_callback=ctx.callback_data,
@@ -89,7 +89,7 @@ class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_
 
         footer_keyboard.add_callback_button(
             button_id='open_repositories',
-            text=translater.translate('$open_repositories'),
+            text=translater.translate('🗃 Репозитории'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.repositories_list,
                 from_callback=ctx.callback_data,
@@ -97,7 +97,7 @@ class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_
         )
 
         return Menu(
-            main_text=translater.translate('$plugins_list'),
+            main_text=translater.translate('🧩 Расширения'),
             main_keyboard=keyboard,
             footer_keyboard=footer_keyboard,
             finalizer=StripAndNavigationFinalizer(),
@@ -133,7 +133,9 @@ class PluginInfoMenuBuilder(
         blocks['info'].append(f'🆔 <b>ID: {man.plugin_id}</b>')
 
         if man.repo:
-            blocks['info'].append(f'{translater.translate("$plugin_repo")}: {escape(man.repo)}')
+            blocks['info'].append(
+                f'{translater.translate("⬛ <b>Репозиторий</b>")}: {escape(man.repo)}',
+            )
 
         author_info = []
         if man.author:
@@ -142,12 +144,12 @@ class PluginInfoMenuBuilder(
                 author_info.append(f'<b>{escape(author.name)}</b>')
             if author.website:
                 author_info.append(
-                    f'<b><a href="{author.website}">{translater.translate("$plugin_author_website")}</a></b>',
+                    f'<b><a href="{author.website}">{translater.translate("🌐 Вебсайт")}</a></b>',
                 )
 
         if author_info:
             blocks['info'].append(
-                f'{translater.translate("$plugin_author")}: {" | ".join(author_info)}',
+                f'{translater.translate("👤 <b>Разработчик</b>")}: {" | ".join(author_info)}',
             )
 
         if man.author and man.author.social:
@@ -170,7 +172,7 @@ class PluginInfoMenuBuilder(
         if plugin.properties:
             keyboard.add_callback_button(
                 button_id='plugin_properties',
-                text=translater.translate('$plugin_properties'),
+                text=translater.translate('⚙️ Настройки'),
                 callback_data=OpenMenu(
                     menu_id=MenuIds.props_node,
                     from_callback=ctx.callback_data,
@@ -180,9 +182,9 @@ class PluginInfoMenuBuilder(
 
         keyboard.add_callback_button(
             button_id='toggle_plugin_state',
-            text=translater.translate('$activate_plugin')
+            text=translater.translate('🟢 Активировать')
             if man.plugin_id in plugin_manager.disabled_plugins
-            else translater.translate('$deactivate_plugin'),
+            else translater.translate('🔴 Деактивировать'),
             callback_data=cbs.SetPluginStatus(
                 plugin_id=man.plugin_id,
                 status=man.plugin_id in plugin_manager.disabled_plugins,
@@ -192,7 +194,7 @@ class PluginInfoMenuBuilder(
 
         keyboard.add_callback_button(
             button_id='remove_plugin',
-            text=translater.translate('$remove_plugin'),
+            text=translater.translate('🗑️ Удалить'),
             callback_data=cbs.RemovePlugin(
                 plugin_id=man.plugin_id,
                 history=ctx.callback_data.history if ctx.callback_data else [],
@@ -213,14 +215,14 @@ class InstallPluginMenuBuilder(MenuBuilder, menu_id=MenuIds.install_plugin, cont
         kb.add_rows(
             Button.callback_button(
                 button_id='install_plugin:1',
-                text=translater.translate('$install_plugin_from_zip'),
+                text=translater.translate('📦 Из ZIP архива'),
                 callback_data=cbs.InstallPlugin(mode=1).pack(),
                 row=True,
             ),
         )
 
         return Menu(
-            main_text=translater.translate('$install_plugin_choice'),
+            main_text=translater.translate('⤵ Выберите вариант установки плагина.'),
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )
@@ -248,11 +250,11 @@ class ReposListMenuBuilder(MenuBuilder, menu_id=MenuIds.repositories_list, conte
 
         menu.footer_keyboard.add_callback_button(
             button_id='add_repository',
-            text=translater.translate('$add_repository'),
+            text=translater.translate('➕ Добавить репозиторий'),
             callback_data=cbs.AddRepository(from_callback=ctx.callback_data).pack(),
         )
 
-        menu.main_text = translater.translate('$repositories_list_menu_text')
+        menu.main_text = translater.translate('🗃 <b><u>Репозитории</u></b>')
 
         return menu
 
@@ -314,19 +316,19 @@ class RepoPluginInfoMenuBuilder(
             menu.main_keyboard.add_row(
                 Button.callback_button(
                     button_id=f'install_version:{v}',
-                    text=translater.translate('$install') + f' v{v}',
+                    text=translater.translate('⤵️ Установить') + f' v{v}',
                     callback_data='dummy',
                 ),
                 Button.callback_button(
                     button_id=f'change_log:{v}',
-                    text=translater.translate('$change_log'),
+                    text=translater.translate('📃 Список изменений'),
                     callback_data='dummy',
                 ),
             )
 
         menu.footer_keyboard.add_callback_button(
             button_id='install_latest_version',
-            text=translater.translate('$install_latest_version'),
+            text=translater.translate('⤵️ Установить последнюю версию'),
             callback_data='dummy',
         )
 

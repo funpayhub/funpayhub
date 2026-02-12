@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Any
 from types import MappingProxyType
 
 from funpayhub.lib.properties import Node, Properties, StringParameter, ToggleParameter
+from funpayhub.lib.translater import _
+from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class AutoDeliveryEntryProperties(Properties):
@@ -20,8 +22,8 @@ class AutoDeliveryEntryProperties(Properties):
         self.auto_delivery = self.attach_node(
             ToggleParameter(
                 id='auto_delivery',
-                name='$props.auto_delivery.*.auto_delivery:name',
-                description='$props.auto_delivery.*.auto_delivery:description',
+                name=_('Автовыдача'),
+                description=_('nodesc'),
                 default_value=True,
             ),
         )
@@ -29,8 +31,8 @@ class AutoDeliveryEntryProperties(Properties):
         self.multi_delivery = self.attach_node(
             ToggleParameter(
                 id='multi_delivery',
-                name='$props.auto_delivery.*.multi_delivery:name',
-                description='$props.auto_delivery.*.multi_delivery:description',
+                name=_('Определять к-во товара'),
+                description=_('nodesc'),
                 default_value=True,
             ),
         )
@@ -38,18 +40,19 @@ class AutoDeliveryEntryProperties(Properties):
         self.goods_source = self.attach_node(
             StringParameter(
                 id='goods_source',
-                name='$props.auto_delivery.*.goods_source:name',
-                description='$props.auto_delivery.*.goods_source:description',
+                name=_('Источник товаров'),
+                description=_('nodesc'),
                 default_value='',
+                flags=[TelegramUIEmojiFlag('🗳')],
             ),
         )
 
         self.delivery_text = self.attach_node(
             StringParameter(
                 id='delivery_text',
-                name='$props.auto_delivery.*.delivery_text:name',
-                description='$props.auto_delivery.*.delivery_text:description',
-                default_value='Thank you for buying this staff!',
+                name=_('Текст выдачи'),
+                description=_('nodesc'),
+                default_value='',
             ),
         )
 
@@ -58,9 +61,10 @@ class AutoDeliveryProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
             id='auto_delivery',
-            name='$props.auto_delivery:name',
-            description='$props.auto_delivery:description',
+            name=_('Настройки автовыдачи'),
+            description=_('nodesc'),
             file='config/auto_delivery.toml',
+            flags=[TelegramUIEmojiFlag('📦')],
         )
 
     @property

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from funpayhub.lib.translater import _en
+
 
 __all__ = ['Properties']
 
@@ -246,7 +248,7 @@ class Properties(Node):
             await hook_callable(trigger)
         except Exception:
             logger.error(
-                'An error occurred while executing %s trigger for %s',
+                _en('An error occurred while executing %s trigger for %s'),
                 hook,
                 '.'.join(trigger.path),
                 exc_info=True,

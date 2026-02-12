@@ -9,6 +9,8 @@ __all__ = [
 
 from typing import TYPE_CHECKING
 
+from funpayhub.lib.translater import _en
+
 from .base import FunPayHubError
 
 
@@ -22,7 +24,7 @@ class GoodsError(FunPayHubError): ...
 class NotEnoughGoodsError(GoodsError):
     def __init__(self, source: GoodsSource, requested: int) -> None:
         super().__init__(
-            'Not enough goods in source %s. Available amount: %d. Requested: %d.',
+            _en('Not enough goods in source %s. Available amount: %d. Requested: %d.'),
             source.source_id,
             len(source),
             requested,
@@ -41,7 +43,12 @@ class NotEnoughGoodsError(GoodsError):
 
 class GoodsSourceNotFoundError(GoodsError, KeyError):
     def __init__(self, source_id: str) -> None:
-        super(FunPayHubError, self).__init__('Goods source %s does not exist.', source_id)
+        super(FunPayHubError, self).__init__(
+            _en(
+                'Goods source %s does not exist.',
+            ),
+            source_id,
+        )
         self._source_id = source_id
 
     @property

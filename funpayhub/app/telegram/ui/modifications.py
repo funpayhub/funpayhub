@@ -27,7 +27,7 @@ class PropertiesMenuModification(
             [
                 Button.callback_button(
                     button_id='open_current_chat_notifications',
-                    text=translater.translate('$telegram_notifications'),
+                    text=translater.translate('🔔 Уведомления'),
                     callback_data=OpenMenu(
                         menu_id=MenuIds.tg_chat_notifications,
                         from_callback=ctx.callback_data,
@@ -48,7 +48,7 @@ class AutoDeliveryPropertiesMenuModification(
     async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr):
         menu.main_keyboard.add_callback_button(
             button_id='open_goods_sources_list',
-            text=translater.translate('$goods_sources_list'),
+            text=translater.translate('🗳 Источники товаров'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.goods_sources_list,
                 from_callback=ctx.callback_data,
@@ -88,7 +88,7 @@ class AddFormattersListButtonModification(
 
         menu.footer_keyboard.add_callback_button(
             button_id='open_formatters_list',
-            text=translater.translate('$open_formatters_list'),
+            text=translater.translate('🔖 Форматтеры'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.formatters_list,
                 new_message=True,

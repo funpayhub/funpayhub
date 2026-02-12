@@ -14,6 +14,7 @@ from aiohttp import ClientSession
 from loggers import plugins as logger
 
 from funpayhub.lib.exceptions import PluginInstallationError
+from funpayhub.lib.translater import _en
 
 
 class PluginInstaller[T: Any](ABC):
@@ -51,14 +52,18 @@ class PluginInstaller[T: Any](ABC):
         pass
 
     async def install_wrapped(self, overwrite: bool = False) -> Path:
-        logger.info('Installing plugin from source %s ...', self._source)
+        logger.info(_en('Installing plugin from source %s ...'), self._source)
         try:
             return await self.install(overwrite=overwrite)
         except Exception as e:
-            logger.error('Failed to install plugin from source %s.', self.source, exc_info=True)
+            logger.error(
+                _en('Failed to install plugin from source %s.'),
+                self.source,
+                exc_info=True,
+            )
             if isinstance(e, PluginInstallationError):
                 raise
-            raise PluginInstallationError('See logs.') from e
+            raise PluginInstallationError(_en('See logs.')) from e
 
 
 class ZipPluginInstaller(PluginInstaller[str | Path]):
@@ -107,15 +112,19 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
             path = PurePosixPath(i.filename)
             if path.is_absolute():
                 raise PluginInstallationError(
-                    'Invalid archive structure: archive contains absolute path %s, '
-                    'which is not allowed. All paths must be relative.',
+                    _en(
+                        'Invalid archive structure: archive contains absolute path %s, '
+                        'which is not allowed. All paths must be relative.',
+                    ),
                     path,
                 )
 
             if len(path.parts) == 1 and not i.is_dir():
                 raise PluginInstallationError(
-                    'Invalid archive structure: the root of the ZIP must contain exactly '
-                    'one directory, but found a file: %s',
+                    _en(
+                        'Invalid archive structure: the root of the ZIP must contain exactly '
+                        'one directory, but found a file: %s',
+                    ),
                     i.filename,
                 )
 
@@ -123,15 +132,19 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
 
             if not curr_root_name.isidentifier():
                 raise PluginInstallationError(
-                    'Invalid archive structure: the root directory name %s '
-                    'is not a valid Python identifier. It must be suitable for imports.',
+                    _en(
+                        'Invalid archive structure: the root directory name %s '
+                        'is not a valid Python identifier. It must be suitable for imports.',
+                    ),
                     curr_root_name,
                 )
 
             if root_name is not None and curr_root_name != root_name:
                 raise PluginInstallationError(
-                    'Invalid archive structure: expected all entries to be under '
-                    'root directory %s, but found entry %s outside of it.',
+                    _en(
+                        'Invalid archive structure: expected all entries to be under '
+                        'root directory %s, but found entry %s outside of it.',
+                    ),
                     root_name,
                     path,
                 )
@@ -139,9 +152,11 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
             root_name = curr_root_name
 
         if root_name is None:
-            raise PluginInstallationError('Invalid archive structure: archive is empty.')
+            raise PluginInstallationError(_en('Invalid archive structure: archive is empty.'))
         if f'{root_name}/manifest.json' not in archive.namelist():
-            raise PluginInstallationError('Invalid archive structure: plugin manifest is missing.')
+            raise PluginInstallationError(
+                _en('Invalid archive structure: plugin manifest is missing.'),
+            )
         return root_name
 
     def _check_archive_exists(self) -> None:
@@ -165,7 +180,7 @@ class HTTPSPluginInstaller(PluginInstaller[str]):
             if parsed.scheme not in ['https', 'http'] or not bool(parsed.netloc):
                 raise Exception
         except Exception:
-            raise PluginInstallationError('Source %s is not a valid http URL.', source)
+            raise PluginInstallationError(_en('Source %s is not a valid http URL.'), source)
 
         super().__init__(plugins_path, source)
         self._installer_class = installer_class

@@ -60,7 +60,7 @@ class NotificationsMenuBuilder(
             )
 
         return Menu(
-            main_text='$notifications',
+            main_text=translater.translate('<b><u>🔔 Уведомления</u></b>'),
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )

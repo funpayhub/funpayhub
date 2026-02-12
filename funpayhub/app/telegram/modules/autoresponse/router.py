@@ -46,7 +46,7 @@ async def set_state(
     msg = await StateUIContext(
         menu_id=MenuIds.state_menu,
         trigger=query,
-        text=translater.translate('$add_command_message'),
+        text=translater.translate('➕ Введите команду.'),
         delete_on_clear=False,
         open_previous_on_clear=True,
     ).build_and_apply(tg_ui, query.message)
@@ -66,7 +66,7 @@ async def add_command(
     data = await states.AddingCommand.get(state)
 
     if message.text in properties.auto_response.entries:
-        await message.answer(text=translater.translate('$command_exists'))
+        await message.answer(text=translater.translate('❌ Команда уже существует.'))
         return
 
     await state.clear()
@@ -95,7 +95,7 @@ async def delete_command(
     tg_ui: UI,
 ) -> None:
     if callback_data.command not in properties.auto_response.entries:
-        await query.answer(translater.translate('$err_command_does_not_exist'), show_alert=True)
+        await query.answer(translater.translate('❌ Команда не найдена.'), show_alert=True)
         return
 
     properties.auto_response.detach_node(callback_data.command)

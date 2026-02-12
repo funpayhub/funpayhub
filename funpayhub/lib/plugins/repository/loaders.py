@@ -1,14 +1,17 @@
-from abc import abstractmethod, ABC
-from pathlib import Path
+from __future__ import annotations
+
+import json
 from typing import Any
+from abc import ABC, abstractmethod
+from pathlib import Path
 
 from aiohttp import ClientSession
-
-from .types import PluginsRepository
 from pydantic import ValidationError
-import json
 
 from funpayhub.lib.exceptions import PluginRepositoryLoadingError
+from funpayhub.lib.translater import _en
+
+from .types import PluginsRepository
 
 
 class RepositoryLoader[SOURCE](ABC):
@@ -20,7 +23,8 @@ class RepositoryLoader[SOURCE](ABC):
         return self._source
 
     @abstractmethod
-    async def load(self) -> PluginsRepository: pass
+    async def load(self) -> PluginsRepository:
+        pass
 
 
 class DictRepositoryLoader(RepositoryLoader[dict[str, Any]]):
@@ -28,7 +32,9 @@ class DictRepositoryLoader(RepositoryLoader[dict[str, Any]]):
         try:
             return PluginsRepository.model_validate(self.source)
         except ValidationError as e:
-            raise PluginRepositoryLoadingError('Unable to load repository: invalid format.') from e
+            raise PluginRepositoryLoadingError(
+                _en('Unable to load repository: invalid format.'),
+            ) from e
 
 
 class JSONRepositoryLoader(RepositoryLoader[str]):
@@ -36,7 +42,9 @@ class JSONRepositoryLoader(RepositoryLoader[str]):
         try:
             json_repo = json.loads(self.source)
         except json.JSONDecodeError as e:
-            raise PluginRepositoryLoadingError('Unable to load repository: JSON decode error.') from e
+            raise PluginRepositoryLoadingError(
+                _en('Unable to load repository: JSON decode error.'),
+            ) from e
 
         return await DictRepositoryLoader(json_repo).load()
 
@@ -45,13 +53,19 @@ class FileRepositoryLoader(RepositoryLoader[str | Path]):
     async def load(self) -> PluginsRepository:
         path = Path(self.source)
         if not path.is_file():
-            raise PluginRepositoryLoadingError('Unable to load repository: %s does not exist.', str(path)) from None
+            raise PluginRepositoryLoadingError(
+                _en('Unable to load repository: %s does not exist.'),
+                str(path),
+            ) from None
 
         try:
             with path.open('r', encoding='utf-8') as f:
                 data = f.read()
         except Exception as e:
-            raise PluginRepositoryLoadingError('Unable to load repository: unable to read %s.', str(path)) from e
+            raise PluginRepositoryLoadingError(
+                _en('Unable to load repository: unable to read %s.'),
+                str(path),
+            ) from e
 
         return await JSONRepositoryLoader(data).load()
 
@@ -73,6 +87,10 @@ class URLRepositoryLoader(RepositoryLoader[str]):
         try:
             return await self._download_repo()
         except TimeoutError as e:
-            raise PluginRepositoryLoadingError('Unable to load repository: download timed out.') from e
+            raise PluginRepositoryLoadingError(
+                _en('Unable to load repository: download timed out.'),
+            ) from e
         except Exception as e:
-            raise PluginRepositoryLoadingError('Unable to load repository: unexpected error while downloading.') from e
+            raise PluginRepositoryLoadingError(
+                _en('Unable to load repository: unexpected error while downloading.'),
+            ) from e

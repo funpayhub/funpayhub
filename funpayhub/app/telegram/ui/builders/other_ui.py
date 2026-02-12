@@ -32,13 +32,13 @@ class StartNotificationMenuBuilder(
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='main',
-            text=translater.translate('$main_menu'),
+            text=translater.translate('🏠 Главное меню'),
             callback_data=OpenMenu(menu_id=MenuIds.main_menu).pack(),
         )
 
         kb.add_callback_button(
             button_id='settings',
-            text=translater.translate('$settings'),
+            text=translater.translate('⚙️ Меню настроек'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.props_node,
                 context_data={
@@ -47,12 +47,21 @@ class StartNotificationMenuBuilder(
             ).pack(),
         )
 
-        text = translater.translate('$start_notification_text').format(
+        text = translater.translate(
+            '🐙 <b><u>FunPay Hub {version} запущен!</u></b>\n\n\n'
+            '<b>🔄 Подключение к FunPay аккаунту ...</b>\n\n\n'
+            '<i>⚙️ Вы уже можете пользоваться панелью управления, настраивать бота и т.д.\n\n'
+            'Для открытия основного меню введите команду /menu\n'
+            'Для открытия настроек введи команду /settings\n\n'
+            '📝 После подключения к FunPay аккаунту данное сообщение будет обновлено.</i>',
+        ).format(
             version=hub.properties.version.value,
         )
 
         if hub.safe_mode:
-            text += '\n\n' + translater.translate('$safe_mode_enabled')
+            text += '\n\n' + translater.translate(
+                '🛡️ <b><u>FunPayHub запущен в безопасном режиме!</u></b>',
+            )
         return Menu(main_text=text)
 
 
@@ -68,7 +77,17 @@ class FunPayStartNotificationMenuBuilder(
         fp: FunPay,
     ) -> Menu:
         if not ctx.error:
-            text = translater.translate('$funpay_successful_start_notification_text').format(
+            text = translater.translate(
+                '🎉 <b><u>FunPay Hub готов к работе!</u></b>\n\n\n'
+                '👤 <b><i>Аккаунт: {username} '
+                '(<a href="https://funpay.com/users/{user_id}/">{user_id}</a>)</i></b>\n\n'
+                '📊 <b><i>Активные продажи: {active_sells}</i></b>'
+                '\n📊 <b><i>Активные покупки: {active_purchases}</i></b>\n\n'
+                '💰 <b><i>Баланс: {rub_balance}₽, {usd_balance}$, {eur_balance}€</i></b>\n'
+                '💰 <b><i>Сделки: {rub_balance}₽</i></b>\n\n'
+                'Для открытия основного меню введите команду /menu\n'
+                'Для открытия настроек используйте команду /settings',
+            ).format(
                 username=fp.bot.username,
                 user_id=fp.bot.userid,
                 active_sells=(await fp.profile()).header.sales,
@@ -78,9 +97,21 @@ class FunPayStartNotificationMenuBuilder(
                 usd_balance='123.45',
             )
         elif isinstance(ctx.error, (BotUnauthenticatedError, UnauthorizedError)):
-            text = translater.translate('$funpay_unauthenticated_start_notification_text')
+            text = translater.translate(
+                '⚠️ <b><u>FunPay Hub запущен, но не удалось авторизоваться!</u></b>\n\n\n'
+                'ℹ️ Проверьте правильность вашего <b>golden_key</b> и попробуйте снова.\n\n'
+                '🐙 Вы всё ещё можете пользоваться панелью управления через Telegram бота.\n\n'
+                'Для открытия основного меню введите команду /menu\n'
+                'Для открытия настроек используйте команду /settings',
+            )
         else:
-            text = translater.translate('$funpay_unexpected_error_notification_text')
+            text = translater.translate(
+                '❌ <b><u>Произошла непредвиденная ошибка в FunPay Hub!</u></b>\n\n\n'
+                'ℹ️ Ошибка была зафиксирована, но вы всё ещё можете использовать Telegram бота.\n\n'
+                'Для открытия основного меню введите команду /menu\n'
+                'Для открытия настроек используйте команду /settings\n\n'
+                '📝 Подробности об ошибке можно найти в логах.',
+            )
 
         return Menu(main_text=text)
 
@@ -101,7 +132,7 @@ class MainMenuBuilder(
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='settings',
-            text=translater.translate('$props:name'),
+            text=translater.translate('⚙️ Настройки'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.props_node,
                 history=history,
@@ -111,25 +142,25 @@ class MainMenuBuilder(
 
         kb.add_callback_button(
             button_id='open_control_ui',
-            text=translater.translate('$control_ui'),
+            text=translater.translate('🔌 Системное меню'),
             callback_data=OpenMenu(menu_id=MenuIds.control, history=history).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_formatters_list',
-            text=translater.translate('$open_formatters_list'),
+            text=translater.translate('🔖 Форматтеры'),
             callback_data=OpenMenu(menu_id=MenuIds.formatters_list, history=history).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_goods_sources_list',
-            text=translater.translate('$goods_sources_list'),
+            text=translater.translate('🗳 Источники товаров'),
             callback_data=OpenMenu(menu_id=MenuIds.goods_sources_list, history=history).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_plugins_list',
-            text=translater.translate('$plugins_list'),
+            text=translater.translate('🧩 Расширения'),
             callback_data=OpenMenu(menu_id=MenuIds.plugins_list, history=history).pack(),
         )
 
@@ -144,7 +175,7 @@ class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=Sta
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='clear_state',
-            text=translater.translate('$clear_state'),
+            text=translater.translate('🔘 Отмена'),
             callback_data=ClearState(
                 delete_message=ctx.delete_on_clear,
                 open_previous=ctx.open_previous_on_clear,

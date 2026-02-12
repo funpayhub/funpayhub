@@ -72,23 +72,20 @@ async def change_parameter_value(
         menu_id=NodeMenuIds.props_param_manual_input,
         trigger=query,
         entry_path=entry.path,
-        callback_override=callback_data.copy_history(
-            ui_cbs.OpenMenu(
-                menu_id=NodeMenuIds.props_param_manual_input,
-                context_data={'entry_path': entry.path},
-            ),
-        ),
-    ).build_and_apply(tg_ui, query.message)
+    ).build_and_answer(tg_ui, query.message)
 
-    state_obj = states.ChangingParameterValue(parameter=entry, query=query, message=msg)
-    await state.set_state(state_obj.identifier)
-    await state.set_data({'data': state_obj})
+    await states.ChangingParameterValue(parameter=entry, query=query, state_message=msg).set(state)
+    await query.answer()
 
 
 @router.message(StateFilter(states.ChangingParameterValue.identifier))
-async def edit_parameter(message: Message, app: App, translater: Tr, state: FSMContext) -> None:
-    delete_message(message)
-
+async def edit_parameter(
+    message: Message,
+    app: App,
+    translater: Tr,
+    state: FSMContext,
+    tg_ui: UIRegistry,
+) -> None:
     data: states.ChangingParameterValue = (await state.get_data())['data']
     new_value = '' if message.text == '-' else message.text
 
@@ -97,15 +94,25 @@ async def edit_parameter(message: Message, app: App, translater: Tr, state: FSMC
         await state.clear()
     except PropertiesError as e:
         error_text = e.format_args(translater.translate(e.message))
-        await data.message.edit_text(
-            text=data.message.html_text
+        await data.state_message.edit_text(
+            text=data.state_message.html_text
             + f'\n\nНе удалось изменить значение параметра {data.parameter.name}:\n\n{error_text}',
-            reply_markup=data.message.reply_markup,
+            reply_markup=data.state_message.reply_markup,
         )
         return
 
     await app.emit_parameter_changed_event(data.parameter)
-    await app.telegram.fake_query(data.callback_data, data.query, pack_history=True)
+    await NodeMenuContext(
+        menu_id=NodeMenuIds.props_node,
+        trigger=message,
+        entry_path=data.parameter.parent.path,
+        callback_override=ui_cbs.OpenMenu(
+            menu_id=NodeMenuIds.props_node,
+            context_data={'entry_path': data.parameter.parent.path},
+            history=data.callback_data.history[:-1],
+        ),
+    ).build_and_answer(tg_ui, message)
+    delete_message(data.state_message)
 
 
 @router.callback_query(cbs.ListParamItemAction.filter())
@@ -154,17 +161,20 @@ async def set_adding_list_item_state(
         menu_id=NodeMenuIds.props_add_list_item,
         trigger=query,
         entry_path=entry.path,
-    ).build_and_apply(tg_ui, query.message)
+    ).build_and_answer(tg_ui, query.message)
 
-    state_obj = states.AddingListItem(parameter=entry, query=query, message=msg)
-    await state.set_state(state_obj.identifier)
-    await state.set_data({'data': state_obj})
+    await states.AddingListItem(parameter=entry, query=query, state_message=msg).set(state)
+    await query.answer()
 
 
 @router.message(StateFilter(states.AddingListItem.identifier))
-async def edit_parameter(message: Message, app: App, translater: Tr, state: FSMContext) -> None:
-    delete_message(message)
-
+async def edit_parameter(
+    message: Message,
+    app: App,
+    translater: Tr,
+    state: FSMContext,
+    tg_ui: UIRegistry,
+) -> None:
     data: states.AddingListItem = (await state.get_data())['data']
     try:
         await data.parameter.add_item(message.text)
@@ -172,12 +182,22 @@ async def edit_parameter(message: Message, app: App, translater: Tr, state: FSMC
         await state.clear()
     except PropertiesError as e:
         error_text = e.format_args(translater.translate(e.message))
-        await data.message.edit_text(
-            text=data.message.html_text
+        await data.state_message.edit_text(
+            text=data.state_message.html_text
             + f'\n\nНе удалось добавить элемент в список {data.parameter.name}:\n\n{error_text}',
-            reply_markup=data.message.reply_markup,
+            reply_markup=data.state_message.reply_markup,
         )
         return
 
     await app.emit_parameter_changed_event(data.parameter)
-    await app.telegram.fake_query(data.callback_data, data.query, pack_history=True)
+    await NodeMenuContext(
+        menu_id=NodeMenuIds.props_node,
+        trigger=message,
+        entry_path=data.parameter.path,
+        callback_override=ui_cbs.OpenMenu(
+            menu_id=NodeMenuIds.props_node,
+            context_data={'entry_path': data.parameter.path},
+            history=data.callback_data.history[:-1],
+        ),
+    ).build_and_answer(tg_ui, message)
+    delete_message(data.state_message)

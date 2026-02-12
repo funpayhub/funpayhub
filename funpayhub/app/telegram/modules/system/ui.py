@@ -26,39 +26,39 @@ class ControlMenuBuilder(MenuBuilder, menu_id=MenuIds.control, context_type=Menu
         main_keyboard.add_rows(
             Button.callback_button(
                 button_id='shutdown',
-                text=translater.translate('$shutdown'),
+                text=translater.translate('⏻ Выключить FPH'),
                 callback_data=cbs.ShutDown(exit_code=exit_codes.SHUTDOWN).pack(),
                 row=True,
             ),
             Button.callback_button(
                 button_id='restart',
-                text=translater.translate('$restart'),
+                text=translater.translate('🔄 Перезапустить FPH'),
                 callback_data=cbs.ShutDown(exit_code=exit_codes.RESTART).pack(),
                 row=True,
             ),
             Button.callback_button(
                 button_id='restart_switch_safe',
-                text=translater.translate('$restart_safe'),
+                text=translater.translate('🛡️ Безопасный режим'),
                 callback_data=cbs.ShutDown(exit_code=exit_codes.RESTART_SAFE).pack(),
                 row=True,
             )
             if not hub.safe_mode
             else Button.callback_button(
                 button_id='restart_switch_safe',
-                text=translater.translate('$restart_non_safe'),
+                text=translater.translate('🚀 Стандартный режим'),
                 callback_data=cbs.ShutDown(exit_code=exit_codes.RESTART_NON_SAFE).pack(),
                 row=True,
             ),
             Button.callback_button(
                 button_id='update',
-                text=translater.translate('$check_updates'),
+                text=translater.translate('🔍 Проверить наличие обновлений'),
                 callback_data=CheckForUpdates().pack_compact(),
                 row=True,
             ),
         )
 
         return Menu(
-            main_text=translater.translate('$control_ui_desc'),
+            main_text=translater.translate('🔌 <b>Системное меню</b>'),
             main_keyboard=main_keyboard,
             finalizer=StripAndNavigationFinalizer(),
         )

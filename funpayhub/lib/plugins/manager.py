@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from funpayhub.lib.translater import _en
+
 
 __all__ = ['PluginManager']
 
@@ -63,7 +65,7 @@ class PluginManager[PluginCLS]:
         self._disabled_plugins: set[str] = set()
 
         if self._plugins_path not in sys.path:
-            logger.info('Adding %s to sys.path.', str(self._plugins_path))
+            logger.info(_en('Adding %s to sys.path.'), str(self._plugins_path))
             sys.path.append(str(self._plugins_path))
 
         self._installation_lock = asyncio.Lock()
@@ -96,46 +98,46 @@ class PluginManager[PluginCLS]:
         return plugin not in self.disabled_plugins
 
     async def load_plugins(self) -> None:
-        logger.info('Loading plugins...')
+        logger.info(_en('Loading plugins...'))
         for i in self._plugins_path.iterdir():
-            logger.debug('Checking %s...', str(i))
+            logger.debug(_en('Checking %s...'), str(i))
             if not i.is_dir():
-                logger.debug('Ignoring %s: not a directory.', str(i))
+                logger.debug(_en('Ignoring %s: not a directory.'), str(i))
                 continue
             self.load_plugin(i)
 
     def load_plugin(self, plugin_path: str | Path, instantiate: bool = True) -> None:
-        logger.info('Loading plugin %s...', str(plugin_path))
+        logger.info(_en('Loading plugin %s...'), str(plugin_path))
 
         module_name = Path(plugin_path).name
         if not module_name.isidentifier() or keyword.iskeyword(module_name):
-            logger.warning('Ignoring %s: not a valid plugin directory.', str(plugin_path))
+            logger.warning(_en('Ignoring %s: not a valid plugin directory.'), str(plugin_path))
             return
 
-        logger.info('Loading plugin manifest from %s.', str(plugin_path))
+        logger.info(_en('Loading plugin manifest from %s.'), str(plugin_path))
         try:
             manifest = self._load_plugin_manifest(plugin_path)
         except:
             logger.error(
-                'Unable to load plugin manifest for %s. Skipping.',
+                _en('Unable to load plugin manifest for %s. Skipping.'),
                 str(plugin_path),
                 exc_info=True,
             )
             return
 
         if manifest.plugin_id in self._plugins:
-            logger.warning('Plugin %s already loaded. Skipping.', manifest.plugin_id)
+            logger.warning(_en('Plugin %s already loaded. Skipping.'), manifest.plugin_id)
             return
 
         exception: PluginInstantiationError | None = None
 
         if not instantiate:
-            exception = PluginInstantiationError('Instantiation for this plugin disabled.')
+            exception = PluginInstantiationError(_en('Instantiation for this plugin disabled.'))
         if self._safe_mode:
             exception = PluginInstantiationError('Safe mode enabled.')
         elif self._app_version not in manifest.app_version:
             exception = PluginInstantiationError(
-                'App version mismatch. Plugin requires: %s. Current: %s.',
+                _en('App version mismatch. Plugin requires: %s. Current: %s.'),
                 manifest.app_version,
                 self._app_version,
             )
@@ -147,7 +149,11 @@ class PluginManager[PluginCLS]:
             logger.error(exception.message, *exception.args)
 
         else:
-            logger.info('Loading entry point %s of %s.', manifest.entry_point, manifest.plugin_id)
+            logger.info(
+                _en('Loading entry point %s of %s.'),
+                manifest.entry_point,
+                manifest.plugin_id,
+            )
             try:
                 plugin_instance = self._load_entry_point(plugin_path, manifest)
             except Exception as e:
@@ -156,13 +162,15 @@ class PluginManager[PluginCLS]:
                     exception = e
                 else:
                     logger.error(
-                        'An error occurred while loading entry point %s of %s.',
+                        _en('An error occurred while loading entry point %s of %s.'),
                         manifest.entry_point,
                         manifest.plugin_id,
                         exc_info=True,
                     )
                     exception = PluginInstantiationError(
-                        'An unexpected error occurred while instantiating plugin %s. See logs.',
+                        _en(
+                            'An unexpected error occurred while instantiating plugin %s. See logs.',
+                        ),
                         manifest.plugin_id,
                     )
                     exception.__cause__ = e
@@ -196,18 +204,22 @@ class PluginManager[PluginCLS]:
         for step_name in self.steps_order:
             step = self._steps.get(step_name)
             if step is None:
-                logger.warning('Step %s is not in plugin manager. Skipping.', step_name)
+                logger.warning(_en('Step %s is not in plugin manager. Skipping.'), step_name)
                 continue
 
             for plugin_id, plugin in self._plugins.items():
                 if not plugin.plugin:
                     logger.debug(
-                        'Plugin %s does not have a plugin instance. Skipping step %s.',
+                        _en('Plugin %s does not have a plugin instance. Skipping step %s.'),
                         plugin.manifest.plugin_id,
                         step_name,
                     )
                     continue
-                logger.info('Running %s step for plugin %s.', step_name, plugin.manifest.plugin_id)
+                logger.info(
+                    _en('Running %s step for plugin %s.'),
+                    step_name,
+                    plugin.manifest.plugin_id,
+                )
                 await step(plugin)
 
     def _load_entry_point(self, plugin_path: str | Path, manifest: PluginManifest) -> PluginCLS:
@@ -219,14 +231,14 @@ class PluginManager[PluginCLS]:
 
         if plugin_class is None:
             raise PluginInstantiationError(
-                'Unable to find entry point %s of %s.',
+                _en('Unable to find entry point %s of %s.'),
                 manifest.entry_point,
                 manifest.plugin_id,
             )
 
         if not issubclass(plugin_class, self._plugin_cls):
             raise PluginInstantiationError(
-                'Entry point of plugin must be a subclass of %s, not %s.',
+                _en('Entry point of plugin must be a subclass of %s, not %s.'),
                 self._plugin_cls.__name__,
                 plugin_class.__name__,
             )

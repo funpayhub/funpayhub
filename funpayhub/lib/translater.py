@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+
+__all__ = ['Translater', '_', '_en', '_ru']
+
+
 import re
 import gettext
 from pathlib import Path
@@ -52,12 +56,10 @@ class Translater:
 
         return key
 
-    def translate_text(self, text: str, language: str | None = None) -> str:
-        language = language or self.current_language
 
-        text = text.replace('$$', '__ESCAPED_DOLLAR__')
-        text = TRANSLATION_RE.sub(
-            lambda m: self.translate(m.group(0), language),
-            text,
-        )
-        return text.replace('__ESCAPED_DOLLAR__', '$')
+def _(_: str, /) -> str:
+    return _
+
+
+_en = _
+_ru = _

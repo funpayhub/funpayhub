@@ -31,27 +31,27 @@ async def shutdown(message: Message, hub: FunPayHub) -> None:
 
 @router.message(Command('restart'))
 async def restart(message: Message, hub: FunPayHub, translater: Translater) -> None:
-    await message.reply(translater.translate('$restarting'))
+    await message.reply(translater.translate('♻️ Перезапускаюсь...'))
     await hub.shutdown(exit_codes.RESTART)
 
 
 @router.message(Command('safe_mode'))
 async def safe_mode(message: Message, hub: FunPayHub, translater: Translater) -> None:
     if hub.safe_mode:
-        await message.reply(translater.translate('$already_in_safe_mode'))
+        await message.reply(translater.translate('⚠️ Уже в безопасном режиме.'))
         return
 
-    await message.reply(translater.translate('$restarting_in_safe_mode'))
+    await message.reply(translater.translate('♻️ Перезапускаюсь в безопасный режим...'))
     await hub.shutdown(exit_codes.RESTART_SAFE)
 
 
 @router.message(Command('standard_mode'))
 async def standard_mode(message: Message, hub: FunPayHub, translater: Translater) -> None:
     if not hub.safe_mode:
-        await message.reply(translater.translate('$already_in_standard_mode'))
+        await message.reply(translater.translate('⚠️ Уже в стандартном режиме.'))
         return
 
-    await message.reply(translater.translate('$restarting_in_standard_mode'))
+    await message.reply(translater.translate('♻️ Перезапускаюсь в стандартный режим...'))
     await hub.shutdown(exit_codes.RESTART_NON_SAFE)
 
 

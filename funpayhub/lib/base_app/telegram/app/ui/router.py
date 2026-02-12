@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from aiogram.types import Message, CallbackQuery
     from aiogram.fsm.context import FSMContext
 
+    from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry
     from funpayhub.lib.base_app.telegram import TelegramApp
 
@@ -114,8 +115,9 @@ async def activate_manual_page_changing_state(
     query: CallbackQuery,
     state: FSMContext,
     callback_data: cbs.ActivateChangingPageState,
+    translater: Tr,
 ):
-    msg = await query.message.answer(text='$enter_new_page_index_message')
+    msg = await query.message.answer(text=translater.translate('🔢 Введите номер страницы.'))
 
     data = ChangingMenuPage(
         mode=callback_data.mode,
