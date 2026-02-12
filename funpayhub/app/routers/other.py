@@ -8,8 +8,12 @@ from aiogram.types import Message
 from funpaybotengine.types import Category
 from eventry.asyncio.filter import all_of
 
+from loggers import main as logger
+
+from funpayhub.lib.translater import _en
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.lib.telegram.ui.types import MenuContext
+from funpayhub.lib.plugin.repository.loaders import URLRepositoryLoader
 
 from funpayhub.app.dispatching import Router
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -17,6 +21,8 @@ from funpayhub.app.telegram.ui.builders.context import FunPayStartNotificationMe
 
 
 if TYPE_CHECKING:
+    from funpayhub.lib.plugin.repository.manager import RepositoriesManager
+
     from funpayhub.app.main import FunPayHub
     from funpayhub.app.funpay.main import FunPay
     from funpayhub.app.telegram.main import Telegram
@@ -94,3 +100,23 @@ async def start_auto_raise(fp: FunPay) -> None:
 async def send_offers_raised_notification(category: Category, tg: Telegram) -> None:
     text = f'🔺 Все лоты категории <b>{escape(category.full_name)}</b> успешно подняты.'
     tg.send_notification('offers_raised', text)
+
+
+@router.on_telegram_start(as_task=True)
+async def add_official_plugin_repo(repositories_manager: RepositoriesManager):
+    logger.info(_en('Updating official plugins repo.'))
+    try:
+        repo = await URLRepositoryLoader(
+            'https://raw.githubusercontent.com/funpayhub/fph_plugins_repo/refs/heads/master/com.github.funpayhub.repo.json',
+        ).load()
+    except:
+        logger.error(_en('An error occurred while downloading official repo.'), exc_info=True)
+        return
+
+    try:
+        repositories_manager.register_repository(repo, overwrite=True, save=True)
+    except:
+        logger.error(_en('An error occurred while saving official repo.'), exc_info=True)
+        return
+
+    logger.info(_en('Successfully updated official plugins repo.'))
