@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from aiogram import Router as TGRouter
     from funpaybotengine import Router as FPRouter
 
-    from funpayhub.lib.plugins import PluginManifest
+    from funpayhub.lib.plugin import PluginManifest
     from funpayhub.lib.properties import Properties
     from funpayhub.lib.telegram.ui import (
         MenuBuilder,

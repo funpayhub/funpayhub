@@ -13,7 +13,7 @@ from funpaybotengine import Router as FPBERouter
 from packaging.version import Version
 from eventry.asyncio.middleware_manager import MiddlewareManagerTypes
 
-from funpayhub.lib.plugins import PluginManager as BasePluginManager
+from funpayhub.lib.plugin import PluginManager as BasePluginManager
 
 from funpayhub.app.dispatching import Router as HubRouter
 
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
     from eventry.asyncio.router import Router as EventryRouter
 
-    from funpayhub.lib.plugins import LoadedPlugin, PluginManifest
+    from funpayhub.lib.plugin import LoadedPlugin, PluginManifest
 
     from funpayhub.app.main import FunPayHub
 

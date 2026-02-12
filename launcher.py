@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from utils import set_exception_hook
 
-from funpayhub.lib.translater import _
-
 
 set_exception_hook()
 
@@ -88,10 +86,10 @@ RELEASES_PATH = (
 )
 APP_PATH = Path(__file__).parent / 'app.py'
 
-logger.info(_('FunPay Hub launcher is in game!'))
-logger.info(_('Working dir: %s'), os.getcwd())
-logger.info(_('RELEASES_PATH: %s'), RELEASES_PATH)
-logger.info(_('PYTHONPATH: %r'), os.environ.get('PYTHONPATH'))
+logger.info('FunPay Hub launcher is in game!')
+logger.info('Working dir: %s', os.getcwd())
+logger.info('RELEASES_PATH: %s', RELEASES_PATH)
+logger.info('PYTHONPATH: %r', os.environ.get('PYTHONPATH'))
 
 
 def elevate() -> None:
@@ -114,11 +112,11 @@ def elevate() -> None:
 
 
 if IS_WINDOWS:
-    logger.info(_('Running under windows: need elevation.'))
+    logger.info('Running under windows: need elevation.')
     elevate()
 
 original_args = args
-logger.info(_('Original launch args: %s'), original_args)
+logger.info('Original launch args: %s', original_args)
 
 launch_args = sys.argv[1:]
 
@@ -138,7 +136,7 @@ def namespace_to_argv(ns: Namespace) -> list[str]:
 
 
 def safe_restart() -> None:
-    logger.info(_('Restarting FunPayHub in safe mode.'))
+    logger.info('Restarting FunPayHub in safe mode.')
     global launch_args
 
     new_args = deepcopy(original_args)
@@ -147,7 +145,7 @@ def safe_restart() -> None:
 
 
 def non_safe_restart() -> None:
-    logger.info(_('Restarting FunPayHub in non-safe mode.'))
+    logger.info('Restarting FunPayHub in non-safe mode.')
     global launch_args
 
     new_args = deepcopy(original_args)
@@ -156,17 +154,14 @@ def non_safe_restart() -> None:
 
 
 def update() -> None:
-    logger.info(_('Applying FunPayHub update.'))
+    logger.info('Applying FunPayHub update.')
 
     if not RELEASES_PATH:
-        logger.error(
-            _('%s environment variable not set. Unable to apply update.'),
-            'RELEASES_PATH',
-        )
+        logger.error('%s environment variable not set. Unable to apply update.', 'RELEASES_PATH')
         return
 
     if not (RELEASES_PATH / '.update').exists(follow_symlinks=True):
-        logger.error(_('Update path %s does not exists. Unable to apply update.'), RELEASES_PATH)
+        logger.error('Update path %s does not exists. Unable to apply update.', RELEASES_PATH)
         return
 
     # todo: try except
@@ -174,10 +169,7 @@ def update() -> None:
     new_version = apply_update(RELEASES_PATH / '.update')
     launcher_path = RELEASES_PATH / 'current' / 'launcher.py'
 
-    logger.info(
-        _('FunPay Hub update %s applied successfully. Launching new process...'),
-        new_version,
-    )
+    logger.info('FunPay Hub update %s applied successfully. Launching new process...', new_version)
     if IS_WINDOWS:
         subprocess.Popen(
             [sys.executable, launcher_path, *launch_args],
@@ -193,20 +185,16 @@ def update() -> None:
 
 def not_a_tty() -> None:
     logger.critical(
-        _(
-            'Cannot start without a TTY: interactive input is required. '
-            'Please restart the application from a terminal.',
-        ),
+        'Cannot start without a TTY: interactive input is required. '
+        'Please restart the application from a terminal.',
     )
     sys.exit(exit_codes.NOT_A_TTY)
 
 
 def telegram_error() -> None:
     logger.critical(
-        _(
-            'An error occurred while initializing the Telegram bot. '
-            'The token is most likely invalid. Please update the token and restart the application.',
-        ),
+        'An error occurred while initializing the Telegram bot. '
+        'The token is most likely invalid. Please update the token and restart the application.',
     )
     sys.exit(exit_codes.TELEGRAM_ERROR)
 
@@ -225,7 +213,7 @@ ACTIONS = {
 }
 
 while True:
-    logger.info(_('Launching FunPayHub with args: %s'), launch_args)
+    logger.info('Launching FunPayHub with args: %s', launch_args)
 
     try:
         result = subprocess.run(
@@ -233,13 +221,13 @@ while True:
             env=os.environ.copy(),
         )
     except OSError:
-        logger.critical(_('An error occurred while launching FunPayHub.'), exc_info=True)
+        logger.critical('An error occurred while launching FunPayHub.', exc_info=True)
         sys.exit(-1)
 
     if result.returncode in ACTIONS:
-        logger.info(_('FunPayHub process ended with return code %d.'), result.returncode)
+        logger.info('FunPayHub process ended with return code %d.', result.returncode)
         ACTIONS[result.returncode]()
         continue
     else:
-        logger.error(_('FunPayHub process ended with unknown return code %d.'), result.returncode)
+        logger.error('FunPayHub process ended with unknown return code %d.', result.returncode)
         raise Exception

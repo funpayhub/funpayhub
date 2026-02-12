@@ -33,9 +33,9 @@ from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.plugins import PluginManager
+    from funpayhub.lib.plugin import PluginManager
     from funpayhub.lib.translater import Translater as Tr
-    from funpayhub.lib.plugins.repository.manager import RepositoriesManager
+    from funpayhub.lib.plugin.repository.manager import RepositoriesManager
 
     from funpayhub.app.main import FunPayHub
     from funpayhub.app.properties import FunPayHubProperties as FPHProps

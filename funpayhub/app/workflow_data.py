@@ -16,10 +16,10 @@ from funpayhub.lib.base_app import WorkflowData as BaseWorkflowData
 
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
+    from funpayhub.app.plugin import PluginManager
     from funpayhub.app.properties import FunPayHubProperties
     from funpayhub.app.funpay.main import FunPay
     from funpayhub.app.telegram.main import Telegram
-    from funpayhub.app.plugins import PluginManager
 
 
 class WorkflowData(BaseWorkflowData):
@@ -37,10 +37,10 @@ class WorkflowData(BaseWorkflowData):
         super().__init__()
 
         from funpayhub.app.main import FunPayHub
+        from funpayhub.app.plugin import PluginManager
         from funpayhub.app.properties import FunPayHubProperties
         from funpayhub.app.funpay.main import FunPay
         from funpayhub.app.telegram.main import Telegram
-        from funpayhub.app.plugins import PluginManager
 
         self.check_items.update(
             {

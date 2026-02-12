@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from funpayhub.lib.telegram import Command
 
-from funpayhub.app.plugins import Plugin
+from funpayhub.app.plugin import Plugin
 
 from .types import Registry, BotRotater
 from .properties import ChatSyncProperties

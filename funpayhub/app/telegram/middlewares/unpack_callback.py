@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _
+from funpayhub.lib.translater import _en
 
 
 __all__ = ['UnpackMiddleware']
@@ -29,7 +29,7 @@ class UnpackMiddleware(BaseMiddleware):
         data['unpacked_callback'] = parsed
         event.__dict__.update({'__parsed__': parsed, 'data': callback_data})
         logger.debug(
-            _('Unpacked callback data: %s\nCallback: %s\nData: %s\nHistory: %s'),
+            _en('Unpacked callback data: %s\nCallback: %s\nData: %s\nHistory: %s'),
             event.data,
             parsed.identifier,
             parsed.data,

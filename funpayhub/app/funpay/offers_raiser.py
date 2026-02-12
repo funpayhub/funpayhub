@@ -17,7 +17,7 @@ from funpaybotengine.exceptions.session_exceptions import (
 
 from loggers import offers_raiser as logger
 
-from funpayhub.lib.translater import _
+from funpayhub.lib.translater import _en
 
 
 type RaiseCallback = Callable[[Category], Awaitable[Any]]
@@ -68,7 +68,7 @@ class OffersRaiser:
                 return
             except RateLimitExceededError:
                 logger.warning(
-                    _(
+                    _en(
                         'An 429 error occurred while raising offers of category %s. '
                         'Waiting for %d seconds.',
                     ),
@@ -82,13 +82,13 @@ class OffersRaiser:
         category: Category,
         on_raise: RaiseCallback | None = None,
     ) -> None:
-        logger.info(_('Offer raiser loop for category %s has been started.'), category.name)
+        logger.info(_en('Offer raiser loop for category %s has been started.'), category.name)
         while True:
             try:
                 async with self._requesting_lock:
                     await self._raise_category_until_complete(category)
                     logger.info(
-                        _('Offers of category %s has been raised. Next try in %d.'),
+                        _en('Offers of category %s has been raised. Next try in %d.'),
                         category.name,
                         3600,
                     )
@@ -98,14 +98,14 @@ class OffersRaiser:
                 await asyncio.sleep(3600)
             except UnauthorizedError:
                 logger.error(
-                    _('Unable to raise offers of category %s: not authorized.'),
+                    _en('Unable to raise offers of category %s: not authorized.'),
                     category.name,
                 )
                 return
             except RaiseOffersError as e:
                 wait_time = e.wait_time or 1800
                 logger.info(
-                    _('Unable to raise offers of category %s: need to wait for %d.'),
+                    _en('Unable to raise offers of category %s: need to wait for %d.'),
                     category.name,
                     wait_time,
                 )
@@ -113,14 +113,14 @@ class OffersRaiser:
                 continue
             except FunPayServerError:
                 logger.warning(
-                    _('A Server error occurred while raising offers of category %s.'),
+                    _en('A Server error occurred while raising offers of category %s.'),
                     category.name,
                 )
                 await asyncio.sleep(10)
                 continue
             except Exception:
                 logger.error(
-                    _('An unexpected error occurred while raising offers of category %s.'),
+                    _en('An unexpected error occurred while raising offers of category %s.'),
                     category.name,
                     exc_info=True,
                 )
@@ -134,20 +134,20 @@ class OffersRaiser:
         try:
             await self._raising_loop(category, on_raise)
         except asyncio.CancelledError:
-            logger.info(_('Offer raising loop of category %s has been stopped.'), category.name)
+            logger.info(_en('Offer raising loop of category %s has been stopped.'), category.name)
             raise
 
     def _on_task_done(self, category: Category, task: asyncio.Task) -> None:
         if category.id in self._tasks and self._tasks[category.id] is task:
             del self._tasks[category.id]
             logger.debug(
-                _('Offer raising loop task of category %s (%s) has been removed from manager.'),
+                _en('Offer raising loop task of category %s (%s) has been removed from manager.'),
                 category.name,
                 task.get_name(),
             )
         else:
             logger.debug(
-                _('Offer raising loop task of category %s (%s) has not been found in manager.'),
+                _en('Offer raising loop task of category %s (%s) has not been found in manager.'),
                 category.name,
                 task.get_name(),
             )

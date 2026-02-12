@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _
+from funpayhub.lib.translater import _en
 
 
 __all__ = [
@@ -60,5 +60,5 @@ class OopsMiddleware(BaseMiddleware):
                         '🫨🤬😵☠️\nУпс! Произошла какая-то ошибка, которую никто не смог предвидеть!\nСообщи об этом разработчику! (Ну или живи с этим).',
                     ),
                 )
-            logger.error(_('Caught an error!'), exc_info=True)
+            logger.error(_en('Caught an error!'), exc_info=True)
             raise

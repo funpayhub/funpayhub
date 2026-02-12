@@ -16,7 +16,7 @@ from packaging.version import Version
 
 from loggers import updater as logger
 
-from funpayhub.lib.translater import _
+from funpayhub.lib.translater import _en
 
 
 REPO = 'funpayhub/funpayhub'
@@ -37,7 +37,7 @@ async def check_updates(current_version: Version | str) -> UpdateInfo | None:
     if isinstance(current_version, str):
         current_version = Version(current_version)
 
-    logger.info(_('Fetching releases...'))
+    logger.info(_en('Fetching releases...'))
 
     try:
         async with ClientSession() as s:
@@ -47,25 +47,25 @@ async def check_updates(current_version: Version | str) -> UpdateInfo | None:
             )
             data = await result.json()
     except:
-        logger.error(_('An error occurred while fetching releases.'), exc_info=True)
+        logger.error(_en('An error occurred while fetching releases.'), exc_info=True)
         raise
 
     if not data:
-        logger.info(_('No releases available.'))
+        logger.info(_en('No releases available.'))
         return None
 
     latest = data[0]
     latest_version = latest['tag_name'].replace('v', '').strip()
     if not latest_version:
-        logger.info(_('No releases available.'))
+        logger.info(_en('No releases available.'))
         return None
 
     latest_version = Version(latest_version)
     if latest_version <= current_version:
-        logger.info(_('No releases available.'))
+        logger.info(_en('No releases available.'))
         return None
 
-    logger.info(_('New release %s available.'), str(latest_version))
+    logger.info(_en('New release %s available.'), str(latest_version))
     return UpdateInfo(
         version=latest_version,
         title=latest['name'],
@@ -84,17 +84,17 @@ async def _download_update(url: str, dst: str) -> None:
 
 
 async def download_update(url: str, dst: str = '.update.zip') -> None:
-    logger.info(_('Downloading update from %s'), url)
+    logger.info(_en('Downloading update from %s'), url)
     try:
         await _download_update(url, dst)
     except aiohttp.ClientResponseError as e:
-        logger.error(_('Unexpected status code while downloading update: %d.'), e.status)
+        logger.error(_en('Unexpected status code while downloading update: %d.'), e.status)
         raise
     except asyncio.TimeoutError:
-        logger.error(_('Timeout error while downloading updated.'))
+        logger.error(_en('Timeout error while downloading updated.'))
         raise
     except Exception:
-        logger.error(_('Unexpected error while downloading an updated.'), exc_info=True)
+        logger.error(_en('Unexpected error while downloading an updated.'), exc_info=True)
         raise
 
 
@@ -115,12 +115,12 @@ def _install_update(update_archive: str) -> None:
 
 
 def install_update(update_archive: str) -> None:
-    logger.info(_('Installing update to %s ...'), UPDATE_PATH)
+    logger.info(_en('Installing update to %s ...'), UPDATE_PATH)
     try:
         _install_update(update_archive)
     except:
         logger.error(
-            _('Unexpected error while installing update to %s.'),
+            _en('Unexpected error while installing update to %s.'),
             UPDATE_PATH,
             exc_info=True,
         )

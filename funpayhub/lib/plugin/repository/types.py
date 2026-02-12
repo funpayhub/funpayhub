@@ -7,7 +7,7 @@ from pydantic import BaseModel, field_validator, field_serializer
 from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
-from funpayhub.lib.plugins.types import _WithDescription
+from funpayhub.lib.plugin.types import _WithDescription
 
 
 class RepoSpecificPluginVersionInfo(BaseModel):

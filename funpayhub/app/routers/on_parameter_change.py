@@ -6,7 +6,7 @@ from funpayhub.app.dispatching import Router
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.plugins import PluginManager
+    from funpayhub.lib.plugin import PluginManager
     from funpayhub.lib.properties import (
         IntParameter,
         ListParameter,

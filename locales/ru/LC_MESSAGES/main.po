@@ -3,54 +3,234 @@
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-12 02:20+0300\n"
-"PO-Revision-Date: 2026-02-11 23:46+0300\n"
+"POT-Creation-Date: 2026-02-12 15:03+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
 "Language-Team: ru <LL@li.org>\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || "
+"n%100>=20) ? 1 : 2);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
+#: logger_conf.py:37
+msgid "DBUG"
+msgstr "ДБАГ"
+
+#: logger_conf.py:38
+msgid "INFO"
+msgstr "ИНФО"
+
+#: logger_conf.py:39
+msgid "WARN"
+msgstr "ПРЕД"
+
+#: logger_conf.py:40
+msgid "ERRR"
+msgstr "ОШИБ"
+
+#: logger_conf.py:41
+msgid "CRIT"
+msgstr "КРИТ"
+
+#: updater.py:40
+msgid "Fetching releases..."
+msgstr "Получение списка релизов..."
+
+#: updater.py:50
+msgid "An error occurred while fetching releases."
+msgstr "Произошла ошибка при получении релизов."
+
+#: updater.py:54 updater.py:60 updater.py:65
+msgid "No releases available."
+msgstr "Релизы недоступны."
+
+#: updater.py:68
+#, python-format
+msgid "New release %s available."
+msgstr "Доступен новый релиз %s."
+
+#: updater.py:87
+#, python-format
+msgid "Downloading update from %s"
+msgstr "Скачивание обновления с %s"
+
+#: updater.py:91
+#, python-format
+msgid "Unexpected status code while downloading update: %d."
+msgstr "Неожиданный код статуса при скачивании обновления: %d."
+
+#: updater.py:94
+msgid "Timeout error while downloading updated."
+msgstr "Ошибка таймаута при скачивании обновления."
+
+#: updater.py:97
+msgid "Unexpected error while downloading an updated."
+msgstr "Неожиданная ошибка при скачивании обновления."
+
+#: updater.py:118
+#, python-format
+msgid "Installing update to %s ..."
+msgstr "Установка обновления в %s ..."
+
+#: updater.py:123
+#, python-format
+msgid "Unexpected error while installing update to %s."
+msgstr "Неожиданная ошибка при установке обновления в %s."
+
+#: funpayhub/app/main.py:199
+#, python-format
+msgid "Shutting down FunPayHub with exit code %d."
+msgstr "Завершение работы FunPayHub с кодом выхода %d."
+
+#: funpayhub/app/funpay/main.py:125
+msgid "Trying to make a first request to FunPay..."
+msgstr "Попытка выполнить первый запрос к FunPay..."
+
+#: funpayhub/app/funpay/main.py:133
+msgid "An error occurred while making first request to FunPay: unauthenticated."
+msgstr "Ошибка при выполнении первого запроса к FunPay: неаутентифицировано."
+
+#: funpayhub/app/funpay/main.py:142
+msgid ""
+"An error occurred while making first request to FunPay: rate limit exceeded. Retrying in 5 "
+"seconds."
+msgstr "Ошибка при выполнении первого запроса к FunPay: превышен лимит запросов. Повтор через 5 секунд."
+
+#: funpayhub/app/funpay/main.py:149
+msgid ""
+"An error occurred while making first request to FunPay: FunPay server error. Retrying in 5 "
+"seconds."
+msgstr "Ошибка при выполнении первого запроса к FunPay: ошибка сервера FunPay. Повтор через 5 секунд."
+
+#: funpayhub/app/funpay/main.py:158
+msgid "An error occurred while making first request to FunPay."
+msgstr "Произошла ошибка при выполнении первого запроса к FunPay."
+
+#: funpayhub/app/funpay/main.py:164
+msgid "Failed to make first request to FunPay."
+msgstr "Не удалось выполнить первый запрос к FunPay."
+
+#: funpayhub/app/funpay/main.py:210
+msgid "Unable to send message."
+msgstr "Не удалось отправить сообщение."
+
+#: funpayhub/app/funpay/main.py:212
+#, python-format
+msgid "Unable to send message to %s."
+msgstr "Не удалось отправить сообщение пользователю %s."
+
+#: funpayhub/app/funpay/main.py:215
+#, python-format
+msgid "Unable to send message to %s. Attempts exceeded."
+msgstr "Не удалось отправить сообщение пользователю %s. Превышено количество попыток."
+
+#: funpayhub/app/funpay/offers_raiser.py:72
+#, python-format
+msgid "An 429 error occurred while raising offers of category %s. Waiting for %d seconds."
+msgstr "Произошла ошибка 429 при поднятии предложений категории %s. Ожидание %d секунд."
+
+#: funpayhub/app/funpay/offers_raiser.py:85
+#, python-format
+msgid "Offer raiser loop for category %s has been started."
+msgstr "Цикл поднятия предложений для категории %s запущен."
+
+#: funpayhub/app/funpay/offers_raiser.py:91
+#, python-format
+msgid "Offers of category %s has been raised. Next try in %d."
+msgstr "Предложения категории %s подняты. Следующая попытка через %d."
+
+#: funpayhub/app/funpay/offers_raiser.py:101
+#, python-format
+msgid "Unable to raise offers of category %s: not authorized."
+msgstr "Не удалось поднять предложения категории %s: нет авторизации."
+
+#: funpayhub/app/funpay/offers_raiser.py:108
+#, python-format
+msgid "Unable to raise offers of category %s: need to wait for %d."
+msgstr "Не удалось поднять предложения категории %s: нужно подождать %d."
+
+#: funpayhub/app/funpay/offers_raiser.py:116
+#, python-format
+msgid "A Server error occurred while raising offers of category %s."
+msgstr "Произошла ошибка сервера при поднятии предложений категории %s."
+
+#: funpayhub/app/funpay/offers_raiser.py:123
+#, python-format
+msgid "An unexpected error occurred while raising offers of category %s."
+msgstr "Произошла неожиданная ошибка при поднятии предложений категории %s."
+
+#: funpayhub/app/funpay/offers_raiser.py:137
+#, python-format
+msgid "Offer raising loop of category %s has been stopped."
+msgstr "Цикл поднятия предложений категории %s остановлен."
+
+#: funpayhub/app/funpay/offers_raiser.py:144
+#, python-format
+msgid "Offer raising loop task of category %s (%s) has been removed from manager."
+msgstr "Задача цикла поднятия предложений категории %s (%s) удалена из менеджера."
+
+#: funpayhub/app/funpay/offers_raiser.py:150
+#, python-format
+msgid "Offer raising loop task of category %s (%s) has not been found in manager."
+msgstr "Задача цикла поднятия предложений категории %s (%s) не найдена в менеджере."
+
+#: funpayhub/app/telegram/middlewares/oops_middleware.py:62
+msgid "Caught an error!"
+msgstr "Произошла ошибка!"
+
+#: funpayhub/app/telegram/middlewares/unpack_callback.py:32
+#, python-format
+msgid ""
+"Unpacked callback data: %s\n"
+"Callback: %s\n"
+"Data: %s\n"
+"History: %s"
+msgstr ""
+"Распакованные данные callback: %s\n"
+"Callback: %s\n"
+"Данные: %s\n"
+"История: %s"
+
 #: funpayhub/lib/base_app/app.py:112
 #, python-format
 msgid "App initialized. Version: %s. Instance ID: %s"
-msgstr "Приложение инициализировано. Версия: %s. ID запуска: %s."
+msgstr "Приложение инициализировано. Версия: %s. ID экземпляра: %s"
 
 #: funpayhub/lib/base_app/app.py:134
 msgid "Failed to load plugins. Creating crashlog."
-msgstr "Не удалось загрузить плагины. Создаю крашлог."
+msgstr "Не удалось загрузить плагины. Создаётся отчет о сбое."
 
-#: funpayhub/lib/base_app/app.py:141
+#: funpayhub/lib/base_app/app.py:142
 msgid "Loading goods files."
-msgstr "Загружаю файлы с товарами."
+msgstr "Загрузка файлов товаров."
 
-#: funpayhub/lib/base_app/app.py:154
+#: funpayhub/lib/base_app/app.py:155
 #, python-format
 msgid "Loading goods file %s."
-msgstr "Загружаю товарный файл %s."
+msgstr "Загрузка файла товаров %s."
 
-#: funpayhub/lib/base_app/app.py:160
+#: funpayhub/lib/base_app/app.py:161
 #, python-format
 msgid "An error occurred while loading goods file %s: %s"
-msgstr "Произошла ошибка при загрузке файла с товарами %s: %s."
+msgstr "Ошибка при загрузке файла товаров %s: %s"
 
 #: funpayhub/lib/base_app/telegram/app/properties/ui/registry.py:67
 #, python-format
 msgid "Button builder %s assigned as button builder for entries of type %s."
-msgstr "Билдер кнопки %s установлен как билдер кнопки для узлов параметров типа %s."
+msgstr "Билдер кнопок %s назначен как билдер для элементов типа %s."
 
 #: funpayhub/lib/base_app/telegram/app/properties/ui/registry.py:82
 #, python-format
 msgid "Menu builder %s assigned as menu builder for entries of type %r."
-msgstr "Билдер меню %s установлен как билдер меню для узлов параметров типа %s."
+msgstr "Билдер меню %s назначен как билдер для элементов типа %r."
 
 #: funpayhub/lib/exceptions/goods.py:27
 #, python-format
@@ -69,7 +249,7 @@ msgstr "Репозиторий плагинов %s уже существует."
 
 #: funpayhub/lib/exceptions/plugins.py:53
 msgid "Invalid plugin repository."
-msgstr "Недопустимый репозиторий плагинов."
+msgstr "Недействительный репозиторий плагинов."
 
 #: funpayhub/lib/exceptions/plugins.py:60
 #, python-format
@@ -81,230 +261,219 @@ msgstr "Не удалось сохранить репозиторий %s в %s."
 msgid "Unable to remove repository %s. (file: %s)."
 msgstr "Не удалось удалить репозиторий %s. (файл: %s)."
 
-#: funpayhub/lib/plugins/installers.py:55
+#: funpayhub/lib/plugin/installers.py:55
 #, python-format
 msgid "Installing plugin from source %s ..."
 msgstr "Установка плагина из источника %s ..."
 
-#: funpayhub/lib/plugins/installers.py:60
+#: funpayhub/lib/plugin/installers.py:60
 #, python-format
 msgid "Failed to install plugin from source %s."
 msgstr "Не удалось установить плагин из источника %s."
 
-#: funpayhub/lib/plugins/installers.py:64
+#: funpayhub/lib/plugin/installers.py:66
 msgid "See logs."
-msgstr "Подробнее в логах."
+msgstr "Смотрите логи."
 
-#: funpayhub/lib/plugins/installers.py:114
+#: funpayhub/lib/plugin/installers.py:116
 #, python-format
 msgid ""
-"Invalid archive structure: archive contains absolute path %s, which is "
-"not allowed. All paths must be relative."
-msgstr ""
-"Неверная структура архива: архив содержит абсолютный путь %s, что не "
-"разрешено. Все пути должны быть относительными."
+"Invalid archive structure: archive contains absolute path %s, which is not allowed. All paths "
+"must be relative."
+msgstr "Недопустимая структура архива: архив содержит абсолютный путь %s, что запрещено. Все пути должны быть относительными."
 
-#: funpayhub/lib/plugins/installers.py:123
+#: funpayhub/lib/plugin/installers.py:125
 #, python-format
 msgid ""
-"Invalid archive structure: the root of the ZIP must contain exactly one "
-"directory, but found a file: %s"
-msgstr ""
-"Неверная структура архива: корень ZIP должен содержать ровно одну "
-"директорию, но найден файл: %s"
+"Invalid archive structure: the root of the ZIP must contain exactly one directory, but found a "
+"file: %s"
+msgstr "Недопустимая структура архива: корень ZIP должен содержать ровно одну директорию, но найден файл: %s"
 
-#: funpayhub/lib/plugins/installers.py:134
+#: funpayhub/lib/plugin/installers.py:136
 #, python-format
 msgid ""
-"Invalid archive structure: the root directory name %s is not a valid "
-"Python identifier. It must be suitable for imports."
-msgstr ""
-"Неверная структура архива: имя корневой директории %s не является "
-"допустимым идентификатором Python. Оно должно быть подходящим для "
-"импорта."
+"Invalid archive structure: the root directory name %s is not a valid Python identifier. It must "
+"be suitable for imports."
+msgstr "Недопустимая структура архива: имя корневой директории %s не является допустимым идентификатором Python. Оно должно подходить для импортов."
 
-#: funpayhub/lib/plugins/installers.py:143
+#: funpayhub/lib/plugin/installers.py:145
 #, python-format
 msgid ""
-"Invalid archive structure: expected all entries to be under root "
-"directory %s, but found entry %s outside of it."
-msgstr ""
-"Неверная структура архива: ожидалось, что все файлы будут находиться в "
-"корневой директории %s, но найден файл %s за её пределами."
+"Invalid archive structure: expected all entries to be under root directory %s, but found entry "
+"%s outside of it."
+msgstr "Недопустимая структура архива: ожидалось, что все элементы будут находиться в корневой директории %s, но найден элемент %s вне её."
 
-#: funpayhub/lib/plugins/installers.py:153
+#: funpayhub/lib/plugin/installers.py:155
 msgid "Invalid archive structure: archive is empty."
-msgstr "Неверная структура архива: архив пуст."
+msgstr "Недопустимая структура архива: архив пуст."
 
-#: funpayhub/lib/plugins/installers.py:156
+#: funpayhub/lib/plugin/installers.py:158
 msgid "Invalid archive structure: plugin manifest is missing."
-msgstr "Неверная структура архива: манифест плагина отсутствует."
+msgstr "Недопустимая структура архива: отсутствует манифест плагина."
 
-#: funpayhub/lib/plugins/installers.py:181
+#: funpayhub/lib/plugin/installers.py:183
 #, python-format
 msgid "Source %s is not a valid http URL."
 msgstr "Источник %s не является допустимым HTTP URL."
 
-#: funpayhub/lib/plugins/manager.py:68
+#: funpayhub/lib/plugin/manager.py:68
 #, python-format
 msgid "Adding %s to sys.path."
 msgstr "Добавление %s в sys.path."
 
-#: funpayhub/lib/plugins/manager.py:101
+#: funpayhub/lib/plugin/manager.py:101
 msgid "Loading plugins..."
 msgstr "Загрузка плагинов..."
 
-#: funpayhub/lib/plugins/manager.py:103
+#: funpayhub/lib/plugin/manager.py:103
 #, python-format
 msgid "Checking %s..."
 msgstr "Проверка %s..."
 
-#: funpayhub/lib/plugins/manager.py:105
+#: funpayhub/lib/plugin/manager.py:105
 #, python-format
 msgid "Ignoring %s: not a directory."
-msgstr "Игнорирование %s: это не директория."
+msgstr "Игнорируется %s: это не директория."
 
-#: funpayhub/lib/plugins/manager.py:110
+#: funpayhub/lib/plugin/manager.py:110
 #, python-format
 msgid "Loading plugin %s..."
 msgstr "Загрузка плагина %s..."
 
-#: funpayhub/lib/plugins/manager.py:114
+#: funpayhub/lib/plugin/manager.py:114
 #, python-format
 msgid "Ignoring %s: not a valid plugin directory."
-msgstr "Игнорирование %s: недопустимая директория плагина."
+msgstr "Игнорируется %s: недействительная директория плагина."
 
-#: funpayhub/lib/plugins/manager.py:117
+#: funpayhub/lib/plugin/manager.py:117
 #, python-format
 msgid "Loading plugin manifest from %s."
 msgstr "Загрузка манифеста плагина из %s."
 
-#: funpayhub/lib/plugins/manager.py:122
+#: funpayhub/lib/plugin/manager.py:122
 #, python-format
 msgid "Unable to load plugin manifest for %s. Skipping."
-msgstr "Не удалось загрузить манифест плагина %s. Пропуск."
+msgstr "Не удалось загрузить манифест плагина для %s. Пропуск."
 
-#: funpayhub/lib/plugins/manager.py:129
+#: funpayhub/lib/plugin/manager.py:129
 #, python-format
 msgid "Plugin %s already loaded. Skipping."
 msgstr "Плагин %s уже загружен. Пропуск."
 
-#: funpayhub/lib/plugins/manager.py:135
+#: funpayhub/lib/plugin/manager.py:135
 msgid "Instantiation for this plugin disabled."
-msgstr "Создание экземпляра этого плагина отключено."
+msgstr "Создание экземпляра для этого плагина отключено."
 
-#: funpayhub/lib/plugins/manager.py:140
+#: funpayhub/lib/plugin/manager.py:140
 #, python-format
 msgid "App version mismatch. Plugin requires: %s. Current: %s."
-msgstr "Несоответствие версии приложения. Плагин требует: %s. Текущая версия: %s."
+msgstr "Несовпадение версии приложения. Плагин требует: %s. Текущая: %s."
 
-#: funpayhub/lib/plugins/manager.py:153
+#: funpayhub/lib/plugin/manager.py:153
 #, python-format
 msgid "Loading entry point %s of %s."
-msgstr "Загрузка точки входа %s плагина %s."
+msgstr "Загрузка точки входа %s из %s."
 
-#: funpayhub/lib/plugins/manager.py:165
+#: funpayhub/lib/plugin/manager.py:165
 #, python-format
 msgid "An error occurred while loading entry point %s of %s."
-msgstr "Произошла ошибка при загрузке точки входа %s плагина %s."
+msgstr "Произошла ошибка при загрузке точки входа %s из %s."
 
-#: funpayhub/lib/plugins/manager.py:172
+#: funpayhub/lib/plugin/manager.py:172
 #, python-format
 msgid "An unexpected error occurred while instantiating plugin %s. See logs."
-msgstr ""
-"Произошла непредвиденная ошибка при создании экземпляра плагина %s. "
-"Смотрите логи."
+msgstr "Произошла неожиданная ошибка при создании плагина %s. Смотрите логи."
 
-#: funpayhub/lib/plugins/manager.py:207
+#: funpayhub/lib/plugin/manager.py:207
 #, python-format
 msgid "Step %s is not in plugin manager. Skipping."
 msgstr "Шаг %s отсутствует в менеджере плагинов. Пропуск."
 
-#: funpayhub/lib/plugins/manager.py:213
+#: funpayhub/lib/plugin/manager.py:213
 #, python-format
 msgid "Plugin %s does not have a plugin instance. Skipping step %s."
-msgstr "У плагина %s нет экземпляра плагина. Пропуск шага %s."
+msgstr "Плагин %s не имеет экземпляра. Пропуск шага %s."
 
-#: funpayhub/lib/plugins/manager.py:219
+#: funpayhub/lib/plugin/manager.py:219
 #, python-format
 msgid "Running %s step for plugin %s."
 msgstr "Выполнение шага %s для плагина %s."
 
-#: funpayhub/lib/plugins/manager.py:234
+#: funpayhub/lib/plugin/manager.py:234
 #, python-format
 msgid "Unable to find entry point %s of %s."
-msgstr "Не удалось найти точку входа %s плагина %s."
+msgstr "Не удалось найти точку входа %s из %s."
 
-#: funpayhub/lib/plugins/manager.py:241
+#: funpayhub/lib/plugin/manager.py:241
 #, python-format
 msgid "Entry point of plugin must be a subclass of %s, not %s."
 msgstr "Точка входа плагина должна быть подклассом %s, а не %s."
 
-#: funpayhub/lib/plugins/repository/loaders.py:36
+#: funpayhub/lib/plugin/repository/loaders.py:36
 msgid "Unable to load repository: invalid format."
 msgstr "Не удалось загрузить репозиторий: неверный формат."
 
-#: funpayhub/lib/plugins/repository/loaders.py:46
+#: funpayhub/lib/plugin/repository/loaders.py:46
 msgid "Unable to load repository: JSON decode error."
 msgstr "Не удалось загрузить репозиторий: ошибка декодирования JSON."
 
-#: funpayhub/lib/plugins/repository/loaders.py:57
+#: funpayhub/lib/plugin/repository/loaders.py:57
 #, python-format
 msgid "Unable to load repository: %s does not exist."
 msgstr "Не удалось загрузить репозиторий: %s не существует."
 
-#: funpayhub/lib/plugins/repository/loaders.py:65
+#: funpayhub/lib/plugin/repository/loaders.py:66
 #, python-format
 msgid "Unable to load repository: unable to read %s."
-msgstr "Не удалось загрузить репозиторий: не удалось прочитать %s."
+msgstr "Не удалось загрузить репозиторий: невозможно прочитать %s."
 
-#: funpayhub/lib/plugins/repository/loaders.py:89
+#: funpayhub/lib/plugin/repository/loaders.py:91
 msgid "Unable to load repository: download timed out."
-msgstr "Не удалось загрузить репозиторий: превышено время ожидания загрузки."
+msgstr "Не удалось загрузить репозиторий: превышено время ожидания скачивания."
 
-#: funpayhub/lib/plugins/repository/loaders.py:93
+#: funpayhub/lib/plugin/repository/loaders.py:95
 msgid "Unable to load repository: unexpected error while downloading."
-msgstr "Не удалось загрузить репозиторий: непредвиденная ошибка при загрузке."
+msgstr "Не удалось загрузить репозиторий: неожиданная ошибка при скачивании."
 
-#: funpayhub/lib/plugins/repository/manager.py:48
-#, fuzzy, python-format
+#: funpayhub/lib/plugin/repository/manager.py:48
+#, python-format
 msgid "Loading plugins repositories from %s..."
-msgstr "Загрузка манифеста плагина из %s."
+msgstr "Загрузка репозиториев плагинов из %s..."
 
-#: funpayhub/lib/plugins/repository/manager.py:56
+#: funpayhub/lib/plugin/repository/manager.py:56
 #, python-format
 msgid "%s is a directory. Skipping."
-msgstr "%s не директория. Пропускаю."
+msgstr "%s — это директория. Пропуск."
 
-#: funpayhub/lib/plugins/repository/manager.py:59
-#, fuzzy, python-format
+#: funpayhub/lib/plugin/repository/manager.py:59
+#, python-format
 msgid "%s is not a JSON file. Skipping."
-msgstr "Шаг %s отсутствует в менеджере плагинов. Пропуск."
+msgstr "%s не является JSON-файлом. Пропуск."
 
-#: funpayhub/lib/plugins/repository/manager.py:62
-#, fuzzy, python-format
+#: funpayhub/lib/plugin/repository/manager.py:62
+#, python-format
 msgid "Loading plugins repository from %s..."
-msgstr "Загрузка манифеста плагина из %s."
+msgstr "Загрузка репозитория плагинов из %s..."
 
-#: funpayhub/lib/plugins/repository/manager.py:67
+#: funpayhub/lib/plugin/repository/manager.py:67
 #, python-format
 msgid "Repository ID %s does not match repo file %s. Skipping."
-msgstr "ID репозитория %s не совпадает с файлом сохранения %s. Пропускаю."
+msgstr "ID репозитория %s не соответствует файлу %s. Пропуск."
 
-#: funpayhub/lib/plugins/repository/manager.py:78
-#, fuzzy, python-format
+#: funpayhub/lib/plugin/repository/manager.py:78
+#, python-format
 msgid "An error occurred while loading plugin repository from %s."
-msgstr "Произошла ошибка при загрузке точки входа %s плагина %s."
+msgstr "Произошла ошибка при загрузке репозитория плагинов из %s."
 
 #: funpayhub/lib/properties/properties.py:251
-#, fuzzy, python-format
+#, python-format
 msgid "An error occurred while executing %s trigger for %s"
-msgstr "Произошла ошибка при загрузке точки входа %s плагина %s."
+msgstr "Произошла ошибка при выполнении триггера %s для %s"
 
 #: funpayhub/lib/telegram/ui/registry.py:106
 #, python-format
 msgid "Adding menu builder %s to registry..."
-msgstr "Добавляю билдер меню %s в реестр..."
+msgstr "Добавление билдера меню %s в реестр..."
 
 #: funpayhub/lib/telegram/ui/registry.py:140
 #, python-format
@@ -314,12 +483,12 @@ msgstr "Меню %s не найдено."
 #: funpayhub/lib/telegram/ui/registry.py:149
 #, python-format
 msgid "Building menu %s."
-msgstr "Выполняю построение меню %s."
+msgstr "Построение меню %s."
 
 #: funpayhub/lib/telegram/ui/registry.py:175
 #, python-format
 msgid "Adding button builder %s to registry..."
-msgstr "Добавляю билдер конпки %s в реестр..."
+msgstr "Добавление билдера кнопок %s в реестр..."
 
 #: funpayhub/lib/telegram/ui/registry.py:197
 #, python-format
@@ -332,7 +501,6 @@ msgid "Button %s not found."
 msgstr "Кнопка %s не найдена."
 
 #: funpayhub/lib/telegram/ui/registry.py:223
-#, fuzzy, python-format
+#, python-format
 msgid "Building button %s."
-msgstr "Загрузка плагина %s..."
-
+msgstr "Построение кнопки %s."

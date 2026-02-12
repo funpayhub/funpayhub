@@ -19,14 +19,14 @@ from loggers import (
     plugins as plugins_logger,
 )
 
-from funpayhub.lib.plugins import PluginManager
+from funpayhub.lib.plugin import PluginManager
 from funpayhub.lib.exceptions import GoodsError
 from funpayhub.lib.translater import Translater, _en
 from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
 
 from .telegram import TelegramApp
 from .workflow_data import WorkflowData
-from ..plugins.repository.manager import RepositoriesManager
+from ..plugin.repository.manager import RepositoriesManager
 
 
 if TYPE_CHECKING:

@@ -4,16 +4,17 @@ from typing import TYPE_CHECKING
 
 from aiogram import Bot, Dispatcher
 
+from funpayhub.lib.plugin import PluginManager
 from funpayhub.lib.properties import Properties
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.lib.goods_sources import GoodsSourcesManager
 from funpayhub.lib.workflow_data import WorkflowData as BaseWorkflowData
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
-from funpayhub.lib.plugins import PluginManager
-from ..plugins.repository.manager import RepositoriesManager
 
 from .telegram import TelegramApp
+from ..plugin.repository.manager import RepositoriesManager
+
 
 if TYPE_CHECKING:
     from .app import App

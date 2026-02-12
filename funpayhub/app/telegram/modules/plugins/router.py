@@ -9,13 +9,13 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.filters import StateFilter
 
 from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.plugins.installers import (
+from funpayhub.lib.plugin.installers import (
     HTTPSPluginInstaller,
     AiogramPluginInstaller,
     PluginInstallationError,
 )
 from funpayhub.lib.base_app.telegram.utils import delete_message
-from funpayhub.lib.plugins.repository.loaders import URLRepositoryLoader
+from funpayhub.lib.plugin.repository.loaders import URLRepositoryLoader
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
 
 import funpayhub.app.telegram.modules.plugins.states
@@ -34,10 +34,10 @@ if TYPE_CHECKING:
     from aiogram.types import Message, CallbackQuery
     from aiogram.fsm.context import FSMContext
 
-    from funpayhub.lib.plugins import PluginManager
+    from funpayhub.lib.plugin import PluginManager
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry
-    from funpayhub.lib.plugins.repository.manager import RepositoriesManager
+    from funpayhub.lib.plugin.repository.manager import RepositoriesManager
 
 
 router = r = Router(name='fph:plugins')

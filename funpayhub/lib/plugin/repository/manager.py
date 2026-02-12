@@ -17,8 +17,8 @@ from funpayhub.lib.exceptions import (
     TranslatableException,
     PluginRepositoryAlreadyExist,
 )
-from funpayhub.lib.plugins.repository.types import PluginsRepository
-from funpayhub.lib.plugins.repository.loaders import FileRepositoryLoader
+from funpayhub.lib.plugin.repository.types import PluginsRepository
+from funpayhub.lib.plugin.repository.loaders import FileRepositoryLoader
 
 
 class RepositoriesManager:

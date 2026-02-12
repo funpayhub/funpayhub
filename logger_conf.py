@@ -5,10 +5,7 @@ import sys
 import logging
 from typing import TYPE_CHECKING, Any
 
-import colorama
 from colorama import Back, Fore, Style
-
-from funpayhub.lib.translater import _
 
 
 if TYPE_CHECKING:
@@ -24,6 +21,10 @@ COLORS = {
 }
 
 
+def _en(_: str, /) -> str:
+    return _
+
+
 EMOJIS = {
     logging.DEBUG: '🔎',
     logging.INFO: '📘',
@@ -33,11 +34,11 @@ EMOJIS = {
 }
 
 NAMES = {
-    logging.DEBUG: 'DBUG',
-    logging.INFO: 'INFO',
-    logging.WARNING: 'WARN',
-    logging.ERROR: 'ERRR',
-    logging.CRITICAL: 'CRIT',
+    logging.DEBUG: _en('DBUG'),
+    logging.INFO: _en('INFO'),
+    logging.WARNING: _en('WARN'),
+    logging.ERROR: _en('ERRR'),
+    logging.CRITICAL: _en('CRIT'),
 }
 
 
@@ -113,6 +114,10 @@ class ConsoleLoggerFormatter(logging.Formatter):
             else record.getMessage()
         )
 
+        level_name = NAMES[record.levelno]
+        if isinstance(record, HubLogMessage) and record._translater is not None:
+            level_name = record._translater.translate(level_name)
+
         text = RESET_RE.sub(reset, text)
         if not self.support_color:
             ESC_RE.sub('', text)
@@ -130,7 +135,7 @@ class ConsoleLoggerFormatter(logging.Formatter):
 
         text = (
             f'{reset}{EMOJIS[record.levelno] if sys.stdout.isatty() else ""} {time_str} '
-            f'[{color}{NAMES[record.levelno]:^6}{reset}]{plugin_name} '
+            f'[{color}{level_name:^6}{reset}]{plugin_name} '
             f'{text}{reset}'
         )
 
@@ -149,26 +154,3 @@ class FileLoggerFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         text = RESET_RE.sub('', super().format(record))
         return ESC_RE.sub('', str(text))
-
-
-if __name__ == '__main__':
-    colorama.just_fix_windows_console()
-
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(ConsoleLoggerFormatter())
-    console_handler.setLevel(logging.DEBUG)
-
-    logger = logging.getLogger(__name__)
-    logger.addHandler(console_handler)
-    logger.setLevel(logging.DEBUG)
-
-    logger.debug(_('Debug Log'))
-    logger.info(_('Info Log'))
-    logger.warning(_('Warning Log'))
-    logger.error(_('Error Log'))
-    logger.critical(_('Critical Log'))
-
-    try:
-        1 / 0
-    except:
-        logger.error(_('Some error occurred'), exc_info=True)

@@ -3,8 +3,6 @@ from __future__ import annotations
 import os
 import sys
 
-from funpayhub.lib.translater import _
-
 
 IS_WINDOWS = os.name == 'nt'
 
@@ -163,14 +161,14 @@ def self_check():
 
 def get_dependencies() -> list[str]:
     if not os.path.exists('pyproject.toml'):
-        logger.warning(_('pyproject.toml not found. Skipping dependencies installation.'))
+        logger.warning('pyproject.toml not found. Skipping dependencies installation.')
         return []
 
     try:
         with open('pyproject.toml', 'r', encoding='utf-8') as f:
             data = tomllib.loads(f.read())
     except:
-        logger.critical(_('Unable to load pyproject.toml.'), exc_info=True)
+        logger.critical('Unable to load pyproject.toml.', exc_info=True)
         exit(1)
 
     deps = data.get('project', {}).get('dependencies', [])
@@ -188,13 +186,13 @@ def install_dependencies() -> None:
         try:
             subprocess.run([sys.executable, '-m', 'ensurepip', '--upgrade'], check=True)
         except Exception:
-            logger.critical(_('An error occurred while installing pip.'), exc_info=True)
+            logger.critical('An error occurred while installing pip.', exc_info=True)
             exit(1)
 
     try:
         subprocess.run([sys.executable, '-m', 'pip', 'install', '-U', *deps], check=True)
     except:
-        logger.critical(_('An error occurred while installing dependencies.'), exc_info=True)
+        logger.critical('An error occurred while installing dependencies.', exc_info=True)
         exit(1)
 
 
@@ -228,21 +226,21 @@ def move_to_releases():
     backup = None
     if BOOTSTRAP_PATH.exists():
         backup = BOOTSTRAP_PATH.with_name('bootstrap_old')
-        logger.info(_('Backup current bootstrap before replacement.'))
+        logger.info('Backup current bootstrap before replacement.')
         try:
             if backup.exists():
                 shutil.rmtree(backup, ignore_errors=True)
             os.replace(str(BOOTSTRAP_PATH), str(backup))
         except Exception:
-            logger.critical(_('Failed to backup existing bootstrap.'), exc_info=True)
+            logger.critical('Failed to backup existing bootstrap.', exc_info=True)
             shutil.rmtree(TEMP_BOOTSTRAP_PATH, ignore_errors=True)
             exit(1)
 
     try:
         os.replace(str(TEMP_BOOTSTRAP_PATH), str(BOOTSTRAP_PATH))
-        logger.info(_('Bootstrap successfully updated.'))
+        logger.info('Bootstrap successfully updated.')
     except Exception:
-        logger.critical(_('Failed to replace bootstrap with new release.'), exc_info=True)
+        logger.critical('Failed to replace bootstrap with new release.', exc_info=True)
         if BOOTSTRAP_PATH.exists():
             shutil.rmtree(BOOTSTRAP_PATH, ignore_errors=True)
         if backup is not None and backup.exists():
@@ -271,16 +269,16 @@ def update_current_link():
         else:
             os.symlink(BOOTSTRAP_PATH, temp_link)
     except Exception:
-        logger.critical(_('Failed to create temporary current link.'), exc_info=True)
+        logger.critical('Failed to create temporary current link.', exc_info=True)
         exit(1)
 
     try:
         if CURRENT_RELEASE_PATH.exists() or CURRENT_RELEASE_PATH.is_symlink():
             CURRENT_RELEASE_PATH.unlink()
         os.replace(temp_link, CURRENT_RELEASE_PATH)
-        logger.info(_('Current link successfully updated.'))
+        logger.info('Current link successfully updated.')
     except Exception:
-        logger.critical(_('Failed to replace current link.'), exc_info=True)
+        logger.critical('Failed to replace current link.', exc_info=True)
         exit(1)
 
 
@@ -310,7 +308,7 @@ def main():
 
     move_to_releases()
     update_current_link()
-    logger.info(_('FunPay Hub successfully installed! Launching...'))
+    logger.info('FunPay Hub successfully installed! Launching...')
     launch()
     exit(0)
 
