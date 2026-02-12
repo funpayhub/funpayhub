@@ -328,8 +328,5 @@ async def install_plugin_from_url(
         return
 
     await query.message.answer(
-        translater.translate(
-            '✅ Плагин {plugin_id} v{plugin_version} успешно установлен.\n\n'
-            'Перезапустите FunPay Hub.',
-        ).format(plugin_id=plugin.manifest.id, plugin_version=plugin.manifest.version),
+        translater.translate('✅ Плагин установлен.\n\nПерезапустите FunPay Hub.'),
     )

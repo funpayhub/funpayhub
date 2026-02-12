@@ -99,6 +99,10 @@ class PluginManager[PluginCLS]:
 
     async def load_plugins(self) -> None:
         logger.info(_en('Loading plugins...'))
+        if not self._plugins_path.exists():
+            logger.info(_en('%s does not exists. Skipping.'), str(self._plugins_path))
+            return
+
         for i in self._plugins_path.iterdir():
             logger.debug(_en('Checking %s...'), str(i))
             if not i.is_dir():
@@ -107,7 +111,9 @@ class PluginManager[PluginCLS]:
             self.load_plugin(i)
 
     def load_plugin(
-        self, plugin_path: str | Path, instantiate: bool = True
+        self,
+        plugin_path: str | Path,
+        instantiate: bool = True,
     ) -> LoadedPlugin | None:
         logger.info(_en('Loading plugin %s...'), str(plugin_path))
 

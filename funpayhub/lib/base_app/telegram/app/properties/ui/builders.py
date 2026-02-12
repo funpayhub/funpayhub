@@ -158,6 +158,7 @@ class ChoiceParameterMenuBuilder(MenuBuilder, menu_id='choice_param_menu', conte
                     choice_id=choice.id,
                     from_callback=ctx.callback_data,
                 ).pack(),
+                style='primary' if entry.value == choice.id else None,
             )
 
         return Menu(
