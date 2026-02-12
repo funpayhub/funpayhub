@@ -25,20 +25,25 @@ class PropertiesFlags:
 
 
 class TelegramUIEmojiFlag:
-    def __init__(self, emoji: str) -> None:
+    def __init__(self, emoji: str, premium_emoji_id: str | None = None) -> None:
         self._emoji = emoji
+        self._premium_emoji_id = premium_emoji_id
 
     @property
     def emoji(self) -> str:
         return self._emoji
 
+    @property
+    def premium_emoji_id(self) -> str:
+        return self._premium_emoji_id
+
     def __eq__(self, o: object) -> bool:
         if isinstance(o, type) and issubclass(o, TelegramUIEmojiFlag):
             return True
         if isinstance(o, TelegramUIEmojiFlag):
-            return self.emoji == o.emoji
+            return self.emoji == o.emoji and self.premium_emoji_id == o.premium_emoji_id
         if isinstance(o, str):
-            return self.emoji == o
+            return self.emoji == o or self.premium_emoji_id == o
         return False
 
     def __hash__(self) -> int:

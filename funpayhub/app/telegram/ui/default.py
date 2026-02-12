@@ -31,6 +31,7 @@ MENU_MODIFICATIONS = {
     MenuIds.props_node: [
         modifications.PropertiesMenuModification,
         modifications.AutoDeliveryPropertiesMenuModification,
+        modifications.AutoDeliveryNodeInfoModification,
     ],
     MenuIds.props_param_manual_input: [
         modifications.AddFormattersListButtonModification,
