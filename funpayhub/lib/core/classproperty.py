@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 
-__all__ = ['classproperty']
+__all__ = ['classproperty', 'ClassProperty']
 
 
 from typing import Any
 from collections.abc import Callable
 
 
-class classproperty[T: Any, R: Any]:
+class ClassProperty[T: Any, R: Any]:
     def __init__(self, func: Callable[[type[T]], R]) -> None:
         self.func = func
 
     def __get__(self, obj: Any, cls: type[T]) -> R:
         func = self.func.__get__(None, cls)
         return func()
+
+
+classproperty = ClassProperty
