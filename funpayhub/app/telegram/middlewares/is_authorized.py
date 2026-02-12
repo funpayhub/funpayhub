@@ -54,7 +54,7 @@ class IsAuthorizedMiddleware(BaseMiddleware):
             ):
                 logger.warning(
                     _('Пользователь %s (%d) пытается получить доступ к Telegram боту!'),
-                    from_user.usernam,
+                    from_user.username,
                     from_user.id,
                 )
 

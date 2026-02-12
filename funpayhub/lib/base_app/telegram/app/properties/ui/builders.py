@@ -244,7 +244,10 @@ class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', con
     async def build(self, ctx: MenuCtx, translater: Tr, properties: Props) -> Menu:
         entry = properties.get_node(ctx.entry_path)
         text = translater.translate(
-            'Введите новое значение для <b>{parameter_name}</b>\n\n{parameter_description}\n\nТекущее значение:\n<b>{current_parameter_value}</b>',
+            'Введите новое значение для <b>{parameter_name}</b>\n\n'
+            '{parameter_description}\n\n'
+            'Текущее значение:\n'
+            '<b>{current_parameter_value}</b>',
         ).format(
             parameter_name=translater.translate(entry.name),
             parameter_description=translater.translate(entry.description),
@@ -255,11 +258,7 @@ class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', con
         footer_keyboard.add_callback_button(
             button_id='clear_state',
             text=translater.translate('🔘 Отмена'),
-            callback_data=ui_cbs.ClearState(
-                delete_message=False,
-                open_previous=True,
-                history=ctx.callback_data.history if ctx.callback_data else [],
-            ).pack(),
+            callback_data=ui_cbs.ClearState().pack(),
         )
 
         return Menu(
@@ -277,11 +276,7 @@ class AddListItemMenuBuilder(MenuBuilder, menu_id='add_list_param_item', context
         footer_keyboard.add_callback_button(
             button_id='clear_state',
             text=translater.translate('🔘 Отмена'),
-            callback_data=ui_cbs.ClearState(
-                delete_message=False,
-                open_previous=True,
-                from_callback=ctx.callback_data,
-            ).pack(),
+            callback_data=ui_cbs.ClearState().pack(),
         )
 
         return Menu(
