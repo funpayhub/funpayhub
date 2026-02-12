@@ -15,6 +15,7 @@ from funpayhub.lib.plugin.installers import (
     PluginInstallationError,
 )
 from funpayhub.lib.base_app.telegram.utils import delete_message
+from funpayhub.lib.plugin.repository.types import PluginsRepository
 from funpayhub.lib.plugin.repository.loaders import URLRepositoryLoader
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
 
@@ -38,6 +39,8 @@ if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry
     from funpayhub.lib.plugin.repository.manager import RepositoriesManager
+
+    from funpayhub.app.telegram.main import Telegram
 
 
 router = r = Router(name='fph:plugins')
@@ -159,7 +162,8 @@ async def install_plugin(
     if plugin_manager.installation_lock.locked():
         await message.reply(
             translater.translate(
-                '❌ В данный момент уже устанавливается какой-то плагин.\nДождитесь окончания текущей установки и повторите попытку.',
+                '❌ В данный момент уже устанавливается какой-то плагин.\n'
+                'Дождитесь окончания текущей установки и повторите попытку.',
             ),
         )
 
@@ -255,3 +259,77 @@ async def add_repository_state(
             history=data.callback_data.history,
         ),
     ).build_and_answer(tg_ui, message)
+
+
+@router.callback_query(cbs.UpdateRepository.filter())
+async def update_repository(
+    query: CallbackQuery,
+    callback_data: cbs.UpdateRepository,
+    repositories_manager: RepositoriesManager,
+    translater: Tr,
+    tg: Telegram,
+):
+    try:
+        repository = await PluginsRepository.from_url(url=callback_data.url)
+    except Exception as e:
+        text = translater.translate('❌ Произошла ошибка при получении репозитория.')
+        if isinstance(e, TranslatableException):
+            text += '\n\n' + e.format_args(translater.translate(e.message))
+        else:
+            text += '\n\n' + translater.translate('Подробности в логах.')
+        await query.answer(text, show_alert=True)
+        return
+
+    try:
+        repositories_manager.register_repository(repository, overwrite=True, save=True)
+    except Exception as e:
+        text = translater.translate('❌ Произошла ошибка при сохранении репозитория.')
+        if isinstance(e, TranslatableException):
+            text += '\n\n' + e.format_args(translater.translate(e.message))
+        else:
+            text += '\n\n' + translater.translate('Подробности в логах.')
+        await query.answer(text, show_alert=True)
+        return
+
+    await query.answer(translater.translate('✅ Репозиторий обновлен.'), show_alert=True)
+    await tg.fake_query(callback_data=callback_data.pack_history(hash=False), query=query)
+
+
+@router.callback_query(cbs.InstallPluginFromURL.filter())
+async def install_plugin_from_url(
+    query: CallbackQuery,
+    callback_data: cbs.InstallPluginFromURL,
+    plugin_manager: PluginManager,
+    translater: Tr,
+):
+    await query.answer()
+    await query.message.answer(
+        translater.translate(
+            'Начинаю установку плагина из {url} . Это может занять некоторе время.',
+        ).format(url=callback_data.url),
+    )
+
+    try:
+        plugin = await plugin_manager.install_plugin_from_source(
+            HTTPSPluginInstaller,
+            callback_data.url,
+            overwrite=True,
+        )
+    except Exception as e:
+        text = translater.translate(
+            '❌ Произошла ошибка при установке плагина из {url}',
+        ).format(url=callback_data.url)
+        if isinstance(e, TranslatableException):
+            text += '\n\n' + e.format_args(translater.translate(e.message))
+        else:
+            text += '\n\n' + translater.translate('Подробности в логах.')
+
+        await query.message.answer(text)
+        return
+
+    await query.message.answer(
+        translater.translate(
+            '✅ Плагин {plugin_id} v{plugin_version} успешно установлен.\n\n'
+            'Перезапустите FunPay Hub.',
+        ).format(plugin_id=plugin.manifest.id, plugin_version=plugin.manifest.version),
+    )

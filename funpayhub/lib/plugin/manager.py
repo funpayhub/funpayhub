@@ -106,13 +106,15 @@ class PluginManager[PluginCLS]:
                 continue
             self.load_plugin(i)
 
-    def load_plugin(self, plugin_path: str | Path, instantiate: bool = True) -> None:
+    def load_plugin(
+        self, plugin_path: str | Path, instantiate: bool = True
+    ) -> LoadedPlugin | None:
         logger.info(_en('Loading plugin %s...'), str(plugin_path))
 
         module_name = Path(plugin_path).name
         if not module_name.isidentifier() or keyword.iskeyword(module_name):
             logger.warning(_en('Ignoring %s: not a valid plugin directory.'), str(plugin_path))
-            return
+            return None
 
         logger.info(_en('Loading plugin manifest from %s.'), str(plugin_path))
         try:
@@ -123,11 +125,11 @@ class PluginManager[PluginCLS]:
                 str(plugin_path),
                 exc_info=True,
             )
-            return
+            return None
 
         if manifest.plugin_id in self._plugins:
             logger.warning(_en('Plugin %s already loaded. Skipping.'), manifest.plugin_id)
-            return
+            return None
 
         exception: PluginInstantiationError | None = None
 
@@ -182,6 +184,7 @@ class PluginManager[PluginCLS]:
             error=exception,
         )
         self._plugins[manifest.plugin_id] = plugin
+        return plugin
 
     async def install_plugin_from_source(
         self,
@@ -190,11 +193,11 @@ class PluginManager[PluginCLS]:
         overwrite: bool = False,
         *args,
         **kwargs,
-    ) -> None:
+    ) -> LoadedPlugin | None:
         async with self.installation_lock:
             installer = installer_class(self._plugins_path, source, *args, **kwargs)
             path_to_plugin = await installer.install_wrapped(overwrite=overwrite)
-            self.load_plugin(path_to_plugin, instantiate=False)
+            return self.load_plugin(path_to_plugin, instantiate=False)
 
     def _load_plugin_manifest(self, plugin_path: str | Path) -> PluginManifest:
         with open(plugin_path / 'manifest.json', 'r', encoding='utf-8') as f:

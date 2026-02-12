@@ -5,7 +5,7 @@ import shutil
 from typing import TYPE_CHECKING, Any
 from abc import ABC, abstractmethod
 from pathlib import Path, PurePosixPath
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipFile
 from urllib.parse import urlparse
 
 from aiogram import Bot
@@ -91,7 +91,7 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
         super().__init__(plugins_path, source)
         self._check_archive_exists()
 
-    async def install(self, overwrite: bool = False) -> Path:
+    async def _install(self, overwrite: bool = False) -> Path:
         self._check_archive_exists()
         with ZipFile(self.source) as zf:
             root = self._check_root(zf)
@@ -102,6 +102,12 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
                 zf.extractall(self.plugins_directory)
 
         return self.plugins_directory / root
+
+    async def install(self, overwrite: bool = False) -> Path:
+        try:
+            return await self._install(overwrite)
+        except BadZipFile:
+            raise PluginInstallationError(_en('Bad ZIP archive.'))
 
     def _check_exists(self, dir_name: str) -> bool:
         return self.plugins_directory.exists() and dir_name in os.listdir(self.plugins_directory)

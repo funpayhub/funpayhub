@@ -284,6 +284,14 @@ class RepoInfoMenuBuilder(
                 ).pack(),
             )
 
+        menu.footer_keyboard.add_callback_button(
+            button_id='update_repo',
+            text=translater.translate('♻️ Обновить репозиторий'),
+            callback_data=cbs.UpdateRepository(
+                url=repo.url,
+                from_callback=ctx.callback_data,
+            ).pack(),
+        )
         menu.header_text = f'<b><u>{html.escape(repo.name)}</u></b>'
         menu.main_text = html.escape(repo.get_description(translater.current_language))
         return menu
@@ -309,15 +317,21 @@ class RepoPluginInfoMenuBuilder(
         menu.header_text = f'<b><u>{html.escape(plugin.name)}</u></b>'
         menu.main_text = html.escape(plugin.get_description(translater.current_language))
 
+        latest = None
         for v, info in plugin.versions.items():
             if hub.version not in info.app_version:
                 continue
+
+            if latest is None:
+                latest = v
+            elif v < latest:
+                latest = v
 
             menu.main_keyboard.add_row(
                 Button.callback_button(
                     button_id=f'install_version:{v}',
                     text=translater.translate('⤵️ Установить') + f' v{v}',
-                    callback_data='dummy',
+                    callback_data=cbs.InstallPluginFromURL(url=info.url).pack(),
                 ),
                 Button.callback_button(
                     button_id=f'change_log:{v}',
@@ -326,10 +340,11 @@ class RepoPluginInfoMenuBuilder(
                 ),
             )
 
-        menu.footer_keyboard.add_callback_button(
-            button_id='install_latest_version',
-            text=translater.translate('⤵️ Установить последнюю версию'),
-            callback_data='dummy',
-        )
+        if latest is not None:
+            menu.footer_keyboard.add_callback_button(
+                button_id='install_latest_version',
+                text=translater.translate('⤵️ Установить последнюю версию'),
+                callback_data=cbs.InstallPluginFromURL(url=plugin.versions[latest].url).pack(),
+            )
 
         return menu
