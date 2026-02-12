@@ -11,6 +11,7 @@ from aiogram.types import Message, CallbackQuery, BufferedInputFile
 from aiogram.filters import StateFilter
 from aiogram.exceptions import TelegramBadRequest
 
+from funpayhub.lib.translater import _
 from funpayhub.lib.goods_sources import GoodsSource, FileGoodsSource
 from funpayhub.lib.base_app.telegram import utils
 from funpayhub.lib.telegram.callback_data import join_callbacks
@@ -159,9 +160,34 @@ async def upload_goods_set_state(
     callback_data: cbs.UploadGoods | cbs.RemoveGoods | cbs.AddGoods,
 ) -> None:
     mapping = {
-        cbs.UploadGoods: ('$upload_goods_text', states.UploadingGoods),
-        cbs.RemoveGoods: ('$remove_goods_text', states.RemovingGoods),
-        cbs.AddGoods: ('$add_goods_text', states.AddingGoods),
+        cbs.UploadGoods: (
+            _(
+                '📤 Отправьте список товаров или файл с товарами (каждый товар с новой строки).\n\n'
+                '⚠️ Важно: это <b><u>перезапишет</u></b> текущие товары, а не добавит новые.\n'
+                'Если вы хотите добавить новые товары к существующим, '
+                'используйте кнопку <i>Добавить товары</i>.'
+            ),
+            states.UploadingGoods,
+        ),
+        cbs.RemoveGoods: (
+            _(
+                '🗑️ Укажите номер товара или диапазон для удаления. '
+                'Например: <code>1</code> или <code>1-7</code>.\n\n'
+                '⚠️ Будьте внимательны: выбранные товары будут удалены '
+                'без возможности восстановления.'
+            ),
+            states.RemovingGoods,
+        ),
+        cbs.AddGoods: (
+            _(
+                '➕ Пришлите список товаров или файл с товарами, '
+                'где каждая новая строка — отдельный товар.\n\n'
+                '⚠️ Важно: новые товары будут <b><u>добавлены</u></b> к текущему списку, '
+                'а не перезапишут его.\n'
+                'Чтобы заменить весь список, используйте кнопку <i>Выгрузить товары</i>.'
+            ),
+            states.AddingGoods,
+        ),
     }
 
     text, state_cls = mapping[type(callback_data)]
@@ -182,8 +208,8 @@ async def upload_goods(message: Message, state: FSMContext, translater: Tr) -> N
     except:
         await message.reply(
             translater.translate(
-                '❌ Не удалось получить товары из сообщения или файла. Проверьте корректность данных. Подробности в логах.'
-            )
+                '❌ Не удалось получить товары из сообщения или файла. Проверьте корректность данных. Подробности в логах.',
+            ),
         )
         return
 
@@ -217,8 +243,8 @@ async def remove_goods(message: Message, state: FSMContext, translater: Tr) -> N
     if start_index is None or amount is None or start_index < 0:
         await message.reply(
             translater.translate(
-                '❌ Неверный формат ввода. Укажите номер товара или диапазон через дефис, например: <code>1</code> или <code>1-7</code>.'
-            )
+                '❌ Неверный формат ввода. Укажите номер товара или диапазон через дефис, например: <code>1</code> или <code>1-7</code>.',
+            ),
         )
         return
 
@@ -239,7 +265,7 @@ async def set_adding_txt_source_state(
         menu_id=MenuIds.state_menu,
         delete_on_clear=True,
         text=translater.translate(
-            '📄 Отправьте название файла или сам файл. Если вы пришлете файл, будет использовать его имя.'
+            '📄 Отправьте название файла или сам файл. Если вы пришлете файл, будет использовать его имя.',
         ),
         trigger=query,
     ).build_and_answer(tg_ui, query.message)
@@ -320,7 +346,7 @@ async def remove_goods_source(
 ):
     if goods_manager.get(callback_data.source_id) is None:
         await query.answer(
-            translater.translate('$err_goods_source_does_not_exist'),
+            translater.translate('❌ Источник товаров не найден.'),
             show_alert=True,
         )
         return

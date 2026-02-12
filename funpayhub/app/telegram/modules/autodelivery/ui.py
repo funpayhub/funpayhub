@@ -47,7 +47,9 @@ class AddAutoDeliveryRuleMenuBuilder(
 ):
     async def build(self, ctx: MenuContext, translater: Tr, hub: FPH) -> Menu:
         menu = Menu(
-            main_text=translater.translate('$add_auto_delivery_rule_text'),
+            main_text=translater.translate(
+                '➕ Выберите лот из списка ниже или введите название вручную.',
+            ),
             finalizer=StripAndNavigationFinalizer(back_button=False),
         )
 
@@ -103,7 +105,9 @@ class AutoDeliveryGoodsSourcesListMenuBuilder(
             )
 
         return Menu(
-            main_text=translater.translate('$autodelivery_bind_goods_source'),
+            main_text=translater.translate(
+                '🗳 Выберите источник товаров из списка или введтите название вручную.',
+            ),
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )
@@ -146,7 +150,7 @@ class NewSaleNotificationMenuBuilder(
 
         menu.header_keyboard.add_callback_button(
             button_id='refund',
-            text=translater.translate('$refund'),
+            text=translater.translate('💸 Вернуть средства'),
             callback_data='dummy',
         )
         menu.header_keyboard.add_callback_button(

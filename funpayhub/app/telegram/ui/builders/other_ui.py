@@ -32,13 +32,13 @@ class StartNotificationMenuBuilder(
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='main',
-            text=translater.translate('$main_menu'),
+            text=translater.translate('🏠 Главное меню'),
             callback_data=OpenMenu(menu_id=MenuIds.main_menu).pack(),
         )
 
         kb.add_callback_button(
             button_id='settings',
-            text=translater.translate('$settings'),
+            text=translater.translate('⚙️ Меню настроек'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.props_node,
                 context_data={
@@ -48,14 +48,19 @@ class StartNotificationMenuBuilder(
         )
 
         text = translater.translate(
-            '🐙 <b><u>FunPay Hub {version} запущен!</u></b>\n\n\n<b>🔄 Подключение к FunPay аккаунту ...</b>\n\n\n<i>⚙️ Вы уже можете пользоваться панелью управления, настраивать бота и т.д.\n\nДля открытия основного меню введите команду /menu\nДля открытия настроек введи команду /settings\n\n📝 После подключения к FunPay аккаунту данное сообщение будет обновлено.</i>'
+            '🐙 <b><u>FunPay Hub {version} запущен!</u></b>\n\n\n'
+            '<b>🔄 Подключение к FunPay аккаунту ...</b>\n\n\n'
+            '<i>⚙️ Вы уже можете пользоваться панелью управления, настраивать бота и т.д.\n\n'
+            'Для открытия основного меню введите команду /menu\n'
+            'Для открытия настроек введи команду /settings\n\n'
+            '📝 После подключения к FunPay аккаунту данное сообщение будет обновлено.</i>',
         ).format(
             version=hub.properties.version.value,
         )
 
         if hub.safe_mode:
             text += '\n\n' + translater.translate(
-                '🛡️ <b><u>FunPayHub запущен в безопасном режиме!</u></b>'
+                '🛡️ <b><u>FunPayHub запущен в безопасном режиме!</u></b>',
             )
         return Menu(main_text=text)
 
@@ -73,7 +78,15 @@ class FunPayStartNotificationMenuBuilder(
     ) -> Menu:
         if not ctx.error:
             text = translater.translate(
-                '🎉 <b><u>FunPay Hub готов к работе!</u></b>\n\n\n👤 <b><i>Аккаунт: {username} (<a href="https://funpay.com/users/{user_id}/">{user_id}</a>)</i></b>\n\n📊 <b><i>Активные продажи: {active_sells}</i></b>\n📊 <b><i>Активные покупки: {active_purchases}</i></b>\n\n💰 <b><i>Баланс: {rub_balance}₽, {usd_balance}$, {eur_balance}€</i></b>\n💰 <b><i>Сделки: {rub_balance}₽</i></b>\n\n'
+                '🎉 <b><u>FunPay Hub готов к работе!</u></b>\n\n\n'
+                '👤 <b><i>Аккаунт: {username} '
+                '(<a href="https://funpay.com/users/{user_id}/">{user_id}</a>)</i></b>\n\n'
+                '📊 <b><i>Активные продажи: {active_sells}</i></b>'
+                '\n📊 <b><i>Активные покупки: {active_purchases}</i></b>\n\n'
+                '💰 <b><i>Баланс: {rub_balance}₽, {usd_balance}$, {eur_balance}€</i></b>\n'
+                '💰 <b><i>Сделки: {rub_balance}₽</i></b>\n\n'
+                'Для открытия основного меню введите команду /menu\n'
+                'Для открытия настроек используйте команду /settings',
             ).format(
                 username=fp.bot.username,
                 user_id=fp.bot.userid,
@@ -85,11 +98,19 @@ class FunPayStartNotificationMenuBuilder(
             )
         elif isinstance(ctx.error, (BotUnauthenticatedError, UnauthorizedError)):
             text = translater.translate(
-                '⚠️ <b><u>FunPay Hub запущен, но не удалось авторизоваться!</u></b>\n\n\nℹ️ Проверьте правильность вашего <b>golden_key</b> и попробуйте снова.\n\n🐙 Вы всё ещё можете пользоваться панелью управления через Telegram бота.\n\nДля открытия основного меню введите команду /menu\nДля открытия настроек используйте команду /settings'
+                '⚠️ <b><u>FunPay Hub запущен, но не удалось авторизоваться!</u></b>\n\n\n'
+                'ℹ️ Проверьте правильность вашего <b>golden_key</b> и попробуйте снова.\n\n'
+                '🐙 Вы всё ещё можете пользоваться панелью управления через Telegram бота.\n\n'
+                'Для открытия основного меню введите команду /menu\n'
+                'Для открытия настроек используйте команду /settings',
             )
         else:
             text = translater.translate(
-                '❌ <b><u>Произошла непредвиденная ошибка в FunPay Hub!</u></b>\n\n\nℹ️ Ошибка была зафиксирована, но вы всё ещё можете использовать Telegram бота.\n\nДля открытия основного меню введите команду /menu\nДля открытия настроек используйте команду /settings\n\n📝 Подробности об ошибке можно найти в логах.'
+                '❌ <b><u>Произошла непредвиденная ошибка в FunPay Hub!</u></b>\n\n\n'
+                'ℹ️ Ошибка была зафиксирована, но вы всё ещё можете использовать Telegram бота.\n\n'
+                'Для открытия основного меню введите команду /menu\n'
+                'Для открытия настроек используйте команду /settings\n\n'
+                '📝 Подробности об ошибке можно найти в логах.',
             )
 
         return Menu(main_text=text)

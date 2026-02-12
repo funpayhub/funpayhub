@@ -89,7 +89,7 @@ class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_
 
         footer_keyboard.add_callback_button(
             button_id='open_repositories',
-            text=translater.translate('$open_repositories'),
+            text=translater.translate('🗃 Репозитории'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.repositories_list,
                 from_callback=ctx.callback_data,
@@ -134,7 +134,7 @@ class PluginInfoMenuBuilder(
 
         if man.repo:
             blocks['info'].append(
-                f'{translater.translate("⬛ <b>Репозиторий</b>")}: {escape(man.repo)}'
+                f'{translater.translate("⬛ <b>Репозиторий</b>")}: {escape(man.repo)}',
             )
 
         author_info = []
@@ -250,11 +250,11 @@ class ReposListMenuBuilder(MenuBuilder, menu_id=MenuIds.repositories_list, conte
 
         menu.footer_keyboard.add_callback_button(
             button_id='add_repository',
-            text=translater.translate('$add_repository'),
+            text=translater.translate('➕ Добавить репозиторий'),
             callback_data=cbs.AddRepository(from_callback=ctx.callback_data).pack(),
         )
 
-        menu.main_text = translater.translate('$repositories_list_menu_text')
+        menu.main_text = translater.translate('🗃 <b><u>Репозитории</u></b>')
 
         return menu
 
@@ -316,19 +316,19 @@ class RepoPluginInfoMenuBuilder(
             menu.main_keyboard.add_row(
                 Button.callback_button(
                     button_id=f'install_version:{v}',
-                    text=translater.translate('$install') + f' v{v}',
+                    text=translater.translate('⤵️ Установить') + f' v{v}',
                     callback_data='dummy',
                 ),
                 Button.callback_button(
                     button_id=f'change_log:{v}',
-                    text=translater.translate('$change_log'),
+                    text=translater.translate('📃 Список изменений'),
                     callback_data='dummy',
                 ),
             )
 
         menu.footer_keyboard.add_callback_button(
             button_id='install_latest_version',
-            text=translater.translate('$install_latest_version'),
+            text=translater.translate('⤵️ Установить последнюю версию'),
             callback_data='dummy',
         )
 

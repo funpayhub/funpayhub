@@ -67,7 +67,9 @@ async def set_plugin_status(
     else:
         await plugin_manager.disable_plugin(plugin=callback_data.plugin_id)
 
-    text = translater.translate('$plugin_enabled' if callback_data.status else '$plugin_disabled')
+    text = translater.translate(
+        '✅ Плагин активирован.' if callback_data.status else '✅ Плагин деактивирован.',
+    )
     text += '\n' + translater.translate(
         '🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub.',
     )
@@ -92,7 +94,7 @@ async def set_plugin_status(
     del plugin_manager._plugins[callback_data.plugin_id]
 
     await query.answer(
-        translater.translate('$plugin_removed')
+        translater.translate('✅ Плагин удален.')
         + '\n'
         + translater.translate('🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub.'),
         show_alert=True,
@@ -113,7 +115,8 @@ async def install_plugin(
     if plugin_manager.installation_lock.locked():
         await query.answer(
             translater.translate(
-                '❌ В данный момент уже устанавливается какой-то плагин.\nДождитесь окончания текущей установки и повторите попытку.',
+                '❌ В данный момент уже устанавливается какой-то плагин.\n'
+                'Дождитесь окончания текущей установки и повторите попытку.',
             ),
             show_alert=True,
         )

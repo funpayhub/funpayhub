@@ -271,7 +271,7 @@ class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', con
 
 class AddListItemMenuBuilder(MenuBuilder, menu_id='add_list_param_item', context_type=MenuCtx):
     async def build(self, ctx: MenuCtx, translater: Tr) -> Menu:
-        text = translater.translate('$enter_new_list_item_message')
+        text = translater.translate('➕ Введите новый элемнт, который хотите добавить в список.')
 
         footer_keyboard = KeyboardBuilder()
         footer_keyboard.add_callback_button(

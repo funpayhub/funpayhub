@@ -6,6 +6,8 @@ from aiogram import Router
 
 import exit_codes
 
+from funpayhub.lib.translater import _
+
 from . import callbacks as cbs
 
 
@@ -28,12 +30,12 @@ async def shutdown(
     translater: Translater,
 ) -> None:
     texts = {
-        exit_codes.SHUTDOWN: '$shutting_down',
-        exit_codes.RESTART: '$restarting',
-        exit_codes.RESTART_SAFE: '$restarting_in_safe_mode',
-        exit_codes.RESTART_NON_SAFE: '$restarting_in_standard_mode',
+        exit_codes.SHUTDOWN: _('⏹️ Выключаюсь...'),
+        exit_codes.RESTART: _('♻️ Перезапускаюсь...'),
+        exit_codes.RESTART_SAFE: _('♻️ Перезапускаюсь в безопасный режим...'),
+        exit_codes.RESTART_NON_SAFE: _('♻️ Перезапускаюсь в стандартный режим...'),
     }
-    text = texts.get(callback_data.exit_code, '$shutting_down')
+    text = texts.get(callback_data.exit_code, _('⏹️ Выключаюсь...'))
 
     try:
         await query.answer(text=translater.translate(text), show_alert=True)

@@ -33,12 +33,12 @@ msgid "Loading goods files."
 msgstr "Загружаю файлы с товарами."
 
 #: funpayhub/lib/base_app/app.py:154
-#, fuzzy, python-format
+#, python-format
 msgid "Loading goods file %s."
 msgstr "Загружаю товарный файл %s."
 
 #: funpayhub/lib/base_app/app.py:160
-#, fuzzy, python-format
+#, python-format
 msgid "An error occurred while loading goods file %s: %s"
 msgstr "Произошла ошибка при загрузке файла с товарами %s: %s."
 
