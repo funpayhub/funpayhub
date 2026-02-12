@@ -116,6 +116,9 @@ async def main() -> None:
         safe_mode=args.safe,
     )
 
+    if app.telegram.bot.token and not props.telegram.general.token.value:
+        await props.telegram.general.token.set_value(app.telegram.bot.token)
+
     await app.setup()
     exit_code = await app.start()
     sys.exit(exit_code)
