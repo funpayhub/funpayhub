@@ -282,6 +282,11 @@ def update_current_link():
         exit(1)
 
 
+def mark_as_bootstrapped():
+    with open('.bootstrapped', 'w', encoding='utf-8') as file:
+        ...
+
+
 def launch():
     env = os.environ.copy()
     env['PYTHONPATH'] = os.pathsep.join([str(CURRENT_RELEASE_PATH), env.get('PYTHONPATH', '')])
@@ -308,6 +313,7 @@ def main():
 
     move_to_releases()
     update_current_link()
+    mark_as_bootstrapped()
     logger.info('FunPay Hub successfully installed! Launching...')
     launch()
     exit(0)
