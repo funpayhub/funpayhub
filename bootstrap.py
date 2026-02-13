@@ -108,11 +108,6 @@ TO_MOVE = {
     'tests': True,
     'app.py': False,
     'launcher.py': False,
-    'updater.py': False,
-    'loggers.py': False,
-    'logger_conf.py': False,
-    'exit_codes.py': False,
-    'utils.py': False,
     'pyproject.toml': False,
 }
 
