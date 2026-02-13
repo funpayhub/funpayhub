@@ -57,7 +57,7 @@ class IsAuthorizedMiddleware(BaseMiddleware):
                     from_user.username,
                     from_user.id,
                 )
-                # await properties.telegram.general.authorized_users.add_item(from_user.id)
+                await properties.telegram.general.authorized_users.add_item(from_user.id)
                 await properties.telegram.notifications.system.add_item(
                     f'{event.chat.id}.{event.message_thread_id}',
                 )
