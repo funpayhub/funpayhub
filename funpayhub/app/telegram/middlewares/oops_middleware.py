@@ -12,7 +12,7 @@ from collections.abc import Callable, Awaitable
 
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery, TelegramObject
-from aiogram.exceptions import TelegramRetryAfter
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 
 from loggers import telegram as logger
 
@@ -29,9 +29,9 @@ class OopsMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: dict[str, Any],
     ) -> Any:
-        # todo: move to error handler?
-
         translater: Translater = data['translater']
+
+        from funpayhub.lib.exceptions import TranslatableException
 
         try:
             await handler(event, data)
@@ -40,25 +40,41 @@ class OopsMiddleware(BaseMiddleware):
             if isinstance(event, CallbackQuery):
                 await event.answer(
                     translater.translate(
-                        '🗣️👾⏳🤐\nБот отправил слишком много запросов Telegram, и теперь нужно подождать {} сек.!\nПодожди и попробуй снова.',
+                        '🗣️👾⏳🤐\n'
+                        'Бот отправил слишком много запросов Telegram, '
+                        'и теперь нужно подождать {} сек.!\n'
+                        'Подожди и попробуй снова.',
                     ).format(e.retry_after),
                     show_alert=True,
                 )
                 return
 
+        except TelegramBadRequest:
+            pass
+
+        except TranslatableException as e:
+            logger.error(_en('Caught an error!'), exc_info=True)
+            if isinstance(event, CallbackQuery):
+                await event.answer(e.format_args(translater.translate(e.message)), show_alert=True)
+            elif isinstance(event, Message):
+                await event.answer(e.format_args(translater.translate(e.message)))
+
         except Exception:
+            logger.error(_en('Caught an error!'), exc_info=True)
             if isinstance(event, CallbackQuery):
                 await event.answer(
                     translater.translate(
-                        '🫨🤬😵☠️\nУпс! Произошла какая-то ошибка, которую никто не смог предвидеть!\nСообщи об этом разработчику! (Ну или живи с этим).',
+                        '🫨🤬😵☠️\n'
+                        'Упс! Произошла какая-то ошибка, которую никто не смог предвидеть!\n'
+                        'Сообщи об этом разработчику! (Ну или живи с этим).',
                     ),
                     show_alert=True,
                 )
             elif isinstance(event, Message):
                 await event.reply(
                     translater.translate(
-                        '🫨🤬😵☠️\nУпс! Произошла какая-то ошибка, которую никто не смог предвидеть!\nСообщи об этом разработчику! (Ну или живи с этим).',
+                        '🫨🤬😵☠️\n'
+                        'Упс! Произошла какая-то ошибка, которую никто не смог предвидеть!\n'
+                        'Сообщи об этом разработчику! (Ну или живи с этим).',
                     ),
                 )
-            logger.error(_en('Caught an error!'), exc_info=True)
-            raise
