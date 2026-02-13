@@ -26,6 +26,7 @@ async def setup_config():
         try:
             me = await bot.get_me()
             print(f'Токен принят. Бот: @{me.username}')
+            await bot.session.close()
             break
         except TelegramUnauthorizedError:
             print('Невалидный токен.')
