@@ -31,7 +31,6 @@ from funpayhub.app.workflow_data import get_wfd
 from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 
 from .. import exit_codes
-from .args_parser import args
 
 
 if TYPE_CHECKING:
@@ -55,10 +54,10 @@ class FunPayHub(App):
         safe_mode: bool = False,
     ):
         self._workflow_data = get_wfd()
-        if args.force_token:
-            token = args.force_token
+        if os.environ.get('TELEGRAM_TOKEN', None) and not properties.telegram.general.token.value:
+            token = os.environ['TELEGRAM_TOKEN']
         else:
-            token = properties.telegram.general.token.value or args.token
+            token = properties.telegram.general.token.value
 
         try:
             telegram_app = Telegram(self, token, self._workflow_data)

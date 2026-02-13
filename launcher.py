@@ -84,7 +84,7 @@ IS_WINDOWS = os.name == 'nt'
 RELEASES_PATH = (
     Path(os.environ['RELEASES_PATH']).absolute() if 'RELEASES_PATH' in os.environ else None
 )
-APP_PATH = Path(__file__).parent / 'app.py'
+APP_PATH = Path('app.py').absolute()
 
 logger.info('FunPay Hub launcher is in game!')
 logger.info('Working dir: %s', os.getcwd())

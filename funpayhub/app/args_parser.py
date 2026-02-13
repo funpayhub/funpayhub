@@ -29,15 +29,8 @@ parser.add_argument(
 
 parser.add_argument(
     '-t',
-    '--token',
-    action='store',
-    help='Telegram bot token. Only uses if there is no token in config.',
-)
-
-parser.add_argument(
-    '-T',
     '--force-token',
-    action='store',
+    action='store_true',
     help='Telegram bot token. Uses event if there is a token in config.',
 )
 
