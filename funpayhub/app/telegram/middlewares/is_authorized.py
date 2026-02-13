@@ -62,7 +62,7 @@ class IsAuthorizedMiddleware(BaseMiddleware):
                     f'{event.chat.id}.{event.message_thread_id}',
                 )
                 await event.answer('Доступ получен!')
-            else:
+            elif is_private_msg or isinstance(event, CallbackQuery):
                 logger.warning(
                     _('Пользователь %s (%d) пытается получить доступ к Telegram боту!'),
                     from_user.username,
