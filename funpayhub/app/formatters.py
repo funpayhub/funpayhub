@@ -260,7 +260,7 @@ class MessageFormatter(
         self.mode = mode
 
     async def format(self) -> str:
-        event = await self.context.new_message_event
+        event = self.context.new_message_event
 
         if self.mode == 'username':
             return event.message.sender_username or ''
