@@ -13,7 +13,7 @@ __all__ = [
 from typing import TYPE_CHECKING
 from dataclasses import replace
 
-from loggers import telegram_ui as logger
+from funpayhub.loggers import telegram_ui as logger
 
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from utils import set_exception_hook
+from funpayhub.utils import set_exception_hook
 
 
 set_exception_hook()
@@ -17,7 +17,7 @@ from logging.config import dictConfig
 
 import colorama
 
-from logger_conf import (
+from funpayhub.logger_conf import (
     HubLogMessage,
     FileLoggerFormatter,
     ConsoleLoggerFormatter,

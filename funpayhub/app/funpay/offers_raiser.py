@@ -15,7 +15,7 @@ from funpaybotengine.exceptions.session_exceptions import (
     RateLimitExceededError,
 )
 
-from loggers import offers_raiser as logger
+from funpayhub.loggers import offers_raiser as logger
 
 from funpayhub.lib.translater import _en
 

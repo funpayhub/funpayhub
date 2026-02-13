@@ -9,7 +9,7 @@ __all__ = ['RepositoriesManager']
 from copy import copy
 from pathlib import Path
 
-from loggers import plugins as logger
+from funpayhub.loggers import plugins as logger
 
 from funpayhub.lib.exceptions import (
     SaveRepositoryError,

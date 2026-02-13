@@ -8,7 +8,7 @@ from aiogram.types import Message
 from funpaybotengine.types import Category
 from eventry.asyncio.filter import all_of
 
-from loggers import main as logger
+from funpayhub.loggers import main as logger
 
 from funpayhub.lib.translater import _en
 from funpayhub.lib.telegram.ui import UIRegistry

@@ -6,8 +6,8 @@ from asyncio import Lock
 from aiogram import Router
 from aiogram.types import CallbackQuery
 
-import exit_codes
-from updater import check_updates, install_update, download_update
+from funpayhub import exit_codes
+from funpayhub.updater import check_updates, install_update, download_update
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 

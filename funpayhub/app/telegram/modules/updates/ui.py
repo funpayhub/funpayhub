@@ -22,7 +22,7 @@ from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from updater import UpdateInfo
+    from funpayhub.updater import UpdateInfo
 
     from funpayhub.lib.translater import Translater as Tr
 

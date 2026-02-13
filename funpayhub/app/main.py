@@ -11,8 +11,7 @@ from typing import TYPE_CHECKING
 from aiogram.utils.token import TokenValidationError
 from funpaybotengine.runner.config import RunnerConfig
 
-import exit_codes
-from loggers import main as logger
+from funpayhub.loggers import main as logger
 
 from funpayhub.lib.base_app import App
 from funpayhub.lib.translater import Translater, _en
@@ -31,6 +30,7 @@ from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.workflow_data import get_wfd
 from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 
+from .. import exit_codes
 from .args_parser import args
 
 

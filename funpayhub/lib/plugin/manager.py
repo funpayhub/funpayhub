@@ -17,7 +17,7 @@ from collections.abc import Callable, Awaitable
 
 from packaging.version import Version
 
-from loggers import plugins as logger
+from funpayhub.loggers import plugins as logger
 
 from funpayhub.lib.exceptions import (
     PluginInstantiationError,

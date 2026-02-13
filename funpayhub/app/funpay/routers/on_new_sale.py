@@ -7,7 +7,7 @@ from contextlib import suppress
 from funpaybotengine import Router
 from funpaybotengine.dispatching.filters import all_of
 
-from loggers import main as logger
+from funpayhub.loggers import main as logger
 
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.translater import _

@@ -7,8 +7,8 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.exceptions import AiogramError
 
-import exit_codes
-from loggers import main as logger
+from funpayhub import exit_codes
+from funpayhub.loggers import main as logger
 
 from funpayhub.lib.translater import _en
 from funpayhub.lib.base_app.telegram.utils import delete_message
@@ -116,7 +116,7 @@ async def send_template(
     except IndexError:
         await query.answer(
             translater.translate('❌ Быстрое сообщение {index} не найдено.').format(
-                index=callback_data.index
+                index=callback_data.index,
             ),
             show_alert=True,
         )
@@ -128,7 +128,9 @@ async def send_template(
         text = await fp_formatters.format_text(template, context)
     except Exception:
         logger.error(
-            _en('An error occurred while formatting fast message %s.'), template, exc_info=True
+            _en('An error occurred while formatting fast message %s.'),
+            template,
+            exc_info=True,
         )
         await query.answer(
             translater.translate('❌ Не удалось форматировать сообщение. Подробности в логах.'),
@@ -140,7 +142,9 @@ async def send_template(
         await fp.send_messages_stack(text, chat_id=callback_data.to, automatic_message=False)
     except Exception:
         logger.error(
-            _en('An error occurred while sending fast message %s.'), template, exc_info=True
+            _en('An error occurred while sending fast message %s.'),
+            template,
+            exc_info=True,
         )
         await query.answer(
             translater.translate('❌ Не удалось отправить сообщение. Подробности в логах.'),

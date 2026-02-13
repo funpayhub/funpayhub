@@ -14,7 +14,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery, TelegramObject
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 
-from loggers import telegram as logger
+from funpayhub.loggers import telegram as logger
 
 from funpayhub.lib.translater import Translater
 

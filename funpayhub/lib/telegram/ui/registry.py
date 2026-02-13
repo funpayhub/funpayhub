@@ -11,7 +11,7 @@ from dataclasses import field, dataclass
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
-from loggers import telegram_ui as logger
+from funpayhub.loggers import telegram_ui as logger
 
 from .types import (
     Menu,

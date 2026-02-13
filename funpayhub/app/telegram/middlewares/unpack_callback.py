@@ -9,7 +9,7 @@ __all__ = ['UnpackMiddleware']
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery
 
-from loggers import telegram as logger
+from funpayhub.loggers import telegram as logger
 
 from funpayhub.lib.telegram.callback_data import CallbackData
 from funpayhub.lib.telegram.callback_data.hashinator import BadHashError, HashinatorT1000

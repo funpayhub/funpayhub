@@ -14,7 +14,7 @@ import aiohttp
 from aiohttp import ClientSession
 from packaging.version import Version
 
-from loggers import updater as logger
+from funpayhub.loggers import updater as logger
 
 from funpayhub.lib.translater import _en
 

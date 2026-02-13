@@ -21,7 +21,7 @@ from funpaybotengine.exceptions import (
 from funpaybotengine.types.pages import ProfilePage
 from funpaybotengine.runner.config import RunnerConfig
 
-from loggers import main as logger
+from funpayhub.loggers import main as logger
 
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.translater import _en

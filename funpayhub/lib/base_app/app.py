@@ -13,8 +13,7 @@ from contextlib import suppress
 
 from packaging.version import Version
 
-import exit_codes
-from loggers import (
+from funpayhub.loggers import (
     main as logger,
     plugins as plugins_logger,
 )
@@ -24,6 +23,7 @@ from funpayhub.lib.exceptions import GoodsError
 from funpayhub.lib.translater import Translater, _en
 from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
 
+from ... import exit_codes
 from .telegram import TelegramApp
 from .workflow_data import WorkflowData
 from ..plugin.repository.manager import RepositoriesManager

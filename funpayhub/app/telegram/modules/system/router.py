@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from aiogram import Router
 
-import exit_codes
+from funpayhub import exit_codes
 
 from funpayhub.lib.translater import _
 

@@ -14,7 +14,7 @@ from collections.abc import Callable, Iterable, Awaitable, Generator
 
 import tomli_w
 
-from loggers import main as logger
+from funpayhub.loggers import main as logger
 
 from .base import Node
 from .parameter.base import Parameter, MutableParameter
