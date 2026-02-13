@@ -25,7 +25,7 @@ from loggers import main as logger
 
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.translater import _en
-from funpayhub.lib.hub.text_formatters import FormattersRegistry
+from funpayhub.lib.hub.text_formatters import Image, FormattersRegistry
 
 from funpayhub.app.funpay import middlewares as mdwr
 from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
@@ -36,6 +36,8 @@ from funpayhub.app.utils.get_profile_categories import get_profile_raisable_cate
 
 
 if TYPE_CHECKING:
+    from funpayhub.lib.hub.text_formatters import MessagesStack
+
     from funpayhub.app.main import FunPayHub
     from funpayhub.app.workflow_data import WorkflowData
 
@@ -131,7 +133,7 @@ class FunPay:
             except (BotUnauthenticatedError, UnauthorizedError) as e:
                 logger.error(
                     _en(
-                        'An error occurred while making first request to FunPay: unauthenticated.'
+                        'An error occurred while making first request to FunPay: unauthenticated.',
                     ),
                 )
                 exception = e
@@ -179,6 +181,32 @@ class FunPay:
                 await self._bot.update()
             self._profile_page = await self._bot.get_profile_page(self._bot.userid)
         return self._profile_page
+
+    async def send_messages_stack(
+        self,
+        stack: MessagesStack,
+        chat_id: int | str,
+        keep_chat_unread: bool = False,
+        automatic_message: bool = True,
+        attempts: int = 3,
+    ) -> None:
+        for entry in stack.entries:
+            if isinstance(entry, str):
+                await self.send_message(
+                    chat_id=chat_id,
+                    text=entry,
+                    keep_chat_unread=keep_chat_unread,
+                    automatic_message=automatic_message,
+                    attempts=attempts,
+                )
+            elif isinstance(entry, Image):
+                await self.send_message(
+                    chat_id=chat_id,
+                    image=entry.id or entry.path,
+                    keep_chat_unread=keep_chat_unread,
+                    automatic_message=automatic_message,
+                    attempts=attempts,
+                )
 
     async def send_message(
         self,

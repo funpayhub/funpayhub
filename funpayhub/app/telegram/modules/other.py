@@ -4,17 +4,32 @@ from typing import TYPE_CHECKING
 from contextlib import suppress
 
 from aiogram import Router
-from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.exceptions import AiogramError
 
 import exit_codes
+from loggers import main as logger
 
-from funpayhub.lib.translater import Translater
+from funpayhub.lib.translater import _en
+from funpayhub.lib.base_app.telegram.utils import delete_message
+
+from funpayhub.app.telegram import (
+    states,
+    callbacks as cbs,
+)
+from funpayhub.app.formatters import FormattersContext
 
 
 if TYPE_CHECKING:
+    from aiogram.types import Message, CallbackQuery
+    from aiogram.fsm.context import FSMContext
+
+    from funpayhub.lib.translater import Translater
+    from funpayhub.lib.hub.text_formatters import FormattersRegistry
+
     from funpayhub.app.main import FunPayHub
+    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from funpayhub.app.funpay.main import FunPay
 
 
 router = r = Router(name='fph:other')
@@ -75,3 +90,63 @@ async def startup(hub: FunPayHub) -> None:
             '🤖 Лучший бот для автоматизации продаж на FunPay!\n'
             '💬 Чат проекта: https://t.me/funpay_hub',
         )
+
+
+@router.callback_query(cbs.SendTemplate.filter())
+async def send_template(
+    query: CallbackQuery,
+    properties: FPHProps,
+    fp: FunPay,
+    callback_data: cbs.SendTemplate,
+    translater: Translater,
+    fp_formatters: FormattersRegistry,
+    state: FSMContext,
+) -> None:
+    data = None
+    try:
+        data = await states.SendingFunpayMessage.get(state)
+    except RuntimeError:
+        pass
+
+    if data is not None:
+        await state.clear()
+
+    try:
+        template = properties.message_templates.value[callback_data.index]
+    except IndexError:
+        await query.answer(
+            translater.translate('❌ Быстрое сообщение {index} не найдено.').format(
+                index=callback_data.index
+            ),
+            show_alert=True,
+        )
+        return
+
+    context = FormattersContext()
+
+    try:
+        text = await fp_formatters.format_text(template, context)
+    except Exception:
+        logger.error(
+            _en('An error occurred while formatting fast message %s.'), template, exc_info=True
+        )
+        await query.answer(
+            translater.translate('❌ Не удалось форматировать сообщение. Подробности в логах.'),
+            show_alert=True,
+        )
+        return
+
+    try:
+        await fp.send_messages_stack(text, chat_id=callback_data.to, automatic_message=False)
+    except Exception:
+        logger.error(
+            _en('An error occurred while sending fast message %s.'), template, exc_info=True
+        )
+        await query.answer(
+            translater.translate('❌ Не удалось отправить сообщение. Подробности в логах.'),
+        )
+        return
+
+    await query.answer(translater.translate('✅ Сообщение отправлно.'))
+    if data is not None:
+        delete_message(data.message)

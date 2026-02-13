@@ -100,19 +100,13 @@ class DeliverGoodsHandler:
         )
 
         try:
-            # todo:
-            #  Это очень плохо!
-            #  Сейчас подставляется hub.funpay,
-            #  потому что у него есть такой же метод send_message с такими же сигнатурами,
-            #  нельзя это так оставлять!
-            #  (да благослови пайтон за дактайпинг)
-            await response_text.send(hub.funpay, event.message.chat_id)
+            await hub.funpay.send_messages_stack(response_text, event.message.chat_id)
             event['delivered_goods'] = goods
             event['delivered_from_source_id'] = goods_source_id
             return
         except Exception:
             if goods:
-                with suppress:
+                with suppress(Exception):
                     await goods_manager.add_goods(goods_source_id, goods)
             raise
 

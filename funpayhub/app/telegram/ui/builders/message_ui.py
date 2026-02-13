@@ -125,31 +125,24 @@ class SendMessageMenuBuilder(
         properties: FunPayHubProperties,
         translater: Translater,
     ) -> Menu:
-        keyboard = KeyboardBuilder()
+        menu = Menu(finalizer=StripAndNavigationFinalizer())
+
         for index, i in enumerate(properties.message_templates.value):
-            keyboard.add_callback_button(
+            menu.main_keyboard.add_callback_button(
                 button_id=f'send_template:{index}',
                 text=i[:30] + ('...' if len(i) > 30 else ''),
                 callback_data=cbs.SendTemplate(to=ctx.funpay_chat_id, index=index).pack_compact(),
             )
 
-        return Menu(
-            main_text=translater.translate(
-                '<b>Отправьте сообщение или изображение пользователю <a href="https://funpay.com/chat/?node={chat_id}">{chat_name}</a>.</b>',
-            ).format(
-                chat_id=ctx.funpay_chat_id,
-                chat_name=ctx.funpay_chat_name,
-            ),
-            footer_keyboard=KeyboardBuilder(
-                keyboard=[
-                    Button.callback_button(
-                        button_id='cancel',
-                        text=translater.translate('🔘 Отмена'),
-                        callback_data=ClearState(delete_message=True).pack(),
-                        row=True,
-                    ),
-                ],
-            ),
-            main_keyboard=keyboard,
-            finalizer=StripAndNavigationFinalizer(back_button=False),
+        menu.footer_keyboard.add_callback_button(
+            button_id='cancel',
+            text=translater.translate('🔘 Отмена'),
+            callback_data=ClearState(delete_message=True).pack(),
         )
+
+        menu.main_text = translater.translate(
+            '<b>Отправьте сообщение или изображение пользователю '
+            '<a href="https://funpay.com/chat/?node={chat_id}">{chat_name}</a>.</b>',
+        ).format(chat_id=ctx.funpay_chat_id, chat_name=ctx.funpay_chat_name)
+
+        return menu

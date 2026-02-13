@@ -20,7 +20,6 @@ from funpayhub.app.telegram.ui.builders.context import NewMessageMenuContext
 
 
 if TYPE_CHECKING:
-    from funpaybotengine import Bot
     from funpaybotengine.types import Message
 
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
@@ -36,7 +35,7 @@ on_new_message_router = r = Router(name='fph:on_new_message_router')
 async def process_command(
     event: NewMessageEvent,
     fp_formatters: FormattersRegistry,
-    fp_bot: Bot,
+    fp: FunPay,
     command: AutoResponseEntryProperties,
 ) -> None:
     """
@@ -52,7 +51,7 @@ async def process_command(
             raise_on_error=not command.ignore_formatters_errors.value,
         )
 
-        await text.send(bot=fp_bot, chat_id=event.message.chat_id)
+        await fp.send_messages_stack(text, chat_id=event.message.chat_id)
 
 
 @r.on_chat_changed(handler_id='fph:new_message_notification')
