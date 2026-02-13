@@ -26,6 +26,7 @@ async def setup_config():
         try:
             me = await bot.get_me()
             print(f'Токен принят. Бот: @{me.username}')
+            break
         except TelegramUnauthorizedError:
             print('Невалидный токен.')
             continue
@@ -36,12 +37,10 @@ async def setup_config():
 
     while True:
         password = input('Придумайте пароль для Telegram бота: ')
-        if not password:
-            continue
-
         if len(password) < 8:
             print('Пароль должен содержать минимум 8 символов.')
             continue
+        break
 
     await props.telegram.general.token.set_value(bot_token, save=False)
     await props.telegram.general.password.set_value(password, save=False)
