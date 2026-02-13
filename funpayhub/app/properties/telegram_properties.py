@@ -50,7 +50,7 @@ class TelegramGeneral(Properties):
                 name=_('Токен'),
                 description=_('nodesc'),
                 default_value='',
-                flags=[TelegramUIEmojiFlag('🔑')],
+                flags=[ParamFlags.PROTECT_VALUE, TelegramUIEmojiFlag('🔑')],
             ),
         )
 
