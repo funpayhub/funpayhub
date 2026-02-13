@@ -35,4 +35,10 @@ parser.add_argument(
 )
 
 
+parser.add_argument(
+    '--setup-config',
+    action='store_true',
+    help='Setup telegram token and password.',
+)
+
 args = parser.parse_args()

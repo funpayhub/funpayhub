@@ -125,6 +125,12 @@ async def main() -> None:
 
 
 if __name__ == '__main__':
+    if args.setup_config:
+        from funpayhub.setup_config import setup_config
+
+        asyncio.run(setup_config())
+        sys.exit()
+
     logger = logging.getLogger('funpayhub.main')
     logger.info(f'{" Я родился ":-^50}')
     asyncio.run(main())
