@@ -57,9 +57,12 @@ class IsAuthorizedMiddleware(BaseMiddleware):
                     from_user.username,
                     from_user.id,
                 )
-                await properties.telegram.general.authorized_users.add_item(from_user.id)
+                # await properties.telegram.general.authorized_users.add_item(from_user.id)
                 await properties.telegram.notifications.system.add_item(
                     f'{event.chat.id}.{event.message_thread_id}',
+                )
+                await event.answer_animation(
+                    'CAACAgIAAyEFAASIhDzaAAEBtElpj7bfPSwOh-oXPd0AAROIKNIS8J8AAkiXAAI6nHhIKHcQ9ltBktA6BA',
                 )
                 await event.answer('Доступ получен!')
             elif is_private_msg or isinstance(event, CallbackQuery):
