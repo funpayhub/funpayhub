@@ -282,35 +282,18 @@ def mark_as_bootstrapped():
         ...
 
 
-def launch():
-    env = os.environ.copy()
-    env['PYTHONPATH'] = os.pathsep.join([str(CURRENT_RELEASE_PATH), env.get('PYTHONPATH', '')])
-    env['FPH_LOCALES'] = str(LOCALES_PATH)
-    env['RELEASES_PATH'] = str(RELEASES_PATH)
-
-    cmd = [sys.executable, LAUNCHER_PATH]
-    if args.token:
-        cmd.extend(['-t', args.token])
-
-    if IS_WINDOWS:
-        subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin, env=env)
-    else:
-        os.execv(sys.executable, cmd)
-
-
 def main():
     if IS_WINDOWS:
         elevate()
 
     self_check()
-    if '--skip-pip' not in sys.argv:
-        install_dependencies()
+    # if '--skip-pip' not in sys.argv:
+    #     install_dependencies()
 
     move_to_releases()
     update_current_link()
     mark_as_bootstrapped()
-    logger.info('FunPay Hub successfully installed! Launching...')
-    launch()
+    logger.info('FunPay Hub successfully installed!')
     exit(0)
 
 
