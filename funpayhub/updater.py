@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import aiohttp
-from utils import IS_WINDOWS
+from funpayhub.utils import IS_WINDOWS
 from aiohttp import ClientSession
 from packaging.version import Version
 
