@@ -82,9 +82,13 @@ class App:
         self._workflow_data = workflow_data if workflow_data is not None else WorkflowData()
         self._dispatcher = dispatcher
 
-        self._telegram = telegram_app or TelegramApp(
-            bot_token=telegram_bot_token,
-            workflow_data=self.workflow_data,
+        self._telegram = (
+            telegram_app
+            if telegram_app is not None
+            else TelegramApp(
+                bot_token=telegram_bot_token,
+                workflow_data=self.workflow_data,
+            )
         )
 
         self._workflow_data.update(

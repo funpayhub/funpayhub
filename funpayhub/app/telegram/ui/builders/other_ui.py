@@ -9,6 +9,7 @@ from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import KeyboardBuilder
 from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
+from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 
@@ -167,6 +168,7 @@ class MainMenuBuilder(
         return Menu(
             main_text=f'🐙 <b><u>FunPay Hub v{hub.properties.version.value}</u></b>',
             main_keyboard=kb,
+            finalizer=StripAndNavigationFinalizer(),
         )
 
 

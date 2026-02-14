@@ -85,6 +85,7 @@ class FunPayHub(App):
             telegram_app=telegram_app,
             workflow_data=self.workflow_data,
         )
+        self.telegram.config.max_menu_lines = properties.telegram.appearance.max_menu_lines.value
 
         self._funpay = FunPay(
             self,
