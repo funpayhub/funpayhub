@@ -53,7 +53,7 @@ class Plugin:
     def hub(self) -> FunPayHub:
         return self._hub
 
-    async def pre_setup(self) -> Properties:
+    async def pre_setup(self) -> None:
         raise NotImplementedError()
 
     async def properties(self) -> Properties:
