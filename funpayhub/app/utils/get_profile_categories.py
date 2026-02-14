@@ -12,7 +12,7 @@ from funpaybotengine.types.pages import ProfilePage
 async def get_profile_raisable_categories(profile: ProfilePage, bot: Bot) -> set[int]:
     result = set()
 
-    if not profile.offers.get(SubcategoryType.COMMON):
+    if not profile.offers or not profile.offers.get(SubcategoryType.OFFERS):
         return result
 
     categories = await bot.storage.get_categories()
@@ -23,7 +23,7 @@ async def get_profile_raisable_categories(profile: ProfilePage, bot: Bot) -> set
         if subcat.type is SubcategoryType.COMMON
     }
 
-    for subcategory_id in profile.offers[SubcategoryType.COMMON]:
+    for subcategory_id in profile.offers[SubcategoryType.OFFERS]:
         if subcategory_id in subcategories_to_category:
             result.add(subcategories_to_category[subcategory_id].id)
     return result

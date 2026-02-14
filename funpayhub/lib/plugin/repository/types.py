@@ -7,7 +7,7 @@ from pydantic import BaseModel, field_validator, field_serializer
 from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
-from funpayhub.lib.plugin.types import _WithDescription
+from funpayhub.lib.plugin.types import PluginAuthor, _WithDescription
 
 
 class RepoSpecificPluginVersionInfo(BaseModel):
@@ -16,6 +16,7 @@ class RepoSpecificPluginVersionInfo(BaseModel):
         'extra': 'allow',
     }
 
+    hash: str = ''
     app_version: SpecifierSet
     url: str
     change_log: str = ''
@@ -40,8 +41,9 @@ class RepoPluginInfo(_WithDescription):
 
     name: str
     description: str
+    author: PluginAuthor | None = None
+    repo: str | None = None
     versions: dict[Version, RepoSpecificPluginVersionInfo]
-    more_versions: str = ''
 
     @field_validator('versions', mode='before')
     @classmethod

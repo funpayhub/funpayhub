@@ -15,6 +15,7 @@ from pydantic import Field, BaseModel, field_validator, model_validator
 from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
+
 if TYPE_CHECKING:
     from funpayhub.lib.properties import Properties
 
@@ -77,10 +78,7 @@ class PluginManifest(_WithDescription):
 
 
 class PluginAuthor(BaseModel):
-    model_config = {
-        'extra': 'allow',
-        'frozen': True,
-    }
+    model_config = {'extra': 'allow'}
 
     name: str | None = Field(default=None)
     mail: str | None = Field(default=None)

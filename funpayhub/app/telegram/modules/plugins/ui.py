@@ -276,7 +276,14 @@ class RepoInfoMenuBuilder(
         for plugin_id, plugin in repo.plugins.items():
             menu.main_keyboard.add_callback_button(
                 button_id=f'open_plugin_info:{plugin_id}',
-                text=html.escape(plugin.name),
+                text=(
+                    html.escape(plugin.name)
+                    + (
+                        f' by {html.escape(plugin.author.name)}'
+                        if plugin.author and plugin.author.name
+                        else ''
+                    )
+                ),
                 callback_data=OpenMenu(
                     menu_id=MenuIds.repo_plugin_info,
                     context_data={'repo_id': ctx.repo_id, 'plugin_id': plugin_id},
@@ -314,8 +321,46 @@ class RepoPluginInfoMenuBuilder(
         repo = repositories_manager.repositories[ctx.repo_id]
         plugin = repo.plugins[ctx.plugin_id]
 
-        menu.header_text = f'<b><u>{html.escape(plugin.name)}</u></b>'
-        menu.main_text = html.escape(plugin.get_description(translater.current_language))
+        blocks = {
+            'name': [],
+            'info': [],
+            'social': [],
+            'description': [],
+        }
+
+        blocks['name'].append(f'🧩 <b><u>{escape(plugin.name)}</u></b>')
+        blocks['info'].append(f'🆔 <b>ID: {ctx.plugin_id}</b>')
+
+        if plugin.repo:
+            blocks['info'].append(
+                f'{translater.translate("⬛ <b>Репозиторий</b>")}: {escape(plugin.repo)}',
+            )
+
+        author_info = []
+        if plugin.author:
+            author = plugin.author
+            if author.name:
+                author_info.append(f'<b>{escape(author.name)}</b>')
+            if author.website:
+                author_info.append(
+                    f'<b><a href="{author.website}">{translater.translate("🌐 Вебсайт")}</a></b>',
+                )
+
+        if author_info:
+            blocks['info'].append(
+                f'{translater.translate("👤 <b>Разработчик</b>")}: {" | ".join(author_info)}',
+            )
+
+        if plugin.author and plugin.author.social:
+            for name, link in plugin.author.social.items():
+                blocks['social'].append(f'<b><i>{escape(name)}:</i> {escape(link)}</b>')
+
+        if plugin.description:
+            blocks['description'].append(
+                escape(plugin.get_description(locale=translater.current_language)),
+            )
+
+        menu.main_text = '\n\n'.join('\n'.join(block) for block in blocks.values() if block)
 
         latest = None
         for v, info in plugin.versions.items():
