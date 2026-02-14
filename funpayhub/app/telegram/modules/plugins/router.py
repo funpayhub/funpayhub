@@ -200,7 +200,7 @@ async def install_plugin(
         await message.answer(
             translater.translate('Не удалось установить плагин.')
             + '\n'
-            + html.escape(translater.translate(e.message) % e.args[1:]),
+            + html.escape(translater.translate(e.message) % e.args),
         )
         return
 
