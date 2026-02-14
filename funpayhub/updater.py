@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import aiohttp
+from utils import IS_WINDOWS
 from aiohttp import ClientSession
 from packaging.version import Version
 
@@ -172,6 +173,46 @@ def apply_update(update_path: Path) -> Version:
     update_path.rename(update_path.parent / version)
 
     current = update_path.parent / 'current'
+
     current.unlink(missing_ok=True)
     os.symlink(update_path.parent / version, current, target_is_directory=True)
+    return Version(version)
+
+
+def apply_update(update_path: Path) -> Version:
+    install_dependencies(update_path)
+
+    with open(update_path / 'pyproject.toml', 'r') as src:
+        pyproject = tomllib.loads(src.read())
+
+    version = pyproject['project']['version']
+    target_path = update_path.parent / version
+    update_path.rename(target_path)
+
+    current_link = update_path.parent / 'current'
+    temp_link = current_link.with_name('current_tmp')
+    temp_link.unlink(missing_ok=True)
+
+    try:
+        if IS_WINDOWS:
+            subprocess.run(
+                ['cmd', '/c', 'mklink', '/J', str(temp_link), str(target_path)],
+                check=True,
+                shell=True,
+            )
+        else:
+            os.symlink(target_path, temp_link)
+    except Exception:
+        logger.critical('Failed to create temporary current link.', exc_info=True)
+        exit(1)
+
+    try:
+        if current_link.exists() or current_link.is_symlink():
+            current_link.unlink()
+        os.replace(temp_link, current_link)
+        logger.info('Current link successfully updated.')
+    except Exception:
+        logger.critical('Failed to replace current link.', exc_info=True)
+        exit(1)
+
     return Version(version)
