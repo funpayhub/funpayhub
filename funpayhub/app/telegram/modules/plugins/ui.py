@@ -379,7 +379,7 @@ class RepoPluginInfoMenuBuilder(
 
             if latest is None:
                 latest = v
-            elif v < latest:
+            elif v > latest:
                 latest = v
 
             menu.main_keyboard.add_row(
