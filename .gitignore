@@ -21,4 +21,4 @@ uv.lock
 *.log
 *.tmp
 
-plugins/
+/plugins/
