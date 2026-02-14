@@ -66,10 +66,18 @@ class NewMessageNotificationMenuBuilder(
         )
 
         if ctx.messages:
-            texts = []
+            texts: list[list[str]] = []
+            last_sender_id = None
             for msg in ctx.messages:
                 username = msg.sender_username
                 msg_text = html.escape(msg.text or msg.image_url)
+                if msg.sender_id == 0:
+                    msg_text = f'<b>{msg_text}</b>'
+
+                if msg.sender_id == last_sender_id:
+                    texts[-1].append(f'<blockquote>{msg_text}</blockquote>')
+                    continue
+                last_sender_id = msg.sender_id
 
                 prefix = '👤'
                 if msg.badge:
@@ -83,17 +91,16 @@ class NewMessageNotificationMenuBuilder(
                     else:
                         prefix = '😎'
 
-                if msg.sender_id == 0:
-                    msg_text = f'<b>{msg_text}</b>'
-
                 username = ' '.join([prefix, username])
 
                 texts.append(
-                    f'<a href="https://funpay.com/users/{msg.sender_id}/">{username}</a> - '
-                    f'<i>{msg.send_date_text}</i>\n'
-                    f'<blockquote>{msg_text}</blockquote>',
+                    [
+                        f'<a href="https://funpay.com/users/{msg.sender_id}/">{username}</a> - '
+                        f'<i>{msg.send_date_text}</i>\n'
+                        f'<blockquote>{msg_text}</blockquote>',
+                    ]
                 )
-            text = '\n\n'.join(texts)
+            text = '\n\n'.join('\n'.join(i) for i in texts)
         else:
             text = (
                 '<pre><code class="language-❔ Unknown sender">'
