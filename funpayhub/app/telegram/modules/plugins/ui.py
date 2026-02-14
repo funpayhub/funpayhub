@@ -237,7 +237,17 @@ class ReposListMenuBuilder(MenuBuilder, menu_id=MenuIds.repositories_list, conte
     ) -> Menu:
         menu = Menu(finalizer=StripAndNavigationFinalizer())
 
-        for repo_id, repo in repositories_manager.repositories.items():
+        if 'com.github.funpayhub.repo' in repositories_manager._repositories:
+            repos = {
+                'com.github.funpayhub.repo': repositories_manager._repositories[
+                    'com.github.funpayhub.repo'
+                ],
+                **repositories_manager._repositories,
+            }
+        else:
+            repos = repositories_manager._repositories
+
+        for repo_id, repo in repos.items():
             menu.main_keyboard.add_callback_button(
                 button_id=f'open_repository:{repo_id}',
                 text=html.escape(repo.name),
@@ -376,7 +386,7 @@ class RepoPluginInfoMenuBuilder(
                 Button.callback_button(
                     button_id=f'install_version:{v}',
                     text=translater.translate('⤵️ Установить') + f' v{v}',
-                    callback_data=cbs.InstallPluginFromURL(url=info.url).pack(),
+                    callback_data=cbs.InstallPluginFromURL(url=info.url, hash=info.hash).pack(),
                 ),
                 Button.callback_button(
                     button_id=f'change_log:{v}',
@@ -389,7 +399,10 @@ class RepoPluginInfoMenuBuilder(
             menu.footer_keyboard.add_callback_button(
                 button_id='install_latest_version',
                 text=translater.translate('⤵️ Установить последнюю версию'),
-                callback_data=cbs.InstallPluginFromURL(url=plugin.versions[latest].url).pack(),
+                callback_data=cbs.InstallPluginFromURL(
+                    url=plugin.versions[latest].url,
+                    hash=plugin.versions[latest].hash,
+                ).pack(),
             )
 
         return menu

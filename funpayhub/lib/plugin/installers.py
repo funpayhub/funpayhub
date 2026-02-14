@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import hashlib
 from typing import TYPE_CHECKING, Any
 from abc import ABC, abstractmethod
 from pathlib import Path, PurePosixPath
@@ -177,6 +178,7 @@ class HTTPSPluginInstaller(PluginInstaller[str]):
         self,
         plugins_path: Path,
         source: str,
+        plugin_hash: str = '',
         installer_class: type[PluginInstaller] = ZipPluginInstaller,
         installer_args: list[Any] | None = None,
         installer_kwargs: dict[str, Any] | None = None,
@@ -192,6 +194,7 @@ class HTTPSPluginInstaller(PluginInstaller[str]):
         self._installer_class = installer_class
         self._installer_args = installer_args or []
         self._installer_kwargs = installer_kwargs or {}
+        self._hash = plugin_hash
 
     async def install(self, overwrite: bool = False) -> Path:
         os.makedirs('storage', exist_ok=True)
@@ -203,6 +206,11 @@ class HTTPSPluginInstaller(PluginInstaller[str]):
                     async for chunk in resp.content.iter_chunked(1024 * 64):
                         f.write(chunk)
 
+        if self._hash:
+            pl_hash = self.get_hash()
+            if pl_hash != self._hash:
+                raise PluginInstallationError(_en('Hash mismatch.'))
+
         installer_instance = self._installer_class(
             self.plugins_directory,
             Path('storage/plugin').absolute(),
@@ -211,6 +219,14 @@ class HTTPSPluginInstaller(PluginInstaller[str]):
         )
 
         return await installer_instance.install(overwrite=overwrite)
+
+    def get_hash(self):
+        sha256 = hashlib.sha256()
+        with open('storage/plugin', 'rb') as f:
+            for chunk in iter(lambda: f.read(8192), b''):
+                sha256.update(chunk)
+
+        return sha256.hexdigest()
 
 
 class AiogramPluginInstaller(PluginInstaller[str]):

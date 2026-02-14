@@ -40,6 +40,7 @@ class AddRepository(CallbackData, identifier='add_repository'): ...
 
 class InstallPluginFromURL(CallbackData, identifier='install_plugin_from_url'):
     url: str
+    hash: str = ''
 
 
 class UpdateRepository(CallbackData, identifier='update_repo'):

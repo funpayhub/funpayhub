@@ -308,12 +308,12 @@ async def install_plugin_from_url(
             'Начинаю установку плагина из {url} . Это может занять некоторе время.',
         ).format(url=callback_data.url),
     )
-
     try:
-        plugin = await plugin_manager.install_plugin_from_source(
+        await plugin_manager.install_plugin_from_source(
             HTTPSPluginInstaller,
             callback_data.url,
             overwrite=True,
+            plugin_hash=callback_data.hash,
         )
     except Exception as e:
         text = translater.translate(
