@@ -74,7 +74,7 @@ class NewMessageNotificationMenuBuilder(
                 if msg.sender_id == 0:
                     msg_text = f'<b>{msg_text}</b>'
 
-                if msg.sender_id == last_sender_id:
+                if msg.sender_id == last_sender_id and not msg.is_heading:
                     texts[-1].append(f'<blockquote>{msg_text}</blockquote>')
                     continue
                 last_sender_id = msg.sender_id
@@ -98,7 +98,7 @@ class NewMessageNotificationMenuBuilder(
                         f'<a href="https://funpay.com/users/{msg.sender_id}/">{username}</a> - '
                         f'<i>{msg.send_date_text}</i>\n'
                         f'<blockquote>{msg_text}</blockquote>',
-                    ]
+                    ],
                 )
             text = '\n\n'.join('\n'.join(i) for i in texts)
         else:
