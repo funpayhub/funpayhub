@@ -4,6 +4,7 @@ import os
 import shutil
 import hashlib
 from typing import TYPE_CHECKING, Any
+from io import BytesIO
 from abc import ABC, abstractmethod
 from pathlib import Path, PurePosixPath
 from zipfile import ZipFile, BadZipFile
@@ -67,7 +68,7 @@ class PluginInstaller[T: Any](ABC):
             raise PluginInstallationError(_en('See logs.')) from e
 
 
-class ZipPluginInstaller(PluginInstaller[str | Path]):
+class ZipPluginInstaller(PluginInstaller[str | Path | BytesIO]):
     """
     Установщик плагинов из ZIP-архивов.
 
@@ -82,18 +83,19 @@ class ZipPluginInstaller(PluginInstaller[str | Path]):
     """
 
     if TYPE_CHECKING:
-        source: Path
+        source: Path | BytesIO
 
     def __init__(self, plugins_path: Path, source: str | Path) -> None:
-        if not isinstance(source, (str, Path)):
-            raise ValueError('Source must be a string or a `pathlib.Path`.')
+        if not isinstance(source, (str, Path, BytesIO)):
+            raise ValueError('Source must be a string, `pathlib.Path` or `BytesIO`.')
 
-        source = Path(source)
+        source = Path(source) if isinstance(source, str) else source
         super().__init__(plugins_path, source)
-        self._check_archive_exists()
 
     async def _install(self, overwrite: bool = False) -> Path:
-        self._check_archive_exists()
+        if isinstance(self.source, Path):
+            self._check_archive_exists()
+
         with ZipFile(self.source) as zf:
             root = self._check_root(zf)
             if self._check_exists(root) and not overwrite:
@@ -197,36 +199,25 @@ class HTTPSPluginInstaller(PluginInstaller[str]):
         self._hash = plugin_hash
 
     async def install(self, overwrite: bool = False) -> Path:
-        os.makedirs('storage', exist_ok=True)
+        buffer = BytesIO()
         async with ClientSession() as session:
             async with session.get(self.source) as resp:
                 resp.raise_for_status()
 
-                with open('storage/plugin', 'wb') as f:
-                    async for chunk in resp.content.iter_chunked(1024 * 64):
-                        f.write(chunk)
+                async for chunk in resp.content.iter_chunked(1024 * 64):
+                    buffer.write(chunk)
 
-        if self._hash:
-            pl_hash = self.get_hash()
-            if pl_hash != self._hash:
-                raise PluginInstallationError(_en('Hash mismatch.'))
+        if self._hash and self._hash != hashlib.sha256(buffer.getvalue()).hexdigest():
+            raise PluginInstallationError(_en('Hash mismatch.'))
 
         installer_instance = self._installer_class(
             self.plugins_directory,
-            Path('storage/plugin').absolute(),
+            buffer,
             *self._installer_args,
             **self._installer_kwargs,
         )
 
         return await installer_instance.install(overwrite=overwrite)
-
-    def get_hash(self):
-        sha256 = hashlib.sha256()
-        with open('storage/plugin', 'rb') as f:
-            for chunk in iter(lambda: f.read(8192), b''):
-                sha256.update(chunk)
-
-        return sha256.hexdigest()
 
 
 class AiogramPluginInstaller(PluginInstaller[str]):
@@ -251,13 +242,13 @@ class AiogramPluginInstaller(PluginInstaller[str]):
         return self._bot
 
     async def install(self, overwrite: bool = False) -> Path:
+        buffer = BytesIO()
         file = await self.bot.get_file(self.source)
-        os.makedirs('storage', exist_ok=True)
-        await self.bot.download_file(file.file_path, 'storage/plugin')
+        await self.bot.download_file(file.file_path, buffer)
 
         installer = self._installer_class(
             self.plugins_directory,
-            Path('storage/plugin').absolute(),
+            buffer,
             *self._installer_args,
             **self._installer_kwargs,
         )
