@@ -20,11 +20,8 @@ sys.excepthook = exception_hook
 
 
 import uuid
-import ctypes
 import shutil
 import logging
-import tomllib
-import argparse
 import subprocess
 from pathlib import Path
 from logging.config import dictConfig
@@ -71,24 +68,6 @@ dictConfig(
 
 logger = logging.getLogger()
 
-parser = argparse.ArgumentParser(description='FunPay Hub Bootstrap')
-
-parser.add_argument(
-    '--no-deps',
-    action='store_true',
-    help='Skip dependencies installation.',
-)
-
-parser.add_argument(
-    '-t',
-    '--token',
-    type=str,
-    default=None,
-    help='Telegram bot token to pass to launcher.',
-)
-
-args = parser.parse_args()
-
 
 # ---------------------------------------------
 # |                  Consts                   |
@@ -105,7 +84,6 @@ LOCALES_PATH = CURRENT_RELEASE_PATH / 'locales'
 TO_MOVE = {
     'funpayhub': True,
     'locales': True,
-    'tests': True,
     'app.py': False,
     'launcher.py': False,
     'pyproject.toml': False,
@@ -121,25 +99,6 @@ def exit(code: int) -> None:
     sys.exit(code)
 
 
-def elevate() -> None:
-    try:
-        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0  # type: ignore[attr-defined]
-    except:
-        is_admin = False
-
-    if not is_admin:
-        params = ' '.join([f'"{arg}"' for arg in sys.argv])
-        ctypes.windll.shell32.ShellExecuteW(  # type: ignore[attr-defined]
-            None,
-            'runas',
-            sys.executable,
-            params,
-            None,
-            1,
-        )
-        sys.exit(0)
-
-
 def self_check():
     for name, is_dir in TO_MOVE.items():
         if not os.path.exists(name):
@@ -152,43 +111,6 @@ def self_check():
                 else f'{name!r} must be a directory.',
             )
             exit(1)
-
-
-def get_dependencies() -> list[str]:
-    if not os.path.exists('pyproject.toml'):
-        logger.warning('pyproject.toml not found. Skipping dependencies installation.')
-        return []
-
-    try:
-        with open('pyproject.toml', 'r', encoding='utf-8') as f:
-            data = tomllib.loads(f.read())
-    except:
-        logger.critical('Unable to load pyproject.toml.', exc_info=True)
-        exit(1)
-
-    deps = data.get('project', {}).get('dependencies', [])
-    return deps
-
-
-def install_dependencies() -> None:
-    deps = get_dependencies()
-    if not deps:
-        return
-
-    try:
-        subprocess.run([sys.executable, '-m', 'pip', '--version'], check=True)
-    except subprocess.CalledProcessError:
-        try:
-            subprocess.run([sys.executable, '-m', 'ensurepip', '--upgrade'], check=True)
-        except Exception:
-            logger.critical('An error occurred while installing pip.', exc_info=True)
-            exit(1)
-
-    try:
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '-U', *deps], check=True)
-    except:
-        logger.critical('An error occurred while installing dependencies.', exc_info=True)
-        exit(1)
 
 
 def move_to_releases():
@@ -277,25 +199,9 @@ def update_current_link():
         exit(1)
 
 
-def mark_as_bootstrapped():
-    with open('.bootstrapped', 'w', encoding='utf-8') as file:
-        ...
-
-
-def main():
-    if IS_WINDOWS:
-        elevate()
-
+if __name__ == '__main__':
     self_check()
-    # if '--skip-pip' not in sys.argv:
-    #     install_dependencies()
-
     move_to_releases()
     update_current_link()
-    mark_as_bootstrapped()
     logger.info('FunPay Hub successfully installed!')
     exit(0)
-
-
-if __name__ == '__main__':
-    main()
