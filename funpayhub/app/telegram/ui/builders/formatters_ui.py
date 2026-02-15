@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext, KeyboardBuilder
+from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
@@ -29,14 +29,15 @@ class FormatterListMenuBuilder(
         fp_formatters: FormattersRegistry,
         translater: Translater,
     ) -> Menu:
-        keyboard = KeyboardBuilder()
+        menu = Menu(finalizer=StripAndNavigationFinalizer())
+        menu.header_text = translater.translate('🔖 <b>Форматтеры</b>')
 
         if ctx.data.get('by_category'):
             for cat_id in fp_formatters._categories_to_formatters.keys():
                 category = fp_formatters.get_category(cat_id)
                 if not category:
                     continue
-                keyboard.add_callback_button(
+                menu.main_keyboard.add_callback_button(
                     button_id=f'open_formatters_category:{category.id}',
                     text=translater.translate(category.name),
                     callback_data=OpenMenu(
@@ -53,7 +54,7 @@ class FormatterListMenuBuilder(
                 formatters = fp_formatters._formatters.values()
 
             for formatter in formatters:
-                keyboard.add_callback_button(
+                menu.main_keyboard.add_callback_button(
                     button_id=f'open_formatter_info:{formatter.key}',
                     text=translater.translate(formatter.name),
                     callback_data=OpenMenu(
@@ -63,12 +64,11 @@ class FormatterListMenuBuilder(
                     ).pack(),
                 )
 
-        footer_keyboard = KeyboardBuilder()
         if not ctx.data.get('query'):
             text = translater.translate(
                 'Показать все' if ctx.data.get('by_category') else 'Показать по категориям',
             )
-            footer_keyboard.add_callback_button(
+            menu.footer_keyboard.add_callback_button(
                 button_id='open_formatters_by_category',
                 text=text,
                 callback_data=OpenMenu(
@@ -78,12 +78,7 @@ class FormatterListMenuBuilder(
                 ).pack(),
             )
 
-        return Menu(
-            main_text='Форматтеры',
-            main_keyboard=keyboard,
-            footer_keyboard=footer_keyboard,
-            finalizer=StripAndNavigationFinalizer(),
-        )
+        return menu
 
 
 class FormatterInfoMenuBuilder(
