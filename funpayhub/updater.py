@@ -11,10 +11,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import aiohttp
-from funpayhub.utils import IS_WINDOWS
 from aiohttp import ClientSession
 from packaging.version import Version
 
+from funpayhub.utils import IS_WINDOWS
 from funpayhub.loggers import updater as logger
 
 from funpayhub.lib.translater import _en
@@ -163,20 +163,6 @@ def install_dependencies(update_path: Path) -> None:
                 update_path,
             ],
         )
-
-
-def apply_update(update_path: Path) -> Version:
-    install_dependencies(update_path)
-    with open(update_path / 'pyproject.toml', 'r') as src:
-        pyproject = tomllib.loads(src.read())
-    version = pyproject['project']['version']
-    update_path.rename(update_path.parent / version)
-
-    current = update_path.parent / 'current'
-
-    current.unlink(missing_ok=True)
-    os.symlink(update_path.parent / version, current, target_is_directory=True)
-    return Version(version)
 
 
 def apply_update(update_path: Path) -> Version:
