@@ -21,6 +21,7 @@ MENU_BUILDERS = [
     other_ui.FunPayStartNotificationMenuBuilder,
     other_ui.StateMenuBuilder,
     other_ui.RequestsMenuBuilder,
+    other_ui.NewReviewNotificationMenuBuilder,
 ]
 
 

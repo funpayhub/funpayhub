@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from dataclasses import field, dataclass
 
-from funpaybotengine.types import Message
-
 from funpayhub.lib.telegram.ui import MenuContext
+
+
+if TYPE_CHECKING:
+    from funpaybotengine.types import Message
+    from funpaybotengine.dispatching.events import ReviewEvent
 
 
 @dataclass(kw_only=True)
@@ -30,3 +34,8 @@ class StateUIContext(MenuContext):
     text: str
     delete_on_clear: bool = True
     open_previous_on_clear: bool = False
+
+
+@dataclass(kw_only=True)
+class NewReviewNotificationMenuContext(MenuContext):
+    review_event: ReviewEvent

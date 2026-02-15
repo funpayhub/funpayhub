@@ -5,16 +5,19 @@ from typing import TYPE_CHECKING
 
 from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedError
 
+from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui import KeyboardBuilder
+from funpayhub.lib.telegram.ui import Button, KeyboardBuilder
 from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.telegram.callbacks import SendMessage
 
 from .context import (
     StateUIContext,
+    NewReviewNotificationMenuContext,
     FunPayStartNotificationMenuContext,
 )
 
@@ -206,3 +209,99 @@ class RequestsMenuBuilder(MenuBuilder, menu_id='fph:request_menu', context_type=
             text += f'<b>{html.escape(k)}: {v}</b>\n'
 
         return Menu(main_text=text)
+
+
+class NewReviewNotificationMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.review_notification,
+    context_type=NewReviewNotificationMenuContext,
+):
+    async def build(self, ctx: NewReviewNotificationMenuContext, translater: Translater) -> Menu:
+        order_page = await ctx.review_event.get_order_page()
+        menu = Menu(finalizer=StripAndNavigationFinalizer())
+
+        menu.header_text = translater.translate(
+            '<b>🌟 Вам оставили новый отзыв за заказ <a href="https://funpay.com/orders/{orderid}/">{orderid}</a>!</b>',
+        ).format(orderid=order_page.order_id)
+
+        menu.main_text = translater.translate(
+            '📦 <b>Лот: {order_name}</b>\n'
+            '👤 <b>Пользователь: <a href="https://funpay.com/users/{userid}/">{username}</a></b>\n'
+            '⭐️ <b>Оценка: {rating} / 5</b>\n\n'
+            '💬 <b>Текст отзыва:</b>\n'
+            '<blockquote>{review_text}</blockquote>',
+        ).format(
+            order_name=order_page.short_description,
+            userid=str(order_page.chat.interlocutor.id),
+            username=order_page.chat.interlocutor.username,
+            rating=str(order_page.review.rating),
+            review_text=html.escape(order_page.review.text),
+        )
+
+        if ctx.review_event.data.get('review_reply_error'):
+            err = ctx.review_event.data['review_reply_error']
+            if isinstance(err, TranslatableException):
+                err_text = err.format_args(translater.translate(err.message))
+            else:
+                err_text = translater.translate('Подробности в логах.')
+
+            menu.main_text += (
+                '\n\n'
+                + translater.translate(
+                    '❌ Произоша ошибка при ответе на отзыв.',
+                )
+                + '\n'
+                + html.escape(err_text)
+            )
+        elif ctx.review_event.data.get('review_reply_text'):
+            text = html.escape(ctx.review_event.data['review_reply_text'])
+            menu.main_text += (
+                '\n\n'
+                + translater.translate('💬 <b>Текст ответа:</b>')
+                + f'\n<blockquote>{text}</blockquote>'
+            )
+
+        if ctx.review_event.data.get('chat_reply_error'):
+            err = ctx.review_event.data['chat_reply_error']
+            if isinstance(err, TranslatableException):
+                err_text = err.format_args(translater.translate(err.message))
+            else:
+                err_text = translater.translate('Подробности в логах.')
+
+            menu.main_text += (
+                '\n\n'
+                + translater.translate(
+                    '❌ Произоша ошибка при ответе в чате на отзыв.',
+                )
+                + '\n'
+                + html.escape(err_text)
+            )
+        elif ctx.review_event.data.get('chat_reply_text'):
+            text = html.escape(ctx.review_event.data['chat_reply_text'])
+            menu.main_text += (
+                '\n\n'
+                + translater.translate('💬 <b>Текст ответа в чате:</b>')
+                + f'\n<blockquote>{text}</blockquote>'
+            )
+
+        menu.header_keyboard.add_row(
+            Button.callback_button(
+                button_id='answer_in_chat',
+                text=translater.translate('💬 Отв. в чат'),
+                callback_data=SendMessage(
+                    to=order_page.chat.id,
+                    name=order_page.chat.interlocutor.username,
+                ).pack_compact(),
+            ),
+            Button.url_button(
+                button_id='open_chat',
+                text=translater.translate('💬 Чат'),
+                url=f'https://funpay.com/chat/?node={order_page.chat.id}',
+            ),
+            Button.url_button(
+                button_id='open_order',
+                text=translater.translate('🏷️ Заказ'),
+                url=f'https://funpay.com/orders/{order_page.order_id}',
+            ),
+        )
+        return menu

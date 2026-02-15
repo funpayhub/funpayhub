@@ -8,13 +8,7 @@ __all__ = [
 
 from typing import Any
 
-
-class _SafeTuple(tuple[Any, ...]):
-    def __getitem__(self, index: int) -> Any:
-        try:
-            return super().__getitem__(index)
-        except IndexError:
-            return '%!%'
+from funpayhub.lib.core import safetuple
 
 
 class TranslatableException(Exception):
@@ -24,7 +18,7 @@ class TranslatableException(Exception):
         self.args = args
 
     def __str__(self) -> str:
-        args = _SafeTuple(self.args)
+        args = safetuple(*self.args)
         return self.message % args
 
     def format_args(self, text: str) -> str:

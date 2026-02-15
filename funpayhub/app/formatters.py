@@ -22,7 +22,7 @@ import datetime
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
-from funpaybotengine.dispatching.events import OrderEvent, NewMessageEvent
+from funpaybotengine.dispatching.events import OrderEvent, ReviewEvent, NewMessageEvent
 
 from funpayhub.lib.translater import _
 from funpayhub.lib.hub.text_formatters import Image, Formatter
@@ -30,8 +30,6 @@ from funpayhub.lib.hub.text_formatters.category import FormatterCategory
 
 
 if TYPE_CHECKING:
-    from funpaybotengine.dispatching.events import ReviewEvent
-
     from funpayhub.app.main import FunPayHub
 
 
