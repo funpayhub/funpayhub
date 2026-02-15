@@ -72,11 +72,11 @@ class Formatter[CTX](ABC):
         __key__: str
         __formatter_name__: str
         __description__: str
-        __context_type__: type[Any]
+        __context_type__: type[Any] | tuple[type[Any], ...]
         key: str
         formatter_name: str
         description: str
-        context_type: type[Any]
+        context_type: type[Any] | tuple[type[Any], ...]
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         key = kwargs.pop('key', None)
@@ -98,9 +98,17 @@ class Formatter[CTX](ABC):
                     f'Got: key={type(key)}, name={type(name)}, description={type(description)}.',
                 )
 
-            if not isinstance(context_type, type):
+            if isinstance(context_type, tuple):
+                for i in context_type:
+                    if not isinstance(i, type):
+                        raise ValueError(
+                            f"Keyword argument 'context_type' must be a type or a tuple of types, "
+                            f'but found {type(i)}.',
+                        )
+            elif not isinstance(context_type, type):
                 raise ValueError(
-                    f"Keyword argument 'context_type' must be a type, not {type(context_type)}.",
+                    f"Keyword argument 'context_type' must be a type or a tuple of types, "
+                    f'not {type(context_type)}.',
                 )
 
         if key is not None:
@@ -141,8 +149,18 @@ class Formatter[CTX](ABC):
 
     @classproperty
     @classmethod
-    def context_type(cls) -> type[Any]:
+    def context_type(cls) -> type[Any] | tuple[type[Any]]:
         return cls.__context_type__
+
+    @classmethod
+    def is_suitable_context(cls, context: Any) -> bool:
+        context_types = (
+            cls.context_type if isinstance(cls.context_type, tuple) else (cls.context_type,)
+        )
+
+        if isinstance(context, type):
+            return issubclass(context, context_types)
+        return isinstance(context, context_types)
 
 
 @dataclass
@@ -274,7 +292,7 @@ class FormattersRegistry:
                 result.append(part.string)
                 continue
 
-            if not isinstance(context, formatter_cls.context_type):
+            if not formatter_cls.is_suitable_context(context):
                 if raise_on_error:
                     raise ValueError('Context type mismatch.')
                 result.append(part.string)
