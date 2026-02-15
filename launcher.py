@@ -1,3 +1,10 @@
+"""
+Лаунчер FunPay Hub.
+
+Запускает `app.py`, который должен находится в той же директории, что и сам лаунчер.
+
+"""
+
 from __future__ import annotations
 
 from funpayhub.utils import set_exception_hook
@@ -8,7 +15,6 @@ set_exception_hook()
 
 import os
 import sys
-import ctypes
 import logging
 import subprocess
 from copy import deepcopy
@@ -19,11 +25,7 @@ from logging.config import dictConfig
 import colorama
 
 from funpayhub import exit_codes
-from funpayhub.loggers import (
-    updater as updater_logger,
-    launcher as logger,
-)
-from funpayhub.updater import apply_update, install_dependencies
+from funpayhub.updater import apply_update
 from funpayhub.logger_conf import HubLogMessage, FileLoggerFormatter, ConsoleLoggerFormatter
 
 from funpayhub.app.args_parser import args
@@ -35,7 +37,6 @@ colorama.just_fix_windows_console()
 # ---------------------------------------------
 # |               Logging setup               |
 # ---------------------------------------------
-LOGGERS = [logger.name, updater_logger.name]
 os.makedirs('logs', exist_ok=True)
 
 dictConfig(
@@ -70,50 +71,26 @@ dictConfig(
                 'level': logging.DEBUG,
             },
         },
-        'loggers': {i: {'level': logging.DEBUG, 'handlers': ['console', 'file']} for i in LOGGERS},
+        'loggers': {
+            None: {'level': logging.DEBUG, 'handlers': ['console', 'file']},
+        },
     },
 )
 
 logging.setLogRecordFactory(HubLogMessage)
-
+logger = logging.getLogger()
 
 # ---------------------------------------------
 # |                   Hooks                   |
 # ---------------------------------------------
 IS_WINDOWS = os.name == 'nt'
-RELEASES_PATH = (
-    Path(os.environ['RELEASES_PATH']).absolute() if 'RELEASES_PATH' in os.environ else None
-)
-APP_PATH = Path('app.py').absolute()
+RELEASES_PATH = Path(os.environ.get('RELEASES_PATH', 'releases')).absolute()
+APP_PATH = Path(__file__).with_name('app.py').absolute()
 
 logger.info('FunPay Hub launcher is in game!')
 logger.info('Working dir: %s', os.getcwd())
 logger.info('RELEASES_PATH: %s', RELEASES_PATH)
 logger.info('PYTHONPATH: %r', os.environ.get('PYTHONPATH'))
-
-
-def elevate() -> None:
-    try:
-        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0  # type: ignore[attr-defined]
-    except:
-        is_admin = False
-
-    if not is_admin:
-        params = ' '.join([f'"{arg}"' for arg in sys.argv])
-        ctypes.windll.shell32.ShellExecuteW(  # type: ignore[attr-defined]
-            None,
-            'runas',
-            sys.executable,
-            params,
-            None,
-            1,
-        )
-        sys.exit(0)
-
-
-if IS_WINDOWS:
-    logger.info('Running under windows: need elevation.')
-    elevate()
 
 original_args = args
 logger.info('Original launch args: %s', original_args)
@@ -156,18 +133,12 @@ def non_safe_restart() -> None:
 def update() -> None:
     logger.info('Applying FunPayHub update.')
 
-    if not RELEASES_PATH:
-        logger.error('%s environment variable not set. Unable to apply update.', 'RELEASES_PATH')
+    try:
+        new_version = apply_update(RELEASES_PATH / '.update')
+        launcher_path = RELEASES_PATH / 'current' / 'launcher.py'
+    except Exception:
+        logger.critical('An error occurred while updating FunPay Hub.', exc_info=True)
         return
-
-    if not (RELEASES_PATH / '.update').exists(follow_symlinks=True):
-        logger.error('Update path %s does not exists. Unable to apply update.', RELEASES_PATH)
-        return
-
-    # todo: try except
-    install_dependencies(RELEASES_PATH / '.update')
-    new_version = apply_update(RELEASES_PATH / '.update')
-    launcher_path = RELEASES_PATH / 'current' / 'launcher.py'
 
     logger.info('FunPay Hub update %s applied successfully. Launching new process...', new_version)
     if IS_WINDOWS:

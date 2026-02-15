@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import sys
+import uuid
 import shutil
 import asyncio
 import tomllib
@@ -11,18 +12,17 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import aiohttp
-from funpayhub.utils import IS_WINDOWS
 from aiohttp import ClientSession
 from packaging.version import Version
 
+from funpayhub.utils import IS_WINDOWS
 from funpayhub.loggers import updater as logger
 
 from funpayhub.lib.translater import _en
 
 
 REPO = 'funpayhub/funpayhub'
-UPDATE_EXCLUDE = ['config', 'logs', 'plugins', 'storage']
-RELEASES_PATH = Path(os.environ.get('RELEASES_PATH', 'releases'))
+RELEASES_PATH = Path(os.environ.get('RELEASES_PATH', 'releases')).absolute()
 UPDATE_PATH = RELEASES_PATH / '.update'
 
 
@@ -100,19 +100,55 @@ async def download_update(url: str, dst: str = '.update.zip') -> None:
 
 
 def _install_update(update_archive: str) -> None:
-    if os.path.exists(UPDATE_PATH):
-        shutil.rmtree(UPDATE_PATH)
-    os.makedirs(UPDATE_PATH, exist_ok=True)
+    temp_update_path = UPDATE_PATH.with_name(f'.update_{uuid.uuid4().hex}')
+    backup = None
+
+    if temp_update_path.exists():
+        logger.critical('Temporary update path %s already exists. Abort.', temp_update_path)
+        raise RuntimeError('Temporary update path already exists.')
+
+    try:
+        temp_update_path.mkdir(parents=True)
+    except Exception:
+        logger.critical(
+            'Cannot create temporary update directory %s.', temp_update_path, exc_info=True
+        )
+        raise
 
     with zipfile.ZipFile(update_archive, mode='r') as zip:
         for info in zip.infolist():
             if info.is_dir():
                 continue
 
-            new_path = UPDATE_PATH / Path(*Path(info.filename).parts[1:])
+            new_path = temp_update_path / Path(*Path(info.filename).parts[1:])
             os.makedirs(new_path.parent, exist_ok=True)
             with zip.open(info.filename, 'r') as src, open(new_path, 'wb') as dst:
                 shutil.copyfileobj(src, dst)
+
+    if UPDATE_PATH.exists():
+        backup = UPDATE_PATH.with_name('.update_old')
+        logger.info('Backup current update path before replacement.')
+        try:
+            if backup.exists():
+                shutil.rmtree(backup, ignore_errors=True)
+            os.replace(str(UPDATE_PATH), str(backup))
+        except Exception:
+            logger.critical('Failed to backup existing update path.', exc_info=True)
+            shutil.rmtree(temp_update_path, ignore_errors=True)
+            raise
+
+    try:
+        os.replace(str(temp_update_path), str(UPDATE_PATH))
+    except Exception:
+        logger.critical('Failed to replace update path with new update.', exc_info=True)
+        if UPDATE_PATH.exists():
+            shutil.rmtree(UPDATE_PATH, ignore_errors=True)
+        if backup is not None and backup.exists():
+            os.replace(str(backup), str(UPDATE_PATH))
+        raise
+
+    if backup is not None and backup.exists():
+        shutil.rmtree(backup, ignore_errors=True)
 
 
 def install_update(update_archive: str) -> None:
@@ -128,70 +164,94 @@ def install_update(update_archive: str) -> None:
         raise
 
 
-def install_dependencies(update_path: Path) -> None:
-    if not os.path.exists(update_path / 'pyproject.toml'):
+def parse_pyproject(update_path: Path) -> tuple[Version, list[str]]:
+    pyproject_path = update_path / 'pyproject.toml'
+    if not pyproject_path.exists():
+        logger.critical('Missing %s in update.', 'pyproject.toml')
+        raise FileNotFoundError(pyproject_path)
+
+    try:
+        with open(pyproject_path, 'rb') as src:
+            pyproject = tomllib.load(src)
+    except Exception:
+        logger.critical('Failed to read %s.', pyproject_path, exc_info=True)
+        raise
+
+    deps = pyproject.get('project', {}).get('dependencies', [])
+
+    version = pyproject.get('project', {}).get('version')
+    if not version:
+        logger.critical('Update pyproject.toml has no project.version.')
+        raise RuntimeError('Missing project.version in pyproject.toml.')
+
+    try:
+        return Version(version), deps
+    except Exception:
+        logger.critical('Invalid update version: %r.', version, exc_info=True)
+        raise
+
+
+def install_dependencies(deps: list[str]) -> None:
+    if not deps:
         return
 
-    subprocess.run(
-        [
-            sys.executable,
-            '-m',
-            'ensurepip',
-            '--upgrade',
-        ],
-    )
+    try:
+        subprocess.run([sys.executable, '-m', 'pip', '--version'], check=True)
+    except Exception:
+        subprocess.run([sys.executable, '-m', 'ensurepip', '--upgrade'], check=True)
 
-    subprocess.run(
-        [
-            sys.executable,
-            '-m',
-            'pip',
-            'install',
-            '--upgrade',
-            'pip',
-        ],
-    )
-
-    if (update_path / 'requirements.txt').exists(follow_symlinks=True):
-        subprocess.run(
-            [
-                sys.executable,
-                '-m',
-                'pip',
-                'install',
-                '-U',
-                update_path,
-            ],
-        )
+    try:
+        subprocess.run([sys.executable, '-m', 'pip', 'install', '-U', *deps], check=True)
+    except Exception:
+        logger.error('Failed to install dependencies.', exc_info=True)
+        raise
 
 
 def apply_update(update_path: Path) -> Version:
-    install_dependencies(update_path)
-    with open(update_path / 'pyproject.toml', 'r') as src:
-        pyproject = tomllib.loads(src.read())
-    version = pyproject['project']['version']
-    update_path.rename(update_path.parent / version)
+    logger.info('Applying update from %s.', update_path)
 
-    current = update_path.parent / 'current'
+    if not update_path.exists():
+        logger.critical('Update path %s does not exist.', update_path)
+        raise FileNotFoundError(update_path)
+    if not update_path.is_dir():
+        logger.critical('Update path %s is not a directory.', update_path)
+        raise NotADirectoryError(update_path)
+    if update_path.is_symlink():
+        logger.critical('Update path %s must not be a symlink.', update_path)
+        raise RuntimeError('Update path is a symlink.')
 
-    current.unlink(missing_ok=True)
-    os.symlink(update_path.parent / version, current, target_is_directory=True)
-    return Version(version)
+    version, deps = parse_pyproject(update_path)
+    install_dependencies(deps)
 
+    target_path = update_path.parent / str(version)
+    if target_path.exists():
+        backup = target_path.with_name(f'{version}_old')
+        logger.warning('Target release %s already exists. Backing up to %s.', target_path, backup)
+        try:
+            if backup.exists():
+                shutil.rmtree(backup, ignore_errors=True)
+            os.replace(str(target_path), str(backup))
+        except Exception:
+            logger.critical('Failed to backup existing release %s.', target_path, exc_info=True)
+            raise
+    else:
+        backup = None
 
-def apply_update(update_path: Path) -> Version:
-    install_dependencies(update_path)
-
-    with open(update_path / 'pyproject.toml', 'r') as src:
-        pyproject = tomllib.loads(src.read())
-
-    version = pyproject['project']['version']
-    target_path = update_path.parent / version
-    update_path.rename(target_path)
+    try:
+        update_path.rename(target_path)
+    except Exception:
+        logger.critical('Failed to move update into %s.', target_path, exc_info=True)
+        if backup is not None and backup.exists():
+            os.replace(str(backup), str(target_path))
+        raise
 
     current_link = update_path.parent / 'current'
     temp_link = current_link.with_name('current_tmp')
-    temp_link.unlink(missing_ok=True)
+    if temp_link.exists() or temp_link.is_symlink():
+        if temp_link.is_dir() and not temp_link.is_symlink():
+            shutil.rmtree(temp_link, ignore_errors=True)
+        else:
+            temp_link.unlink(missing_ok=True)
 
     try:
         if IS_WINDOWS:
@@ -204,15 +264,18 @@ def apply_update(update_path: Path) -> Version:
             os.symlink(target_path, temp_link)
     except Exception:
         logger.critical('Failed to create temporary current link.', exc_info=True)
-        exit(1)
+        raise
 
     try:
         if current_link.exists() or current_link.is_symlink():
-            current_link.unlink()
+            if current_link.is_dir() and not current_link.is_symlink():
+                shutil.rmtree(current_link, ignore_errors=True)
+            else:
+                current_link.unlink()
         os.replace(temp_link, current_link)
         logger.info('Current link successfully updated.')
     except Exception:
         logger.critical('Failed to replace current link.', exc_info=True)
-        exit(1)
+        raise
 
-    return Version(version)
+    return version
