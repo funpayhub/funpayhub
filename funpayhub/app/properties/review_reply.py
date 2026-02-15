@@ -44,6 +44,18 @@ class ReviewReplyPropertiesEntry(Properties):
             ),
         )
 
+    @property
+    def reply_in_review_enabled(self) -> bool:
+        return self.reply_in_review.value and bool(self.review_reply_text.value)
+
+    @property
+    def reply_in_chat_enabled(self) -> bool:
+        return self.reply_in_review.value and bool(self.review_reply_text.value)
+
+    @property
+    def reaction_enabled(self) -> bool:
+        return self.reply_in_review_enabled or self.reply_in_chat_enabled
+
 
 class ReviewReplyProperties(Properties):
     def __init__(self) -> None:
