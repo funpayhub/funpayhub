@@ -5,8 +5,21 @@ from typing import TYPE_CHECKING
 from funpaybotengine import Router
 from funpaybotengine.dispatching import ReviewEvent
 
+from funpayhub.loggers import main as logger
+
+from funpayhub.lib.translater import _en
+from funpayhub.lib.hub.text_formatters.category import InCategory
+
+from funpayhub.app.formatters import (
+    NewReviewContext,
+    ReviewFormattersCategory,
+    GeneralFormattersCategory,
+)
+
 
 if TYPE_CHECKING:
+    from funpayhub.lib.hub.text_formatters import FormattersRegistry
+
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
     from funpayhub.app.funpay.main import FunPay
     from funpayhub.app.properties.review_reply import ReviewReplyPropertiesEntry
@@ -40,7 +53,7 @@ async def review_filter(event: ReviewEvent, properties: FPHProps, fp: FunPay) ->
             properties.telegram.notifications.review_3.value,
             properties.telegram.notifications.review_2.value,
             properties.telegram.notifications.review_1.value,
-        ]
+        ],
     ):
         return False
 
@@ -53,7 +66,9 @@ async def review_filter(event: ReviewEvent, properties: FPHProps, fp: FunPay) ->
 
 @r.on_new_review(review_filter)
 @r.on_review_changed(review_filter)
-async def reply_in_review(event: ReviewEvent, fp: FunPay, properties: FPHProps) -> None:
+async def reply_in_review(
+    event: ReviewEvent, fp: FunPay, properties: FPHProps, fp_formatters: FormattersRegistry
+) -> None:
     order_page = await event.get_order_page()
     p: ReviewReplyPropertiesEntry = properties.get_properties(_ratings[order_page.review.rating])
     if not p.reply_in_review_enabled:
@@ -61,8 +76,28 @@ async def reply_in_review(event: ReviewEvent, fp: FunPay, properties: FPHProps) 
 
     if p.review_reply_text.value == '_delete_' and order_page.review and order_page.review.reply:
         await fp.bot.delete_review(event.message.meta.order_id)
-    else:
-        (await fp.bot.review(event.message.meta.order_id, p.review_reply_text.value, 5),)
+        return
+
+    try:
+        context = NewReviewContext(new_message_event=event, review_event=event)
+        text = await fp_formatters.format_text(
+            p.review_reply_text.value,
+            context=context,
+            query=InCategory(ReviewFormattersCategory).or_(InCategory(GeneralFormattersCategory)),
+        )
+    except Exception as e:
+        logger.error(_en('An error occurred while formatting review reply text.'), exc_info=True)
+        event['review_reply_error'] = e
+        return
+
+    try:
+        await fp.bot.review(event.message.meta.order_id, text.entries[0], 5)
+    except Exception as e:
+        logger.error(_en('An error occurred while replying in review.'), exc_info=True)
+        event['review_reply_error'] = e
+        return
+
+    event['review_reply_text'] = text.entries[0]
 
 
 @r.on_new_review(review_filter)

@@ -169,7 +169,7 @@ class CategoriesQuery(ABC, _LogicalOperatorsMixin):
     def __call__(self, formatter: type[Formatter], registry: FormattersRegistry) -> bool: ...
 
 
-class CategoriesExistsQuery(CategoriesQuery):
+class InCategory(CategoriesQuery):
     """
     Запрос, проверяющий принадлежность форматтера к конкретной категории.
 
@@ -193,9 +193,7 @@ class CategoriesAndQuery(CategoriesQuery):
     """
 
     def __init__(self, *queries: QUERYABLE_TYPE) -> None:
-        self.queries = [
-            i if isinstance(i, CategoriesQuery) else CategoriesExistsQuery(i) for i in queries
-        ]
+        self.queries = [i if isinstance(i, CategoriesQuery) else InCategory(i) for i in queries]
 
     def __call__(self, formatter: type[Formatter], registry: FormattersRegistry) -> bool:
         for query in self.queries:
@@ -213,9 +211,7 @@ class CategoriesOrQuery(CategoriesQuery):
     """
 
     def __init__(self, *queries: QUERYABLE_TYPE) -> None:
-        self.queries = [
-            i if isinstance(i, CategoriesQuery) else CategoriesExistsQuery(i) for i in queries
-        ]
+        self.queries = [i if isinstance(i, CategoriesQuery) else InCategory(i) for i in queries]
 
     def __call__(self, formatter: type[Formatter], registry: FormattersRegistry) -> bool:
         for query in self.queries:
@@ -232,7 +228,7 @@ class CategoriesNotQuery(CategoriesQuery):
     """
 
     def __init__(self, query: QUERYABLE_TYPE) -> None:
-        self.query = query if isinstance(query, CategoriesQuery) else CategoriesExistsQuery(query)
+        self.query = query if isinstance(query, CategoriesQuery) else InCategory(query)
 
     def __call__(self, formatter: type[Formatter], registry: FormattersRegistry) -> bool:
         return not self.query(formatter, registry)

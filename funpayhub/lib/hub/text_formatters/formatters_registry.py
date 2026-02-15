@@ -58,7 +58,7 @@ from funpayhub.lib.translater import _en
 from funpayhub.lib.exceptions.formatters import FormatterError, FormatterContextMismatch
 
 from .parser import TextWithFormattersInvocations, extract_calls
-from .category import CategoriesQuery, FormatterCategory, CategoriesExistsQuery
+from .category import InCategory, CategoriesQuery, FormatterCategory
 
 
 if TYPE_CHECKING:
@@ -270,7 +270,7 @@ class FormattersRegistry:
             оставляется текст его вызоыва. Исключние не возбуждается.
         """
         if query is not None and not isinstance(query, CategoriesQuery):
-            query = CategoriesExistsQuery(query)
+            query = InCategory(query)
 
         parsed = extract_calls(text) if isinstance(text, str) else text
         return await self.execute_formatters(parsed, context, query, raise_on_error)

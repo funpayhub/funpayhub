@@ -330,29 +330,31 @@ class MeFormatter(
 class GeneralFormattersCategory(FormatterCategory):
     id = 'fph:general'
     name = _('Общее')
-    description = _('nodesc')
-    include_formatters = {DateTimeFormatter.key, ImageFormatter.key, MeFormatter.key}
-
-
-class OrderFormattersCategory(FormatterCategory):
-    id = 'fph:order'
-    name = _('Заказы')
-    description = _('nodesc')
-    include_formatters = {OrderFormatter.key, GoodsFormatter.key}
+    description = _('Форматтеры, которые можно использовать везде.')
+    include_formatters = {DateTimeFormatter.key, MeFormatter.key}
 
 
 class MessageFormattersCategory(FormatterCategory):
     id = 'fph:message'
     name = _('Сообщения')
-    description = _('nodesc')
-    include_formatters = {MessageFormatter.key}
+    description = _('Форматтеры, которые можно использовать в ответах к сообщениям.')
+    include_formatters = {MessageFormatter.key, ImageFormatter.key}
+
+
+class OrderFormattersCategory(FormatterCategory):
+    id = 'fph:order'
+    name = _('Заказы')
+    description = _('Форматтеры, которые можно использовать в ответах к заказам.')
+    include_formatters = {OrderFormatter.key, GoodsFormatter.key}
+    include_categories = {MessageFormattersCategory.id}
 
 
 class ReviewFormattersCategory(FormatterCategory):
     id = 'fph:review'
     name = _('Отзывы')
-    description = _('nodesc')
+    description = _('Форматтеры, которые можно использовать в ответах к отзывам.')
     include_formatters = {OrderFormatter.key}
+    include_categories = {MessageFormattersCategory.id}
 
 
 FORMATTERS_LIST = [
@@ -368,4 +370,5 @@ CATEGORIES_LIST = [
     GeneralFormattersCategory,
     OrderFormattersCategory,
     MessageFormattersCategory,
+    ReviewFormattersCategory,
 ]
