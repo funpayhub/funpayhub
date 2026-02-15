@@ -20,7 +20,7 @@ async def get_profile_raisable_categories(profile: ProfilePage, bot: Bot) -> set
         subcat.id: cat
         for cat in categories
         for subcat in cat.subcategories
-        if subcat.type is SubcategoryType.COMMON
+        if subcat.type is SubcategoryType.OFFERS
     }
 
     for subcategory_id in profile.offers[SubcategoryType.OFFERS]:
