@@ -30,6 +30,8 @@ from funpayhub.lib.hub.text_formatters.category import FormatterCategory
 
 
 if TYPE_CHECKING:
+    from funpaybotengine.dispatching.events import ReviewEvent
+
     from funpayhub.app.main import FunPayHub
 
 
@@ -166,6 +168,10 @@ class NewOrderContext(NewMessageContext):
     goods_to_deliver: list[str]
 
 
+class NewReviewContext(NewMessageContext):
+    review_event: ReviewEvent
+
+
 class DateTimeFormatter(
     Formatter[FormattersContext],
     key='datetime',
@@ -205,33 +211,51 @@ class ImageFormatter(
 
 
 class OrderFormatter(
-    Formatter[NewOrderContext],
+    Formatter[NewOrderContext | NewReviewContext],
     key='order',
     name=_('🛍️ Информация о заказе ($order)'),
     description=ORDER_DESC,
-    context_type=NewOrderContext,
+    context_type=(NewOrderContext, NewReviewContext),
 ):
-    def __init__(self, context: NewOrderContext, mode: str = 'id', *args, **kwargs) -> None:
+    def __init__(
+        self,
+        context: NewOrderContext | NewReviewContext,
+        mode: str = 'id',
+        *args,
+        **kwargs,
+    ) -> None:
         super().__init__(context)
         self.mode = mode
 
     async def format(self) -> str:
-        order = await self.context.order_event.get_order_preview()
+        data = {}
+        if isinstance(self.context, NewOrderContext):
+            order = await self.context.order_event.get_order_preview()
+            data = {
+                'id': order.id or '',
+                'title': order.title or '',
+                'sum': str(order.total.value),
+                'fullsum': str(order.total.value) + order.total.character,
+                'counterparty.id': str(order.counterparty.id) or '',
+                'counterparty.username': str(order.counterparty.username) or '',
+            }
 
-        if self.mode == 'id':
-            return order.id or ''
-        if self.mode == 'title':
-            return order.title or ''
-        if self.mode == 'sum':
-            return str(order.total.value)
-        if self.mode == 'fullsum':
-            return str(order.total.value) + order.total.character
-        if self.mode == 'counterparty.id':
-            return str(order.counterparty.id) or ''
-        if self.mode == 'counterparty.username':
-            return str(order.counterparty.username) or ''
+        elif isinstance(self.context, NewReviewContext):
+            order_page = await self.context.review_event.get_order_page()
 
-        raise ValueError(f'Unknown mode for $order formatter: {self.mode!r}')
+            data = {
+                'id': order_page.order_id,
+                'title': order_page.short_description,
+                'sum': str(order_page.order_total.value),
+                'fullsum': str(order_page.order_total.value) + order_page.order_total.character,
+                'counterparty.id': order_page.chat.interlocutor.id,
+                'counterparty.username': order_page.chat.interlocutor.username,
+            }
+
+        text = data.get(self.mode)
+        if text is None:
+            raise ValueError(f'Unknown mode: {self.mode!r}.')
+        return text
 
 
 class GoodsFormatter(
@@ -322,6 +346,13 @@ class MessageFormattersCategory(FormatterCategory):
     name = _('Сообщения')
     description = _('nodesc')
     include_formatters = {MessageFormatter.key}
+
+
+class ReviewFormattersCategory(FormatterCategory):
+    id = 'fph:review'
+    name = _('Отзывы')
+    description = _('nodesc')
+    include_formatters = {OrderFormatter.key}
 
 
 FORMATTERS_LIST = [

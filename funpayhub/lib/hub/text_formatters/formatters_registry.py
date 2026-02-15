@@ -54,6 +54,8 @@ from abc import ABC, abstractmethod
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.core import classproperty
+from funpayhub.lib.translater import _en
+from funpayhub.lib.exceptions.formatters import FormatterError, FormatterContextMismatch
 
 from .parser import TextWithFormattersInvocations, extract_calls
 from .category import CategoriesQuery, FormatterCategory, CategoriesExistsQuery
@@ -294,7 +296,7 @@ class FormattersRegistry:
 
             if not formatter_cls.is_suitable_context(context):
                 if raise_on_error:
-                    raise ValueError('Context type mismatch.')
+                    raise FormatterContextMismatch(formatter_cls, context)
                 result.append(part.string)
                 continue
 
@@ -307,11 +309,17 @@ class FormattersRegistry:
                 else:
                     result.append(formatted)
 
-            except Exception:
+            except Exception as e:
+                if not isinstance(e, FormatterError):
+                    old_e = e
+                    e = FormatterError(
+                        _en('An unexpected error occurred during executing formatter %s.'),
+                        formatter_cls.key,
+                    )
+                    e.__cause__ = old_e
                 if raise_on_error:
                     raise
                 result.append(part.string)
-
         return MessagesStack(normalize_messages(result))
 
     @staticmethod
