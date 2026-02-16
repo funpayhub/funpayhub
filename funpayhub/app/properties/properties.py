@@ -7,6 +7,7 @@ from funpayhub.lib.translater import _
 
 from .review_reply import ReviewReplyProperties
 from .auto_response import AutoResponseProperties
+from .first_response import FirstResponseProperties
 from .global_toggles import TogglesProperties
 from .plugin_properties import PluginProperties
 from .general_properties import GeneralProperties
@@ -40,6 +41,7 @@ class FunPayHubProperties(Properties):
         self.general = self.attach_node(GeneralProperties())
         self.telegram = self.attach_node(TelegramProperties())
         self.auto_response = self.attach_node(AutoResponseProperties())
+        self.first_response = self.attach_node(FirstResponseProperties())
         self.auto_delivery = self.attach_node(AutoDeliveryProperties())
         self.review_reply = self.attach_node(ReviewReplyProperties())
         self.message_templates = self.attach_node(
