@@ -32,14 +32,16 @@ class FirstResponseProperties(Properties):
                 id='timeout',
                 name=_('Время сброса'),
                 description=_(
-                    'Время в секундах, после которого сообщение от пользователя снова будет считаться новым.'
+                    'Время в секундах, после которого сообщение от пользователя снова будет считаться новым.',
                 ),
                 default_value=86400,
             ),
         )
 
     async def add_for_offer(
-        self, offer_id: str | int, save: bool = True
+        self,
+        offer_id: str | int,
+        save: bool = True,
     ) -> FirstResponseToOfferNode:
         node = FirstResponseToOfferNode(offer_id)
         self.attach_node(node)
@@ -49,11 +51,11 @@ class FirstResponseProperties(Properties):
 
     async def load_from_dict(self, properties_dict: dict[str, Any]):
         await super().load_from_dict(properties_dict)
-        offer_nodes = {k: v for k, v in properties_dict if k.startswith('__offer__')}
+        offer_nodes = {k: v for k, v in properties_dict.items() if k.startswith('__offer__')}
         for k, v in offer_nodes.items():
             node = FirstResponseToOfferNode(offer_id=k.lstrip('__offer__'))
             await node.load_from_dict(v)
-            self.attach_node(node)
+            self.attach_node(node, replace=True)
 
 
 class FirstResponseToOfferNode(Properties):

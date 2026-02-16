@@ -93,6 +93,7 @@ async def edit_start_notifications(
     ),
 )
 async def start_auto_raise(fp: FunPay) -> None:
+    logger.info(_en('Starting auto-raising for all profile offers.'))
     await fp.start_raising_profile_offers()
 
 

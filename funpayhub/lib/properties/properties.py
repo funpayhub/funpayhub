@@ -99,9 +99,11 @@ class Properties(Node):
         """
         return MappingProxyType(self._nodes)
 
-    def attach_node[T: Node](self, node: T) -> T:
+    def attach_node[T: Node](self, node: T, replace: bool = False) -> T:
         if node.id in self._nodes:
-            raise ValueError(f'Node with ID {node.id!r} already exists.')
+            if not replace:
+                raise ValueError(f'Node with ID {node.id!r} already exists.')
+            self.detach_node(node.id)
 
         node.parent = self
         self._nodes[node.id] = node
@@ -169,14 +171,12 @@ class Properties(Node):
 
     async def _set_values(self, values: dict[str, Any]) -> None:
         for v in self._nodes.values():
-            if isinstance(v, Properties) and v.file:
-                await v.load()
+            if isinstance(v, Properties):
+                await v.load() if v.file else await v.load_from_dict(values[v.id])
             elif v.id not in values:
                 continue
             elif isinstance(v, MutableParameter):
                 await v.set_value(values[v.id], save=False)
-            elif isinstance(v, Properties):
-                await v._set_values(values[v.id])
 
     def get_node(
         self,
