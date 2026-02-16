@@ -17,6 +17,7 @@ from funpayhub.lib.plugin.repository.loaders import URLRepositoryLoader
 
 from funpayhub.app.dispatching import Router
 from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.notification_channels import NotificationChannels
 from funpayhub.app.telegram.ui.builders.context import FunPayStartNotificationMenuContext
 
 
@@ -100,7 +101,7 @@ async def start_auto_raise(fp: FunPay) -> None:
 @router.on_offers_raised(lambda properties: properties.telegram.notifications.offers_raised.value)
 async def send_offers_raised_notification(category: Category, tg: Telegram) -> None:
     text = f'🔺 Все лоты категории <b>{escape(category.full_name)}</b> успешно подняты.'
-    tg.send_notification('offers_raised', text)
+    tg.send_notification(NotificationChannels.OFFER_RAISED, text)
 
 
 @router.on_telegram_start(as_task=True)
