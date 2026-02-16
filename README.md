@@ -74,3 +74,30 @@ FunPayHub построен на основе нескольких ключевы
   Установщик, позволяющий развернуть FunPayHub:
   - на текущем компьютере;
   - на удалённом сервере (VPS / dedicated).
+
+
+---
+
+Установка
+=========
+
+Windows
+-------
+**PowerShell (от имени администратора)**  
+```
+Set-ExecutionPolicy Bypass -Scope Process -Force; (iwr https://raw.githubusercontent.com/funpayhub/fph_install_scripts/refs/heads/main/install_fph.ps1).Content | iex
+```
+
+
+Linux (Ubuntu / Debian / Arch linux)
+------------------------------------
+**curl**
+```
+curl -fsSL https://raw.githubusercontent.com/funpayhub/fph_install_scripts/refs/heads/main/install_fph.sh > install_fph.sh && chmod +x install_fph.sh && ./install_fph.sh
+```
+
+
+**wget**
+```
+wget -qO install_fph.sh https://raw.githubusercontent.com/funpayhub/fph_install_scripts/refs/heads/main/install_fph.sh && chmod +x install_fph.sh && ./install_fph.sh
+```
