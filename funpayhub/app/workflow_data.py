@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from funpayhub.app.properties import FunPayHubProperties
     from funpayhub.app.funpay.main import FunPay
     from funpayhub.app.telegram.main import Telegram
+    from funpayhub.app.first_response_cache import FirstResponseCache
 
 
 class WorkflowData(BaseWorkflowData):
@@ -32,6 +33,7 @@ class WorkflowData(BaseWorkflowData):
         fp_bot: FPBot
         fp_dispatcher: FPDispatcher
         plugins_manager: PluginManager
+        first_response_cache: FirstResponseCache
 
     def __init__(self) -> None:
         super().__init__()
@@ -41,6 +43,7 @@ class WorkflowData(BaseWorkflowData):
         from funpayhub.app.properties import FunPayHubProperties
         from funpayhub.app.funpay.main import FunPay
         from funpayhub.app.telegram.main import Telegram
+        from funpayhub.app.first_response_cache import FirstResponseCache
 
         self.check_items.update(
             {
@@ -53,6 +56,7 @@ class WorkflowData(BaseWorkflowData):
                 'fp_dispatcher': lambda v: isinstance(v, FPDispatcher),
                 'properties': lambda v: isinstance(v, FunPayHubProperties),
                 'plugins_manager': lambda v: isinstance(v, PluginManager),
+                'first_response_cache': lambda v: isinstance(v, FirstResponseCache),
             },
         )
 

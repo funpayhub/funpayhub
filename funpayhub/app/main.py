@@ -112,6 +112,7 @@ class FunPayHub(App):
                 'fp_dispatcher': self._funpay.dispatcher,
                 'fp_formatters': self._funpay.text_formatters,
                 'formatters_registry': self._funpay.text_formatters,
+                'first_response_cache': self._funpay.first_response_cache,
             },
         )
 

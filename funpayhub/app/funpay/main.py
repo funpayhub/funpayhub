@@ -31,6 +31,7 @@ from funpayhub.app.funpay import middlewares as mdwr
 from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
 from funpayhub.app.dispatching import FunPayStartEvent, OffersRaisedEvent
 from funpayhub.app.funpay.routers import ALL_ROUTERS
+from funpayhub.app.first_response_cache import FirstResponseCache
 from funpayhub.app.funpay.offers_raiser import OffersRaiser
 from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
 
@@ -108,6 +109,7 @@ class FunPay:
 
         self._sending_message_lock = asyncio.Lock()
         self._manually_sent_messages: set[int] = set()
+        self._first_response_cache = FirstResponseCache('storage/first_response_cache.json')
         self._authenticated = False
         self._runner_config = runner_config if runner_config is not None else RunnerConfig()
         self.setup_dispatcher()
@@ -319,3 +321,7 @@ class FunPay:
     @property
     def session(self) -> HubSession:
         return self._session
+
+    @property
+    def first_response_cache(self) -> FirstResponseCache:
+        return self._first_response_cache
