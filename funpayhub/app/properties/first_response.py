@@ -52,6 +52,9 @@ class FirstResponseProperties(Properties):
     def has_offer(self, offer_id: int | str) -> bool:
         return f'__offer__{offer_id}' in self._nodes
 
+    def get_offer(self, offer_id: int | str) -> FirstResponseToOfferNode | None:
+        return self._nodes.get(f'__offer__{offer_id}')
+
     async def load_from_dict(self, properties_dict: dict[str, Any]):
         await super().load_from_dict(properties_dict)
         offer_nodes = {k: v for k, v in properties_dict.items() if k.startswith('__offer__')}
@@ -59,6 +62,13 @@ class FirstResponseProperties(Properties):
             node = FirstResponseToOfferNode(offer_id=k.lstrip('__offer__'))
             await node.load_from_dict(v)
             self.attach_node(node, replace=True)
+
+    @property
+    def has_offer_specific(self) -> bool:
+        for i in self._nodes:
+            if i.startswith('__offer__') and isinstance(self._nodes[i], FirstResponseToOfferNode):
+                return True
+        return False
 
 
 class FirstResponseToOfferNode(Properties):

@@ -13,26 +13,26 @@ from pathlib import Path
 
 class FirstResponseCache:
     def __init__(self, path: Path | str) -> None:
-        self._cache = {}
+        self._cache: dict[int, int] = {}
         self._path = Path(path)
 
-    async def update(self, username: str, timestamp: int | None = None, save: bool = True) -> None:
-        self._cache[username] = int(timestamp if timestamp is not None else time.time())
+    async def update(self, chat_id: int, timestamp: int | None = None, save: bool = True) -> None:
+        self._cache[chat_id] = int(timestamp if timestamp is not None else time.time())
         if save:
             await self.save()
 
-    async def get(self, username: str) -> int | None:
-        return self._cache.get(username)
+    async def get(self, chat_id: int) -> int | None:
+        return self._cache.get(chat_id)
 
-    async def is_new(self, username: str, delay: int = 3600 * 24) -> bool:
-        ts = await self.get(username)
+    async def is_new(self, chat_id: int, delay: int = 3600 * 24) -> bool:
+        ts = await self.get(chat_id)
         if not ts:
             return True
 
         return (time.time() - ts) > delay
 
-    async def remove(self, username: str, save: bool = True) -> int | None:
-        result = self._cache.pop(username, None)
+    async def remove(self, chat_id: int, save: bool = True) -> int | None:
+        result = self._cache.pop(chat_id, None)
         if result is not None and save:
             await self.save()
         return result
@@ -52,7 +52,7 @@ class FirstResponseCache:
         return self._path
 
     @property
-    def cache(self) -> MappingProxyType[str, int]:
+    def cache(self) -> MappingProxyType[int, int]:
         return MappingProxyType(self._cache)
 
     @classmethod

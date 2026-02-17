@@ -68,7 +68,11 @@ async def send_new_message_notification(
     appearance_props = properties.telegram.appearance.new_message_appearance
 
     for i in events_stack:
-        if i.name != NewMessageEvent.__event_name__ or i.message.chat_id != event.chat_preview.id:
+        if (
+            not isinstance(i, NewMessageEvent)
+            or i.name != NewMessageEvent.__event_name__
+            or i.message.chat_id != event.chat_preview.id
+        ):
             continue
 
         if fp.is_manual_message(i.message.id) and not appearance_props.show_mine_from_hub.value:
