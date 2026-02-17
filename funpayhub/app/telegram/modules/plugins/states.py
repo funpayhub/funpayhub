@@ -26,5 +26,5 @@ class InstallingZipPlugin(State, identifier='fph:installing_zip_plugin'):
 
 
 @dataclass
-class AddingRepository(StateFromQuery):
+class AddingRepository(StateFromQuery, identifier='fph:adding_repository'):
     state_message: Message

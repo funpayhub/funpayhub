@@ -13,13 +13,14 @@ from typing import TYPE_CHECKING
 from itertools import chain
 
 from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, MenuModification
+from funpayhub.lib.telegram.callback_data import join_callbacks
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 
-from .callbacks import BindFirstResponseToOffer, OpenAddFirstResponseToOfferMenu
+from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
@@ -38,23 +39,38 @@ class BindToOfferButtonModification(MenuModification, modification_id='fph:bind_
         menu.footer_keyboard.add_callback_button(
             button_id='bind_to_offer',
             text=translater.translate('➕ Привязать к лоту'),
-            callback_data=OpenAddFirstResponseToOfferMenu(from_callback=ctx.callback_data).pack(),
+            callback_data=cbs.OpenAddFirstResponseToOfferMenu(
+                from_callback=ctx.callback_data
+            ).pack(),
         )
         return menu
 
 
 class AddRemoveButtonToFirstResponseModification(
-    AddRemoveButtonBaseModification, modification_id='fph:add_remove_fr'
+    AddRemoveButtonBaseModification,
+    modification_id='fph:add_remove_fr',
 ):
     async def filter(self, ctx: NodeMenuContext, menu: Menu, properties: FPHProps) -> bool:
         return len(ctx.entry_path) == 2 and ctx.entry_path[0] == properties.first_response.path[0]
 
     async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr) -> Menu:
-        return await self._modify(ctx, menu, translater)
+        return await self._modify(
+            ctx,
+            menu,
+            translater,
+            delete_callback=cbs.RemoveFirstResponseToOffer(
+                offer_id=ctx.entry_path[-1],
+                from_callback=ctx.callback_data,
+                execute_next=join_callbacks(*ctx.callback_data.history)
+                if ctx.callback_data
+                else '',
+            ).pack(),
+        )
 
 
 class ReplaceNameWithOfferNameModification(
-    MenuModification, modification_id='fph:replace_name_with_offer_name'
+    MenuModification,
+    modification_id='fph:replace_name_with_offer_name',
 ):
     async def filter(self, ctx: NodeMenuContext, menu: Menu, properties: FPHProps) -> bool:
         return ctx.entry_path == properties.first_response.path
@@ -89,10 +105,16 @@ class ReplaceNameWithOfferNameModification(
 
 
 class BindToOfferMenu(
-    MenuBuilder, menu_id=MenuIds.bind_first_response_to_offer, context_type=MenuContext
+    MenuBuilder,
+    menu_id=MenuIds.bind_first_response_to_offer,
+    context_type=MenuContext,
 ):
     async def build(
-        self, ctx: MenuContext, translater: Tr, hub: FPH, properties: FPHProps
+        self,
+        ctx: MenuContext,
+        translater: Tr,
+        hub: FPH,
+        properties: FPHProps,
     ) -> Menu:
         menu = Menu(finalizer=StripAndNavigationFinalizer())
         menu.main_text = translater.translate(
@@ -122,7 +144,7 @@ class BindToOfferMenu(
                 menu.main_keyboard.add_callback_button(
                     button_id=f'bind_to_offer:{offer.id}',
                     text=offer.title,
-                    callback_data=BindFirstResponseToOffer(
+                    callback_data=cbs.BindFirstResponseToOffer(
                         offer_id=str(offer.id),
                         history=ctx.callback_data_history,
                     ).pack(),

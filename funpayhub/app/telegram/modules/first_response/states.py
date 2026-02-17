@@ -11,5 +11,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class BindingFirstResponseToOffer(StateFromQuery):
+class BindingFirstResponseToOffer(
+    StateFromQuery, identifier='fph:binding_first_response_to_offer'
+):
     state_message: Message
