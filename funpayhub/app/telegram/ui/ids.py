@@ -39,6 +39,7 @@ class MenuIds(BaseMenuIds):
     add_auto_delivery_rule = 'fph:add_auto_delivery_rule'
 
     review_notification = 'fph:new_review_notification'
+    bind_first_response_to_offer = 'fph:first_response_bind_to_offer'
 
 
 class ButtonIds(BaseButtonIds): ...

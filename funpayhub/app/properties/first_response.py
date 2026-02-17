@@ -49,6 +49,9 @@ class FirstResponseProperties(Properties):
             await self.save()
         return node
 
+    def has_offer(self, offer_id: int | str) -> bool:
+        return f'__offer__{offer_id}' in self._nodes
+
     async def load_from_dict(self, properties_dict: dict[str, Any]):
         await super().load_from_dict(properties_dict)
         offer_nodes = {k: v for k, v in properties_dict.items() if k.startswith('__offer__')}

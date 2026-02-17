@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 from typing import TYPE_CHECKING
+from html import escape
 
 from aiogram.types import (
     CopyTextButton,
@@ -92,7 +93,7 @@ class OpenParamMenuButtonBuilder(ButtonBuilder, button_id='open_param', context_
         entry = properties.get_node(ctx.entry_path)
 
         return Button.callback_button(
-            button_id=f'param_change:{entry.path}',
+            button_id=f'param_change:{".".join(entry.path)}',
             text=f'{_emoji(entry)}{translater.translate(entry.name)}',
             callback_data=ui_cbs.OpenMenu(
                 menu_id=NodeMenuBuilder.menu_id,
@@ -135,7 +136,9 @@ class PropertiesMenuBuilder(MenuBuilder, menu_id='props_menu', context_type=Menu
             keyboard.add_button(button)
 
         return Menu(
-            main_text=_entry_text(entry, translater),
+            header_text=_emoji(entry)
+            + f'<b><u>{escape(translater.translate(entry.name))}</u></b>',
+            main_text=f'<i>{escape(translater.translate(entry.description))}</i>',
             main_keyboard=keyboard,
             finalizer=ui_finalizers.StripAndNavigationFinalizer(),
         )

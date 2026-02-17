@@ -40,6 +40,11 @@ from .autoresponse import (
     router as autoresponse_router,
 )
 from .help.handlers import router as help_router
+from .first_response import (
+    MENUS as FIRST_RESPONSE_MENUS,
+    MENU_MODS as FIRST_RESPONSE_MENU_MODS,
+    router as first_response_router,
+)
 from .funpay_actions import router as funpay_actions_router
 
 
@@ -53,6 +58,7 @@ ROUTERS = [
     autoresponse_router,
     autodelivery_router,
     system_router,
+    first_response_router,
 ]
 
 MENUS = [
@@ -61,6 +67,7 @@ MENUS = [
     *GOODS_MENUS,
     *AUTODELIVERY_MENUS,
     *SYSTEM_MENUS,
+    *FIRST_RESPONSE_MENUS,
 ]
 
 BUTTONS = []
@@ -71,6 +78,7 @@ _mods = [
     AUTORESPONSE_MENU_MODS,
     GOODS_MENU_MODS,
     AUTODELIVERY_MENU_MODS,
+    FIRST_RESPONSE_MENU_MODS,
 ]
 
 for mods_dict in _mods:
