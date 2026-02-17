@@ -16,8 +16,10 @@ class FirstResponseCache:
         self._cache = {}
         self._path = Path(path)
 
-    async def update(self, username: str, timestamp: int | None = None):
+    async def update(self, username: str, timestamp: int | None = None, save: bool = True) -> None:
         self._cache[username] = int(timestamp if timestamp is not None else time.time())
+        if save:
+            await self.save()
 
     async def get(self, username: str) -> int | None:
         return self._cache.get(username)
@@ -29,13 +31,18 @@ class FirstResponseCache:
 
         return (time.time() - ts) > delay
 
-    async def remove(self, username) -> int | None:
-        return self._cache.pop(username, None)
+    async def remove(self, username: str, save: bool = True) -> int | None:
+        result = self._cache.pop(username, None)
+        if result is not None and save:
+            await self.save()
+        return result
 
-    async def reset(self) -> None:
+    async def reset(self, save: bool = True) -> None:
         self._cache = {}
+        if save:
+            await self.save()
 
-    async def save(self):
+    async def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.open('w', encoding='utf-8') as f:
             f.write(json.dumps(self._cache, ensure_ascii=False))
