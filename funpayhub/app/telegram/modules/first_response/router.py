@@ -9,11 +9,12 @@ from funpayhub.lib.base_app.telegram.utils import delete_message
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
+from funpayhub.app.telegram.ui.ids import MenuIds
+
 from . import (
     states,
     callbacks as cbs,
 )
-from ...ui.ids import MenuIds
 
 
 if TYPE_CHECKING:
