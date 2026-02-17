@@ -50,6 +50,7 @@ class OopsMiddleware(BaseMiddleware):
                 return
 
         except TelegramBadRequest:
+            logger.debug(_en('Telegram bad request!'), exc_info=True)
             pass
 
         except TranslatableException as e:

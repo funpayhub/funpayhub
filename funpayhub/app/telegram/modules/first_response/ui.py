@@ -18,7 +18,7 @@ from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
+from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification, confirmable_button
 
 from . import callbacks as cbs
 
@@ -40,9 +40,21 @@ class BindToOfferButtonModification(MenuModification, modification_id='fph:bind_
             button_id='bind_to_offer',
             text=translater.translate('➕ Привязать к лоту'),
             callback_data=cbs.OpenAddFirstResponseToOfferMenu(
-                from_callback=ctx.callback_data
+                from_callback=ctx.callback_data,
             ).pack(),
         )
+
+        buttons = confirmable_button(
+            ctx=ctx,
+            text=translater.translate('🗑️ Очистить кэш'),
+            confirm_id='clear_cache',
+            translater=translater,
+            callback_data=cbs.ClearFirstResponseCache(
+                execute_next=join_callbacks(*ctx.callback_data_history),
+            ).pack(),
+            style='danger',
+        )
+        menu.footer_keyboard.add_row(*buttons)
         return menu
 
 
