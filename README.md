@@ -17,6 +17,7 @@ FunPay Hub
 🚧 **FunPayHub находится в активной стадии разработки.**
 
 Функционал активно расширяется. Могут иметься ошибки в работе, а так же изменения в поведении API.
+Если у вас есть пожелания по функционалу или информация об ошибках - [напишите в Telegram](https://t.me/funpayhub) - оперативно все сделаю.
 
 ---
 
@@ -100,6 +101,12 @@ FunPay Hub сам позаботится о сериализации, валид
 <img width="443" height="380" alt="image" src="https://github.com/user-attachments/assets/e6abeb30-65d4-4fa8-8c03-a6a02471cf31" />
 </details>
 
+<details>
+<summary>Прочее</summary>
+<img width="434" height="413" alt="image" src="https://github.com/user-attachments/assets/ffded71a-2666-4235-855a-418dd84a6d4d" />
+<img width="436" height="575" alt="image" src="https://github.com/user-attachments/assets/2c12037f-77a2-4ff7-974c-1667960e5be8" />
+<img width="438" height="551" alt="image" src="https://github.com/user-attachments/assets/520b7d8f-082c-43b6-ac6e-3f48713d8e73" />
+</details>
 ---
 
 Используемые технологии
