@@ -34,7 +34,7 @@ class FunPayHubProperties(Properties):
                 id='version',
                 name='version',
                 description='version',
-                value='0.3.4',
+                value='0.3.5',
             ),
         )
         self.toggles = self.attach_node(TogglesProperties())

@@ -17,7 +17,10 @@ class FirstResponseCache:
         self._path = Path(path)
 
     async def update(
-        self, chat_id: int | str, timestamp: int | None = None, save: bool = True
+        self,
+        chat_id: int | str,
+        timestamp: int | None = None,
+        save: bool = True,
     ) -> None:
         self._cache[str(chat_id)] = int(timestamp if timestamp is not None else time.time())
         if save:
@@ -61,7 +64,7 @@ class FirstResponseCache:
     def from_file(cls, path: Path | str) -> Self:
         path = Path(path)
 
-        if path.exists and not path.is_file():
+        if path.exists() and not path.is_file():
             raise IsADirectoryError(f'{path} is not a file.')
 
         instance = cls(path)
