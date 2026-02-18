@@ -172,7 +172,10 @@ class Properties(Node):
     async def _set_values(self, values: dict[str, Any]) -> None:
         for v in self._nodes.values():
             if isinstance(v, Properties):
-                await v.load() if v.file else await v.load_from_dict(values[v.id])
+                if v.file:
+                    await v.load()
+                elif v.id in values:
+                    await v.load_from_dict(values[v.id])
             elif v.id not in values:
                 continue
             elif isinstance(v, MutableParameter):
