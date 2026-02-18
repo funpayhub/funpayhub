@@ -107,6 +107,7 @@ FunPay Hub сам позаботится о сериализации, валид
 <img width="436" height="575" alt="image" src="https://github.com/user-attachments/assets/2c12037f-77a2-4ff7-974c-1667960e5be8" />
 <img width="438" height="551" alt="image" src="https://github.com/user-attachments/assets/520b7d8f-082c-43b6-ac6e-3f48713d8e73" />
 </details>
+
 ---
 
 Используемые технологии
