@@ -101,7 +101,7 @@ class GoodsSourceInfoMenuBuilder(
         kb.add_row(
             Button.callback_button(
                 button_id='add_goods',
-                text=translater.translate('➕ Добавить довары'),
+                text=translater.translate('➕ Добавить товары'),
                 callback_data=cbs.AddGoods(
                     source_id=source.source_id,
                     from_callback=ctx.callback_data,

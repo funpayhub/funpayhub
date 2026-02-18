@@ -232,7 +232,8 @@ async def handler(
         ):
             await message.reply(translater.translate('❌ Невалидное имя файла.'))
             return
-
+        if not filename.endswith('.txt'):
+            filename += '.txt'
         source = await goods_manager.add_source(FileGoodsSource, Path('storage/goods') / filename)
 
     state_obj: states.BindingGoodsSource = (await state.get_data())['data']
