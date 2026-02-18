@@ -1,9 +1,8 @@
-FunPay Hub
-=========
+<h1 align="center">FunPay Hub</h1>
 <p align="center">
     <a href="https://github.com/funpayhub/funpayhub/commits"><img src="https://img.shields.io/github/commit-activity/w/funpayhub/funpayhub.svg?style=flat-square" alt="Commit activity" /></a>
+    <a href="https://t.me/funpay_hub" target="_blank"><img src="https://img.shields.io/badge/Telegram-@funpay_hub-2CA5E0?logo=telegram&logoColor=white" alt="Telegram"></a>
 </p>
-
 
 **FunPayHub** — это не просто бот, а полноценный инструмент для автоматизации продаж и рутинных действий на FunPay.
 
@@ -17,7 +16,7 @@ FunPay Hub
 🚧 **FunPayHub находится в активной стадии разработки.**
 
 Функционал активно расширяется. Могут иметься ошибки в работе, а так же изменения в поведении API.
-Если у вас есть пожелания по функционалу или информация об ошибках - [напишите в Telegram](https://t.me/funpayhub) - оперативно все сделаю.
+Если у вас есть пожелания по функционалу или информация об ошибках - [напишите в Telegram](https://t.me/funpay_hub) - оперативно все сделаю.
 
 ---
 
