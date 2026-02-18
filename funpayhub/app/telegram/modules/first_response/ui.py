@@ -50,7 +50,7 @@ class BindToOfferButtonModification(MenuModification, modification_id='fph:bind_
             confirm_id='clear_cache',
             translater=translater,
             callback_data=cbs.ClearFirstResponseCache(
-                execute_next=join_callbacks(*ctx.callback_data_history),
+                execute_next=ctx.callback_data.pack(hash=False) if ctx.callback_data else '',
             ).pack(),
             style='danger',
         )

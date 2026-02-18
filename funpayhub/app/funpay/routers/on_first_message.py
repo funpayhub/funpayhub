@@ -47,7 +47,6 @@ class NewChats:
     """Данные о просмотре лотов: {chat_id: CPU}"""
 
 
-LAST_EVENTS_STACK_ID = None
 LAST_CHATS: NewChats | None = None
 
 
@@ -66,7 +65,7 @@ class UpdateLastChats:
         self.sender_id_to_chat_id = {v: k for k, v in self.chats.items()}
 
     async def get_timed_out_chats(self, cache: FirstResponseCache, delay: int):
-        return {i for i in self.chats.values() if await cache.is_new(i, delay)}
+        return {i for i in self.chats.keys() if await cache.is_new(i, delay)}
 
     async def _get_cpu_data(self, bot: FPBot, *user_ids: int, attempts: int = 3):
         objects = [CPURequestObject(id=i) for i in user_ids]
@@ -82,7 +81,10 @@ class UpdateLastChats:
                     raise
 
     async def get_cpu_data(
-        self, bot: FPBot, *user_ids: int, attempts: int = 3
+        self,
+        bot: FPBot,
+        *user_ids: int,
+        attempts: int = 3,
     ) -> dict[int, CurrentlyViewingOfferInfo]:
         chunks = [tuple(user_ids[i : i + 10]) for i in range(0, len(user_ids), 10)]
         data = {}
@@ -105,17 +107,16 @@ class UpdateLastChats:
 
         cpu_data = {}
         if properties.first_response.has_offer_specific:
-            cpu_data = await self.get_cpu_data(bot, *new_chats)
+            profiles = {self.chats[i] for i in new_chats}
+            cpu_data = await self.get_cpu_data(bot, *profiles)
             cpu_data = {self.sender_id_to_chat_id[k]: v for k, v in cpu_data.items()}
         data_obj = NewChats(chat_ids=new_chats, cpu_data=cpu_data)
         LAST_CHATS = data_obj
 
 
-@router.on_chat_changed(lambda events_stack: events_stack.id != LAST_EVENTS_STACK_ID)
+@router.on_new_events_pack()
 async def update_cpu(events_stack: EventsStack, **kwargs):
-    global LAST_EVENTS_STACK_ID
     global LAST_CHATS
-    LAST_EVENTS_STACK_ID = events_stack.id
     LAST_CHATS = None
     await UpdateLastChats(events_stack)(events_stack=events_stack, **kwargs)
 
@@ -128,13 +129,20 @@ async def on_first_message(
     fp: FunPay,
     properties: FunPayHubProperties,
     fp_formatters: FormattersRegistry,
-    cache: FirstResponseCache,
+    first_response_cache: FirstResponseCache,
 ):
-    if not cache.is_new(event.message.chat_id, properties.first_response.timeout.value):
+    if not (
+        await first_response_cache.is_new(
+            event.message.chat_id,
+            properties.first_response.timeout.value,
+        )
+    ):
         return
+    await first_response_cache.update(event.message.chat_id)
 
     message = properties.first_response.text.value
     if event.message.chat_id in LAST_CHATS.cpu_data:
+        print(LAST_CHATS.cpu_data[event.message.chat_id].id)
         props = properties.first_response.get_offer(LAST_CHATS.cpu_data[event.message.chat_id].id)
         if props is not None:
             message = props.text.value
@@ -164,5 +172,3 @@ async def on_first_message(
             exc_info=True,
         )
         return  # todo: send telegram error notification
-
-    await cache.update(event.message.chat_id)

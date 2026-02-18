@@ -109,7 +109,9 @@ class FunPay:
 
         self._sending_message_lock = asyncio.Lock()
         self._manually_sent_messages: set[int] = set()
-        self._first_response_cache = FirstResponseCache('storage/first_response_cache.json')
+        self._first_response_cache = FirstResponseCache.from_file(
+            'storage/first_response_cache.json'
+        )
         self._authenticated = False
         self._runner_config = runner_config if runner_config is not None else RunnerConfig()
         self.setup_dispatcher()

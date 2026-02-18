@@ -10,6 +10,7 @@ from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
 from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.first_response_cache import FirstResponseCache
 
 from . import (
     states,
@@ -25,6 +26,7 @@ if TYPE_CHECKING:
 
     from funpayhub.app.main import FunPayHub
     from funpayhub.app.properties import FunPayHubProperties
+    from funpayhub.app.telegram.main import Telegram
 
 
 router = Router(name='fph:first_response')
@@ -122,3 +124,18 @@ async def remove_first_response_to_offer(
 
     if callback_data.execute_next:
         await hub.telegram.fake_query(callback_data.execute_next, query)
+
+
+@router.callback_query(cbs.ClearFirstResponseCache.filter())
+async def clear_first_response_cache(
+    query: CallbackQuery,
+    callback_data: cbs.ClearFirstResponseCache,
+    first_response_cache: FirstResponseCache,
+    tg: Telegram,
+    translater: Tr,
+):
+    await first_response_cache.reset()
+    await query.answer(translater.translate('✅ Кэш очищен.'), show_alert=True)
+
+    if callback_data.execute_next:
+        await tg.fake_query(callback_data=callback_data.execute_next, query=query)
