@@ -6,9 +6,11 @@ __all__ = [
     'AddRemoveButtonToFirstResponseModification',
     'BindToOfferMenu',
     'ReplaceNameWithOfferNameModification',
+    'ModifyHeaderText',
 ]
 
 
+import html
 from typing import TYPE_CHECKING
 from itertools import chain
 
@@ -19,6 +21,7 @@ from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigat
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification, confirmable_button
+from funpayhub.app.properties.first_response import FirstResponseToOfferNode
 
 from . import callbacks as cbs
 
@@ -78,6 +81,36 @@ class AddRemoveButtonToFirstResponseModification(
                 else '',
             ).pack(),
         )
+
+
+class ModifyHeaderText(MenuModification, modification_id='fph:first_response_modify_header'):
+    async def filter(self, ctx: NodeMenuContext, menu: Menu, properties: FPHProps):
+        return (
+            len(ctx.entry_path) == 2
+            and ctx.entry_path[0] == properties.first_response.path[0]
+            and isinstance(properties.get_node(ctx.entry_path), FirstResponseToOfferNode)
+        )
+
+    async def modify(self, ctx: NodeMenuContext, menu: Menu, hub: FPH):
+        if not hub.funpay.authenticated:
+            return menu
+
+        profile = await hub.funpay.profile()
+        offers = {}
+        if profile.offers:
+            offers = {
+                str(offer.id): offer
+                for subcat_offers in profile.offers.values()
+                for offers_tuple in subcat_offers.values()
+                for offer in offers_tuple
+            }
+
+        offer_id = ctx.entry_path[-1].lstrip('__offer__')
+        if offer_id not in offers:
+            menu.header_text = f'⚠️ <b><u>{offer_id}</u></b>'
+        else:
+            menu.header_text = f'<b>[{offer_id}] {html.escape(offers[offer_id].title)}</b>'
+        return menu
 
 
 class ReplaceNameWithOfferNameModification(

@@ -8,6 +8,7 @@ from funpayhub.app.telegram.ui.ids import MenuIds
 
 from .ui import (
     BindToOfferMenu,
+    ModifyHeaderText,
     BindToOfferButtonModification,
     ReplaceNameWithOfferNameModification,
     AddRemoveButtonToFirstResponseModification,
@@ -20,6 +21,7 @@ MENU_MODS = {
         BindToOfferButtonModification,
         AddRemoveButtonToFirstResponseModification,
         ReplaceNameWithOfferNameModification,
+        ModifyHeaderText,
     ],
 }
 
