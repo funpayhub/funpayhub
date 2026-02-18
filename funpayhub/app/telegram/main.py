@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import html
 import asyncio
 from typing import TYPE_CHECKING
 from itertools import chain
 
 from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 
+from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.translater import _
 from funpayhub.lib.base_app.telegram.main import TelegramApp
@@ -19,6 +21,7 @@ from funpayhub.app.telegram.middlewares import (
     AddDataMiddleware,
     IsAuthorizedMiddleware,
 )
+from funpayhub.app.notification_channels import NotificationChannels
 
 
 if TYPE_CHECKING:
@@ -159,3 +162,14 @@ class Telegram(TelegramApp):
             )
 
         return tasks
+
+    def send_error_notification(
+        self, text: str, exception: Exception | None = None
+    ) -> list[asyncio.Task[Message]]:
+        if isinstance(exception, TranslatableException):
+            exc_text = exception.format_args(self.hub.translater.translate(exception.message))
+        else:
+            exc_text = self.hub.translater.translate('Подробности в логах.')
+
+        text = html.escape(text + '\n' + exc_text)
+        return self.send_notification(NotificationChannels.ERROR, text)
