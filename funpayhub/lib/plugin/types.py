@@ -87,9 +87,9 @@ class PluginAuthor(BaseModel):
 
 
 @dataclass
-class LoadedPlugin[PluginCLS]:
+class LoadedPlugin[PluginCLS, PropertiesCLS: Properties = Properties]:
     path: Path
     manifest: PluginManifest
     plugin: PluginCLS | None
-    properties: Properties | None = None
+    properties: PropertiesCLS | None = None
     error: Exception | None = None
