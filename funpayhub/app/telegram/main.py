@@ -164,12 +164,14 @@ class Telegram(TelegramApp):
         return tasks
 
     def send_error_notification(
-        self, text: str, exception: Exception | None = None
+        self,
+        text: str,
+        exception: Exception | None = None,
     ) -> list[asyncio.Task[Message]]:
         if isinstance(exception, TranslatableException):
             exc_text = exception.format_args(self.hub.translater.translate(exception.message))
         else:
             exc_text = self.hub.translater.translate('Подробности в логах.')
 
-        text = html.escape(text + '\n' + exc_text)
+        text = text + '\n\n' + html.escape(exc_text)
         return self.send_notification(NotificationChannels.ERROR, text)

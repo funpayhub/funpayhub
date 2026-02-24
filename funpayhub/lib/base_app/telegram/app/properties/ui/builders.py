@@ -251,7 +251,7 @@ class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', con
             'Введите новое значение для <b>{parameter_name}</b>\n\n'
             '{parameter_description}\n\n'
             'Текущее значение:\n'
-            '<b>{current_parameter_value}</b>',
+            '<blockquote>{current_parameter_value}</blockquote>',
         ).format(
             parameter_name=translater.translate(entry.name),
             parameter_description=translater.translate(entry.description),
