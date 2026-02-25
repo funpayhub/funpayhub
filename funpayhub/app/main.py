@@ -160,7 +160,6 @@ class FunPayHub(App):
                     break
 
                 done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
-
             exit_code = 1
             if self._stop_signal.done:
                 exit_code = self._stop_signal.result()
@@ -170,7 +169,6 @@ class FunPayHub(App):
                         await self.funpay.bot.stop_listening()
                     except RuntimeError:
                         pass
-
                     try:
                         await self.telegram.dispatcher.stop_polling()
                     except RuntimeError:
@@ -179,7 +177,6 @@ class FunPayHub(App):
                     await self.dispatcher.event_entry(FunPayHubStoppedEvent())
             finally:
                 self._stopped_signal.set()
-
             return exit_code
 
     async def shutdown(self, code: int, error_ok: bool = False) -> None:
