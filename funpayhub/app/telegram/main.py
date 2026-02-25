@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from itertools import chain
 
 from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
+from aiogram.methods import SendMessage, SendDocument
 
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.properties import ListParameter
@@ -161,6 +162,30 @@ class Telegram(TelegramApp):
                 ),
             )
 
+        return tasks
+
+    def send_notification_from_obj(
+        self,
+        notify_channel: str,
+        call: SendMessage | SendDocument,
+    ) -> list[asyncio.Task[Message]]:
+        try:
+            chats = self.hub.properties.telegram.notifications.get_parameter([notify_channel])
+            if not isinstance(chats, ListParameter) or not chats.value:
+                return []
+        except LookupError:
+            return []
+
+        tasks = []
+        for identifier in chats.value:
+            try:
+                split = identifier.split('.')
+                chat_id, thread_id = int(split[0]), int(split[1]) if split[1].isnumeric() else None
+            except (IndexError, ValueError):
+                continue
+
+            call = call.model_copy(update={'chat_id': chat_id, 'message_thread_id': thread_id})
+            tasks.append(asyncio.create_task(call))
         return tasks
 
     def send_error_notification(
