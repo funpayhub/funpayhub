@@ -185,7 +185,7 @@ class Telegram(TelegramApp):
                 continue
 
             call = call.model_copy(update={'chat_id': chat_id, 'message_thread_id': thread_id})
-            tasks.append(asyncio.create_task(call))
+            tasks.append(asyncio.create_task(self.bot(call)))
         return tasks
 
     def send_error_notification(
