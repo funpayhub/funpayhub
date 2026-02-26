@@ -14,6 +14,7 @@ from typing import Any
 from types import MappingProxyType
 from pathlib import Path
 from collections.abc import Callable, Awaitable
+import subprocess
 
 from packaging.version import Version
 
@@ -203,7 +204,23 @@ class PluginManager[PluginCLS]:
         async with self.installation_lock:
             installer = installer_class(self._plugins_path, source, *args, **kwargs)
             path_to_plugin = await installer.install_wrapped(overwrite=overwrite)
-            return self.load_plugin(path_to_plugin, instantiate=False)
+            loaded = self.load_plugin(path_to_plugin, instantiate=False)
+            self._install_plugin_dependencies(loaded.manifest.dependencies)
+            return loaded
+
+    def _install_plugin_dependencies(self, deps: list[str]) -> None:
+        if not deps:
+            return
+
+        try:
+            subprocess.run([sys.executable, '-m', 'pip', '--version'], check=True)
+        except Exception:
+            subprocess.run([sys.executable, '-m', 'ensurepip', '--upgrade'], check=True)
+
+        try:
+            subprocess.run([sys.executable, '-m', 'pip', 'install', '-U', *deps], check=True)
+        except Exception:
+            raise
 
     def _load_plugin_manifest(self, plugin_path: str | Path) -> PluginManifest:
         with open(plugin_path / 'manifest.json', 'r', encoding='utf-8') as f:
