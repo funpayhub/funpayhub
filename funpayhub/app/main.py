@@ -151,6 +151,7 @@ class FunPayHub(App):
             for i in done:
                 if i.exception():
                     raise i.exception()
+
             while True:
                 need_to_stop = False
                 for i in done:
@@ -160,6 +161,7 @@ class FunPayHub(App):
                     break
 
                 done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+
             exit_code = 1
             if self._stop_signal.done:
                 exit_code = self._stop_signal.result()

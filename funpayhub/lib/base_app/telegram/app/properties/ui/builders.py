@@ -72,14 +72,19 @@ class ChangeParamValueButtonBuilder(ButtonBuilder, button_id='change_param', con
     async def build(self, ctx: BtnCtx, translater: Tr, properties: Props) -> Button:
         entry = properties.get_node(ctx.entry_path)
 
-        if not entry.has_flag(ParameterFlags.PROTECT_VALUE):
+        if entry.has_flag(ParameterFlags.HIDE_VALUE):
+            val_str = ''
+        elif not entry.has_flag(ParameterFlags.PROTECT_VALUE):
             val_str = f'{str(entry.value)[:20] + ("..." if len(str(entry.value)) > 20 else "")}'
         else:
             val_str = '•' * 8 if entry.value else ''
 
+        if val_str:
+            val_str = f'【 {val_str} 】'
+
         return Button.callback_button(
             button_id=f'param_change:{entry.path}',
-            text=f'{_emoji(entry)}{translater.translate(entry.name)} 【 {val_str} 】',
+            text=f'{_emoji(entry)}{translater.translate(entry.name)} {val_str}',
             callback_data=cbs.ManualParamValueInput(
                 path=entry.path,
                 from_callback=ctx.menu_render_context.callback_data,

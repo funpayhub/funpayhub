@@ -5,7 +5,7 @@ from typing import Any
 from dataclasses import field, dataclass
 
 
-KEY_RE = re.compile(r'(?<!\$)\$[a-zA-Zа-яА-Я0-9-_.]+')
+KEY_RE = re.compile(r'(?<!\$)\$[a-zA-Zа-яА-Я0-9-_]+')
 
 
 @dataclass
