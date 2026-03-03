@@ -81,6 +81,7 @@ class FunPayStartNotificationMenuBuilder(
         fp: FunPay,
     ) -> Menu:
         if not ctx.error:
+            page = await fp.bot.get_transactions_page()
             text = translater.translate(
                 '🎉 <b><u>FunPay Hub готов к работе!</u></b>\n\n\n'
                 '👤 <b><i>Аккаунт: {username} '
@@ -88,17 +89,18 @@ class FunPayStartNotificationMenuBuilder(
                 '📊 <b><i>Активные продажи: {active_sells}</i></b>'
                 '\n📊 <b><i>Активные покупки: {active_purchases}</i></b>\n\n'
                 '💰 <b><i>Баланс: {rub_balance}₽, {usd_balance}$, {eur_balance}€</i></b>\n'
-                '💰 <b><i>Сделки: {rub_balance}₽</i></b>\n\n'
+                '💰 <b><i>Сделки: {deals_balance}₽</i></b>\n\n'
                 'Для открытия основного меню введите команду /menu\n'
                 'Для открытия настроек используйте команду /settings',
             ).format(
                 username=fp.bot.username,
                 user_id=fp.bot.userid,
-                active_sells=(await fp.profile()).header.sales,
-                active_purchases=(await fp.profile()).header.purchases,
-                rub_balance='123.45',
-                eur_balance='123.45',
-                usd_balance='123.45',
+                active_sells=page.header.sales,
+                active_purchases=page.header.purchases,
+                rub_balance=page.rub_balance.value if page.rub_balance else 0,
+                usd_balance=page.usd_balance.value if page.usd_balance else 0,
+                eur_balance=page.eur_balance.value if page.eur_balance else 0,
+                deals_balance=page.deals_balance.value if page.deals_balance else 0,
             )
         elif isinstance(ctx.error, (BotUnauthenticatedError, UnauthorizedError)):
             text = translater.translate(
