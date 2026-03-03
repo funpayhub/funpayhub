@@ -34,6 +34,14 @@ class PluginLogger(logging.Logger):
         return record
 
 
+def get_plugin_logger(plugin_id: str) -> PluginLogger:
+    logger_class = logging.getLoggerClass()
+    logging.setLoggerClass(PluginLogger)
+    logger = logging.getLogger(f'funpayhub.{plugin_id.replace(".", "_")}')
+    logging.setLoggerClass(logger_class)
+    return logger
+
+
 class Plugin:
     def __init__(self, manifest: PluginManifest, hub: FunPayHub) -> None:
         self._manifest = manifest
