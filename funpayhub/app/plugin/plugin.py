@@ -47,11 +47,8 @@ class Plugin:
         self._manifest = manifest
         self._hub = hub
 
-        logger_class = logging.getLoggerClass()
-        logging.setLoggerClass(PluginLogger)
-        self._logger = logging.getLogger(f'funpayhub.{manifest.plugin_id.replace(".", "_")}')
+        self._logger = get_plugin_logger(manifest.plugin_id)
         self._logger.plugin = self
-        logging.setLoggerClass(logger_class)
 
     @property
     def manifest(self) -> PluginManifest:
