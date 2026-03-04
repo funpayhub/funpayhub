@@ -11,6 +11,8 @@ from aiogram.types import (
     InaccessibleMessage,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    InputMediaPhoto,
+    BufferedInputFile
 )
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
@@ -189,6 +191,7 @@ class Menu(Mapping):
     main_keyboard: KeyboardBuilder = field(default_factory=KeyboardBuilder)
     footer_keyboard: KeyboardBuilder = field(default_factory=KeyboardBuilder)
     finalizer: Any | None = None  # todo: type
+    image: str | bytes | None = None  # Добавлено для баннеров
 
     @overload
     def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None:
@@ -218,6 +221,11 @@ class Menu(Mapping):
     async def answer_to(self, msg: Message | InaccessibleMessage | None, /) -> Message:
         if msg is None or isinstance(msg, InaccessibleMessage):
             raise ValueError('Inaccessible message.')
+        
+        # Добавлена поддержка изображений
+        if self.image:
+            photo = self.image if isinstance(self.image, str) else BufferedInputFile(self.image, "banner.png")
+            return await msg.answer_photo(photo=photo, caption=self.total_text, reply_markup=self.total_keyboard(convert=True))
 
         return await msg.answer(
             text=self.total_text,
@@ -234,6 +242,24 @@ class Menu(Mapping):
     ) -> Message | bool:
         if msg is None or isinstance(msg, InaccessibleMessage):
             raise ValueError('Inaccessible message.')
+        
+        kb = self.total_keyboard(convert=True) if keyboard else msg.reply_markup
+        new_text = self.total_text if text else (msg.caption if msg.photo else msg.text)
+
+        # Добавлена поддержка изображений
+        if self.image:
+            photo = self.image if isinstance(self.image, str) else BufferedInputFile(self.image, "banner.png")
+            if msg.photo:
+                try:
+                    return await msg.edit_media(media=InputMediaPhoto(media=photo, caption=new_text), reply_markup=kb)
+                except Exception:
+                    pass
+            await msg.delete()
+            return await msg.answer_photo(photo=photo, caption=new_text, reply_markup=kb)
+
+        if msg.photo:
+            await msg.delete()
+            return await msg.answer(text=new_text, reply_markup=kb)
 
         return await msg.edit_text(
             text=self.total_text if text else msg.text,
@@ -519,7 +545,7 @@ class ButtonBuilder:
                 f'accepts at least one positional argument: `context`.',
             )
 
-        if not getattr(cls, '__menu_id__', None):
+        if not getattr(cls, '__button_id__', None):
             if any(not i for i in [button_id, context_type]):
                 raise TypeError(
                     f'{cls.__name__} must be defined with keyword arguments '
