@@ -6,6 +6,9 @@
 /.vscode/
 
 /storage/
+/plugins/
+/releases/
+.update.zip
 
 __pycache__/
 *.py[cod]
@@ -20,5 +23,3 @@ uv.lock
 
 *.log
 *.tmp
-
-/plugins/
