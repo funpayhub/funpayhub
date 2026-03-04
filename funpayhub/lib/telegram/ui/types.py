@@ -11,6 +11,8 @@ from aiogram.types import (
     InaccessibleMessage,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    InputMediaPhoto,
+    BufferedInputFile,
 )
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
@@ -34,7 +36,7 @@ class Button:
         button_id: str,
         text: str,
         callback_data: str,
-        style: Literal['danger', 'success', 'primary'] | None = None,
+        style: Literal["danger", "success", "primary"] | None = None,
         row: Literal[False] = ...,
     ) -> Button:
         pass
@@ -46,7 +48,7 @@ class Button:
         button_id: str,
         text: str,
         callback_data: str,
-        style: Literal['danger', 'success', 'primary'] | None = None,
+        style: Literal["danger", "success", "primary"] | None = None,
         row: Literal[True] = ...,
     ) -> list[Button]:
         pass
@@ -57,12 +59,14 @@ class Button:
         button_id: str,
         text: str,
         callback_data: str,
-        style: Literal['danger', 'success', 'primary'] | None = None,
+        style: Literal["danger", "success", "primary"] | None = None,
         row: bool = False,
     ) -> Button | list[Button]:
         btn = Button(
             button_id=button_id,
-            obj=InlineKeyboardButton(text=text, callback_data=callback_data, style=style),
+            obj=InlineKeyboardButton(
+                text=text, callback_data=callback_data, style=style
+            ),
         )
         if row:
             return [btn]
@@ -75,7 +79,7 @@ class Button:
         button_id: str,
         text: str,
         url: str,
-        style: Literal['danger', 'success', 'primary'] | None = None,
+        style: Literal["danger", "success", "primary"] | None = None,
         row: Literal[False] = ...,
     ) -> Button:
         pass
@@ -87,7 +91,7 @@ class Button:
         button_id: str,
         text: str,
         url: str,
-        style: Literal['danger', 'success', 'primary'] | None = None,
+        style: Literal["danger", "success", "primary"] | None = None,
         row: Literal[True] = ...,
     ) -> list[Button]:
         pass
@@ -98,7 +102,7 @@ class Button:
         button_id: str,
         text: str,
         url: str,
-        style: Literal['danger', 'success', 'primary'] | None = None,
+        style: Literal["danger", "success", "primary"] | None = None,
         row: bool = False,
     ) -> Button | list[Button]:
         btn = Button(
@@ -128,16 +132,18 @@ class KeyboardBuilder:
         button_id: str,
         text: str,
         callback_data: str,
-        style: Literal['danger', 'success', 'primary'] | None = None,
+        style: Literal["danger", "success", "primary"] | None = None,
     ) -> None:
-        self.add_button(Button.callback_button(button_id, text, callback_data, style=style))
+        self.add_button(
+            Button.callback_button(button_id, text, callback_data, style=style)
+        )
 
     def add_url_button(
         self,
         button_id: str,
         text: str,
         url: str,
-        style: Literal['danger', 'success', 'primary'] | None = None,
+        style: Literal["danger", "success", "primary"] | None = None,
     ) -> None:
         self.add_button(Button.url_button(button_id, text, url, style=style))
 
@@ -182,13 +188,14 @@ class KeyboardBuilder:
 
 @dataclass
 class Menu(Mapping):
-    header_text: str = ''
-    main_text: str = ''
-    footer_text: str = ''
+    header_text: str = ""
+    main_text: str = ""
+    footer_text: str = ""
     header_keyboard: KeyboardBuilder = field(default_factory=KeyboardBuilder)
     main_keyboard: KeyboardBuilder = field(default_factory=KeyboardBuilder)
     footer_keyboard: KeyboardBuilder = field(default_factory=KeyboardBuilder)
     finalizer: Any | None = None  # todo: type
+    image: str | bytes | None = None  # Добавлено для баннеров
 
     @overload
     def total_keyboard(self, convert: Literal[True]) -> InlineKeyboardMarkup | None:
@@ -202,14 +209,20 @@ class Menu(Mapping):
         self,
         convert: bool = False,
     ) -> KeyboardBuilder | InlineKeyboardMarkup | None:
-        total_keyboard = [*self.header_keyboard, *self.main_keyboard, *self.footer_keyboard]
+        total_keyboard = [
+            *self.header_keyboard,
+            *self.main_keyboard,
+            *self.footer_keyboard,
+        ]
         if not total_keyboard:
             return None
         if not convert:
             return total_keyboard
 
         return InlineKeyboardMarkup(
-            inline_keyboard=[[button.obj for button in line] for line in total_keyboard],
+            inline_keyboard=[
+                [button.obj for button in line] for line in total_keyboard
+            ],
         )
 
     # InaccessibleMessage | None добавлены только чтобы mypy не ругался.
@@ -217,7 +230,20 @@ class Menu(Mapping):
     # todo
     async def answer_to(self, msg: Message | InaccessibleMessage | None, /) -> Message:
         if msg is None or isinstance(msg, InaccessibleMessage):
-            raise ValueError('Inaccessible message.')
+            raise ValueError("Inaccessible message.")
+
+        # Добавлена поддержка изображений
+        if self.image:
+            photo = (
+                self.image
+                if isinstance(self.image, str)
+                else BufferedInputFile(self.image, "banner.png")
+            )
+            return await msg.answer_photo(
+                photo=photo,
+                caption=self.total_text,
+                reply_markup=self.total_keyboard(convert=True),
+            )
 
         return await msg.answer(
             text=self.total_text,
@@ -233,26 +259,57 @@ class Menu(Mapping):
         keyboard: bool = True,
     ) -> Message | bool:
         if msg is None or isinstance(msg, InaccessibleMessage):
-            raise ValueError('Inaccessible message.')
+            raise ValueError("Inaccessible message.")
+
+        kb = self.total_keyboard(convert=True) if keyboard else msg.reply_markup
+        new_text = self.total_text if text else (msg.caption if msg.photo else msg.text)
+
+        # Добавлена поддержка изображений
+        if self.image:
+            photo = (
+                self.image
+                if isinstance(self.image, str)
+                else BufferedInputFile(self.image, "banner.png")
+            )
+            if msg.photo:
+                try:
+                    return await msg.edit_media(
+                        media=InputMediaPhoto(media=photo, caption=new_text),
+                        reply_markup=kb,
+                    )
+                except Exception:
+                    pass
+            await msg.delete()
+            return await msg.answer_photo(
+                photo=photo, caption=new_text, reply_markup=kb
+            )
+
+        if msg.photo:
+            await msg.delete()
+            return await msg.answer(text=new_text, reply_markup=kb)
 
         return await msg.edit_text(
             text=self.total_text if text else msg.text,
-            reply_markup=self.total_keyboard(convert=True) if keyboard else msg.reply_markup,
+            reply_markup=(
+                self.total_keyboard(convert=True) if keyboard else msg.reply_markup
+            ),
         )
 
     @property
     def total_text(self) -> str:
-        return '\n\n'.join(i for i in [self.header_text, self.main_text, self.footer_text] if i)
+        return "\n\n".join(
+            i for i in [self.header_text, self.main_text, self.footer_text] if i
+        )
 
     def __getitem__(self, item: str) -> Any:
-        if item == 'reply_markup':
+        if item == "reply_markup":
             return self.total_keyboard(convert=True)
-        if item == 'text':
+        if item == "text":
             return self.total_text
         raise KeyError(item)
 
     def __iter__(self) -> Iterator[str]:
-        return iter(['reply_markup', 'text'])
+        return iter(["reply_markup", "text"])
 
     def __len__(self) -> int:
         return 2
@@ -302,39 +359,45 @@ class MenuContext:
 
     def __post_init__(self) -> None:
         if self.trigger is not None:
-            msg = self.trigger if isinstance(self.trigger, Message) else self.trigger.message
+            msg = (
+                self.trigger
+                if isinstance(self.trigger, Message)
+                else self.trigger.message
+            )
             self.message_id = msg.message_id
             self.chat_id = msg.chat.id
             self.thread_id = msg.message_thread_id
 
         if self.chat_id is None:
-            raise ValueError('Chat ID or trigger must be provided.')
+            raise ValueError("Chat ID or trigger must be provided.")
 
         if self.menu_page is Ellipsis and self.callback_data is not None:
-            menu_page = getattr(self.callback_data, 'menu_page', None)
+            menu_page = getattr(self.callback_data, "menu_page", None)
             if menu_page is not None:
                 self.menu_page = menu_page
             else:
-                self.menu_page = self.callback_data.data.get('menu_page', 0)
+                self.menu_page = self.callback_data.data.get("menu_page", 0)
 
         if self.view_page is Ellipsis and self.callback_data is not None:
-            view_page = getattr(self.callback_data, 'view_page', None)
+            view_page = getattr(self.callback_data, "view_page", None)
             if view_page is not None:
                 self.view_page = view_page
             else:
-                self.view_page = self.callback_data.data.get('view_page', 0)
+                self.view_page = self.callback_data.data.get("view_page", 0)
 
     @property
     def callback_data(self) -> UnknownCallback | None:
         if self.callback_override is not None:
             return self.callback_override
 
-        if isinstance(self.data.get('callback_data', None), UnknownCallback):  # todo: remove
-            return self.data.get('callback_data')
+        if isinstance(
+            self.data.get("callback_data", None), UnknownCallback
+        ):  # todo: remove
+            return self.data.get("callback_data")
 
         if isinstance(self.trigger, CallbackQuery):
-            if hasattr(self.trigger, '__parsed__'):
-                return getattr(self.trigger, '__parsed__')
+            if hasattr(self.trigger, "__parsed__"):
+                return getattr(self.trigger, "__parsed__")
             return UnknownCallback.parse(self.trigger.data)
         return None
 
@@ -368,7 +431,11 @@ class MenuContext:
         """
 
         base_fields = {i.name for i in fields(MenuContext)}
-        return {k.name: getattr(self, k.name) for k in fields(self) if k.name not in base_fields}
+        return {
+            k.name: getattr(self, k.name)
+            for k in fields(self)
+            if k.name not in base_fields
+        }
 
 
 @dataclass(kw_only=True)
@@ -386,31 +453,33 @@ class MenuBuilder:
         context_type: type[MenuContext]
 
     def __init__(self) -> None:
-        self._wrapped: CallableWrapper[Menu] = CallableWrapper(getattr(self, 'build'))
+        self._wrapped: CallableWrapper[Menu] = CallableWrapper(getattr(self, "build"))
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
-        menu_id = kwargs.pop('menu_id', None)
-        context_type = kwargs.pop('context_type', None)
+        menu_id = kwargs.pop("menu_id", None)
+        context_type = kwargs.pop("context_type", None)
 
-        if not hasattr(cls, 'build') or not inspect.isfunction(getattr(cls, 'build')):
+        if not hasattr(cls, "build") or not inspect.isfunction(getattr(cls, "build")):
             raise TypeError(
-                f'{cls.__name__} must implement a `build` instance method that '
-                f'accepts at least one positional argument: `context`.',
+                f"{cls.__name__} must implement a `build` instance method that "
+                f"accepts at least one positional argument: `context`.",
             )
 
-        if not getattr(cls, '__menu_id__', None):
+        if not getattr(cls, "__menu_id__", None):
             if any(not i for i in [menu_id, context_type]):
                 raise TypeError(
-                    f'{cls.__name__} must be defined with keyword arguments '
+                    f"{cls.__name__} must be defined with keyword arguments "
                     f"'menu_id' and 'context_type'. "
-                    f'Got: {menu_id=}, {context_type=}.',
+                    f"Got: {menu_id=}, {context_type=}.",
                 )
 
             if not isinstance(menu_id, str):
                 raise ValueError(
                     f"'menu_id' must be a string, not {type(menu_id)}.",
                 )
-            if not isinstance(context_type, type) or not issubclass(context_type, MenuContext):
+            if not isinstance(context_type, type) or not issubclass(
+                context_type, MenuContext
+            ):
                 raise ValueError(
                     "'context_type' must be a subclass of 'MenuContext'.",
                 )
@@ -443,26 +512,26 @@ class MenuModification:
 
     def __init__(self) -> None:
         self._wrapped_modification: CallableWrapper[Menu] = CallableWrapper(
-            getattr(self, 'modify'),
+            getattr(self, "modify"),
         )
         self._wrapped_filter: CallableWrapper[bool] = CallableWrapper(
-            getattr(self, 'filter', lambda _, __: True),
+            getattr(self, "filter", lambda _, __: True),
         )
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
-        modification_id = kwargs.pop('modification_id', None)
+        modification_id = kwargs.pop("modification_id", None)
 
-        if not hasattr(cls, 'modify') or not inspect.isfunction(getattr(cls, 'modify')):
+        if not hasattr(cls, "modify") or not inspect.isfunction(getattr(cls, "modify")):
             raise TypeError(
-                f'{cls.__name__} must implement a `modify` instance method that '
-                f'accepts at least two positional argument: `context` and `menu`.',
+                f"{cls.__name__} must implement a `modify` instance method that "
+                f"accepts at least two positional argument: `context` and `menu`.",
             )
 
-        if not getattr(cls, '__modification_id__', None):
+        if not getattr(cls, "__modification_id__", None):
             if not modification_id:
                 raise TypeError(
                     f"{cls.__name__} must be defined with keyword argument 'modification_id'. "
-                    f'Got: {modification_id=}.',
+                    f"Got: {modification_id=}.",
                 )
 
             if not isinstance(modification_id, str):
@@ -480,7 +549,9 @@ class MenuModification:
     def modification_id(cls) -> str:
         return cls.__modification_id__
 
-    async def __call__(self, context: MenuContext, menu: Menu, data: dict[str, Any]) -> Menu:
+    async def __call__(
+        self, context: MenuContext, menu: Menu, data: dict[str, Any]
+    ) -> Menu:
         if self.wrapped_filter is not None:
             result = await self.wrapped_filter((context, menu), data)
             if not result:
@@ -505,33 +576,37 @@ class ButtonBuilder:
 
     def __init__(self) -> None:
         if not issubclass(self.context_type, ButtonContext):
-            raise ValueError('Invalid context type. Must be a subtype of `ButtonContext`.')
+            raise ValueError(
+                "Invalid context type. Must be a subtype of `ButtonContext`."
+            )
 
         self._wrapped: CallableWrapper[Button] = CallableWrapper(self.build)
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
-        button_id = kwargs.pop('button_id', None)
-        context_type = kwargs.pop('context_type', None)
+        button_id = kwargs.pop("button_id", None)
+        context_type = kwargs.pop("context_type", None)
 
-        if not hasattr(cls, 'build') or not inspect.isfunction(getattr(cls, 'build')):
+        if not hasattr(cls, "build") or not inspect.isfunction(getattr(cls, "build")):
             raise TypeError(
-                f'{cls.__name__} must implement a `build` instance method that '
-                f'accepts at least one positional argument: `context`.',
+                f"{cls.__name__} must implement a `build` instance method that "
+                f"accepts at least one positional argument: `context`.",
             )
 
-        if not getattr(cls, '__menu_id__', None):
+        if not getattr(cls, "__button_id__", None):
             if any(not i for i in [button_id, context_type]):
                 raise TypeError(
-                    f'{cls.__name__} must be defined with keyword arguments '
+                    f"{cls.__name__} must be defined with keyword arguments "
                     f"'button_id' and 'context_type'. "
-                    f'Got: {button_id=}, {context_type=}.',
+                    f"Got: {button_id=}, {context_type=}.",
                 )
 
             if not isinstance(button_id, str):
                 raise ValueError(
                     f"'button_id' must be a string, not {type(button_id)}.",
                 )
-            if not isinstance(context_type, type) or not issubclass(context_type, ButtonContext):
+            if not isinstance(context_type, type) or not issubclass(
+                context_type, ButtonContext
+            ):
                 raise ValueError(
                     "'context_type' must be a subclass of 'ButtonContext'.",
                 )
@@ -564,26 +639,26 @@ class ButtonModification:
 
     def __init__(self) -> None:
         self._wrapped_modification: CallableWrapper[Button] = CallableWrapper(
-            getattr(self, 'modify'),
+            getattr(self, "modify"),
         )
         self._wrapped_filter: CallableWrapper[bool] = CallableWrapper(
-            getattr(self, 'filter', lambda _, __: True),
+            getattr(self, "filter", lambda _, __: True),
         )
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
-        modification_id = kwargs.pop('modification_id', None)
+        modification_id = kwargs.pop("modification_id", None)
 
-        if not hasattr(cls, 'modify') or not inspect.isfunction(getattr(cls, 'modify')):
+        if not hasattr(cls, "modify") or not inspect.isfunction(getattr(cls, "modify")):
             raise TypeError(
-                f'{cls.__name__} must implement a `modify` instance method that '
-                f'accepts at least two positional argument: `context` and `button`.',
+                f"{cls.__name__} must implement a `modify` instance method that "
+                f"accepts at least two positional argument: `context` and `button`.",
             )
 
-        if not getattr(cls, '__modification_id__', None):
+        if not getattr(cls, "__modification_id__", None):
             if not modification_id:
                 raise TypeError(
                     f"{cls.__name__} must be defined with keyword argument 'modification_id'. "
-                    f'Got: {modification_id=}.',
+                    f"Got: {modification_id=}.",
                 )
 
             if not isinstance(modification_id, str):

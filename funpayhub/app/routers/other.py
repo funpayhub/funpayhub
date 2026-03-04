@@ -6,6 +6,9 @@ from html import escape
 
 from aiogram.types import Message
 from funpaybotengine.types import Category
+
+from funpayhub.app.utils.banners import preload_all_banners
+
 from eventry.asyncio.filter import all_of
 
 from funpayhub.loggers import main as logger
@@ -18,7 +21,9 @@ from funpayhub.lib.plugin.repository.loaders import URLRepositoryLoader
 from funpayhub.app.dispatching import Router
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.notification_channels import NotificationChannels
-from funpayhub.app.telegram.ui.builders.context import FunPayStartNotificationMenuContext
+from funpayhub.app.telegram.ui.builders.context import (
+    FunPayStartNotificationMenuContext,
+)
 
 
 if TYPE_CHECKING:
@@ -37,6 +42,8 @@ messages: list[Message] = []
 
 @router.on_telegram_start()
 async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub) -> None:
+    asyncio.create_task(preload_all_banners(hub.telegram.bot))
+
     ctx = MenuContext(
         chat_id=-1,
         menu_id=MenuIds.start_notification,
@@ -46,7 +53,7 @@ async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub) -> None:
 
     async def send_notifications() -> None:
         tasks = hub.telegram.send_notification(
-            'system',
+            "system",
             menu.total_text,
             menu.total_keyboard(True),
         )
@@ -82,7 +89,9 @@ async def edit_start_notifications(
         menu = await tg_ui.build_menu(ctx)
 
         try:
-            await i.edit_text(text=menu.total_text, reply_markup=menu.total_keyboard(True))
+            await i.edit_text(
+                text=menu.total_text, reply_markup=menu.total_keyboard(True)
+            )
         except:
             continue
 
@@ -94,31 +103,37 @@ async def edit_start_notifications(
     ),
 )
 async def start_auto_raise(fp: FunPay) -> None:
-    logger.info(_en('Starting auto-raising for all profile offers.'))
+    logger.info(_en("Starting auto-raising for all profile offers."))
     await fp.start_raising_profile_offers()
 
 
-@router.on_offers_raised(lambda properties: properties.telegram.notifications.offers_raised.value)
+@router.on_offers_raised(
+    lambda properties: properties.telegram.notifications.offers_raised.value
+)
 async def send_offers_raised_notification(category: Category, tg: Telegram) -> None:
-    text = f'🔺 Все лоты категории <b>{escape(category.full_name)}</b> успешно подняты.'
+    text = f"🔺 Все лоты категории <b>{escape(category.full_name)}</b> успешно подняты."
     tg.send_notification(NotificationChannels.OFFER_RAISED, text)
 
 
 @router.on_telegram_start(as_task=True)
 async def add_official_plugin_repo(repositories_manager: RepositoriesManager):
-    logger.info(_en('Updating official plugins repo.'))
+    logger.info(_en("Updating official plugins repo."))
     try:
         repo = await URLRepositoryLoader(
-            'https://raw.githubusercontent.com/funpayhub/fph_plugins_repo/refs/heads/master/com.github.funpayhub.repo.json',
+            "https://raw.githubusercontent.com/funpayhub/fph_plugins_repo/refs/heads/master/com.github.funpayhub.repo.json",
         ).load()
     except:
-        logger.error(_en('An error occurred while downloading official repo.'), exc_info=True)
+        logger.error(
+            _en("An error occurred while downloading official repo."), exc_info=True
+        )
         return
 
     try:
         repositories_manager.register_repository(repo, overwrite=True, save=True)
     except:
-        logger.error(_en('An error occurred while saving official repo.'), exc_info=True)
+        logger.error(
+            _en("An error occurred while saving official repo."), exc_info=True
+        )
         return
 
-    logger.info(_en('Successfully updated official plugins repo.'))
+    logger.info(_en("Successfully updated official plugins repo."))
