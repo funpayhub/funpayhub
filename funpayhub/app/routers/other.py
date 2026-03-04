@@ -6,6 +6,9 @@ from html import escape
 
 from aiogram.types import Message
 from funpaybotengine.types import Category
+
+from funpayhub.app.utils.banners import preload_all_banners
+
 from eventry.asyncio.filter import all_of
 
 from funpayhub.loggers import main as logger
@@ -37,6 +40,8 @@ messages: list[Message] = []
 
 @router.on_telegram_start()
 async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub) -> None:
+    asyncio.create_task(preload_all_banners(hub.telegram.bot))
+
     ctx = MenuContext(
         chat_id=-1,
         menu_id=MenuIds.start_notification,
