@@ -14,6 +14,7 @@ from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigat
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.callbacks import SendMessage
+from funpayhub.app.utils.banners import get_static_banner
 
 from .context import (
     StateUIContext,
@@ -122,59 +123,55 @@ class FunPayStartNotificationMenuBuilder(
         return Menu(main_text=text)
 
 
-class MainMenuBuilder(
-    MenuBuilder,
-    menu_id=MenuIds.main_menu,
-    context_type=MenuContext,
-):
-    async def build(
-        self,
-        ctx: MenuContext,
-        translater: Translater,
-        hub: FunPayHub,
-    ):
+class MainMenuBuilder(MenuBuilder, menu_id=MenuIds.main_menu, context_type=MenuContext):
+    async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub):
         history = ctx.callback_data.as_history() if ctx.callback_data is not None else []
 
         kb = KeyboardBuilder()
-        kb.add_callback_button(
-            button_id='settings',
-            text=translater.translate('⚙️ Настройки'),
-            callback_data=OpenMenu(
-                menu_id=MenuIds.props_node,
-                history=history,
-                context_data={'entry_path': []},
-            ).pack(),
-        )
+        kb.add_callback_button(button_id='settings', text=translater.translate('⚙️ Настройки'), callback_data=OpenMenu(menu_id=MenuIds.props_node, history=history, context_data={'entry_path': []}).pack())
+        kb.add_callback_button(button_id='open_control_ui', text=translater.translate('🔌 Системное меню'), callback_data=OpenMenu(menu_id=MenuIds.control, history=history).pack())
+        kb.add_callback_button(button_id='open_formatters_list', text=translater.translate('🔖 Форматтеры'), callback_data=OpenMenu(menu_id=MenuIds.formatters_list, history=history).pack())
+        kb.add_callback_button(button_id='open_goods_sources_list', text=translater.translate('🗳 Источники товаров'), callback_data=OpenMenu(menu_id=MenuIds.goods_sources_list, history=history).pack())
+        kb.add_callback_button(button_id='open_plugins_list', text=translater.translate('🧩 Расширения'), callback_data=OpenMenu(menu_id=MenuIds.plugins_list, history=history).pack())
 
-        kb.add_callback_button(
-            button_id='open_control_ui',
-            text=translater.translate('🔌 Системное меню'),
-            callback_data=OpenMenu(menu_id=MenuIds.control, history=history).pack(),
-        )
-
-        kb.add_callback_button(
-            button_id='open_formatters_list',
-            text=translater.translate('🔖 Форматтеры'),
-            callback_data=OpenMenu(menu_id=MenuIds.formatters_list, history=history).pack(),
-        )
-
-        kb.add_callback_button(
-            button_id='open_goods_sources_list',
-            text=translater.translate('🗳 Источники товаров'),
-            callback_data=OpenMenu(menu_id=MenuIds.goods_sources_list, history=history).pack(),
-        )
-
-        kb.add_callback_button(
-            button_id='open_plugins_list',
-            text=translater.translate('🧩 Расширения'),
-            callback_data=OpenMenu(menu_id=MenuIds.plugins_list, history=history).pack(),
-        )
+        banner_id = await get_static_banner(hub.telegram.bot, "main.png")
 
         return Menu(
+            image=banner_id,
             main_text=f'🐙 <b><u>FunPay Hub v{hub.properties.version.value}</u></b>',
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )
+
+class NewSaleNotificationMenuBuilder(MenuBuilder, menu_id=MenuIds.new_sale_notification, context_type=NewSaleMenuContext):
+    async def build(self, ctx: NewSaleMenuContext, translater: Tr) -> Menu:
+        menu = Menu()
+        order = await ctx.new_sale_event.get_order_preview()
+
+        banner_text = f"Сумма: {order.total.value} {order.total.character}\nПокупатель: {order.counterparty.username}"
+        menu.image = create_dynamic_banner("tpl_order.png", "НОВЫЙ ЗАКАЗ", banner_text)
+
+        menu.header_text = f'💰 Новый заказ: <b>{html.escape(order.title)}</b>'
+        menu.main_text = (
+            f'<b><i>👤 Покупатель: <a href="https://funpay.com/users/{order.counterparty.id}/">{order.counterparty.username}</a></i></b>\n'
+            f'<b><i>💵 Сумма:</i></b> <code>{order.total.value} {order.total.character}</code>\n'
+            f'<b><i>🆔 ID: <a href="https://funpay.com/orders/{order.id}/">#{order.id}</a></i></b>'
+        )
+
+        if delivered_goods := ctx.new_sale_event.data.get('delivered_goods'):
+            menu.footer_text = f'<i>📦 Успешно доставлено {len(delivered_goods)} товаров.</i>'
+        elif (error := ctx.new_sale_event.data.get('deliver_error')) is not None:
+            if isinstance(error, TranslatableException):
+                menu.footer_text = f'<i>❌ Не удалось выдать товары.\n{html.escape(error.format_args(translater.translate(error.message)))}</i>'
+            else:
+                menu.footer_text = '<i>❌ Не удалось выдать товары.\nПодробности в логах.</i>'
+        else:
+            menu.footer_text = '<i>ℹ️ Товары не были выданы, т.к. не было найдено подходящего правила.</i>'
+
+        menu.header_keyboard.add_callback_button(button_id='refund', text=translater.translate('💸 Вернуть средства'), callback_data='dummy')
+        menu.header_keyboard.add_callback_button(button_id='response', text=translater.translate('🗨️ Ответить'), callback_data=SendMessage(to=ctx.new_sale_event.message.chat_id, name=order.counterparty.username).pack_compact())
+
+        return menu
 
 
 class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=StateUIContext):
