@@ -10,6 +10,7 @@ dependencies = [
     "eventry>=0.3.6,<0.4.0",
     "funpaybotengine>=0.5.2,<0.6.0",
     "packaging~=25.0",
+    "pillow>=10.0.0",
     "pydantic>=2.12.5,<2.13",
     "tomli-w~=1.2.0",
 ]
