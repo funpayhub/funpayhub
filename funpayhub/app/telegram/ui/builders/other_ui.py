@@ -143,35 +143,6 @@ class MainMenuBuilder(MenuBuilder, menu_id=MenuIds.main_menu, context_type=MenuC
             finalizer=StripAndNavigationFinalizer(),
         )
 
-class NewSaleNotificationMenuBuilder(MenuBuilder, menu_id=MenuIds.new_sale_notification, context_type=NewSaleMenuContext):
-    async def build(self, ctx: NewSaleMenuContext, translater: Tr) -> Menu:
-        menu = Menu()
-        order = await ctx.new_sale_event.get_order_preview()
-
-        banner_text = f"Сумма: {order.total.value} {order.total.character}\nПокупатель: {order.counterparty.username}"
-        menu.image = create_dynamic_banner("tpl_order.png", "НОВЫЙ ЗАКАЗ", banner_text)
-
-        menu.header_text = f'💰 Новый заказ: <b>{html.escape(order.title)}</b>'
-        menu.main_text = (
-            f'<b><i>👤 Покупатель: <a href="https://funpay.com/users/{order.counterparty.id}/">{order.counterparty.username}</a></i></b>\n'
-            f'<b><i>💵 Сумма:</i></b> <code>{order.total.value} {order.total.character}</code>\n'
-            f'<b><i>🆔 ID: <a href="https://funpay.com/orders/{order.id}/">#{order.id}</a></i></b>'
-        )
-
-        if delivered_goods := ctx.new_sale_event.data.get('delivered_goods'):
-            menu.footer_text = f'<i>📦 Успешно доставлено {len(delivered_goods)} товаров.</i>'
-        elif (error := ctx.new_sale_event.data.get('deliver_error')) is not None:
-            if isinstance(error, TranslatableException):
-                menu.footer_text = f'<i>❌ Не удалось выдать товары.\n{html.escape(error.format_args(translater.translate(error.message)))}</i>'
-            else:
-                menu.footer_text = '<i>❌ Не удалось выдать товары.\nПодробности в логах.</i>'
-        else:
-            menu.footer_text = '<i>ℹ️ Товары не были выданы, т.к. не было найдено подходящего правила.</i>'
-
-        menu.header_keyboard.add_callback_button(button_id='refund', text=translater.translate('💸 Вернуть средства'), callback_data='dummy')
-        menu.header_keyboard.add_callback_button(button_id='response', text=translater.translate('🗨️ Ответить'), callback_data=SendMessage(to=ctx.new_sale_event.message.chat_id, name=order.counterparty.username).pack_compact())
-
-        return menu
 
 
 class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=StateUIContext):
