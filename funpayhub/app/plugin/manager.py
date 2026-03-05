@@ -98,6 +98,7 @@ class PluginManager(BasePluginManager[Plugin]):
         self._hub = hub
 
         steps: dict[str, Callable[[LoadedPlugin], Awaitable[Any]]] = {
+            'setup_locales': self._run_setup_locales_step,
             'pre_setup': self._run_pre_setup_step,
             'apply_properties': self._apply_properties,
             'setup_properties': self._run_setup_properties_step,
@@ -131,6 +132,16 @@ class PluginManager(BasePluginManager[Plugin]):
 
     def args_factory(self, manifest: PluginManifest) -> tuple[Any, ...]:
         return manifest, self._hub
+
+    async def _run_setup_locales_step(self, plugin: LoadedPlugin[Plugin]) -> None:
+        if not plugin.manifest.locales_path:
+            return
+
+        path = plugin.path / Path(plugin.manifest.locales_path)
+        if not path.exists():
+            return
+
+        self.hub.translater.add_translations(path)
 
     async def _run_pre_setup_step(self, plugin: LoadedPlugin[Plugin]) -> None:
         await self._run_step(plugin.plugin.pre_setup)
