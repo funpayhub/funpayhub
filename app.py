@@ -23,7 +23,7 @@ from funpayhub.logger_conf import (
     ConsoleLoggerFormatter,
 )
 
-from funpayhub.lib.translater import Translater
+from funpayhub.lib.translater import translater
 
 from funpayhub.app.main import FunPayHub
 from funpayhub.app.properties import FunPayHubProperties
@@ -33,7 +33,6 @@ from funpayhub.app.args_parser import args
 # ---------------------------------------------
 # |               Logging setup               |
 # ---------------------------------------------
-translater = Translater()
 os.makedirs('logs', exist_ok=True)
 
 

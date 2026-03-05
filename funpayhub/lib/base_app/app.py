@@ -20,7 +20,11 @@ from funpayhub.loggers import (
 
 from funpayhub.lib.plugin import PluginManager
 from funpayhub.lib.exceptions import GoodsError
-from funpayhub.lib.translater import Translater, _en
+from funpayhub.lib.translater import (
+    Translater,
+    _en,
+    translater as global_translater,
+)
 from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
 
 from ... import exit_codes
@@ -69,7 +73,7 @@ class App:
         self._config = config
         self._safe_mode = safe_mode
         self._properties = properties
-        self._translater = translater or Translater()
+        self._translater = translater or global_translater
         self._goods_manager = GoodsSourcesManager()
         self._plugin_manager = plugin_manager
         self._plugin_manager._safe_mode = self._safe_mode

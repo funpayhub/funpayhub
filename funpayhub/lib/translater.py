@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-__all__ = ['Translater', '_', '_en', '_ru']
+__all__ = ['Translater', '_', '_en', '_ru', 'translater']
 
 
 import re
@@ -63,3 +63,6 @@ def _(_: str, /) -> str:
 
 _en = _
 _ru = _
+
+
+translater = Translater()
