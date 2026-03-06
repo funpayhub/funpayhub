@@ -114,6 +114,7 @@ class Telegram(TelegramApp):
             )
             for cmd in self._commands_registry.commands(setup_only=True)
         ]
+        commands.sort(key=lambda cmd: cmd.command)
         await self.bot.set_my_commands(commands)
         await self.bot.delete_webhook(drop_pending_updates=True)
         await self.hub.dispatcher.event_entry(TelegramStartEvent())
