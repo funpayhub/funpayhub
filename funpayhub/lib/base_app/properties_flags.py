@@ -48,3 +48,42 @@ class TelegramUIEmojiFlag:
 
     def __hash__(self) -> int:
         return id(self)
+
+
+class TelegramToggleUIEmojiFlag:
+    def __init__(
+        self,
+        on_emoji: tuple[str, str | None] | None = None,
+        off_emoji: tuple[str, str | None] | None = None,
+    ) -> None:
+        self._on_emoji = (
+            TelegramUIEmojiFlag(
+                emoji=on_emoji[0],
+                premium_emoji_id=on_emoji[1],
+            )
+            if on_emoji
+            else None
+        )
+
+        self._off_emoji = (
+            TelegramUIEmojiFlag(
+                emoji=off_emoji[0],
+                premium_emoji_id=off_emoji[1],
+            )
+            if off_emoji
+            else None
+        )
+
+    @property
+    def on_emoji(self) -> TelegramUIEmojiFlag:
+        return self._on_emoji
+
+    @property
+    def off_emoji(self) -> TelegramUIEmojiFlag:
+        return self._off_emoji
+
+    def __hash__(self) -> int:
+        return id(self)
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, type) and issubclass(o, TelegramUIEmojiFlag)

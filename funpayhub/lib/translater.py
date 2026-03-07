@@ -6,11 +6,25 @@ __all__ = ['Translater', '_', '_en', '_ru', 'ru', 'en', 'translater']
 
 import re
 import gettext
+from typing import Any
+from string import Formatter
 from pathlib import Path
 from collections import defaultdict
 
 
 TRANSLATION_RE = re.compile(r'(?<!\$)\$[a-zA-Z0-9._\-:]+')
+
+
+class SafeFormatter(Formatter):
+    missing = '~ERR'
+
+    def get_value(self, key: str | int, args, kwargs) -> Any:
+        if isinstance(key, int):
+            return args[key] if len(args) >= key + 1 else self.missing
+        return kwargs.get(key, self.missing)
+
+
+formatter = SafeFormatter()
 
 
 class Translater:
@@ -38,23 +52,24 @@ class Translater:
                     tr = gettext.GNUTranslations(f)
                 self._catalogs[lang_dir.name].append(tr)
 
-    def translate(self, key: str, language: str | None = None) -> str:
+    def translate(self, key: str, *args, language: str | None = None, **kwargs) -> str:
         if not key:
             return ''
 
-        language = language or self.current_language
-
-        for tr in self._catalogs.get(language, []):
+        result = key
+        for tr in self._catalogs.get(language or self.current_language, []):
             result = tr.gettext(key)
-            if result != key:
-                return result if result != '__empty__' else ''
+            result = result if result != '__empty__' else ''
+            if tr != key:
+                break
 
-        for tr in self._catalogs.get('ru', []):
-            result = tr.gettext(key)
-            if result != key:
-                return result if result != '__empty__' else ''
+        if result and (args or kwargs):
+            result = formatter.format(result, *args, **kwargs)
 
-        return key
+        return result
+
+
+translater = Translater()
 
 
 def _(_: str, /) -> str:
@@ -68,6 +83,3 @@ ru = _
 # Deprecated
 _en = _
 _ru = _
-
-
-translater = Translater()
