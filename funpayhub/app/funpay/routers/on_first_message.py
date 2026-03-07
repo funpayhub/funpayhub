@@ -47,7 +47,7 @@ class NewChats:
     """ID новых чатов."""
 
     cpu_data: dict[int, RunnerResponseObject[CurrentlyViewingOfferInfo]] = field(
-        default_factory=dict
+        default_factory=dict,
     )
     """Данные о просмотре лотов: {chat_id: CPU}"""
 
@@ -77,7 +77,10 @@ class UpdateLastChats:
         return {i for i in self.chats.keys() if await cache.is_new(i, delay)}
 
     async def _get_cpu_data(
-        self, bot: FPBot, *user_ids: int, attempts: int = 3
+        self,
+        bot: FPBot,
+        *user_ids: int,
+        attempts: int = 3,
     ) -> dict[int, RunnerResponseObject[CurrentlyViewingOfferInfo]]:
         objects = [CPURequestObject(id=i) for i in user_ids]
         while attempts:
@@ -157,7 +160,7 @@ async def on_first_message(
     message = properties.first_response.text.value
     if event.message.chat_id in LAST_CHATS.cpu_data:
         props = properties.first_response.get_offer(
-            LAST_CHATS.cpu_data[event.message.chat_id].data.id
+            LAST_CHATS.cpu_data[event.message.chat_id].data.id,
         )
         if props is not None:
             message = props.text.value
@@ -179,7 +182,7 @@ async def on_first_message(
         )
         tg.send_error_notification(
             translater.translate(
-                '❌ Произошла ошибка при форматировании текста для ответа на первое сообщение.'
+                '❌ Произошла ошибка при форматировании текста для ответа на первое сообщение.',
             ),
             exception=e,
         )
