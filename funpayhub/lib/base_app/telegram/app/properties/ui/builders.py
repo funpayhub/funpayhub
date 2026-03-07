@@ -24,6 +24,7 @@ from funpayhub.lib.base_app.properties_flags import (
     ParameterFlags,
     PropertiesFlags,
     TelegramUIEmojiFlag,
+    TelegramToggleUIEmojiFlag,
 )
 
 from .. import callbacks as cbs
@@ -47,6 +48,18 @@ def _emoji(node: Node) -> str:
     return ''
 
 
+def _toggle_emoji(node: Node, on: bool):
+    on_prefix, off_prefix = '🟢', '🔴'
+
+    for i in node.flags:
+        if isinstance(i, TelegramToggleUIEmojiFlag):
+            on_prefix = i.on_emoji.emoji if i.on_emoji else on_prefix
+            off_prefix = i.off_emoji.emoji if i.off_emoji else off_prefix
+            break
+
+    return on_prefix if on else off_prefix
+
+
 class ToggleParamButtonBuilder(ButtonBuilder, button_id='toggle_parameter', context_type=BtnCtx):
     async def build(self, ctx: BtnCtx, translater: Tr, properties: Props) -> Button:
         entry = properties.get_node(ctx.entry_path)
@@ -59,7 +72,7 @@ class ToggleParamButtonBuilder(ButtonBuilder, button_id='toggle_parameter', cont
 
         return Button.callback_button(
             button_id='toggle_param',
-            text=f'{"🟢" if entry.value else "🔴"} {translater.translate(entry.name)}',
+            text=f'{_toggle_emoji(entry, entry.value)} {translater.translate(entry.name)}',
             callback_data=cbs.NextParamValue(
                 path=entry.path,
                 from_callback=ctx.menu_render_context.callback_data,
