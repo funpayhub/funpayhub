@@ -181,7 +181,7 @@ class CallbackData(UnknownCallback):
 
         :return: valid callback data for Telegram Bot API
         """
-        data = self.model_dump(mode='python', exclude={'identifier', 'compact'})
+        data = self.model_dump(mode='json', exclude={'identifier', 'compact'})
         data = self.data | data
         result = (repr(data) if data else '') + self.__identifier__
         if include_history:
