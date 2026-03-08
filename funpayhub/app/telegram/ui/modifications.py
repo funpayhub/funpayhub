@@ -129,7 +129,7 @@ class AutoDeliveryNodeInfoModification(
                     + f': <code>{html.escape(node.goods_source.value)}</code>\n'
                     + '<b><i>'
                     + translater.translate(
-                        '⚠️ Источник товаров недоступен. Автовыдача не работает!',
+                        '⚠️ Источник товаров недоступен. Автовыдача не работает!'
                     )
                     + '</i></b>',
                 )
