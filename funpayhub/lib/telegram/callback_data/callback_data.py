@@ -204,7 +204,7 @@ class CallbackData(UnknownCallback):
                 f'data is not empty.',
             )
 
-        data = self.model_dump(mode='python', exclude={'identifier'})
+        data = self.model_dump(mode='json', exclude={'identifier'})
         serialized = ':'.join(self._serialize_value(i) for i in data.values())
         return f'{self.identifier}:{serialized}' if serialized else self.identifier
 

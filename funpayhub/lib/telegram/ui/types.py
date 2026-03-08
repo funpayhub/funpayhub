@@ -310,19 +310,28 @@ class MenuContext:
         if self.chat_id is None:
             raise ValueError('Chat ID or trigger must be provided.')
 
-        if self.menu_page is Ellipsis and self.callback_data is not None:
-            menu_page = getattr(self.callback_data, 'menu_page', None)
-            if menu_page is not None:
-                self.menu_page = menu_page
-            else:
-                self.menu_page = self.callback_data.data.get('menu_page', 0)
+        if self.callback_data is not None:
+            self.data = self.callback_data.data
 
-        if self.view_page is Ellipsis and self.callback_data is not None:
-            view_page = getattr(self.callback_data, 'view_page', None)
-            if view_page is not None:
-                self.view_page = view_page
+        if self.menu_page is Ellipsis:
+            if self.callback_data is not None:
+                menu_page = getattr(self.callback_data, 'menu_page', None)
+                if isinstance(menu_page, int):
+                    self.menu_page = menu_page
+                else:
+                    self.menu_page = self.callback_data.data.get('menu_page', 0)
             else:
-                self.view_page = self.callback_data.data.get('view_page', 0)
+                self.menu_page = 0
+
+        if self.view_page is Ellipsis:
+            if self.callback_data is not None:
+                view_page = getattr(self.callback_data, 'view_page', None)
+                if isinstance(view_page, int):
+                    self.view_page = view_page
+                else:
+                    self.view_page = self.callback_data.data.get('view_page', 0)
+            else:
+                self.view_page = 0
 
     @property
     def callback_data(self) -> UnknownCallback | None:
