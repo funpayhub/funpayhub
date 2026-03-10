@@ -61,6 +61,7 @@ async def open_custom_menu(
         **callback_data.context_data,
     )
     if callback_data.new_message:
+        await query.answer()
         await ctx_instance.build_and_answer(tg_ui, query.message)
     else:
         await ctx_instance.build_and_apply(tg_ui, query.message)
