@@ -151,6 +151,6 @@ async def send_template(
         )
         return
 
-    await query.answer(translater.translate('✅ Сообщение отправлно.'))
+    await query.answer(translater.translate('✅ Сообщение отправлено.'))
     if data is not None:
         delete_message(data.message)

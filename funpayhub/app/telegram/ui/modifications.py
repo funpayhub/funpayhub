@@ -3,8 +3,11 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
+from funpayhub.lib.properties import StringParameter
 from funpayhub.lib.telegram.ui import Button, MenuModification
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+
+from funpayhub.app.properties.flags import FormattersQueryFlag
 
 from .ids import MenuIds
 
@@ -62,34 +65,34 @@ class AutoDeliveryPropertiesMenuModification(
         return menu
 
 
-class AddFormattersListButtonModification(
+class AddFormattersButtonModification(
     MenuModification,
-    modification_id='fph:add_formatters_list_button_modification',
+    modification_id='fph:add_formatters_button',
 ):
-    async def filter(self, ctx: NodeMenuContext, menu: Menu) -> bool:
+    async def filter(self, ctx: NodeMenuContext, menu: Menu, properties: FPHProps) -> bool:
         if not ctx.entry_path:
             return False
 
-        return any(
-            [
-                ctx.entry_path[0] == 'auto_response' and ctx.entry_path[-1] == 'response_text',
-                ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'review_reply_text',
-                ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'chat_reply_text',
-            ],
-        )
+        try:
+            node = properties.get_node(ctx.entry_path)
+        except Exception:
+            return False
 
-    async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr) -> Menu:
-        if ctx.entry_path[0] == 'auto_response' and ctx.entry_path[-1] == 'response_text':
-            query = 'fph:general|fph:message'
-        elif any(
-            [
-                ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'review_reply_text',
-                ctx.entry_path[0] == 'review_reply' and ctx.entry_path[-1] == 'chat_reply_text',
-            ],
-        ):
-            query = 'fph:general|fph:order'
-        else:
-            query = None
+        if not isinstance(node, StringParameter):
+            return False
+
+        r = node.get_flag(FormattersQueryFlag) is not None
+        return r
+
+    async def modify(
+        self,
+        ctx: NodeMenuContext,
+        menu: Menu,
+        translater: Tr,
+        properties: FPHProps,
+    ) -> Menu:
+        node = properties.get_node(ctx.entry_path)
+        flag = node.get_flag(FormattersQueryFlag)
 
         menu.footer_keyboard.add_callback_button(
             button_id='open_formatters_list',
@@ -97,9 +100,10 @@ class AddFormattersListButtonModification(
             callback_data=OpenMenu(
                 menu_id=MenuIds.formatters_list,
                 new_message=True,
-                data={'query': query} if query is not None else {},
+                data={'query': flag.query} if flag.query is not None else {},
             ).pack(),
         )
+
         return menu
 
 
@@ -129,7 +133,7 @@ class AutoDeliveryNodeInfoModification(
                     + f': <code>{html.escape(node.goods_source.value)}</code>\n'
                     + '<b><i>'
                     + translater.translate(
-                        '⚠️ Источник товаров недоступен. Автовыдача не работает!'
+                        '⚠️ Источник товаров недоступен. Автовыдача не работает!',
                     )
                     + '</i></b>',
                 )
