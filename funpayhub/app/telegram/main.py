@@ -4,6 +4,7 @@ import html
 import asyncio
 from typing import TYPE_CHECKING
 from itertools import chain
+from collections import defaultdict
 
 from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 from aiogram.methods import SendMessage, SendDocument
@@ -107,14 +108,26 @@ class Telegram(TelegramApp):
                 self.ui_registry.add_button_modification(mod, button_id)
 
     async def start(self) -> None:
+        commands_objs = [i for i in self._commands_registry.commands(setup_only=True)]
+        commands_dict = defaultdict(list)
+        for i in commands_objs:
+            commands_dict[i.source].append(i)
+
+        for i in commands_dict.values():
+            i.sort(key=lambda cmd: cmd.command)
+
+        commands_obj = []
+        for i in sorted(commands_dict.keys(), key=lambda k: k == 'hub'):
+            commands_obj.extend(commands_dict[i])
+
         commands = [
             BotCommand(
                 command=cmd.command,
                 description=self.hub.translater.translate(cmd.description),
             )
-            for cmd in self._commands_registry.commands(setup_only=True)
+            for cmd in commands_objs
         ]
-        commands.sort(key=lambda cmd: cmd.command)
+
         await self.bot.set_my_commands(commands)
         await self.bot.delete_webhook(drop_pending_updates=True)
         await self.hub.dispatcher.event_entry(TelegramStartEvent())
