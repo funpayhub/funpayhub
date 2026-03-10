@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui import UIRegistry
     from funpayhub.lib.plugin.repository.manager import RepositoriesManager
 
+    from funpayhub.app.properties import FunPayHubProperties
     from funpayhub.app.telegram.main import Telegram
 
 
@@ -52,6 +53,7 @@ async def set_plugin_status(
     plugin_manager: PluginManager,
     translater: Tr,
     callback_data: cbs.SetPluginStatus,
+    properties: FunPayHubProperties,
 ) -> None:
     if callback_data.plugin_id not in plugin_manager._plugins:
         await query.answer(translater.translate('❌ Плагин не найден.'), show_alert=True)
@@ -67,8 +69,10 @@ async def set_plugin_status(
 
     if callback_data.status:
         await plugin_manager.enable_plugin(plugin=callback_data.plugin_id)
+        await properties.plugin_properties.disabled_plugins.remove_item(callback_data.plugin_id)
     else:
         await plugin_manager.disable_plugin(plugin=callback_data.plugin_id)
+        await properties.plugin_properties.disabled_plugins.add_item(callback_data.plugin_id)
 
     text = translater.translate(
         '✅ Плагин активирован.' if callback_data.status else '✅ Плагин деактивирован.',

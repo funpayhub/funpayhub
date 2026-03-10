@@ -8,7 +8,7 @@ __all__ = [
 
 from typing import Any
 
-from funpayhub.lib.core import safetuple
+from funpayhub.lib.translater import formatter
 
 
 class TranslatableException(Exception):
@@ -18,11 +18,10 @@ class TranslatableException(Exception):
         self.args = args
 
     def __str__(self) -> str:
-        args = safetuple(*self.args)
-        return self.message % args
+        return formatter.format(self.message, self.args)
 
     def format_args(self, text: str) -> str:
-        return text % self.args
+        return formatter.format(text, self.args)
 
 
 class FunPayHubError(TranslatableException):
