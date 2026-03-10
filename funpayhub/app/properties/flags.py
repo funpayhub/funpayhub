@@ -21,21 +21,12 @@ class PropertiesFlags(BasePropertiesFlags): ...
 
 
 class FormattersQueryFlag:
-    def __init__(self, query: str) -> None:
+    def __init__(self, query: str | None = None) -> None:
         self._query = query
 
     @property
-    def query(self) -> str:
+    def query(self) -> str | None:
         return self._query
-
-    def __eq__(self, o: object) -> bool:
-        if isinstance(o, type) and issubclass(o, FormattersQueryFlag):
-            return True
-        if isinstance(o, FormattersQueryFlag):
-            return self.query == o.query
-        if isinstance(o, str):
-            return self.query == o
-        return False
 
     def __hash__(self) -> int:
         return id(self)

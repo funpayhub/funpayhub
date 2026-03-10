@@ -13,6 +13,8 @@ from funpayhub.lib.properties import (
 from funpayhub.lib.translater import _
 from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
+from funpayhub.app.properties.flags import FormattersQueryFlag
+
 
 class AutoResponseEntryProperties(Properties):
     def __init__(self, command: str) -> None:
@@ -89,6 +91,7 @@ class AutoResponseEntryProperties(Properties):
                 name=_('Текст ответа'),
                 description=_('Текст ответа на команду.'),
                 default_value='',
+                flags=[FormattersQueryFlag('fph:general|fph:message')],
             ),
         )
 

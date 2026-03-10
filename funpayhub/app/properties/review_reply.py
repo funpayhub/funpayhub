@@ -3,6 +3,8 @@ from __future__ import annotations
 from funpayhub.lib.properties import Properties, StringParameter, ToggleParameter
 from funpayhub.lib.translater import _
 
+from funpayhub.app.properties.flags import FormattersQueryFlag
+
 
 class ReviewReplyPropertiesEntry(Properties):
     def __init__(self, id: str, name: str, description: str) -> None:
@@ -32,6 +34,7 @@ class ReviewReplyPropertiesEntry(Properties):
                 name=_('Текст ответа'),
                 description=_('Текст ответа на отзыв.'),
                 default_value='',
+                flags=[FormattersQueryFlag('fph:general|fph:order')],
             ),
         )
 
@@ -41,6 +44,7 @@ class ReviewReplyPropertiesEntry(Properties):
                 name=_('Текст ответного сообщения'),
                 description=_('Текст ответного сообщения.'),
                 default_value='',
+                flags=[FormattersQueryFlag('fph:general|fph:order')],
             ),
         )
 
