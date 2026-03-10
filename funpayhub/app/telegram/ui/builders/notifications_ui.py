@@ -26,7 +26,6 @@ class NotificationsMenuBuilder(
         props = properties.telegram.notifications
         kb = KeyboardBuilder()
         chat = f'{ctx.chat_id}.{ctx.thread_id}'
-        callback_data = ctx.callback_data
 
         kb.add_row(
             *(
@@ -35,7 +34,7 @@ class NotificationsMenuBuilder(
                     text=f'{"🔔" if chat in props.entries[i].value else "🔕"} {index + 1}⭐',
                     callback_data=cbs.ToggleNotificationChannel(
                         channel=i,
-                        history=callback_data.as_history() if callback_data is not None else [],
+                        from_callback=ctx.callback_data,
                     ).pack(),
                 )
                 for index, i in enumerate(f'review_{j}' for j in range(1, 6))
