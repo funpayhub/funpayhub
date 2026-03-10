@@ -124,6 +124,12 @@ class Node:
     def has_flag(self, flag: Any) -> bool:
         return flag in self._flags
 
+    def get_flag[R](self, flag_type: type[R]) -> R | None:
+        for i in self.flags:
+            if isinstance(i, flag_type):
+                return i
+        return None
+
     def matches_path(self, path: list[str]) -> bool:
         self_path = self.path
         if len(self_path) != len(path):
