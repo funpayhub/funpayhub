@@ -85,7 +85,11 @@ class AddFormattersButtonModification(
         return r
 
     async def modify(
-        self, ctx: NodeMenuContext, menu: Menu, translater: Tr, properties: FPHProps
+        self,
+        ctx: NodeMenuContext,
+        menu: Menu,
+        translater: Tr,
+        properties: FPHProps,
     ) -> Menu:
         node = properties.get_node(ctx.entry_path)
         flag = node.get_flag(FormattersQueryFlag)

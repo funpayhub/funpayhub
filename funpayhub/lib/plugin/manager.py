@@ -10,11 +10,11 @@ import json
 import asyncio
 import keyword
 import importlib
+import subprocess
 from typing import Any
 from types import MappingProxyType
 from pathlib import Path
 from collections.abc import Callable, Awaitable
-import subprocess
 
 from packaging.version import Version
 
