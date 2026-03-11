@@ -12,7 +12,7 @@ from aiogram.client.default import DefaultBotProperties
 
 bot = Bot(
     token=os.environ['TELEGRAM_TOKEN'],
-    default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN_V2),
+    default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN),
 )
 
 with open(os.environ['GITHUB_EVENT_PATH'], 'r') as f:
@@ -20,7 +20,7 @@ with open(os.environ['GITHUB_EVENT_PATH'], 'r') as f:
 
 
 def escape_md(text: str) -> str:
-    special_chars = r'_*[]()~`>#+-=|{}.!'
+    special_chars = r'*_`[]()'
     return re.sub(f'([{re.escape(special_chars)}])', r'\\\1', text)
 
 
@@ -31,7 +31,7 @@ async def send_notification():
         '**' + escape_md(f'🔗 Ссылка на релиз: {event["release"]["html_url"]}') + '**\n\n'
         '**'
         + escape_md(
-            '♻ ️Чтобы обновиться: /menu -> 🔌 Системное меню -> 🔍 Проверить наличие обновлений.'
+            '♻ ️Чтобы обновиться: /menu -> 🔌 Системное меню -> 🔍 Проверить наличие обновлений.',
         )
     )
 
