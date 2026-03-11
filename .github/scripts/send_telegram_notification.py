@@ -26,13 +26,14 @@ def escape_md(text: str) -> str:
 
 async def send_notification():
     message = (
-        '**' + escape_md(f'🎉 Новый релиз FunPay Hub: {event["release"]["tag_name"]}') + '**\n\n'
+        '*' + escape_md(f'🎉 Новый релиз FunPay Hub: {event["release"]["tag_name"]}') + '*\n\n'
         f'{event["release"]["body"]}\n\n'
-        '**' + escape_md(f'🔗 Ссылка на релиз: {event["release"]["html_url"]}') + '**\n\n'
-        '**'
+        '*' + escape_md(f'🔗 Ссылка на релиз: {event["release"]["html_url"]}') + '*\n\n'
+        '*'
         + escape_md(
             '♻ ️Чтобы обновиться: /menu -> 🔌 Системное меню -> 🔍 Проверить наличие обновлений.',
         )
+        + '*'
     )
 
     msg = await bot.send_message(-1002290367706, message, message_thread_id=None)
