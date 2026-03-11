@@ -1,0 +1,21 @@
+name: send_telegram_notification.yml
+on:
+  release:
+    types: [published]
+
+jobs:
+  send_telegram_notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram Notification
+        uses: appleboy/telegram-action@master
+        with:
+          to: -1002290367706
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            **🎉 Новый релиз FunPay Hub: ${{ github.event.release.tag_name }}**
+            
+            ${{ github.event.release.body }}
+            
+            **🔗 Ссылка на релиз: ${{ github.event.release.html_url }}**
+            **♻ ️Чтобы обновиться: /menu -> 🔌 Системное меню -> 🔍 Проверить наличие обновлений.**
