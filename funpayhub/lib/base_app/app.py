@@ -31,6 +31,7 @@ from ... import exit_codes
 from .telegram import TelegramApp
 from .workflow_data import WorkflowData
 from ..plugin.repository.manager import RepositoriesManager
+import builtins
 
 
 if TYPE_CHECKING:
@@ -68,6 +69,7 @@ class App:
         workflow_data: WorkflowData | None = None,
     ):
         self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
+        builtins.APP_INSTANCE_ID = self._instance_id
         self._version = version
 
         self._config = config
