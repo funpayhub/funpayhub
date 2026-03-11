@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
 from dataclasses import field, dataclass
+from itertools import chain
+from collections.abc import Generator
 
 from funpaybotengine import Router
 from funpaybotengine.exceptions import (
@@ -9,12 +12,16 @@ from funpaybotengine.exceptions import (
     BotUnauthenticatedError,
     UnexpectedHTTPStatusError,
 )
+from funpaybotengine.types.enums import MessageType
 from funpaybotengine.dispatching.events import NewMessageEvent, ChatChangedEvent
 from funpaybotengine.types.requests.runner import CPURequestObject
 
 from funpayhub.loggers import main as logger
 
-from funpayhub.lib.translater import _en
+from funpayhub.lib.translater import (
+    en as _en,
+    translater,
+)
 from funpayhub.lib.hub.text_formatters import FormattersRegistry
 from funpayhub.lib.hub.text_formatters.category import InCategory
 
@@ -31,14 +38,13 @@ if TYPE_CHECKING:
     from funpaybotengine.runner import EventsStack
     from funpaybotengine.types.updates import RunnerResponseObject, CurrentlyViewingOfferInfo
 
-    from funpayhub.lib.translater import Translater
-
     from funpayhub.app.funpay.main import FunPay
     from funpayhub.app.telegram.main import Telegram
     from funpayhub.app.first_response_cache import FirstResponseCache
 
 
 router = Router(name='fph:on_first_message')
+ru = translater.translate
 
 
 @dataclass
@@ -52,13 +58,15 @@ class NewChats:
     """Данные о просмотре лотов: {chat_id: CPU}"""
 
 
-LAST_CHATS: NewChats | None = None
-
-
 class UpdateLastChats:
     def __init__(self, events_stack: EventsStack) -> None:
+        logger.debug(_en('Checking new events stack.'))
+
+        self.stack = events_stack
         self.chats: dict[int, int] = {}
         """Словарь всех изменившихся {chat_id: user_id}, где user_id - ID собеседника."""
+
+        self.silent_chats: set[int] = set()
 
         # Исключаем все чаты, в которых нет сообщения от самого собеседника
         # (а только от нас / других пользователей (поддержка))
@@ -66,15 +74,27 @@ class UpdateLastChats:
         for event in events_stack:
             if isinstance(event, ChatChangedEvent):
                 current_chat_name = event.chat_preview.username
+                logger.debug(_en('ChatChangedEvent: %s'), current_chat_name)
             elif isinstance(event, NewMessageEvent):
                 if event.message.sender_username == current_chat_name and event.message.sender_id:
+                    logger.debug(
+                        _en('New message from user %s, that matches chat name %s.'),
+                        event.message.sender_id,
+                        current_chat_name,
+                    )
                     self.chats[event.message.chat_id] = event.message.sender_id
+                elif event.message.meta.type is MessageType.NEW_ORDER:
+                    self.silent_chats.add(event.message.chat_id)
+                    logger.debug(
+                        _en('New order in chat %s. Marking chat as silent.'),
+                        current_chat_name,
+                    )
+
+        logger.debug(_en('Finished processing events stack.'))
+        logger.debug(_en('Found potentially new chats: %s.'), (self.chats,))
+        logger.debug(_en('Silent chats: %s.'), (self.silent_chats,))
 
         self.sender_id_to_chat_id = {v: k for k, v in self.chats.items()}
-
-    async def get_timed_out_chats(self, cache: FirstResponseCache, delay: int):
-        """Возвращает список всех "новых" чатов из `self.chats`."""
-        return {i for i in self.chats.keys() if await cache.is_new(i, delay)}
 
     async def _get_cpu_data(
         self,
@@ -107,6 +127,16 @@ class UpdateLastChats:
             data |= await self._get_cpu_data(bot, *i, attempts=attempts)
         return data
 
+    async def gen_new_chats_obj_task(
+        self, chat_ids: set[int], get_cpu: bool, bot: FPBot
+    ) -> NewChats:
+        obj = NewChats(chat_ids=chat_ids)
+        if get_cpu:
+            profiles = {self.chats[i] for i in chat_ids if i not in self.silent_chats}
+            cpu_data = await self.get_cpu_data(bot, *profiles)
+            obj.cpu_data = {self.sender_id_to_chat_id[k]: v for k, v in cpu_data.items()}
+        return obj
+
     async def __call__(
         self,
         bot: FPBot,
@@ -114,53 +144,76 @@ class UpdateLastChats:
         properties: FunPayHubProperties,
         **kwargs,
     ):
-        global LAST_CHATS
-        new_chats = await self.get_timed_out_chats(
-            first_response_cache,
-            properties.first_response.timeout.value,
-        )
+        if not self.has_chats:
+            logger.debug(_en('No potentially new chats was found. Exiting handler.'))
+            return
 
-        cpu_data = {}
-        if properties.first_response.has_offer_specific:
-            profiles = {self.chats[i] for i in new_chats}
-            cpu_data = await self.get_cpu_data(bot, *profiles)
-            cpu_data = {self.sender_id_to_chat_id[k]: v for k, v in cpu_data.items()}
-        data_obj = NewChats(chat_ids=new_chats, cpu_data=cpu_data)
-        LAST_CHATS = data_obj
+        logger.debug(_en('Extracting new chats from potentially new chats.'))
+        new_chats = await first_response_cache.get_timed_out(
+            *self.total_new_chats,
+            delay=properties.first_response.timeout.value,
+        )
+        logger.debug(_en('New chats: %s'), (new_chats,))
+        if not new_chats:
+            logger.debug(_en('No new chats were found. Exiting handler.'))
+            return
+
+        logger.debug(_en('Silently updating new chats, that have NewOrder messages.'))
+        await first_response_cache.update(*(i for i in self.silent_chats if i in new_chats))
+
+        logger.debug(_en('Looking for not silent new chats.'))
+        not_silent_chats = {i for i in new_chats if i not in self.silent_chats}
+        logger.debug(_en('Not silent new chats: %s'), (not_silent_chats,))
+        if not not_silent_chats:
+            logger.debug(_en('No new chats were found. Exiting handler.'))
+            return
+
+        logger.debug(_en('Creating task to generate NewChats obj.'))
+        task = asyncio.create_task(
+            self.gen_new_chats_obj_task(
+                new_chats,
+                properties.first_response.has_offer_specific,
+                bot,
+            ),
+        )
+        self.stack['greetings_task'] = task
+        logger.debug(_en('Task created and attached to events stack.'))
+
+    @property
+    def total_new_chats(self) -> Generator[int, None, None]:
+        return (i for i in chain(self.chats.keys(), self.silent_chats))
+
+    @property
+    def has_chats(self) -> bool:
+        return bool(self.chats) or bool(self.silent_chats)
 
 
 @router.on_new_events_pack()
 async def update_cpu(events_stack: EventsStack, **kwargs):
-    global LAST_CHATS
-    LAST_CHATS = None
     await UpdateLastChats(events_stack)(events_stack=events_stack, **kwargs)
 
 
-@router.on_new_message(
-    lambda message: LAST_CHATS is not None and message.chat_id in LAST_CHATS.chat_ids,
-)
+@router.on_new_message(as_task=True)
 async def on_first_message(
     event: NewMessageEvent,
+    events_stack: EventsStack,
     fp: FunPay,
     properties: FunPayHubProperties,
     fp_formatters: FormattersRegistry,
     first_response_cache: FirstResponseCache,
     tg: Telegram,
-    translater: Translater,
 ):
-    if not (
-        await first_response_cache.is_new(
-            event.message.chat_id,
-            properties.first_response.timeout.value,
-        )
-    ):
+    if (task := events_stack.get('greetings_task')) is None:
+        logger.debug(_en('No greetings task was found. Exiting handler.'))
         return
-    await first_response_cache.update(event.message.chat_id)
+
+    await logger.debug('Awaiting greetings task...')
+    new_chats: NewChats = await task
 
     message = properties.first_response.text.value
-    if event.message.chat_id in LAST_CHATS.cpu_data:
+    if event.message.chat_id in new_chats.cpu_data:
         props = properties.first_response.get_offer(
-            LAST_CHATS.cpu_data[event.message.chat_id].data.id,
+            new_chats.cpu_data[event.message.chat_id].data.id,
         )
         if props is not None:
             message = props.text.value
@@ -169,34 +222,20 @@ async def on_first_message(
         return
 
     try:
-        context = NewMessageContext(new_message_event=event)
         formatted = await fp_formatters.format_text(
             text=message,
-            context=context,
+            context=NewMessageContext(new_message_event=event),
             query=InCategory(MessageFormattersCategory).or_(InCategory(GeneralFormattersCategory)),
         )
     except Exception as e:
-        logger.error(
-            _en('An error occurred while formatting text for the first message response.'),
-            exc_info=True,
-        )
-        tg.send_error_notification(
-            translater.translate(
-                '❌ Произошла ошибка при форматировании текста для ответа на первое сообщение.',
-            ),
-            exception=e,
-        )
+        logger.error(_en('Greetings text formatting error.'), exc_info=True)
+        tg.send_error_notification(ru('❌ Ошибка форматирования текста приветствия.'), e)
         return
 
     try:
         await fp.send_messages_stack(formatted, event.message.chat_id)
+        await first_response_cache.update(event.message.chat_id)
     except Exception as e:
-        logger.error(
-            _en('An error occurred while sending the first message response.'),
-            exc_info=True,
-        )
-        tg.send_error_notification(
-            translater.translate('❌ Произошла ошибка при ответе на первое сообщение.'),
-            exception=e,
-        )
+        logger.error(_en('An error occurred while responding to the 1st message.'), exc_info=True)
+        tg.send_error_notification(ru('❌ Произошла ошибка при ответе на первое сообщение.'), e)
         return

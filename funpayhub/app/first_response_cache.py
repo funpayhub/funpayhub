@@ -16,18 +16,17 @@ class FirstResponseCache:
         self._cache: dict[str, int] = {}
         self._path = Path(path)
 
-    async def update(
-        self,
-        chat_id: int | str,
-        timestamp: int | None = None,
-        save: bool = True,
-    ) -> None:
-        self._cache[str(chat_id)] = int(timestamp if timestamp is not None else time.time())
+    async def update(self, *chat_ids: int | str, ts: int | None = None, save: bool = True) -> None:
+        for i in chat_ids:
+            self._cache[str(i)] = int(ts if ts is not None else time.time())
         if save:
             await self.save()
 
     async def get(self, chat_id: int | str) -> int | None:
         return self._cache.get(str(chat_id))
+
+    async def get_timed_out(self, *chat_ids: int | str, delay: int = 3600 * 24) -> set[int | str]:
+        return {i for i in chat_ids if await self.is_new(i, delay)}
 
     async def is_new(self, chat_id: int | str, delay: int = 3600 * 24) -> bool:
         ts = await self.get(chat_id)
