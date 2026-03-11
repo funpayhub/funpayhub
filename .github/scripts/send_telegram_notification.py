@@ -28,7 +28,8 @@ async def send_notification():
 
     msg = await bot.send_message(-1002290367706, message, message_thread_id=None)
     await msg.pin()
+    await bot.session.close()
 
 
-def main():
+if __name__ == '__main__':
     asyncio.run(send_notification())
