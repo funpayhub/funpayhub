@@ -5,6 +5,7 @@ import sys
 import random
 import string
 import asyncio
+import builtins
 import traceback
 from typing import TYPE_CHECKING, Any
 from dataclasses import dataclass
@@ -31,7 +32,6 @@ from ... import exit_codes
 from .telegram import TelegramApp
 from .workflow_data import WorkflowData
 from ..plugin.repository.manager import RepositoriesManager
-import builtins
 
 
 if TYPE_CHECKING:

@@ -128,7 +128,10 @@ class UpdateLastChats:
         return data
 
     async def gen_new_chats_obj_task(
-        self, chat_ids: set[int], get_cpu: bool, bot: FPBot
+        self,
+        chat_ids: set[int],
+        get_cpu: bool,
+        bot: FPBot,
     ) -> NewChats:
         obj = NewChats(chat_ids=chat_ids)
         if get_cpu:
