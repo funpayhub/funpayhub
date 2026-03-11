@@ -113,7 +113,7 @@ class Telegram(TelegramApp):
             commands_dict[i.source].append(i)
 
         commands_objs = []
-        for i in sorted(commands_dict.keys(), key=lambda k: k == 'hub'):
+        for i in sorted(commands_dict.keys(), key=lambda k: k == 'hub', reverse=True):
             commands_objs.extend(commands_dict[i])
 
         commands = [
