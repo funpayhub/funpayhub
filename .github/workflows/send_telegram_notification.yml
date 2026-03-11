@@ -26,4 +26,4 @@ jobs:
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
-        run: python .github/send_telegram_notification.py
+        run: python .github/scripts/send_telegram_notification.py
