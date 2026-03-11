@@ -48,6 +48,7 @@ dictConfig(
             },
             'console_formatter': {
                 '()': ConsoleLoggerFormatter,
+                'show_name': bool(args.debug),
             },
         },
         'handlers': {

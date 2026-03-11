@@ -102,6 +102,10 @@ class HubLogMessage(logging.LogRecord):
 
 
 class ConsoleLoggerFormatter(logging.Formatter):
+    def __init__(self, show_name: bool = False, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.show_name = show_name
+
     def format(self, record: logging.LogRecord) -> str:
         time_str = self.formatTime(record, '%H:%M:%S')
         time_str = f'{Fore.WHITE + Style.DIM}{time_str}{Style.RESET_ALL}'
@@ -133,9 +137,16 @@ class ConsoleLoggerFormatter(logging.Formatter):
                 plugin_name = f'[{plugin.manifest.name}]'
             plugin_name = ' ' + plugin_name
 
+        logger_name = ''
+        if self.show_name:
+            logger_name = record.name
+            if self.support_color:
+                logger_name = f'{color}{logger_name}{reset}'
+            logger_name = f' [ {logger_name} ]'
+
         text = (
             f'{reset}{EMOJIS[record.levelno] if sys.stdout.isatty() else ""} {time_str} '
-            f'[{color}{level_name:^6}{reset}]{plugin_name} '
+            f'[{color}{level_name:^6}{reset}]{logger_name}{plugin_name} '
             f'{text}{reset}'
         )
 

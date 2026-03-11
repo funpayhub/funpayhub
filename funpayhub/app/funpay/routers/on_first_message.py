@@ -16,7 +16,7 @@ from funpaybotengine.types.enums import MessageType
 from funpaybotengine.dispatching.events import NewMessageEvent, ChatChangedEvent
 from funpaybotengine.types.requests.runner import CPURequestObject
 
-from funpayhub.loggers import main as logger
+from funpayhub.loggers import greetings_logger as logger
 
 from funpayhub.lib.translater import (
     en as _en,
@@ -68,8 +68,6 @@ class UpdateLastChats:
 
         self.silent_chats: set[int] = set()
 
-        # Исключаем все чаты, в которых нет сообщения от самого собеседника
-        # (а только от нас / других пользователей (поддержка))
         current_chat_name = ...
         for event in events_stack:
             if isinstance(event, ChatChangedEvent):
@@ -106,14 +104,40 @@ class UpdateLastChats:
         while attempts:
             try:
                 attempts -= 1
+                logger.debug(_en('Getting CPU data (chunk) for users %s.'), (user_ids,))
                 result = await bot.runner_request(objects)
                 return {k.id: v for k, v in zip(objects, result.cpu)}
             except (UnauthorizedError, BotUnauthenticatedError):
-                raise
-            except UnexpectedHTTPStatusError:
+                logger.error(
+                    _en(
+                        'Unable to get CPU data for users %s: unauthorized. Returning empty dict.'
+                    ),
+                )
+                return {}
+            except UnexpectedHTTPStatusError as e:
+                logger.error(
+                    _en('Unexpected status while getting CPU data for users %s: %s.'),
+                    (user_ids, e.status),
+                )
                 if not attempts:
-                    raise
-        raise RuntimeError()
+                    logger.error(
+                        _en(
+                            'Failed to get CPU data for users %s: attempts exceeded. '
+                            'Returning empty dict.'
+                        ),
+                        (user_ids,),
+                    )
+                    return {}
+            except Exception:
+                logger.error(
+                    _en(
+                        'An unexpected error occurred while getting CPU data for users %s. '
+                        'Returning empty dict.'
+                    ),
+                    (user_ids,),
+                    exc_info=True,
+                )
+                return {}
 
     async def get_cpu_data(
         self,
@@ -121,10 +145,12 @@ class UpdateLastChats:
         *user_ids: int,
         attempts: int = 3,
     ) -> dict[int, RunnerResponseObject[CurrentlyViewingOfferInfo]]:
+        logger.debug(_en('Getting CPU data for users %s.'), (user_ids,))
         chunks = [tuple(user_ids[i : i + 10]) for i in range(0, len(user_ids), 10)]
         data = {}
         for i in chunks:
             data |= await self._get_cpu_data(bot, *i, attempts=attempts)
+        logger.debug(_en('Got CPU data for users %s.'), ([i for i in data.keys()],))
         return data
 
     async def gen_new_chats_obj_task(
@@ -210,18 +236,25 @@ async def on_first_message(
         logger.debug(_en('No greetings task was found. Exiting handler.'))
         return
 
-    await logger.debug('Awaiting greetings task...')
+    logger.debug('Awaiting greetings task...')
     new_chats: NewChats = await task
 
     message = properties.first_response.text.value
     if event.message.chat_id in new_chats.cpu_data:
+        logger.debug(
+            _en('Chat %s found in CPU data: %s.'),
+            event.message.chat_id,
+            new_chats.cpu_data[event.message.chat_id].data.id,
+        )
         props = properties.first_response.get_offer(
             new_chats.cpu_data[event.message.chat_id].data.id,
         )
         if props is not None:
+            logger.debug(_en('Per-offer greetings props found.'))
             message = props.text.value
 
     if not message:
+        logger.debug(_en('Greetings text is empty. Exiting handler.'))
         return
 
     try:

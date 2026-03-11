@@ -11,3 +11,5 @@ telegram = getLogger('funpayhub.telegram')
 telegram_ui = getLogger('funpayhub.telegram_ui')
 callbacks = getLogger('funpayhub.callbacks')
 offers_raiser = getLogger('funpayhub.offers_raiser')
+
+greetings_logger = getLogger('funpayhub.greetings')
