@@ -108,17 +108,13 @@ class Telegram(TelegramApp):
                 self.ui_registry.add_button_modification(mod, button_id)
 
     async def start(self) -> None:
-        commands_objs = [i for i in self._commands_registry.commands(setup_only=True)]
         commands_dict = defaultdict(list)
-        for i in commands_objs:
+        for i in self._commands_registry.commands(setup_only=True):
             commands_dict[i.source].append(i)
 
-        for i in commands_dict.values():
-            i.sort(key=lambda cmd: cmd.command)
-
-        commands_obj = []
+        commands_objs = []
         for i in sorted(commands_dict.keys(), key=lambda k: k == 'hub'):
-            commands_obj.extend(commands_dict[i])
+            commands_objs.extend(commands_dict[i])
 
         commands = [
             BotCommand(
