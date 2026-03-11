@@ -12,6 +12,7 @@ jobs:
         with:
           to: -1002290367706
           token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
           message: |
             **🎉 Новый релиз FunPay Hub: ${{ github.event.release.tag_name }}**
             
