@@ -65,6 +65,8 @@ async def show_menu_help(
             text=f'Справка:\n{desc}',
             show_alert=True,
         )
+    else:
+        await query.answer()
 
 
 @router.callback_query(props_cbs.NextParamValue.filter())
