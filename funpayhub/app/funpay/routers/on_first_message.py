@@ -237,6 +237,12 @@ async def on_first_message(
     tg: Telegram,
 ):
     async with locks[event.message.chat_id]:
+        if not await first_response_cache.is_new(
+            event.message.chat_id,
+            properties.first_response.timeout.value,
+        ):
+            return
+
         if (task := events_stack.get('greetings_task')) is None:
             logger.debug(_en('No greetings task was found. Exiting handler.'))
             return
