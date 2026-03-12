@@ -31,6 +31,7 @@ from funpayhub.app.formatters import (
     MessageFormattersCategory,
 )
 from funpayhub.app.properties import FunPayHubProperties
+from collections import defaultdict
 
 
 if TYPE_CHECKING:
@@ -222,6 +223,9 @@ async def update_cpu(events_stack: EventsStack, **kwargs):
     await UpdateLastChats(events_stack)(events_stack=events_stack, **kwargs)
 
 
+locks: dict[str | int, asyncio.Lock] = defaultdict(asyncio.Lock)
+
+
 @router.on_new_message(as_task=True)
 async def on_first_message(
     event: NewMessageEvent,
@@ -232,46 +236,51 @@ async def on_first_message(
     first_response_cache: FirstResponseCache,
     tg: Telegram,
 ):
-    if (task := events_stack.get('greetings_task')) is None:
-        logger.debug(_en('No greetings task was found. Exiting handler.'))
-        return
+    async with locks[event.message.chat_id]:
+        if (task := events_stack.get('greetings_task')) is None:
+            logger.debug(_en('No greetings task was found. Exiting handler.'))
+            return
 
-    logger.debug('Awaiting greetings task...')
-    new_chats: NewChats = await task
+        logger.debug('Awaiting greetings task...')
+        new_chats: NewChats = await task
 
-    message = properties.first_response.text.value
-    if event.message.chat_id in new_chats.cpu_data:
-        logger.debug(
-            _en('Chat %s found in CPU data: %s.'),
-            event.message.chat_id,
-            new_chats.cpu_data[event.message.chat_id].data.id,
-        )
-        props = properties.first_response.get_offer(
-            new_chats.cpu_data[event.message.chat_id].data.id,
-        )
-        if props is not None:
-            logger.debug(_en('Per-offer greetings props found.'))
-            message = props.text.value
+        if event.message.chat_id not in new_chats.chat_ids:
+            logger.debug(_en('Chat %s not found in new chats. Exiting handler.'), event.message.chat_id)
+            return
 
-    if not message:
-        logger.debug(_en('Greetings text is empty. Exiting handler.'))
-        return
+        message = properties.first_response.text.value
+        if event.message.chat_id in new_chats.cpu_data:
+            logger.debug(
+                _en('Chat %s found in CPU data: %s.'),
+                event.message.chat_id,
+                new_chats.cpu_data[event.message.chat_id].data.id,
+            )
+            props = properties.first_response.get_offer(
+                new_chats.cpu_data[event.message.chat_id].data.id,
+            )
+            if props is not None:
+                logger.debug(_en('Per-offer greetings props found.'))
+                message = props.text.value
 
-    try:
-        formatted = await fp_formatters.format_text(
-            text=message,
-            context=NewMessageContext(new_message_event=event),
-            query=InCategory(MessageFormattersCategory).or_(InCategory(GeneralFormattersCategory)),
-        )
-    except Exception as e:
-        logger.error(_en('Greetings text formatting error.'), exc_info=True)
-        tg.send_error_notification(ru('❌ Ошибка форматирования текста приветствия.'), e)
-        return
+        if not message:
+            logger.debug(_en('Greetings text is empty. Exiting handler.'))
+            return
 
-    try:
-        await fp.send_messages_stack(formatted, event.message.chat_id)
-        await first_response_cache.update(event.message.chat_id)
-    except Exception as e:
-        logger.error(_en('An error occurred while responding to the 1st message.'), exc_info=True)
-        tg.send_error_notification(ru('❌ Произошла ошибка при ответе на первое сообщение.'), e)
-        return
+        try:
+            formatted = await fp_formatters.format_text(
+                text=message,
+                context=NewMessageContext(new_message_event=event),
+                query=InCategory(MessageFormattersCategory).or_(InCategory(GeneralFormattersCategory)),
+            )
+        except Exception as e:
+            logger.error(_en('Greetings text formatting error.'), exc_info=True)
+            tg.send_error_notification(ru('❌ Ошибка форматирования текста приветствия.'), e)
+            return
+
+        try:
+            await fp.send_messages_stack(formatted, event.message.chat_id)
+            await first_response_cache.update(event.message.chat_id)
+        except Exception as e:
+            logger.error(_en('An error occurred while responding to the 1st message.'), exc_info=True)
+            tg.send_error_notification(ru('❌ Произошла ошибка при ответе на первое сообщение.'), e)
+            return
