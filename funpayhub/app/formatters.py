@@ -289,7 +289,7 @@ class MessageFormatter(
         if self.mode == 'text':
             return event.message.text or ''
         if self.mode == 'chat_id':
-            return event.message.chat_id or ''
+            return str(event.message.chat_id) if event.message.chat_id is not None else ''
         if self.mode == 'chat_name':
             return event.message.chat_name or ''
         if self.mode == 'badge_text':
