@@ -130,10 +130,10 @@ MESSAGE_DESC = _(
     '3. <code>chat_id</code>. Вставляет ID чата.\n'
     'Пример использования: <code>$message&lt;chat_id&gt;</code>\n'
     'Пример вывода: <code>123456789</code>\n\n'
-    '4. <code>chat_id</code>. Вставляет название чата.n'
+    '4. <code>chat_id</code>. Вставляет название чата\n'
     'Пример использования: <code>$message&lt;chat_name&gt;</code>\n'
     'Пример вывода: <code>node-123456789-987654321</code>\n\n'
-    '5. <code>badge_text</code>. Вставляет текст бейджика отправителя.n'
+    '5. <code>badge_text</code>. Вставляет текст бейджика отправителя\n'
     'Пример использования: <code>$message&lt;badge_text&gt;</code>\n'
     'Пример вывода: <code>Поддержка</code>\n\n',
 )
