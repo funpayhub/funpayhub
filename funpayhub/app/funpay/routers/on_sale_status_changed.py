@@ -38,13 +38,13 @@ ru = translater.translate
         FinalOrderStatusFilter(OrderStatus.COMPLETED),
         lambda properties: properties.on_sale_confirmation.reply_in_chat.value
         and properties.on_sale_confirmation.response_text.value,
-    )
+    ),
 )
 async def send_order_confirmation_message(
     event: SaleStatusChangedEvent,
     properties: FPHProps,
     fp_formatters: FormattersRegistry,
-    fph: FunPayHub,
+    hub: FunPayHub,
 ) -> None:
     try:
         messages_pack = await fp_formatters.format_text(
@@ -58,20 +58,20 @@ async def send_order_confirmation_message(
         )
     except Exception as e:
         logger.error(_en('Confirmation message formatting error.'), exc_info=True)
-        fph.telegram.send_error_notification(
+        hub.telegram.send_error_notification(
             ru('<b>❌ Ошибка форматирования сообщения ответа на подтверждение заказа.</b>'),
             e,
         )
         return
 
     try:
-        await fph.funpay.send_messages_stack(
+        await hub.funpay.send_messages_stack(
             messages_pack,
             chat_id=event.message.chat_id,
         )
     except Exception as e:
         logger.error(_en('Confirmation message sending error.'), exc_info=True)
-        fph.telegram.send_error_notification(
+        hub.telegram.send_error_notification(
             ru('<b>❌ Ошибка отправления ответа на подтверждение заказа.</b>'),
             e,
         )
