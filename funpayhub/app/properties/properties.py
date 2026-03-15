@@ -12,6 +12,7 @@ from .global_toggles import TogglesProperties
 from .plugin_properties import PluginProperties
 from .general_properties import GeneralProperties
 from .telegram_properties import TelegramProperties
+from .on_sale_confirmation import OnSaleConfirmation
 from .auto_delivery_properties import AutoDeliveryProperties
 from ...lib.base_app.properties_flags import TelegramUIEmojiFlag
 
@@ -42,6 +43,7 @@ class FunPayHubProperties(Properties):
         self.telegram = self.attach_node(TelegramProperties())
         self.auto_response = self.attach_node(AutoResponseProperties())
         self.first_response = self.attach_node(FirstResponseProperties())
+        self.on_sale_confirmation = self.attach_node(OnSaleConfirmation())
         self.auto_delivery = self.attach_node(AutoDeliveryProperties())
         self.review_reply = self.attach_node(ReviewReplyProperties())
         self.message_templates = self.attach_node(
