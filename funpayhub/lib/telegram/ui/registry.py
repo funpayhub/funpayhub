@@ -20,8 +20,10 @@ from .types import (
     MenuContext,
     ButtonBuilder,
     ButtonContext,
+    MenuContextModel,
     MenuModification,
     ButtonModification,
+    MenuHistoryNode,
 )
 from ..callback_data import HashinatorT1000
 
@@ -227,3 +229,12 @@ class UIRegistry:
             self._workflow_data,
             run_modifications=run_modifications,
         )
+
+    def context_from_history(self, history: list[MenuHistoryNode]) -> MenuContextModel:
+        if not history:
+            raise ValueError('History is empty.')
+
+        curr = history[-1]
+        menu_builder = self.get_menu_builder(curr.menu_id)
+        ctx_cls = menu_builder.builder.context_type
+        return ctx_cls.from_ui_history(history)

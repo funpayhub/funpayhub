@@ -93,7 +93,7 @@ class NodeMenuBuilder(MenuBuilder, menu_id='node', context_type=MenuCtx):
         entry = properties.get_node(ctx.entry_path)
         if (builder_id := NodesUIRegistry.get_menu_builder(type(entry))) is None:
             raise LookupError(f'Unknown entry type {type(entry)}.')
-        context = replace(ctx, menu_id=builder_id)
+        context = ctx.model_copy(update={'menu_id': builder_id})  # todo: wierd
         return await tg_ui.build_menu(context, finalize=False)
 
 

@@ -481,7 +481,7 @@ class MenuContextModel(BaseModel):
 
 @dataclass(kw_only=True)
 class ButtonContext:
-    menu_render_context: MenuContext
+    menu_render_context: MenuContextModel
     button_id: str
     data: dict[str, Any] = field(default_factory=dict)
 
@@ -489,9 +489,9 @@ class ButtonContext:
 class MenuBuilder:
     if TYPE_CHECKING:
         __menu_id__: str
-        __context_type__: type[MenuContext]
+        __context_type__: type[MenuContextModel]
         menu_id: str
-        context_type: type[MenuContext]
+        context_type: type[MenuContextModel]
 
     def __init__(self) -> None:
         self._wrapped: CallableWrapper[Menu] = CallableWrapper(getattr(self, 'build'))
@@ -518,7 +518,7 @@ class MenuBuilder:
                 raise ValueError(
                     f"'menu_id' must be a string, not {type(menu_id)}.",
                 )
-            if not isinstance(context_type, type) or not issubclass(context_type, MenuContext):
+            if not isinstance(context_type, type) or not issubclass(context_type, (MenuContext, MenuContextModel)):
                 raise ValueError(
                     "'context_type' must be a subclass of 'MenuContext'.",
                 )
@@ -540,7 +540,7 @@ class MenuBuilder:
 
     @classproperty
     @classmethod
-    def context_type(cls) -> type[MenuContext]:
+    def context_type(cls) -> type[MenuContextModel]:
         return cls.__context_type__
 
 
