@@ -1,20 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, TypedDict
+from typing import Any, Literal
 
 from pydantic import Field, BaseModel
 
 from funpayhub.lib.telegram.callback_data import CallbackData, UICallbackData
-
-
-if TYPE_CHECKING:
-    from aiogram.types import Message
-
-
-class _ButtonDict(TypedDict, total=False):
-    text: str
-    callback_data: str | None
-    url: str | None
 
 
 class MenuPageable(BaseModel):
@@ -28,19 +18,13 @@ class ViewPageable(BaseModel):
 class Pageable(MenuPageable, ViewPageable): ...
 
 
-class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
+class OpenMenu(UICallbackData, Pageable, identifier='open_menu'):
     menu_id: str
     new_message: bool = False
     context_data: dict[str, Any] = Field(default_factory=dict)
 
 
-class OpenMenu2(UICallbackData, Pageable, identifier='open_menu'):
-    menu_id: str
-    new_message: bool = False
-    context_data: dict[str, Any] = Field(default_factory=dict)
-
-
-class ChangePageTo(CallbackData, identifier='change_page_to'):
+class ChangePageTo(UICallbackData, identifier='change_page_to'):
     keyboard: int | None = None
     text: int | None = None
 

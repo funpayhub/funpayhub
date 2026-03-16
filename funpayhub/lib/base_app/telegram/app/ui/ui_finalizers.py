@@ -10,33 +10,17 @@ from . import callbacks as cbs
 
 if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater as Tr
-    from funpayhub.lib.telegram.ui import Menu, MenuContext
+    from funpayhub.lib.telegram.ui import Menu, MenuContext, MenuContextModel
     from funpayhub.lib.base_app.telegram import TelegramApp
     from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
 class StripAndNavigationFinalizer:
-    def __init__(
-        self,
-        back_button: bool = True,
-        max_lines_on_page: int | None = None,
-        context_override: MenuContext | None = None,
-    ) -> None:
+    def __init__(self, back_button: bool = True, max_lines_on_page: int | None = None) -> None:
         self.back_button = back_button
         self.max_lines_on_page = max_lines_on_page
-        self.context_override = context_override
 
-    async def __call__(
-        self,
-        ctx: MenuContext,
-        menu: Menu,
-        tg: TelegramApp,
-        translater: Tr,
-    ) -> Menu:
-        ctx = self.context_override if self.context_override is not None else ctx
-        if not menu.footer_keyboard:
-            menu.footer_keyboard = KeyboardBuilder()
-
+    async def __call__(self, ctx: MenuContext, menu: Menu, tg: TelegramApp, translater: Tr) -> Menu:
         max_lines = self.max_lines_on_page or tg.config.max_menu_lines
         total_pages = math.ceil(len(menu.main_keyboard) / max_lines) if menu.main_keyboard else 0
 
@@ -79,7 +63,7 @@ def _btn(
 
 
 async def build_menu_navigation_buttons(
-    ctx: MenuContext,
+    ctx: MenuContext | MenuContextModel,
     translater: Tr,
     max_pages: int,
     back_button: bool = True,
