@@ -76,6 +76,7 @@ class ToggleParamButtonBuilder(ButtonBuilder, button_id='toggle_parameter', cont
             callback_data=cbs.NextParamValue(
                 path=entry.path,
                 from_callback=ctx.menu_render_context.callback_data,
+                ui_history=ctx.menu_render_context.as_ui_history(),
             ).pack(),
         )
 
@@ -100,7 +101,7 @@ class ChangeParamValueButtonBuilder(ButtonBuilder, button_id='change_param', con
             text=f'{_emoji(entry)}{translater.translate(entry.name)} {val_str}',
             callback_data=cbs.ManualParamValueInput(
                 path=entry.path,
-                from_callback=ctx.menu_render_context.callback_data,
+                ui_history=ctx.menu_render_context.as_ui_history(),
             ).pack(),
         )
 
@@ -115,17 +116,17 @@ class OpenParamMenuButtonBuilder(ButtonBuilder, button_id='open_param', context_
             text=f'{_emoji(entry)}{translater.translate(entry.name)}',
             callback_data=ui_cbs.OpenMenu(
                 menu_id=NodeMenuBuilder.menu_id,
-                from_callback=ctx.menu_render_context.callback_data,
                 context_data={'entry_path': entry.path},
+                ui_history=ctx.menu_render_context.as_ui_history(),
             ).pack(),
         )
 
 
 # Menus
-def _entry_text(entry: Node, translater: Tr) -> str:
+def _entry_text(node: Node, translater: Tr) -> str:
     return (
-        f'{_emoji(entry)}<u><b>{translater.translate(entry.name)}</b></u>\n\n'
-        f'<i>{translater.translate(entry.description)}</i>'
+        f'{_emoji(node)}<u><b>{translater.translate(node.name)}</b></u>\n\n'
+        f'<i>{translater.translate(node.description)}</i>'
     )
 
 
@@ -177,7 +178,7 @@ class ChoiceParameterMenuBuilder(MenuBuilder, menu_id='choice_param_menu', conte
                 callback_data=cbs.ChooseParamValue(
                     path=entry.path,
                     choice_id=choice.id,
-                    from_callback=ctx.callback_data,
+                    ui_history=ctx.as_ui_history(),
                 ).pack(),
                 style='primary' if entry.value == choice.id else None,
             )
@@ -207,7 +208,7 @@ class ListParameterMenuBuilder(MenuBuilder, menu_id='list_param_menu', context_t
                         item_index=index,
                         path=entry.path,
                         action=mode,
-                        from_callback=ctx.callback_data,
+                        ui_history=ctx.as_ui_history(),
                     ).pack(),
                 )
             else:
@@ -233,7 +234,7 @@ class ListParameterMenuBuilder(MenuBuilder, menu_id='list_param_menu', context_t
                     callback_data=ui_cbs.OpenMenu(
                         menu_id=NodeMenuBuilder.menu_id,
                         menu_page=ctx.menu_page,
-                        history=ctx.callback_data.history if ctx.callback_data else [],
+                        ui_history=ctx.as_ui_history(),
                         data={'mode': mode_str},
                         context_data={'entry_path': entry.path},
                     ).pack(),
@@ -249,7 +250,7 @@ class ListParameterMenuBuilder(MenuBuilder, menu_id='list_param_menu', context_t
                 text='➕',
                 callback_data=cbs.ListParamAddItem(
                     path=entry.path,
-                    from_callback=ctx.callback_data,
+                    ui_history=ctx.as_ui_history(),
                 ).pack(),
             ),
         )
@@ -280,7 +281,7 @@ class ParamManualInputMenuBuilder(MenuBuilder, menu_id='param_manual_input', con
         footer_keyboard.add_callback_button(
             button_id='clear_state',
             text=translater.translate('🔘 Отмена'),
-            callback_data=ui_cbs.ClearState().pack(),
+            callback_data=ui_cbs.ClearState(ui_history=ctx.as_ui_history()).pack(),
         )
 
         return Menu(
@@ -298,7 +299,7 @@ class AddListItemMenuBuilder(MenuBuilder, menu_id='add_list_param_item', context
         footer_keyboard.add_callback_button(
             button_id='clear_state',
             text=translater.translate('🔘 Отмена'),
-            callback_data=ui_cbs.ClearState().pack(),
+            callback_data=ui_cbs.ClearState(ui_history=ctx.as_ui_history()).pack(),
         )
 
         return Menu(

@@ -38,7 +38,7 @@ class ActivateChangingPageState(UICallbackData, identifier='activate_changing_pa
     total_pages: int
 
 
-class ClearState(CallbackData, identifier='clear_state'):
+class ClearState(UICallbackData, identifier='clear_state'):
     delete_message: bool = True
     open_previous: bool = False
 
