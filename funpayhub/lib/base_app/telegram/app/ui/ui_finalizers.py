@@ -102,7 +102,7 @@ def build_menu_navigation_buttons(
 
 
 async def build_view_navigation_buttons(
-    ctx: MenuContext,
+    ctx: MenuContextModel,
     total_pages: int = -1,
 ) -> KeyboardBuilder:
     kb: KeyboardBuilder = KeyboardBuilder()
@@ -127,14 +127,14 @@ async def build_view_navigation_buttons(
     )
 
     nav_kb = [
-        _btn('first_view_page', '⏪', ctx.view_page > 0, callback_data, None, 0),
-        _btn('previous_view_page', '◀️', ctx.view_page > 0, callback_data, None, ctx.view_page - 1),
+        _btn('first_view_page', '⏪', ctx.view_page > 0, ctx, None, 0),
+        _btn('previous_view_page', '◀️', ctx.view_page > 0, ctx, None, ctx.view_page - 1),
         page_amount_btn,
         _btn(
             'next_view_page',
             '▶️',
             unknown_max_pages or ctx.view_page < total_pages - 1,
-            callback_data,
+            ctx,
             None,
             ctx.view_page + 1,
         ),
@@ -142,7 +142,7 @@ async def build_view_navigation_buttons(
             'last_view_page',
             '⏩',
             not unknown_max_pages and ctx.view_page < total_pages - 1,
-            callback_data,
+            ctx,
             None,
             total_pages - 1,
         ),
