@@ -395,8 +395,8 @@ class MenuContextModel(BaseModel):
     model_config = {'extra': 'allow'}
 
     menu_id: str
-    menu_page: int = ...
-    view_page: int = ...
+    menu_page: int = -1
+    view_page: int = -1
     chat_id: int = None
     thread_id: int | None = None
     message_id: int | None = None

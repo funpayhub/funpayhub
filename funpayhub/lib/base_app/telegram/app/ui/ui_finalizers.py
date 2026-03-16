@@ -91,23 +91,11 @@ def build_menu_navigation_buttons(
     )
 
     nav_kb = [
-        _btn('first_kb_page', '⏪', ctx.menu_page > 0, ctx.callback_data, 0),
-        _btn('prev_kb_page', '◀️', ctx.menu_page > 0, ctx.callback_data, ctx.menu_page - 1),
+        _btn('first_kb_page', '⏪', ctx.menu_page > 0, ctx, 0),
+        _btn('prev_kb_page', '◀️', ctx.menu_page > 0, ctx, ctx.menu_page - 1),
         page_amount_btn,
-        _btn(
-            'next_kb_page',
-            '▶️',
-            ctx.menu_page < max_pages - 1,
-            ctx.callback_data,
-            ctx.menu_page + 1,
-        ),
-        _btn(
-            'last_kb_page',
-            '⏩',
-            ctx.menu_page < max_pages - 1,
-            ctx.callback_data,
-            max_pages - 1,
-        ),
+        _btn('next_kb_page', '▶️', ctx.menu_page < max_pages - 1, ctx, ctx.menu_page + 1),
+        _btn('last_kb_page', '⏩', ctx.menu_page < max_pages - 1, ctx, max_pages - 1),
     ]
     kb.insert(0, nav_kb)
     return kb
