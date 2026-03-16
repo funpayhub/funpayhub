@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import Menu, MenuContext, MenuContextModel
     from funpayhub.lib.base_app.telegram import TelegramApp
-    from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
 class StripAndNavigationFinalizer:
@@ -20,7 +19,7 @@ class StripAndNavigationFinalizer:
         self.back_button = back_button
         self.max_lines_on_page = max_lines_on_page
 
-    async def __call__(self, ctx: MenuContext, menu: Menu, tg: TelegramApp, translater: Tr) -> Menu:
+    async def __call__(self, ctx: MenuContextModel, menu: Menu, tg: TelegramApp, translater: Tr) -> Menu:
         max_lines = self.max_lines_on_page or tg.config.max_menu_lines
         total_pages = math.ceil(len(menu.main_keyboard) / max_lines) if menu.main_keyboard else 0
 
@@ -44,7 +43,7 @@ def _btn(
     id: str,
     text: str,
     condition: bool,
-    callback_data: UnknownCallback,
+    ctx: MenuContextModel,
     target_menu_page: int | None = None,
     target_view_page: int | None = None,
 ) -> Button:
@@ -55,7 +54,7 @@ def _btn(
         callback_data=cbs.ChangePageTo(
             keyboard=target_menu_page,
             text=target_view_page,
-            history=callback_data.as_history(),
+            ui_history=ctx.as_ui_history()
         ).pack()
         if condition and (target_menu_page is not None or target_view_page is not None)
         else cbs.Dummy().pack(),
@@ -63,20 +62,18 @@ def _btn(
 
 
 async def build_menu_navigation_buttons(
-    ctx: MenuContext | MenuContextModel,
+    ctx: MenuContextModel,
     translater: Tr,
     max_pages: int,
     back_button: bool = True,
 ) -> KeyboardBuilder:
     kb = KeyboardBuilder()
-    if ctx.callback_data is None:
-        return kb
 
-    if ctx.callback_data.history and back_button:
+    if ctx.ui_history and back_button:
         kb.add_callback_button(
             button_id='back',
             text=translater.translate('◀️ Назад'),
-            callback_data=ctx.callback_data.pack_history(),
+            callback_data=cbs.GoBack(ui_history=ctx.ui_history).pack()
         )
 
     if max_pages < 2:
@@ -88,7 +85,7 @@ async def build_menu_navigation_buttons(
         callback_data=cbs.ActivateChangingPageState(
             mode='keyboard',
             total_pages=max_pages,
-            history=ctx.callback_data.as_history(),
+            ui_history=ctx.as_ui_history()
         ).pack()
         if max_pages > 1
         else cbs.Dummy().pack(),

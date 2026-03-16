@@ -29,7 +29,11 @@ class ChangePageTo(UICallbackData, identifier='change_page_to'):
     text: int | None = None
 
 
-class ActivateChangingPageState(CallbackData, identifier='activate_changing_page_state'):
+class GoBack(UICallbackData, identifier='go_back'):
+    ...
+
+
+class ActivateChangingPageState(UICallbackData, identifier='activate_changing_page_state'):
     mode: Literal['keyboard', 'text']
     total_pages: int
 
