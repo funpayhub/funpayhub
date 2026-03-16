@@ -3,8 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from aiogram import Router
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.filters import StateFilter
 
 from funpayhub.lib.base_app.telegram import utils
 from funpayhub.lib.telegram.callback_data import UnknownCallback
@@ -29,7 +27,9 @@ router = Router(name='app:base_ui')
 # ------------------ Menu Rendering ------------------
 # ----------------------------------------------------
 @router.callback_query(cbs.OpenMenu.filter())
-async def open_custom_menu(query: CallbackQuery, tg_ui: UIRegistry, callback_data: cbs.OpenMenu) -> None:
+async def open_custom_menu(
+    query: CallbackQuery, tg_ui: UIRegistry, callback_data: cbs.OpenMenu
+) -> None:
     menu_builder = tg_ui.get_menu_builder(callback_data.menu_id)
     ctx_class = menu_builder.builder.context_type
     additional_data = {**callback_data.data}
@@ -78,7 +78,7 @@ async def activate_manual_page_changing_state(
         mode=callback_data.mode,
         max_pages=callback_data.total_pages,
         state_msg=await query.message.answer(
-            text=translater.translate('🔢 Введите номер страницы.')
+            text=translater.translate('🔢 Введите номер страницы.'),
         ),
     ).set(state)
 
@@ -107,7 +107,9 @@ async def go_back(query: CallbackQuery, callback_data: cbs.GoBack, tg_ui: UIRegi
     if not callback_data.ui_history:
         await query.answer()
         return
-    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(tg_ui, query.message)
+    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(
+        tg_ui, query.message
+    )
 
 
 # ----------------------------------------------------

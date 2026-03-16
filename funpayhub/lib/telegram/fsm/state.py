@@ -10,11 +10,12 @@ __all__ = [
 
 import warnings
 from typing import TYPE_CHECKING, Any, Self
-from dataclasses import field, dataclass
+from dataclasses import dataclass
 
 from aiogram.filters import StateFilter as AiogramStateFilter
 
 from funpayhub.lib.core import classproperty
+from funpayhub.lib.telegram.ui.types import MenuHistoryNode
 
 
 if TYPE_CHECKING:
@@ -100,8 +101,6 @@ class State:
 @dataclass
 class StateFromQuery(State, identifier='StateFromQuery'):
     query: CallbackQuery
-    message: Message = field(init=False, default=None)
-    callback_data: UnknownCallback = field(init=False, default=None)
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         if kwargs.get('identifier') == 'StateFromQuery':
@@ -109,12 +108,21 @@ class StateFromQuery(State, identifier='StateFromQuery'):
 
         super().__init_subclass__(**kwargs)
 
-    def __post_init__(self) -> None:
-        self.message = self.query.message
+    @property
+    def message(self) -> Message:
+        return self.query.message
+
+    @property
+    def callback_data(self) -> UnknownCallback:
         if hasattr(self.query, '__parsed__'):
-            self.callback_data = getattr(self.query, '__parsed__')
-        else:
-            self.callback_data = UnknownCallback.parse(self.query.data)
+            return getattr(self.query, '__parsed__')
+        cb = UnknownCallback.parse(self.query.data)
+        setattr(cb, '__parsed__', cb)
+        return cb
+
+    @property
+    def ui_history(self) -> list[MenuHistoryNode]:
+        return self.callback_data.data.get('ui_history', [])
 
 
 class StateFilter(AiogramStateFilter):
