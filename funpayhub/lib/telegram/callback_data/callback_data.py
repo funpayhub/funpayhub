@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-__all__ = ['CallbackData', 'UnknownCallback', 'CallbackQueryFilter', 'join_callbacks']
+__all__ = ['CallbackData', 'UICallbackData', 'UnknownCallback', 'CallbackQueryFilter', 'join_callbacks']
 
 
 import ast
@@ -14,6 +14,7 @@ from aiogram.types import CallbackQuery
 from aiogram.filters import Filter
 
 from funpayhub.lib.telegram.callback_data.hashinator import HashinatorT1000
+from funpayhub.lib.telegram.ui.types import MenuHistoryNode
 
 
 T = TypeVar('T', bound='CallbackData')
@@ -265,9 +266,7 @@ class CallbackData(UnknownCallback):
 
 
 class UICallbackData(CallbackData, identifier='__ui_callback_data__'):
-    ui_history: list[str]  = Field(default_factory=list)# todo
-
-
+    ui_history: list[MenuHistoryNode]  = Field(default_factory=list)
 
 
 class CallbackQueryFilter(Filter):

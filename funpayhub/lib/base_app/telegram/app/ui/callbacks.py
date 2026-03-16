@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Literal, TypedDict
 
 from pydantic import Field, BaseModel
 
-from funpayhub.lib.telegram.callback_data import CallbackData
+from funpayhub.lib.telegram.callback_data import CallbackData, UICallbackData
 
 
 if TYPE_CHECKING:
@@ -32,32 +32,12 @@ class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
     menu_id: str
     new_message: bool = False
     context_data: dict[str, Any] = Field(default_factory=dict)
-    replace_history_with_trigger: bool = False
-    """Заменить ли историю в коллбэке на DrawMenu триггера"""
 
 
-class DrawMenu(CallbackData, identifier='draw_menu'):
-    text: str
-    keyboard: list[list[_ButtonDict]]
-
-    @staticmethod
-    def keyboard_from_message(message: Message) -> list[list[_ButtonDict]]:
-        if not message.reply_markup or not message.reply_markup.inline_keyboard:
-            return []
-
-        result = []
-        for row in message.reply_markup.inline_keyboard:
-            curr_row = []
-            for button in row:
-                curr_row.append(
-                    {
-                        'text': button.text,
-                        'callback_data': button.callback_data,
-                        'url': button.url,
-                    },
-                )
-            result.append(curr_row)
-        return result
+class OpenMenu2(UICallbackData, Pageable, identifier='open_menu'):
+    menu_id: str
+    new_message: bool = False
+    context_data: dict[str, Any] = Field(default_factory=dict)
 
 
 class ChangePageTo(CallbackData, identifier='change_page_to'):

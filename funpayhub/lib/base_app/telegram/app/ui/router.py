@@ -42,16 +42,6 @@ async def open_custom_menu(
     if parsed_callback is not None:
         parsed_callback.data['new_message'] = False
 
-    if callback_data.replace_history_with_trigger:
-        fake_callback_history = cbs.DrawMenu(
-            text=query.message.text,
-            keyboard=cbs.DrawMenu.keyboard_from_message(query.message),
-        ).pack(hash=False)
-
-        fake_callback_data = callback_data.model_copy()
-        fake_callback_data.history = [fake_callback_history]
-        additional_data['callback_data'] = fake_callback_data
-
     ctx_instance = ctx_class(
         menu_id=callback_data.menu_id,
         menu_page=callback_data.menu_page,
@@ -65,31 +55,6 @@ async def open_custom_menu(
         await ctx_instance.build_and_answer(tg_ui, query.message)
     else:
         await ctx_instance.build_and_apply(tg_ui, query.message)
-
-
-@router.callback_query(cbs.DrawMenu.filter())
-async def draw_menu(
-    query: CallbackQuery,
-    callback_data: cbs.DrawMenu,
-):
-    kb_list = []
-    for row in callback_data.keyboard:
-        curr_row = []
-        for button in row:
-            curr_row.append(
-                InlineKeyboardButton(
-                    text=button.get('text'),
-                    callback_data=button.get('callback_data'),
-                    url=button.get('url'),
-                ),
-            )
-        kb_list.append(curr_row)
-
-    kb = InlineKeyboardMarkup(inline_keyboard=kb_list)
-    await query.message.edit_text(
-        text=callback_data.text,
-        reply_markup=kb,
-    )
 
 
 # ----------------------------------------------------

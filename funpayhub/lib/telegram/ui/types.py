@@ -15,12 +15,13 @@ from aiogram.types import (
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.core import classproperty
-from funpayhub.lib.telegram.callback_data import UnknownCallback
-from pydantic import BaseModel
 
+from pydantic import BaseModel, Field
+from typing import Self
 
 if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui import UIRegistry
+    from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
 @dataclass
@@ -336,6 +337,7 @@ class MenuContext:
 
     @property
     def callback_data(self) -> UnknownCallback | None:
+        from funpayhub.lib.telegram.callback_data import UnknownCallback
         if self.callback_override is not None:
             return self.callback_override
 
@@ -381,15 +383,38 @@ class MenuContext:
         return {k.name: getattr(self, k.name) for k in fields(self) if k.name not in base_fields}
 
 
+class MenuHistoryNode(BaseModel):
+    menu_id: str
+    menu_page: int
+    view_page: int
+    data: dict[str, Any] = Field(default_factory=dict)
+    context_data: dict[str, Any] = Field(default_factory=dict)
+
+
 class MenuContextModel(BaseModel):
+    model_config = {'extra': 'allow'}
+
     menu_id: str
     menu_page: int = ...
     view_page: int = ...
     chat_id: int = None
     thread_id: int | None = None
     message_id: int | None = None
-    callback_override: UnknownCallback | None = None
-    data: dict[str, Any] = field(default_factory=dict)
+    trigger: Message | CallbackQuery | None = None
+    ui_history: list[MenuHistoryNode] = Field(default_factory=list)
+    data: dict[str, Any] = Field(default_factory=dict)
+
+    def as_history_node(self) -> MenuHistoryNode:
+        return MenuHistoryNode(
+            menu_id=self.menu_id,
+            menu_page=self.menu_page,
+            view_page=self.view_page,
+            data=self.data,
+            context_data=self.context_data,
+        )
+
+    def as_ui_history(self) -> list[MenuHistoryNode]:
+        return self.ui_history + [self.as_history_node()]
 
     def model_post_init(self, __context: Any) -> None:
         if self.trigger is not None:
@@ -397,26 +422,6 @@ class MenuContextModel(BaseModel):
             self.message_id = msg.message_id
             self.chat_id = msg.chat.id
             self.thread_id = msg.message_thread_id
-
-        if self.menu_page is Ellipsis:
-            if self.callback_data is not None:
-                menu_page = getattr(self.callback_data, 'menu_page', None)
-                if isinstance(menu_page, int):
-                    self.menu_page = menu_page
-                else:
-                    self.menu_page = self.callback_data.data.get('menu_page', 0)
-            else:
-                self.menu_page = 0
-
-        if self.view_page is Ellipsis:
-            if self.callback_data is not None:
-                view_page = getattr(self.callback_data, 'view_page', None)
-                if isinstance(view_page, int):
-                    self.view_page = view_page
-                else:
-                    self.view_page = self.callback_data.data.get('view_page', 0)
-            else:
-                self.view_page = 0
 
     async def build_menu(self, registry: UIRegistry) -> Menu:
         return await registry.build_menu(self)
@@ -444,6 +449,34 @@ class MenuContextModel(BaseModel):
         """
         base_fields = {i for i in MenuContextModel.model_fields}
         return {k: getattr(self, k) for k in self.__class__.model_fields if k not in base_fields}
+
+    @classmethod
+    def from_ui_history(cls, ui_history: list[MenuHistoryNode]) -> Self:
+        if not ui_history:
+            raise ValueError('ui_history must not be empty.')
+
+        current = ui_history[-1]
+        return cls(
+            menu_id=current.menu_id,
+            menu_page=current.menu_page,
+            view_page=current.view_page,
+            data=current.data,
+            ui_history=ui_history[:-1],
+            **current.context_data,
+        )
+
+    @classmethod
+    def from_ui_history_node(
+        cls, node: MenuHistoryNode, history: list[MenuHistoryNode] | None = None
+    ) -> Self:
+        return cls(
+            menu_id=node.menu_id,
+            menu_page=node.menu_page,
+            view_page=node.view_page,
+            data=node.data,
+            ui_history=history if history is not None else [],
+            **node.context_data,
+        )
 
 
 @dataclass(kw_only=True)
