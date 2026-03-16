@@ -264,6 +264,12 @@ class CallbackData(UnknownCallback):
         return cls.__identifier__
 
 
+class UICallbackData(CallbackData, identifier='__ui_callback_data__'):
+    ui_history: list[str]  = Field(default_factory=list)# todo
+
+
+
+
 class CallbackQueryFilter(Filter):
     """
     This filter helps to handle callback query.

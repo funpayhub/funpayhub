@@ -16,6 +16,7 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.core import classproperty
 from funpayhub.lib.telegram.callback_data import UnknownCallback
+from pydantic import BaseModel
 
 
 if TYPE_CHECKING:
@@ -378,6 +379,71 @@ class MenuContext:
 
         base_fields = {i.name for i in fields(MenuContext)}
         return {k.name: getattr(self, k.name) for k in fields(self) if k.name not in base_fields}
+
+
+class MenuContextModel(BaseModel):
+    menu_id: str
+    menu_page: int = ...
+    view_page: int = ...
+    chat_id: int = None
+    thread_id: int | None = None
+    message_id: int | None = None
+    callback_override: UnknownCallback | None = None
+    data: dict[str, Any] = field(default_factory=dict)
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.trigger is not None:
+            msg = self.trigger if isinstance(self.trigger, Message) else self.trigger.message
+            self.message_id = msg.message_id
+            self.chat_id = msg.chat.id
+            self.thread_id = msg.message_thread_id
+
+        if self.menu_page is Ellipsis:
+            if self.callback_data is not None:
+                menu_page = getattr(self.callback_data, 'menu_page', None)
+                if isinstance(menu_page, int):
+                    self.menu_page = menu_page
+                else:
+                    self.menu_page = self.callback_data.data.get('menu_page', 0)
+            else:
+                self.menu_page = 0
+
+        if self.view_page is Ellipsis:
+            if self.callback_data is not None:
+                view_page = getattr(self.callback_data, 'view_page', None)
+                if isinstance(view_page, int):
+                    self.view_page = view_page
+                else:
+                    self.view_page = self.callback_data.data.get('view_page', 0)
+            else:
+                self.view_page = 0
+
+    async def build_menu(self, registry: UIRegistry) -> Menu:
+        return await registry.build_menu(self)
+
+    async def build_and_apply(
+        self,
+        registry: UIRegistry,
+        message: Message,
+        *,
+        text: bool = True,
+        keyboard: bool = True,
+    ) -> Message:
+        menu = await self.build_menu(registry)
+        return await menu.apply_to(message, text=text, keyboard=keyboard)
+
+    async def build_and_answer(self, registry: UIRegistry, message: Message) -> Message:
+        menu = await self.build_menu(registry)
+        return await menu.answer_to(message)
+
+    @property
+    def context_data(self) -> dict[str, Any]:
+        """
+        Возвращает словарь полей, объявленных в классе-наследнике,
+        исключая поля базового `MenuContext`.
+        """
+        base_fields = {i for i in MenuContextModel.model_fields}
+        return {k: getattr(self, k) for k in self.__class__.model_fields if k not in base_fields}
 
 
 @dataclass(kw_only=True)
