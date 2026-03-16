@@ -38,7 +38,7 @@ class PropertiesMenuModification(
                     text=translater.translate('🔔 Уведомления'),
                     callback_data=OpenMenu(
                         menu_id=MenuIds.tg_chat_notifications,
-                        from_callback=ctx.callback_data,
+                        ui_history=ctx.as_ui_history(),
                     ).pack(),
                 ),
             ],

@@ -60,8 +60,8 @@ async def open_custom_menu(query: CallbackQuery, tg_ui: UIRegistry, callback_dat
 @router.callback_query(cbs.ChangePageTo.filter())
 async def page(query: CallbackQuery, callback_data: cbs.ChangePageTo, tg_ui: UIRegistry) -> None:
     ctx = tg_ui.context_from_history(callback_data.ui_history)
-    ctx.menu_page = callback_data.text
-    ctx.view_page = callback_data.text
+    ctx.menu_page = callback_data.keyboard if callback_data.keyboard is not None else ctx.menu_page
+    ctx.view_page = callback_data.text if callback_data.text is not None else ctx.view_page
     await ctx.build_and_apply(tg_ui, query.message)
 
 

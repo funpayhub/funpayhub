@@ -75,7 +75,6 @@ class ToggleParamButtonBuilder(ButtonBuilder, button_id='toggle_parameter', cont
             text=f'{_toggle_emoji(entry, entry.value)} {translater.translate(entry.name)}',
             callback_data=cbs.NextParamValue(
                 path=entry.path,
-                from_callback=ctx.menu_render_context.callback_data,
                 ui_history=ctx.menu_render_context.as_ui_history(),
             ).pack(),
         )
