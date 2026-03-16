@@ -23,7 +23,7 @@ class StripAndNavigationFinalizer:
         max_lines = self.max_lines_on_page or tg.config.max_menu_lines
         total_pages = math.ceil(len(menu.main_keyboard) / max_lines) if menu.main_keyboard else 0
 
-        navigation_buttons = await build_menu_navigation_buttons(
+        navigation_buttons = build_menu_navigation_buttons(
             ctx=ctx,
             translater=translater,
             max_pages=total_pages,
@@ -61,14 +61,13 @@ def _btn(
     )
 
 
-async def build_menu_navigation_buttons(
+def build_menu_navigation_buttons(
     ctx: MenuContextModel,
     translater: Tr,
     max_pages: int,
     back_button: bool = True,
 ) -> KeyboardBuilder:
     kb = KeyboardBuilder()
-
     if ctx.ui_history and back_button:
         kb.add_callback_button(
             button_id='back',
