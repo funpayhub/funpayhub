@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram.filters import Command, CommandStart
 
-from funpayhub.lib.telegram.ui import MenuContext
+from funpayhub.lib.telegram.ui import MenuContext, MenuContextModel
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
@@ -27,11 +27,9 @@ if TYPE_CHECKING:
 @r.message(CommandStart())
 @r.message(Command('menu'))
 async def send_menu(message: Message, tg_ui: UIRegistry) -> None:
-    await MenuContext(
-        menu_id=MenuIds.main_menu,
-        trigger=message,
-        callback_override=OpenMenu(menu_id=MenuIds.main_menu),
-    ).build_and_answer(tg_ui, message)
+    await MenuContextModel(menu_id=MenuIds.main_menu, trigger=message).build_and_answer(
+        tg_ui, message
+    )
 
 
 @r.message(Command('settings'))

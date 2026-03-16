@@ -423,6 +423,11 @@ class MenuContextModel(BaseModel):
             self.chat_id = msg.chat.id
             self.thread_id = msg.message_thread_id
 
+        if self.menu_page == -1:
+            self.menu_page = 0
+        if self.view_page == -1:
+            self.view_page = 0
+
     async def build_menu(self, registry: UIRegistry) -> Menu:
         return await registry.build_menu(self)
 

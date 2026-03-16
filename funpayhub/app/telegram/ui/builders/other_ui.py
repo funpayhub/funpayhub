@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING
 from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedError
 
 from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.translater import Translater
+from funpayhub.lib.translater import Translater, translater
 from funpayhub.lib.telegram.ui import Button, KeyboardBuilder
-from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
+from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext, MenuContextModel
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
@@ -25,6 +25,9 @@ from .context import (
 if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
     from funpayhub.app.funpay.main import FunPay
+
+
+ru = translater.translate
 
 
 class StartNotificationMenuBuilder(
@@ -125,49 +128,42 @@ class FunPayStartNotificationMenuBuilder(
 class MainMenuBuilder(
     MenuBuilder,
     menu_id=MenuIds.main_menu,
-    context_type=MenuContext,
+    context_type=MenuContextModel,
 ):
-    async def build(
-        self,
-        ctx: MenuContext,
-        translater: Translater,
-        hub: FunPayHub,
-    ):
-        history = ctx.callback_data.as_history() if ctx.callback_data is not None else []
-
+    async def build(self, ctx: MenuContextModel, hub: FunPayHub) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='settings',
-            text=translater.translate('⚙️ Настройки'),
+            text=ru('⚙️ Настройки'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.props_node,
-                history=history,
+                ui_history=ctx.as_ui_history(),
                 context_data={'entry_path': []},
             ).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_control_ui',
-            text=translater.translate('🔌 Системное меню'),
-            callback_data=OpenMenu(menu_id=MenuIds.control, history=history).pack(),
+            text=ru('🔌 Системное меню'),
+            callback_data=OpenMenu(menu_id=MenuIds.control, ui_history=ctx.as_ui_history()).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_formatters_list',
-            text=translater.translate('🔖 Форматтеры'),
-            callback_data=OpenMenu(menu_id=MenuIds.formatters_list, history=history).pack(),
+            text=ru('🔖 Форматтеры'),
+            callback_data=OpenMenu(menu_id=MenuIds.formatters_list, ui_history=ctx.as_ui_history()).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_goods_sources_list',
-            text=translater.translate('🗳 Источники товаров'),
-            callback_data=OpenMenu(menu_id=MenuIds.goods_sources_list, history=history).pack(),
+            text=ru('🗳 Источники товаров'),
+            callback_data=OpenMenu(menu_id=MenuIds.goods_sources_list, ui_history=ctx.as_ui_history()).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_plugins_list',
-            text=translater.translate('🧩 Расширения'),
-            callback_data=OpenMenu(menu_id=MenuIds.plugins_list, history=history).pack(),
+            text=ru('🧩 Расширения'),
+            callback_data=OpenMenu(menu_id=MenuIds.plugins_list, ui_history=ctx.as_ui_history()).pack(),
         )
 
         return Menu(
