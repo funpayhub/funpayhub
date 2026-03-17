@@ -151,19 +151,28 @@ class MainMenuBuilder(
         kb.add_callback_button(
             button_id='open_formatters_list',
             text=ru('🔖 Форматтеры'),
-            callback_data=OpenMenu(menu_id=MenuIds.formatters_list, ui_history=ctx.as_ui_history()).pack(),
+            callback_data=OpenMenu(
+                menu_id=MenuIds.formatters_list,
+                ui_history=ctx.as_ui_history(),
+            ).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_goods_sources_list',
             text=ru('🗳 Источники товаров'),
-            callback_data=OpenMenu(menu_id=MenuIds.goods_sources_list, ui_history=ctx.as_ui_history()).pack(),
+            callback_data=OpenMenu(
+                menu_id=MenuIds.goods_sources_list,
+                ui_history=ctx.as_ui_history(),
+            ).pack(),
         )
 
         kb.add_callback_button(
             button_id='open_plugins_list',
             text=ru('🧩 Расширения'),
-            callback_data=OpenMenu(menu_id=MenuIds.plugins_list, ui_history=ctx.as_ui_history()).pack(),
+            callback_data=OpenMenu(
+                menu_id=MenuIds.plugins_list,
+                ui_history=ctx.as_ui_history(),
+            ).pack(),
         )
 
         return Menu(
@@ -182,7 +191,7 @@ class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=Sta
             callback_data=ClearState(
                 delete_message=ctx.delete_on_clear,
                 open_previous=ctx.open_previous_on_clear,
-                history=ctx.callback_data.history if ctx.callback_data is not None else [],
+                ui_history=ctx.ui_history,
             ).pack(),
         )
 

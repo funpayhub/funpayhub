@@ -10,8 +10,8 @@ from funpayhub.lib.telegram.ui import (
     Menu,
     Button,
     MenuBuilder,
-    MenuContext,
     KeyboardBuilder,
+    MenuContextModel,
     MenuModification,
 )
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
@@ -36,16 +36,16 @@ if TYPE_CHECKING:
 
 
 @dataclass(kw_only=True)
-class NewSaleMenuContext(MenuContext):
+class NewSaleMenuContext(MenuContextModel):
     new_sale_event: NewSaleEvent
 
 
 class AddAutoDeliveryRuleMenuBuilder(
     MenuBuilder,
     menu_id=MenuIds.add_auto_delivery_rule,
-    context_type=MenuContext,
+    context_type=MenuContextModel,
 ):
-    async def build(self, ctx: MenuContext, translater: Tr, hub: FPH) -> Menu:
+    async def build(self, ctx: MenuContextModel, translater: Tr, hub: FPH) -> Menu:
         menu = Menu(
             main_text=translater.translate(
                 '➕ Выберите лот из списка ниже или введите название вручную.',
@@ -64,7 +64,7 @@ class AddAutoDeliveryRuleMenuBuilder(
                     text=html.escape(offer.title[:128]),
                     callback_data=cbs.AddAutoDeliveryRule(
                         rule=offer.title,
-                        from_callback=ctx.callback_data,
+                        ui_history=ctx.as_ui_history(),
                     ).pack(),
                 )
 
@@ -74,7 +74,7 @@ class AddAutoDeliveryRuleMenuBuilder(
             callback_data=ClearState(
                 delete_message=False,
                 open_previous=True,
-                history=ctx.callback_data_history,
+                ui_history=ctx.ui_history,
             ).pack(),
         )
 
@@ -100,7 +100,7 @@ class AutoDeliveryGoodsSourcesListMenuBuilder(
                 callback_data=cbs.BindGoodsSourceToAutoDelivery(
                     rule=ctx.entry_path[-1],
                     source_id=source.source_id,
-                    from_callback=ctx.callback_data,
+                    ui_history=ctx.as_ui_history(),
                 ).pack(),
             )
 
@@ -178,7 +178,7 @@ class AddOfferButtonModification(
         btn = Button.callback_button(
             button_id='add_rule',
             text=translater.translate('➕ Добавить правило'),
-            callback_data=cbs.OpenAddAutoDeliveryRuleMenu(from_callback=ctx.callback_data).pack(),
+            callback_data=cbs.OpenAddAutoDeliveryRuleMenu(ui_history=ctx.as_ui_history()).pack(),
             row=True,
         )
         menu.footer_keyboard.insert(0, btn)
@@ -214,7 +214,7 @@ class ReplaceSourcesListButtonModification(
                     text=translater.translate('🗳 Источник товаров'),
                     callback_data=cbs.AutoDeliveryOpenGoodsSourcesList(
                         rule=ctx.entry_path[-1],
-                        from_callback=ctx.callback_data,
+                        ui_history=ctx.as_ui_history(),
                     ).pack(),
                 )
                 menu.main_keyboard.keyboard[l_index][b_index] = btn

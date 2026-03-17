@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any
 from aiogram.filters import Command, CommandStart
 
 from funpayhub.lib.telegram.ui import MenuContextModel
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
 import funpayhub.app.telegram.callbacks as cbs
@@ -25,21 +24,17 @@ if TYPE_CHECKING:
 
 @r.message(CommandStart())
 @r.message(Command('menu'))
-async def send_menu(message: Message, tg_ui: UIRegistry) -> None:
-    await MenuContextModel(menu_id=MenuIds.main_menu, trigger=message).build_and_answer(
-        tg_ui,
-        message,
-    )
+async def send_menu(msg: Message, tg_ui: UIRegistry) -> None:
+    await MenuContextModel(menu_id=MenuIds.main_menu, trigger=msg).build_and_answer(tg_ui, msg)
 
 
 @r.message(Command('settings'))
-async def send_menu(message: Message, tg_ui: UIRegistry) -> None:
+async def send_menu(msg: Message, tg_ui: UIRegistry) -> None:
     await NodeMenuContext(
         menu_id=MenuIds.props_node,
-        trigger=message,
+        trigger=msg,
         entry_path=[],
-        callback_override=OpenMenu(menu_id=MenuIds.props_node, context_data={'entry_path': []}),
-    ).build_and_answer(tg_ui, message)
+    ).build_and_answer(tg_ui, msg)
 
 
 @r.callback_query(cbs.ToggleNotificationChannel.filter())

@@ -7,14 +7,14 @@ __all__ = [
 ]
 
 from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui import MenuModification
+from funpayhub.lib.telegram.ui import MenuContextModel, MenuModification
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext
 from funpayhub.lib.telegram.callback_data import UnknownCallback
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import Dummy, OpenMenu
 
 
 def confirmable_button(
-    ctx: MenuContext,
+    ctx: MenuContextModel,
     text: str,
     confirm_id: str,
     translater: Translater,
@@ -79,7 +79,7 @@ class AddRemoveButtonBaseModification(
 
     async def _modify(
         self,
-        ctx: MenuContext,
+        ctx: MenuContextModel,
         menu: Menu,
         translater: Translater,
         delete_callback: str = Dummy().pack(),

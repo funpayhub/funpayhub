@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from dataclasses import field, dataclass
 
-from funpayhub.lib.telegram.ui import MenuContext
+from funpayhub.lib.telegram.ui import MenuContext, MenuContextModel
 
 
 if TYPE_CHECKING:
@@ -19,23 +19,23 @@ class NewMessageMenuContext(MenuContext):
 
 
 @dataclass(kw_only=True)
-class SendMessageMenuContext(MenuContext):
+class SendMessageMenuContext(MenuContextModel):
     funpay_chat_id: int | str
     funpay_chat_name: str
 
 
 @dataclass(kw_only=True)
-class FunPayStartNotificationMenuContext(MenuContext):
+class FunPayStartNotificationMenuContext(MenuContextModel):
     error: Exception | None = None
 
 
 @dataclass(kw_only=True)
-class StateUIContext(MenuContext):
+class StateUIContext(MenuContextModel):
     text: str
     delete_on_clear: bool = True
     open_previous_on_clear: bool = False
 
 
 @dataclass(kw_only=True)
-class NewReviewNotificationMenuContext(MenuContext):
+class NewReviewNotificationMenuContext(MenuContextModel):
     review_event: ReviewEvent

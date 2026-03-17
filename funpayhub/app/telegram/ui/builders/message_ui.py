@@ -144,7 +144,7 @@ class SendMessageMenuBuilder(
         menu.footer_keyboard.add_callback_button(
             button_id='cancel',
             text=translater.translate('🔘 Отмена'),
-            callback_data=ClearState(delete_message=True).pack(),
+            callback_data=ClearState(delete_message=True, ui_history=ctx.as_ui_history()).pack(),
         )
 
         menu.main_text = translater.translate(
