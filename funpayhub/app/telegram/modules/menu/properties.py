@@ -47,7 +47,7 @@ async def toggle_notification_channel(
     query: CallbackQuery,
     properties: FunPayHubProperties,
     callback_data: cbs.ToggleNotificationChannel,
-    hub: FunPayHub,
+    tg_ui: UIRegistry,
 ) -> None:
     chat_identifier = f'{query.message.chat.id}.{query.message.message_thread_id}'
     param: ListParameter[Any] = properties.telegram.notifications[callback_data.channel]
@@ -57,5 +57,4 @@ async def toggle_notification_channel(
     else:
         await param.add_item(chat_identifier)
     await param.save()
-
-    await hub.telegram.fake_query(callback_data, query, pack_history=True)
+    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(tg_ui, query.message)

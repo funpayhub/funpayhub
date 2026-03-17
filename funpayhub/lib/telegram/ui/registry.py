@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from aiogram.types import CallbackQuery
+
 from funpayhub.lib.translater import _en
 
 
@@ -26,6 +28,7 @@ from .types import (
     MenuHistoryNode,
 )
 from ..callback_data import HashinatorT1000
+from aiogram.types import CallbackQuery, Message
 
 
 @dataclass
@@ -232,7 +235,11 @@ class UIRegistry:
             run_modifications=run_modifications,
         )
 
-    def context_from_history(self, history: list[MenuHistoryNode]) -> MenuContextModel:
+    def context_from_history(
+        self,
+        history: list[MenuHistoryNode],
+        trigger: CallbackQuery | Message | None = None
+    ) -> MenuContextModel:
         if not history:
             raise ValueError('History is empty.')
 
