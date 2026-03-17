@@ -3,8 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
-from funpayhub.lib.telegram.fsm import State, StateFromQuery
-from funpayhub.lib.telegram.callback_data import UnknownCallback
+from funpayhub.lib.telegram.fsm import StateFromQuery
 
 
 if TYPE_CHECKING:
@@ -12,9 +11,8 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class AddingAutoDeliveryRule(State, identifier='fph:adding_autodelivery_rule'):
-    message: Message
-    callback_data: UnknownCallback
+class AddingAutoDeliveryRule(StateFromQuery, identifier='fph:adding_autodelivery_rule'):
+    state_message: Message
 
 
 @dataclass

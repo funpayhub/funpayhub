@@ -59,7 +59,7 @@ class AutoDeliveryPropertiesMenuModification(
             text=translater.translate('🗳 Источники товаров'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.goods_sources_list,
-                from_callback=ctx.callback_data,
+                ui_history=ctx.as_ui_history(),
             ).pack(),
         )
         return menu

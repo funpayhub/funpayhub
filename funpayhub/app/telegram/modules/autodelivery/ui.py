@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import html
 from typing import TYPE_CHECKING
-from dataclasses import dataclass
 from itertools import chain
 
 from funpayhub.lib.exceptions import TranslatableException
@@ -35,7 +34,6 @@ if TYPE_CHECKING:
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
 
 
-@dataclass(kw_only=True)
 class NewSaleMenuContext(MenuContextModel):
     new_sale_event: NewSaleEvent
 
@@ -64,18 +62,14 @@ class AddAutoDeliveryRuleMenuBuilder(
                     text=html.escape(offer.title[:128]),
                     callback_data=cbs.AddAutoDeliveryRule(
                         rule=offer.title,
-                        ui_history=ctx.as_ui_history(),
+                        ui_history=ctx.ui_history,
                     ).pack(),
                 )
 
         menu.footer_keyboard.add_callback_button(
             button_id='cancel',
             text=translater.translate('🔘 Отмена'),
-            callback_data=ClearState(
-                delete_message=False,
-                open_previous=True,
-                ui_history=ctx.ui_history,
-            ).pack(),
+            callback_data=ClearState(ui_history=ctx.ui_history).pack(),
         )
 
         return menu

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from dataclasses import field, dataclass
+from dataclasses import field
 
-from funpayhub.lib.telegram.ui import MenuContext, MenuContextModel
+from funpayhub.lib.telegram.ui import MenuContextModel
 
 
 if TYPE_CHECKING:
@@ -11,31 +11,26 @@ if TYPE_CHECKING:
     from funpaybotengine.dispatching.events import ReviewEvent
 
 
-@dataclass(kw_only=True)
-class NewMessageMenuContext(MenuContext):
+class NewMessageMenuContext(MenuContextModel):
     funpay_chat_name: str
     funpay_chat_id: int
     messages: list[Message] = field(default_factory=list)
 
 
-@dataclass(kw_only=True)
 class SendMessageMenuContext(MenuContextModel):
     funpay_chat_id: int | str
     funpay_chat_name: str
 
 
-@dataclass(kw_only=True)
 class FunPayStartNotificationMenuContext(MenuContextModel):
     error: Exception | None = None
 
 
-@dataclass(kw_only=True)
 class StateUIContext(MenuContextModel):
     text: str
     delete_on_clear: bool = True
     open_previous_on_clear: bool = False
 
 
-@dataclass(kw_only=True)
 class NewReviewNotificationMenuContext(MenuContextModel):
     review_event: ReviewEvent

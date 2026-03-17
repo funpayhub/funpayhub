@@ -392,7 +392,7 @@ class MenuHistoryNode(BaseModel):
 
 
 class MenuContextModel(BaseModel):
-    model_config = {'extra': 'allow'}
+    model_config = {'extra': 'allow', 'arbitrary_types_allowed': True}
 
     menu_id: str
     menu_page: int = -1
@@ -401,7 +401,7 @@ class MenuContextModel(BaseModel):
     thread_id: int | None = None
     message_id: int | None = None
     trigger: Message | CallbackQuery | None = None
-    ui_history: list[MenuHistoryNode] = Field(default_factory=list)
+    ui_history: list[MenuHistoryNode] = Field(default=None)
     data: dict[str, Any] = Field(default_factory=dict)
 
     def as_history_node(self) -> MenuHistoryNode:
@@ -417,6 +417,16 @@ class MenuContextModel(BaseModel):
         return self.ui_history + [self.as_history_node()]
 
     def model_post_init(self, __context: Any) -> None:
+        if self.ui_history is None:
+            if not isinstance(self.trigger, CallbackQuery):
+                self.ui_history = []
+            else:
+                parsed: UnknownCallback | None = getattr(self.trigger, '__parsed__', None)
+                if parsed is None:
+                    self.ui_history = []
+                else:
+                    self.ui_history = parsed.ui_history
+
         if self.trigger is not None:
             msg = self.trigger if isinstance(self.trigger, Message) else self.trigger.message
             self.message_id = msg.message_id
@@ -533,7 +543,8 @@ class MenuBuilder:
                     f"'menu_id' must be a string, not {type(menu_id)}.",
                 )
             if not isinstance(context_type, type) or not issubclass(
-                context_type, (MenuContext, MenuContextModel)
+                context_type,
+                (MenuContext, MenuContextModel),
             ):
                 raise ValueError(
                     "'context_type' must be a subclass of 'MenuContext'.",

@@ -6,11 +6,10 @@ from pathlib import Path
 from aiogram import Router
 from aiogram.types import Message, CallbackQuery
 
-from funpayhub.lib.telegram.ui import MenuContext
+from funpayhub.lib.telegram.ui import MenuContextModel
 from funpayhub.lib.goods_sources import FileGoodsSource
 from funpayhub.lib.base_app.telegram import utils
 from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -37,24 +36,17 @@ r = router = Router(name='fph:auto_delivery')
 
 
 @router.callback_query(cbs.OpenAddAutoDeliveryRuleMenu.filter())
-async def open_add_auto_delivery_rule_menu(
-    query: CallbackQuery,
-    callback_data: cbs.OpenAddAutoDeliveryRuleMenu,
-    tg_ui: UI,
-    state: FSM,
-) -> None:
+async def open_add_auto_delivery_rule_menu(query: CallbackQuery, tg_ui: UI, state: FSM) -> None:
     """
     Открывает меню добавления правила автовыдачи и активирует состояние `AddingAutoDeliveryRule`.
     """
-    msg = await MenuContext(
-        trigger=query,
+    await query.answer()
+    msg = await MenuContextModel(
         menu_id=MenuIds.add_auto_delivery_rule,
-        callback_override=callback_data.copy_history(
-            OpenMenu(menu_id=MenuIds.add_auto_delivery_rule),
-        ),
-    ).build_and_apply(tg_ui, query.message)
+        trigger=query,
+    ).build_and_answer(tg_ui, query.message)
 
-    await states.AddingAutoDeliveryRule(message=msg, callback_data=callback_data).set(state)
+    await states.AddingAutoDeliveryRule(query=query, state_message=msg).set(state)
 
 
 @router.callback_query(cbs.AddAutoDeliveryRule.filter())
@@ -87,11 +79,7 @@ async def add_auto_delivery_rule(
         trigger=query,
         menu_id=MenuIds.props_node,
         entry_path=entry.path,
-        callback_override=OpenMenu(
-            menu_id=MenuIds.props_node,
-            context_data={'entry_path': entry.path},
-            history=callback_data.history[:-1],
-        ),
+        ui_history=callback_data.ui_history,
     ).build_and_apply(tg_ui, query.message)
 
 
@@ -122,12 +110,7 @@ async def add_autodelivery_rule_from_msg(
         trigger=msg,
         menu_id=MenuIds.props_node,
         entry_path=entry.path,
-        callback_override=data.callback_data.copy_history(
-            OpenMenu(
-                menu_id=MenuIds.props_node,
-                context_data={'entry_path': entry.path},
-            ),
-        ),
+        ui_history=data.ui_history,
     ).build_and_answer(tg_ui, msg)
     utils.delete_message(data.message)
 
@@ -154,12 +137,7 @@ async def delete_auto_delivery_rule(
         trigger=query,
         menu_id=MenuIds.props_node,
         entry_path=properties.auto_delivery.path,
-        callback_override=OpenMenu(
-            menu_id=MenuIds.props_node,
-            context_data={'entry_path': properties.auto_delivery.path},
-            #  * > список автовыдачи > меню настроек автовыдачи
-            history=callback_data.history[:-2],
-        ),
+        ui_history=callback_data.ui_history[:-1],
     ).build_and_apply(tg_ui, query.message)
 
 
