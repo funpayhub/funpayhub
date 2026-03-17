@@ -117,7 +117,7 @@ async def make_list_item_action(
     query: CallbackQuery,
     callback_data: cbs.ListParamItemAction,
     properties: Properties,
-    tg: TelegramApp,
+    tg_ui: UIRegistry,
 ) -> None:
     if callback_data.action is None:
         await query.answer()
@@ -139,10 +139,7 @@ async def make_list_item_action(
         param._value[index], param._value[index + 1] = param._value[index + 1], param._value[index]
 
     await param.save()
-
-    new_callback = UnknownCallback.from_string(callback_data.pack_history(hash=False))
-    new_callback.data['mode'] = callback_data.action
-    await tg.fake_query(new_callback.pack(hash=False), query)
+    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(tg_ui, query.message)
 
 
 @router.callback_query(cbs.ListParamAddItem.filter())
@@ -187,14 +184,5 @@ async def edit_parameter(
         return
 
     await app.emit_parameter_changed_event(data.parameter)
-    await NodeMenuContext(
-        menu_id=NodeMenuIds.props_node,
-        trigger=message,
-        entry_path=data.parameter.path,
-        callback_override=ui_cbs.OpenMenu(
-            menu_id=NodeMenuIds.props_node,
-            context_data={'entry_path': data.parameter.path},
-            history=data.callback_data.history[:-1],
-        ),
-    ).build_and_answer(tg_ui, message)
+    await tg_ui.context_from_history(data.ui_history).build_and_answer(tg_ui, message)
     delete_message(data.state_message)

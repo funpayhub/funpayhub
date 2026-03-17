@@ -135,9 +135,10 @@ class UIRegistry:
         data: dict[str, Any] | None = None,
         run_modifications: bool = True,
         finalize: bool = True,
+        menu_id: str | None = None
     ) -> Menu:
         try:
-            builder = self.get_menu_builder(context.menu_id)
+            builder = self.get_menu_builder(menu_id or context.menu_id)
         except KeyError:
             logger.error(_en('Menu %s not found.'), context.menu_id)
             raise  # todo: custom error
@@ -209,9 +210,10 @@ class UIRegistry:
         context: ButtonContext,
         data: dict[str, Any] | None = None,
         run_modifications: bool = True,
+        button_id: str | None = None,
     ) -> Button:
         try:
-            builder = self.get_button_builder(context.button_id)
+            builder = self.get_button_builder(button_id or context.button_id)
         except KeyError:
             logger.error(_en('Button %s not found.'), context.button_id)
             raise

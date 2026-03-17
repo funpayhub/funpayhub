@@ -93,8 +93,7 @@ class NodeMenuBuilder(MenuBuilder, menu_id='node', context_type=MenuCtx):
         entry = properties.get_node(ctx.entry_path)
         if (builder_id := NodesUIRegistry.get_menu_builder(type(entry))) is None:
             raise LookupError(f'Unknown entry type {type(entry)}.')
-        context = ctx.model_copy(update={'menu_id': builder_id})  # todo: wierd
-        return await tg_ui.build_menu(context, finalize=False)
+        return await tg_ui.build_menu(ctx, finalize=False, menu_id=builder_id)
 
 
 class NodeButtonBuilder(ButtonBuilder, button_id='node', context_type=BtnCtx):
@@ -102,5 +101,4 @@ class NodeButtonBuilder(ButtonBuilder, button_id='node', context_type=BtnCtx):
         entry = properties.get_node(ctx.entry_path)
         if (builder_id := NodesUIRegistry.get_button_builder(type(entry))) is None:
             raise LookupError(f'Unknown entry type {type(entry)}.')
-        context = replace(ctx, button_id=builder_id)
-        return await tg_ui.build_button(context)
+        return await tg_ui.build_button(ctx, button_id=builder_id)
