@@ -6,9 +6,7 @@ from aiogram import Router
 from aiogram.filters import StateFilter
 
 from funpayhub.lib.exceptions import PropertiesError
-from funpayhub.lib.telegram.callback_data import UnknownCallback
 from funpayhub.lib.base_app.telegram.utils import delete_message
-from funpayhub.lib.base_app.telegram.app.ui import callbacks as ui_cbs
 
 from . import (
     states,
@@ -19,13 +17,12 @@ from .ui import NodeMenuIds, NodeMenuContext
 
 if TYPE_CHECKING:
     from aiogram.types import Message, CallbackQuery
-    from aiogram.fsm.context import FSMContext
+    from aiogram.fsm.context import FSMContext as FSM
 
     from funpayhub.lib.base_app import App
-    from funpayhub.lib.properties import Properties, ListParameter
+    from funpayhub.lib.properties import Properties as Props, ListParameter
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry
-    from funpayhub.lib.base_app.telegram.main import TelegramApp
 
 
 router = Router()
@@ -33,8 +30,8 @@ router = Router()
 
 @router.callback_query(cbs.NextParamValue.filter())
 async def next_param_value(
-    query: CallbackQuery,
-    properties: Properties,
+    q: CallbackQuery,
+    properties: Props,
     callback_data: cbs.NextParamValue,
     app: App,
     tg_ui: UIRegistry,
@@ -42,15 +39,13 @@ async def next_param_value(
     param = properties.get_parameter(callback_data.path)
     await param.next_value(save=True)
     await app.emit_parameter_changed_event(param)
-    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(
-        tg_ui, query.message
-    )
+    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(tg_ui, q.message)
 
 
 @router.callback_query(cbs.ChooseParamValue.filter())
 async def choose_param_value(
     query: CallbackQuery,
-    properties: Properties,
+    properties: Props,
     callback_data: cbs.ChooseParamValue,
     tg_ui: UIRegistry,
     app: App,
@@ -66,10 +61,10 @@ async def choose_param_value(
 @router.callback_query(cbs.ManualParamValueInput.filter())
 async def change_parameter_value(
     query: CallbackQuery,
-    properties: Properties,
+    properties: Props,
     tg_ui: UIRegistry,
     callback_data: cbs.ManualParamValueInput,
-    state: FSMContext,
+    state: FSM,
 ) -> None:
     await state.clear()
 
@@ -85,13 +80,7 @@ async def change_parameter_value(
 
 
 @router.message(StateFilter(states.ChangingParameterValue.identifier))
-async def edit_parameter(
-    message: Message,
-    app: App,
-    translater: Tr,
-    state: FSMContext,
-    tg_ui: UIRegistry,
-) -> None:
+async def edit_parameter(message: Message, app: App, translater: Tr, state: FSM, tg_ui: UIRegistry) -> None:
     data: states.ChangingParameterValue = (await state.get_data())['data']
     new_value = '' if message.text == '-' else message.text
 
@@ -116,7 +105,7 @@ async def edit_parameter(
 async def make_list_item_action(
     query: CallbackQuery,
     callback_data: cbs.ListParamItemAction,
-    properties: Properties,
+    properties: Props,
     tg_ui: UIRegistry,
 ) -> None:
     if callback_data.action is None:
@@ -145,10 +134,10 @@ async def make_list_item_action(
 @router.callback_query(cbs.ListParamAddItem.filter())
 async def set_adding_list_item_state(
     query: CallbackQuery,
-    properties: Properties,
+    properties: Props,
     tg_ui: UIRegistry,
     callback_data: cbs.ListParamAddItem,
-    state: FSMContext,
+    state: FSM,
 ) -> None:
     entry: ListParameter[Any] = properties.get_parameter(callback_data.path)  # type: ignore
     msg = await NodeMenuContext(
@@ -162,13 +151,7 @@ async def set_adding_list_item_state(
 
 
 @router.message(StateFilter(states.AddingListItem.identifier))
-async def edit_parameter(
-    message: Message,
-    app: App,
-    translater: Tr,
-    state: FSMContext,
-    tg_ui: UIRegistry,
-) -> None:
+async def edit_parameter(message: Message, app: App, translater: Tr, state: FSM, tg_ui: UIRegistry) -> None:
     data: states.AddingListItem = (await state.get_data())['data']
     try:
         await data.parameter.add_item(message.text)
