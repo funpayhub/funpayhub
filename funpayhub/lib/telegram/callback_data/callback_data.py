@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-__all__ = ['CallbackData', 'UICallbackData', 'UnknownCallback', 'CallbackQueryFilter', 'join_callbacks']
+__all__ = ['CallbackData', 'CallbackData', 'UnknownCallback', 'CallbackQueryFilter', 'join_callbacks']
 
 
 import ast
@@ -28,6 +28,7 @@ class UnknownCallback(BaseModel):
     history: list[str] = Field(default_factory=list, exclude=True)
     from_callback: UnknownCallback | None = Field(default=None, exclude=True)
     data: dict[str, Any] = Field(default_factory=dict, exclude=True)
+    ui_history: list[MenuHistoryNode] = Field(default_factory=list)
     unsigned_data: list[Any] = Field(default_factory=list, exclude=True)
     compact: bool = Field(default=False, exclude=True)
 
@@ -118,10 +119,13 @@ class UnknownCallback(BaseModel):
                 last_callback_str = last_callback_str[1:]
             break
 
+        data = ast.literal_eval(last_callback_args) if last_callback_args else {}
+        ui_history = data.pop('ui_history', [])
         return UnknownCallback(
             identifier=last_callback_str,
             history=callbacks[:-1],
-            data=ast.literal_eval(last_callback_args) if last_callback_args else {},
+            data=data,
+            ui_history=ui_history
         )
 
     @staticmethod
@@ -247,6 +251,7 @@ class CallbackData(UnknownCallback):
         result = cls(**value.data)
         result.history = copy(value.history)
         result.data = {k: v for k, v in value.data.items() if k not in cls.model_fields.keys()}
+        result.ui_history = copy(value.ui_history)
 
         return result
 
@@ -263,10 +268,6 @@ class CallbackData(UnknownCallback):
     @classmethod
     def _real_identifier(cls, value: str) -> str:
         return cls.__identifier__
-
-
-class UICallbackData(CallbackData, identifier='__ui_callback_data__'):
-    ui_history: list[MenuHistoryNode]  = Field(default_factory=list)
 
 
 class CallbackQueryFilter(Filter):

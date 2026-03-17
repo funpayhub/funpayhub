@@ -29,10 +29,11 @@ class UnpackMiddleware(BaseMiddleware):
         data['unpacked_callback'] = parsed
         event.__dict__.update({'__parsed__': parsed, 'data': callback_data})
         logger.debug(
-            _en('Unpacked callback data: %s\nCallback: %s\nData: %s\nHistory: %s'),
+            _en('Unpacked callback data: %s\nCallback: %s\nData: %s\nHistory: %s\nUI History: %s'),
             event.data,
             parsed.identifier,
             parsed.data,
             parsed.history,
+            parsed.ui_history,
         )
         await handler(event, data)

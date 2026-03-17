@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 from pydantic import Field, BaseModel
 
-from funpayhub.lib.telegram.callback_data import CallbackData, UICallbackData
+from funpayhub.lib.telegram.callback_data import CallbackData
 
 
 class MenuPageable(BaseModel):
@@ -18,27 +18,27 @@ class ViewPageable(BaseModel):
 class Pageable(MenuPageable, ViewPageable): ...
 
 
-class OpenMenu(UICallbackData, Pageable, identifier='open_menu'):
+class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
     menu_id: str
     new_message: bool = False
     context_data: dict[str, Any] = Field(default_factory=dict)
 
 
-class ChangePageTo(UICallbackData, identifier='change_page_to'):
+class ChangePageTo(CallbackData, identifier='change_page_to'):
     keyboard: int | None = None
     text: int | None = None
 
 
-class GoBack(UICallbackData, identifier='go_back'):
+class GoBack(CallbackData, identifier='go_back'):
     ...
 
 
-class ActivateChangingPageState(UICallbackData, identifier='activate_changing_page_state'):
+class ActivateChangingPageState(CallbackData, identifier='activate_changing_page_state'):
     mode: Literal['keyboard', 'text']
     total_pages: int
 
 
-class ClearState(UICallbackData, identifier='clear_state'):
+class ClearState(CallbackData, identifier='clear_state'):
     delete_message: bool = True
     open_previous: bool = False
 
