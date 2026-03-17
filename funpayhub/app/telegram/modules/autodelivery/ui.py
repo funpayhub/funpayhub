@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from itertools import chain
 
 from funpayhub.lib.exceptions import TranslatableException
+from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import (
     Menu,
     Button,
@@ -34,6 +35,9 @@ if TYPE_CHECKING:
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
 
 
+ru = translater.translate
+
+
 class NewSaleMenuContext(MenuContextModel):
     new_sale_event: NewSaleEvent
 
@@ -43,11 +47,9 @@ class AddAutoDeliveryRuleMenuBuilder(
     menu_id=MenuIds.add_auto_delivery_rule,
     context_type=MenuContextModel,
 ):
-    async def build(self, ctx: MenuContextModel, translater: Tr, hub: FPH) -> Menu:
+    async def build(self, ctx: MenuContextModel, hub: FPH) -> Menu:
         menu = Menu(
-            main_text=translater.translate(
-                '➕ Выберите лот из списка ниже или введите название вручную.',
-            ),
+            main_text=ru('➕ Выберите лот из списка ниже или введите название вручную.'),
             finalizer=StripAndNavigationFinalizer(back_button=False),
         )
 
@@ -68,7 +70,7 @@ class AddAutoDeliveryRuleMenuBuilder(
 
         menu.footer_keyboard.add_callback_button(
             button_id='cancel',
-            text=translater.translate('🔘 Отмена'),
+            text=ru('🔘 Отмена'),
             callback_data=ClearState(ui_history=ctx.ui_history).pack(),
         )
 
@@ -85,7 +87,7 @@ class AutoDeliveryGoodsSourcesListMenuBuilder(
     Например: ['auto_delivery', 'my offer']
     """
 
-    async def build(self, ctx: NodeMenuCtx, goods_manager: GoodsManager, translater: Tr) -> Menu:
+    async def build(self, ctx: NodeMenuCtx, goods_manager: GoodsManager) -> Menu:
         kb = KeyboardBuilder()
         for source in goods_manager.values():
             kb.add_callback_button(
@@ -99,9 +101,7 @@ class AutoDeliveryGoodsSourcesListMenuBuilder(
             )
 
         return Menu(
-            main_text=translater.translate(
-                '🗳 Выберите источник товаров из списка или введтите название вручную.',
-            ),
+            main_text=ru('🗳 Выберите источник товаров из списка или введтите название вручную.'),
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )
@@ -112,7 +112,7 @@ class NewSaleNotificationMenuBuilder(
     menu_id=MenuIds.new_sale_notification,
     context_type=NewSaleMenuContext,
 ):
-    async def build(self, ctx: NewSaleMenuContext, translater: Tr) -> Menu:
+    async def build(self, ctx: NewSaleMenuContext) -> Menu:
         menu = Menu()
 
         order = await ctx.new_sale_event.get_order_preview()
@@ -133,23 +133,23 @@ class NewSaleNotificationMenuBuilder(
             if isinstance(error, TranslatableException):
                 menu.footer_text = (
                     f'<i>❌ Не удалось выдать товары.\n'
-                    f'{html.escape(error.format_args(translater.translate(error.message)))}</i>'
+                    f'{html.escape(error.format_args(ru(error.message)))}</i>'
                 )
             else:
-                menu.footer_text = '<i>❌ Не удалось выдать товары.\nПодробности в логах.</i>'
+                menu.footer_text = ru('<i>❌ Не удалось выдать товары.\nПодробности в логах.</i>')
         else:
-            menu.footer_text = (
+            menu.footer_text = ru(
                 '<i>ℹ️ Товары не были выданы, т.к. не было найдено подходящего правила.</i>'
             )
 
         menu.header_keyboard.add_callback_button(
             button_id='refund',
-            text=translater.translate('💸 Вернуть средства'),
+            text=ru('💸 Вернуть средства'),
             callback_data='dummy',
         )
         menu.header_keyboard.add_callback_button(
             button_id='response',
-            text=translater.translate('🗨️ Ответить'),
+            text=ru('🗨️ Ответить'),
             callback_data=SendMessage(
                 to=ctx.new_sale_event.message.chat_id,
                 name=order.counterparty.username,
@@ -168,10 +168,10 @@ class AddOfferButtonModification(
     async def filter(self, ctx: NodeMenuCtx, menu: Menu, properties: FPHProps) -> bool:
         return ctx.entry_path == properties.auto_delivery.path
 
-    async def modify(self, ctx: NodeMenuCtx, menu: Menu, translater: Tr) -> Menu:
+    async def modify(self, ctx: NodeMenuCtx, menu: Menu) -> Menu:
         btn = Button.callback_button(
             button_id='add_rule',
-            text=translater.translate('➕ Добавить правило'),
+            text=ru('➕ Добавить правило'),
             callback_data=cbs.OpenAddAutoDeliveryRuleMenu(ui_history=ctx.as_ui_history()).pack(),
             row=True,
         )
@@ -190,12 +190,7 @@ class ReplaceSourcesListButtonModification(
     async def filter(self, ctx: NodeMenuCtx, menu: Menu, properties: FPHProps) -> bool:
         return len(ctx.entry_path) == 2 and ctx.entry_path[0] == properties.auto_delivery.id
 
-    async def modify(
-        self,
-        ctx: NodeMenuCtx,
-        menu: Menu,
-        translater: Tr,
-    ) -> Menu:
+    async def modify(self, ctx: NodeMenuCtx, menu: Menu) -> Menu:
         entry_path = str([*ctx.entry_path, 'goods_source'])
 
         for l_index, line in enumerate(menu.main_keyboard):
@@ -205,7 +200,7 @@ class ReplaceSourcesListButtonModification(
 
                 btn = Button.callback_button(
                     button_id='bind_goods_source',
-                    text=translater.translate('🗳 Источник товаров'),
+                    text=ru('🗳 Источник товаров'),
                     callback_data=cbs.AutoDeliveryOpenGoodsSourcesList(
                         rule=ctx.entry_path[-1],
                         ui_history=ctx.as_ui_history(),
