@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING
 from pathlib import Path
 
 from aiogram import Router
-from aiogram.types import Message, CallbackQuery
 
+from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import MenuContextModel
 from funpayhub.lib.goods_sources import FileGoodsSource
 from funpayhub.lib.base_app.telegram import utils
-from funpayhub.lib.telegram.callback_data import UnknownCallback, join_callbacks
+from funpayhub.lib.telegram.callback_data import join_callbacks
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from aiogram.types import Message, CallbackQuery
     from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry as UI
     from funpayhub.lib.goods_sources import GoodsSourcesManager as GoodsManager
 
@@ -33,6 +32,7 @@ if TYPE_CHECKING:
 
 
 r = router = Router(name='fph:auto_delivery')
+ru = translater.translate
 
 
 @router.callback_query(cbs.OpenAddAutoDeliveryRuleMenu.filter())
@@ -50,9 +50,8 @@ async def open_add_auto_delivery_rule_menu(query: CallbackQuery, tg_ui: UI, stat
 
 
 @router.callback_query(cbs.AddAutoDeliveryRule.filter())
-async def add_auto_delivery_rule(
+async def add_rule(
     query: CallbackQuery,
-    translater: Tr,
     properties: FPHProps,
     callback_data: cbs.AddAutoDeliveryRule,
     tg_ui: UI,
@@ -64,10 +63,7 @@ async def add_auto_delivery_rule(
     Открывает меню настроек правила автовыдачи.
     """
     if callback_data.rule in properties.auto_delivery.entries:
-        await query.answer(
-            translater.translate('❌ Правило уже существует.'),
-            show_alert=True,
-        )
+        await query.answer(ru('❌ Правило уже существует.'), show_alert=True)
         return
 
     await states.AddingAutoDeliveryRule.clear(state)
@@ -79,18 +75,11 @@ async def add_auto_delivery_rule(
         trigger=query,
         menu_id=MenuIds.props_node,
         entry_path=entry.path,
-        ui_history=callback_data.ui_history,
     ).build_and_apply(tg_ui, query.message)
 
 
 @router.message(states.AddingAutoDeliveryRule.filter(), lambda msg: msg.text)
-async def add_autodelivery_rule_from_msg(
-    msg: Message,
-    state: FSM,
-    translater: Tr,
-    tg_ui: UI,
-    properties: FPHProps,
-) -> None:
+async def add_rule_from_msg(msg: Message, state: FSM, tg_ui: UI, properties: FPHProps) -> None:
     """
     Добавляет правило автовыдачи в список параметры.
     Очищает состояние.
@@ -110,7 +99,6 @@ async def add_autodelivery_rule_from_msg(
         trigger=msg,
         menu_id=MenuIds.props_node,
         entry_path=entry.path,
-        ui_history=data.ui_history,
     ).build_and_answer(tg_ui, msg)
     utils.delete_message(data.message)
 
@@ -120,14 +108,10 @@ async def delete_auto_delivery_rule(
     query: CallbackQuery,
     properties: FPHProps,
     callback_data: cbs.DeleteAutoDeliveryRule,
-    translater: Tr,
     tg_ui: UI,
 ) -> None:
     if callback_data.rule not in properties.auto_delivery.entries:
-        await query.answer(
-            translater.translate('❌ Правило не найдено'),
-            show_alert=True,
-        )
+        await query.answer(ru('❌ Правило не найдено'), show_alert=True)
         return
 
     properties.auto_delivery.detach_node(callback_data.rule)
@@ -169,7 +153,7 @@ async def bind_goods_source(
 ) -> None:
     source = goods_manager.get(callback_data.source_id)
     if source is None:
-        await query.answer('❌ Источник товаров не найден.', show_alert=True)
+        await query.answer(ru('❌ Источник товаров не найден.'), show_alert=True)
         return
 
     await states.BindingGoodsSource.clear(state)
@@ -188,12 +172,7 @@ INVALID_CHARS = set('<>:"/\\|?*\0')  # todo: code duplicate
 
 @router.message(states.BindingGoodsSource.filter(), lambda msg: msg.text)
 async def handler(
-    message: Message,
-    state: FSM,
-    goods_manager: GoodsManager,
-    translater: Tr,
-    properties: FPHProps,
-    tg_ui: UI,
+    message: Message, state: FSM, goods_manager: GoodsManager, properties: FPHProps, tg_ui: UI
 ) -> None:
     for i in goods_manager._sources.values():
         if i.display_id == message.text:
@@ -208,7 +187,7 @@ async def handler(
             or any(c in INVALID_CHARS for c in filename)
             or any(ord(c) < 32 for c in filename)
         ):
-            await message.reply(translater.translate('❌ Невалидное имя файла.'))
+            await message.reply(ru('❌ Невалидное имя файла.'))
             return
         if not filename.endswith('.txt'):
             filename += '.txt'
@@ -228,6 +207,6 @@ async def handler(
         trigger=message,
         menu_id=MenuIds.props_node,
         entry_path=properties.auto_delivery.get_properties([state_obj.rule]).path,
-        callback_override=UnknownCallback.parse(state_obj.callback_data.pack_history(hash=False)),
+        ui_history=state_obj.ui_history,
     ).build_and_answer(tg_ui, message)
     await state_obj.query.message.delete()
