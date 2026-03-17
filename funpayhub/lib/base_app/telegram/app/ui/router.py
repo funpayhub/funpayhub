@@ -28,7 +28,9 @@ router = Router(name='app:base_ui')
 # ----------------------------------------------------
 @router.callback_query(cbs.OpenMenu.filter())
 async def open_custom_menu(
-    query: CallbackQuery, tg_ui: UIRegistry, callback_data: cbs.OpenMenu
+    query: CallbackQuery,
+    tg_ui: UIRegistry,
+    callback_data: cbs.OpenMenu,
 ) -> None:
     menu_builder = tg_ui.get_menu_builder(callback_data.menu_id)
     ctx_class = menu_builder.builder.context_type
@@ -84,22 +86,26 @@ async def activate_manual_page_changing_state(
 
 
 @router.message(ChangingMenuPage.filter())
-async def change_page_from_message(message: Message, state: FSMContext, tg: TelegramApp) -> None:
+async def change_page_from_message(message: Message, state: FSMContext, tg_ui: UIRegistry) -> None:
     if not message.text.isnumeric():
         return
+
     new_page_index = int(message.text) - 1
 
-    data: ChangingMenuPage = (await state.get_data())['data']
+    data = await ChangingMenuPage.get(state)
     if data.max_pages != -1 and (new_page_index > data.max_pages - 1 or new_page_index < 0):
         return
 
     await state.clear()
     utils.delete_message(data.state_msg)
 
-    old = UnknownCallback.from_string(data.callback_data.history[-1])
-    old.data['view_page' if data.mode == 'text' else 'menu_page'] = new_page_index
-    old.history = data.callback_data.history[:-1]
-    await tg.fake_query(callback_data=old.pack(), query=data.query)
+    ctx = tg_ui.context_from_history(data.ui_history)
+    if data.mode == 'keyboard':
+        ctx.menu_page = new_page_index
+    else:
+        ctx.view_page = new_page_index
+
+    await ctx.build_and_answer(tg_ui, message)
 
 
 @router.callback_query(cbs.GoBack.filter())
@@ -108,7 +114,8 @@ async def go_back(query: CallbackQuery, callback_data: cbs.GoBack, tg_ui: UIRegi
         await query.answer()
         return
     await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(
-        tg_ui, query.message
+        tg_ui,
+        query.message,
     )
 
 

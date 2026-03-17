@@ -42,7 +42,9 @@ async def next_param_value(
     param = properties.get_parameter(callback_data.path)
     await param.next_value(save=True)
     await app.emit_parameter_changed_event(param)
-    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(tg_ui, query.message)
+    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(
+        tg_ui, query.message
+    )
 
 
 @router.callback_query(cbs.ChooseParamValue.filter())
@@ -50,12 +52,15 @@ async def choose_param_value(
     query: CallbackQuery,
     properties: Properties,
     callback_data: cbs.ChooseParamValue,
+    tg_ui: UIRegistry,
     app: App,
 ) -> None:
     param = properties.get_parameter(callback_data.path)
     await param.set_value(callback_data.choice_id)
     await app.emit_parameter_changed_event(param)
-    await app.telegram.fake_query(callback_data, query, pack_history=True)
+    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(
+        tg_ui, query.message
+    )
 
 
 @router.callback_query(cbs.ManualParamValueInput.filter())
@@ -103,16 +108,7 @@ async def edit_parameter(
         return
 
     await app.emit_parameter_changed_event(data.parameter)
-    await NodeMenuContext(
-        menu_id=NodeMenuIds.props_node,
-        trigger=message,
-        entry_path=data.parameter.parent.path,
-        callback_override=ui_cbs.OpenMenu(
-            menu_id=NodeMenuIds.props_node,
-            context_data={'entry_path': data.parameter.parent.path},
-            history=data.callback_data.history[:-1],
-        ),
-    ).build_and_answer(tg_ui, message)
+    await tg_ui.context_from_history(data.ui_history).build_and_answer(tg_ui, message)
     delete_message(data.state_message)
 
 
