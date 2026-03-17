@@ -122,7 +122,7 @@ class StateFromQuery(State, identifier='StateFromQuery'):
 
     @property
     def ui_history(self) -> list[MenuHistoryNode]:
-        return self.callback_data.data.get('ui_history', [])
+        return self.callback_data.ui_history
 
 
 class StateFilter(AiogramStateFilter):
