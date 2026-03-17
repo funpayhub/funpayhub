@@ -61,7 +61,7 @@ async def open_custom_menu(
 # ----------------------------------------------------
 @router.callback_query(cbs.ChangePageTo.filter())
 async def page(query: CallbackQuery, callback_data: cbs.ChangePageTo, tg_ui: UIRegistry) -> None:
-    ctx = tg_ui.context_from_history(callback_data.ui_history)
+    ctx = tg_ui.context_from_history(callback_data.ui_history, trigger=query)
     ctx.menu_page = callback_data.keyboard if callback_data.keyboard is not None else ctx.menu_page
     ctx.view_page = callback_data.text if callback_data.text is not None else ctx.view_page
     await ctx.build_and_apply(tg_ui, query.message)
@@ -99,7 +99,7 @@ async def change_page_from_message(message: Message, state: FSMContext, tg_ui: U
     await state.clear()
     utils.delete_message(data.state_msg)
 
-    ctx = tg_ui.context_from_history(data.ui_history)
+    ctx = tg_ui.context_from_history(data.ui_history, trigger=message)
     if data.mode == 'keyboard':
         ctx.menu_page = new_page_index
     else:
@@ -113,7 +113,7 @@ async def go_back(query: CallbackQuery, callback_data: cbs.GoBack, tg_ui: UIRegi
     if not callback_data.ui_history:
         await query.answer()
         return
-    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(
+    await tg_ui.context_from_history(callback_data.ui_history, trigger=query).build_and_apply(
         tg_ui,
         query.message,
     )

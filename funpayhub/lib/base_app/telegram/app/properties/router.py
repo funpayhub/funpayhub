@@ -20,7 +20,10 @@ if TYPE_CHECKING:
     from aiogram.fsm.context import FSMContext as FSM
 
     from funpayhub.lib.base_app import App
-    from funpayhub.lib.properties import Properties as Props, ListParameter
+    from funpayhub.lib.properties import (
+        Properties as Props,
+        ListParameter,
+    )
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry
 
@@ -39,7 +42,9 @@ async def next_param_value(
     param = properties.get_parameter(callback_data.path)
     await param.next_value(save=True)
     await app.emit_parameter_changed_event(param)
-    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(tg_ui, q.message)
+    await tg_ui.context_from_history(callback_data.ui_history, trigger=q).build_and_apply(
+        tg_ui, q.message
+    )
 
 
 @router.callback_query(cbs.ChooseParamValue.filter())
@@ -53,8 +58,9 @@ async def choose_param_value(
     param = properties.get_parameter(callback_data.path)
     await param.set_value(callback_data.choice_id)
     await app.emit_parameter_changed_event(param)
-    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(
-        tg_ui, query.message
+    await tg_ui.context_from_history(callback_data.ui_history, trigger=query).build_and_apply(
+        tg_ui,
+        query.message,
     )
 
 
@@ -80,7 +86,9 @@ async def change_parameter_value(
 
 
 @router.message(StateFilter(states.ChangingParameterValue.identifier))
-async def edit_parameter(message: Message, app: App, translater: Tr, state: FSM, tg_ui: UIRegistry) -> None:
+async def edit_parameter(
+    message: Message, app: App, translater: Tr, state: FSM, tg_ui: UIRegistry
+) -> None:
     data: states.ChangingParameterValue = (await state.get_data())['data']
     new_value = '' if message.text == '-' else message.text
 
@@ -97,7 +105,9 @@ async def edit_parameter(message: Message, app: App, translater: Tr, state: FSM,
         return
 
     await app.emit_parameter_changed_event(data.parameter)
-    await tg_ui.context_from_history(data.ui_history).build_and_answer(tg_ui, message)
+    await tg_ui.context_from_history(data.ui_history, trigger=message).build_and_answer(
+        tg_ui, message
+    )
     delete_message(data.state_message)
 
 
@@ -128,7 +138,9 @@ async def make_list_item_action(
         param._value[index], param._value[index + 1] = param._value[index + 1], param._value[index]
 
     await param.save()
-    await tg_ui.context_from_history(callback_data.ui_history).build_and_apply(tg_ui, query.message)
+    await tg_ui.context_from_history(callback_data.ui_history, trigger=query).build_and_apply(
+        tg_ui, query.message
+    )
 
 
 @router.callback_query(cbs.ListParamAddItem.filter())
@@ -151,7 +163,9 @@ async def set_adding_list_item_state(
 
 
 @router.message(StateFilter(states.AddingListItem.identifier))
-async def edit_parameter(message: Message, app: App, translater: Tr, state: FSM, tg_ui: UIRegistry) -> None:
+async def edit_parameter(
+    message: Message, app: App, translater: Tr, state: FSM, tg_ui: UIRegistry
+) -> None:
     data: states.AddingListItem = (await state.get_data())['data']
     try:
         await data.parameter.add_item(message.text)
@@ -167,5 +181,7 @@ async def edit_parameter(message: Message, app: App, translater: Tr, state: FSM,
         return
 
     await app.emit_parameter_changed_event(data.parameter)
-    await tg_ui.context_from_history(data.ui_history).build_and_answer(tg_ui, message)
+    await tg_ui.context_from_history(data.ui_history, trigger=message).build_and_answer(
+        tg_ui, message
+    )
     delete_message(data.state_message)

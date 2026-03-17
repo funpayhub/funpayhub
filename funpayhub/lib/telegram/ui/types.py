@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Any, Type, Literal, overload
+from typing import TYPE_CHECKING, Any, Self, Type, Literal, overload
 from dataclasses import field, fields, dataclass
 from collections.abc import Mapping, Iterable, Iterator, KeysView
 
+from pydantic import Field, BaseModel
 from aiogram.types import (
     Message,
     CallbackQuery,
@@ -16,8 +17,6 @@ from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.lib.core import classproperty
 
-from pydantic import BaseModel, Field
-from typing import Self
 
 if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui import UIRegistry
@@ -338,6 +337,7 @@ class MenuContext:
     @property
     def callback_data(self) -> UnknownCallback | None:
         from funpayhub.lib.telegram.callback_data import UnknownCallback
+
         if self.callback_override is not None:
             return self.callback_override
 
@@ -456,7 +456,11 @@ class MenuContextModel(BaseModel):
         return {k: getattr(self, k) for k in self.__class__.model_fields if k not in base_fields}
 
     @classmethod
-    def from_ui_history(cls, ui_history: list[MenuHistoryNode]) -> Self:
+    def from_ui_history(
+        cls,
+        ui_history: list[MenuHistoryNode],
+        trigger: CallbackQuery | Message | None = None,
+    ) -> Self:
         if not ui_history:
             raise ValueError('ui_history must not be empty.')
 
@@ -467,12 +471,16 @@ class MenuContextModel(BaseModel):
             view_page=current.view_page,
             data=current.data,
             ui_history=ui_history[:-1],
+            trigger=trigger,
             **current.context_data,
         )
 
     @classmethod
     def from_ui_history_node(
-        cls, node: MenuHistoryNode, history: list[MenuHistoryNode] | None = None
+        cls,
+        node: MenuHistoryNode,
+        history: list[MenuHistoryNode] | None = None,
+        trigger: CallbackQuery | Message | None = None,
     ) -> Self:
         return cls(
             menu_id=node.menu_id,
@@ -480,6 +488,7 @@ class MenuContextModel(BaseModel):
             view_page=node.view_page,
             data=node.data,
             ui_history=history if history is not None else [],
+            trigger=trigger,
             **node.context_data,
         )
 
@@ -523,7 +532,9 @@ class MenuBuilder:
                 raise ValueError(
                     f"'menu_id' must be a string, not {type(menu_id)}.",
                 )
-            if not isinstance(context_type, type) or not issubclass(context_type, (MenuContext, MenuContextModel)):
+            if not isinstance(context_type, type) or not issubclass(
+                context_type, (MenuContext, MenuContextModel)
+            ):
                 raise ValueError(
                     "'context_type' must be a subclass of 'MenuContext'.",
                 )

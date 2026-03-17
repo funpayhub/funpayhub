@@ -11,6 +11,7 @@ __all__ = ['UIRegistry']
 from typing import Any, Type
 from dataclasses import field, dataclass
 
+from aiogram.types import Message
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from funpayhub.loggers import telegram_ui as logger
@@ -22,13 +23,12 @@ from .types import (
     MenuContext,
     ButtonBuilder,
     ButtonContext,
+    MenuHistoryNode,
     MenuContextModel,
     MenuModification,
     ButtonModification,
-    MenuHistoryNode,
 )
 from ..callback_data import HashinatorT1000
-from aiogram.types import CallbackQuery, Message
 
 
 @dataclass
@@ -138,7 +138,7 @@ class UIRegistry:
         data: dict[str, Any] | None = None,
         run_modifications: bool = True,
         finalize: bool = True,
-        menu_id: str | None = None
+        menu_id: str | None = None,
     ) -> Menu:
         try:
             builder = self.get_menu_builder(menu_id or context.menu_id)
@@ -238,7 +238,7 @@ class UIRegistry:
     def context_from_history(
         self,
         history: list[MenuHistoryNode],
-        trigger: CallbackQuery | Message | None = None
+        trigger: CallbackQuery | Message | None = None,
     ) -> MenuContextModel:
         if not history:
             raise ValueError('History is empty.')
@@ -246,4 +246,4 @@ class UIRegistry:
         curr = history[-1]
         menu_builder = self.get_menu_builder(curr.menu_id)
         ctx_cls = menu_builder.builder.context_type
-        return ctx_cls.from_ui_history(history)
+        return ctx_cls.from_ui_history(history, trigger=trigger)
