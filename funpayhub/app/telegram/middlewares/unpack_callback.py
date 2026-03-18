@@ -23,7 +23,7 @@ class UnpackMiddleware(BaseMiddleware):
                 HashinatorT1000.unhash(event.data)
             except BadHashError:
                 await event.answer(text='@whodax нагло стырил эту кнопку.', show_alert=True)
-                return
+                return None
         parsed = CallbackData.parse(callback_data)
 
         data['unpacked_callback'] = parsed
@@ -36,4 +36,4 @@ class UnpackMiddleware(BaseMiddleware):
             parsed.history,
             parsed.ui_history,
         )
-        await handler(event, data)
+        return await handler(event, data)

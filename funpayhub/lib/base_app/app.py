@@ -98,6 +98,7 @@ class App:
             {
                 'app': self,
                 'properties': self.properties,
+                'props': self.properties,
                 'translater': self.translater,
                 'tg': self._telegram,
                 'tg_dispatcher': self._telegram.dispatcher,

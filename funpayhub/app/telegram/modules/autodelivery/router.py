@@ -45,112 +45,99 @@ async def open_add_auto_delivery_rule_menu(q: CallbackQuery, state: FSM) -> None
 
 
 @router.callback_query(cbs.AddAutoDeliveryRule.filter())
-async def add_rule(
-    q: CallbackQuery,
-    properties: FPHProps,
-    callback_data: cbs.AddAutoDeliveryRule,
-    state: FSM,
-) -> None:
+async def add_rule(q: CallbackQuery, props: FPHProps, cbd: cbs.AddAutoDeliveryRule, state: FSM):
     """
     Добавляет правило автовыдачи в список параметры.
     Очищает состояние, если оно является `AddingAutoDeliveryRule`.
     Открывает меню настроек правила автовыдачи.
     """
-    if callback_data.rule in properties.auto_delivery.entries:
-        await q.answer(ru('❌ Правило уже существует.'), show_alert=True)
-        return
+    if cbd.rule in props.auto_delivery.entries:
+        return q.answer(ru('❌ Правило уже существует.'), show_alert=True)
 
     await states.AddingAutoDeliveryRule.clear(state)
 
-    entry = properties.auto_delivery.add_entry(callback_data.rule)
-    await properties.auto_delivery.save()
+    entry = props.auto_delivery.add_entry(cbd.rule)
+    await props.auto_delivery.save()
 
     await NodeMenuContext(menu_id=MenuIds.props_node, trigger=q, entry_path=entry.path).apply_to()
 
 
-@router.message(states.AddingAutoDeliveryRule.filter(), lambda msg: msg.text)
-async def add_rule_from_msg(msg: Message, state: FSM, properties: FPHProps) -> None:
+@router.message(states.AddingAutoDeliveryRule.filter(), lambda m: m.text)
+async def add_rule_from_msg(m: Message, state: FSM, props: FPHProps):
     """
     Добавляет правило автовыдачи в список параметры.
     Очищает состояние.
     Открывает меню настроек правила автовыдачи.
     """
-    if msg.text in properties.auto_delivery.entries:
-        await msg.reply(ru('❌ Правило уже существует.'))
-        return
+    if m.text in props.auto_delivery.entries:
+        return m.reply(ru('<b>❌ Правило уже существует.</b>'))
 
     data = await states.AddingAutoDeliveryRule.get(state)
     await states.AddingAutoDeliveryRule.clear(state)
 
-    entry = properties.auto_delivery.add_entry(msg.text)
-    await properties.auto_delivery.save()
+    entry = props.auto_delivery.add_entry(m.text)
+    await props.auto_delivery.save()
 
-    await NodeMenuContext(
-        menu_id=MenuIds.props_node, trigger=msg, entry_path=entry.path
-    ).answer_to()
-    utils.delete_message(data.message)
+    await NodeMenuContext(menu_id=MenuIds.props_node, trigger=m, entry_path=entry.path).answer_to()
+    utils.delete_message(data.state_message)
 
 
 @router.callback_query(cbs.DeleteAutoDeliveryRule.filter())
-async def delete_auto_delivery_rule(
-    query: CallbackQuery,
-    properties: FPHProps,
-    callback_data: cbs.DeleteAutoDeliveryRule,
-) -> None:
-    if callback_data.rule not in properties.auto_delivery.entries:
-        await query.answer(ru('❌ Правило не найдено'), show_alert=True)
+async def delete_rule(q: CallbackQuery, props: FPHProps, cbd: cbs.DeleteAutoDeliveryRule) -> None:
+    if cbd.rule not in props.auto_delivery.entries:
+        await q.answer(ru('❌ Правило не найдено'), show_alert=True)
         return
 
-    properties.auto_delivery.detach_node(callback_data.rule)
-    await properties.auto_delivery.save()
+    props.auto_delivery.detach_node(cbd.rule)
+    await props.auto_delivery.save()
 
     await NodeMenuContext(
-        trigger=query,
+        trigger=q,
         menu_id=MenuIds.props_node,
-        entry_path=properties.auto_delivery.path,
-        ui_history=callback_data.ui_history[:-1],
-    ).apply_to(query.message)
+        entry_path=props.auto_delivery.path,
+        ui_history=cbd.ui_history[:-1],
+    ).apply_to()
 
 
 @router.callback_query(cbs.AutoDeliveryOpenGoodsSourcesList.filter())
 async def open_bind_goods_menu(
-    query: CallbackQuery,
-    callback_data: cbs.AutoDeliveryOpenGoodsSourcesList,
-    properties: FPHProps,
+    q: CallbackQuery,
+    cbd: cbs.AutoDeliveryOpenGoodsSourcesList,
+    props: FPHProps,
     state: FSM,
 ) -> None:
     await NodeMenuContext(
-        trigger=query,
+        trigger=q,
         menu_id=MenuIds.autodelivery_goods_sources_list,
-        entry_path=properties.auto_delivery.get_properties([callback_data.rule]).path,
-    ).apply_to(query.message)
+        entry_path=props.auto_delivery.get_properties([cbd.rule]).path,
+    ).apply_to()
 
-    await states.BindingGoodsSource(query=query, rule=callback_data.rule).set(state)
+    await states.BindingGoodsSource(query=q, rule=cbd.rule).set(state)
 
 
 @router.callback_query(cbs.BindGoodsSourceToAutoDelivery.filter())
 async def bind_goods_source(
-    query: CallbackQuery,
-    callback_data: cbs.BindGoodsSourceToAutoDelivery,
-    properties: FPHProps,
+    q: CallbackQuery,
+    cbd: cbs.BindGoodsSourceToAutoDelivery,
+    props: FPHProps,
     state: FSM,
     goods_manager: GoodsManager,
     tg: Telegram,
 ) -> None:
-    source = goods_manager.get(callback_data.source_id)
+    source = goods_manager.get(cbd.source_id)
     if source is None:
-        await query.answer(ru('❌ Источник товаров не найден.'), show_alert=True)
+        await q.answer(ru('❌ Источник товаров не найден.'), show_alert=True)
         return
 
     await states.BindingGoodsSource.clear(state)
 
     await (
-        properties.auto_delivery.get_properties([callback_data.rule])
+        props.auto_delivery.get_properties([cbd.rule])
         .get_parameter(['goods_source'])
-        .set_value(callback_data.source_id)
+        .set_value(cbd.source_id)
     )
 
-    await tg.fake_query(join_callbacks(*callback_data.history[:-1]), query)
+    await tg.fake_query(join_callbacks(*cbd.history[:-1]), q)
 
 
 INVALID_CHARS = set('<>:"/\\|?*\0')  # todo: code duplicate
@@ -158,26 +145,22 @@ INVALID_CHARS = set('<>:"/\\|?*\0')  # todo: code duplicate
 
 @router.message(states.BindingGoodsSource.filter(), lambda msg: msg.text)
 async def handler(
-    message: Message,
-    state: FSM,
-    goods_manager: GoodsManager,
-    properties: FPHProps,
-    tg_ui: UI,
+    m: Message, state: FSM, goods_manager: GoodsManager, props: FPHProps, tg_ui: UI
 ) -> None:
     for i in goods_manager._sources.values():
-        if i.display_id == message.text:
+        if i.display_id == m.text:
             source = i
             break
 
     else:
-        filename = message.text
+        filename = m.text
         if (
             filename in ['.', '..']
             or filename.endswith((' ', '.'))
             or any(c in INVALID_CHARS for c in filename)
             or any(ord(c) < 32 for c in filename)
         ):
-            await message.reply(ru('❌ Невалидное имя файла.'))
+            await m.reply(ru('❌ Невалидное имя файла.'))
             return
         if not filename.endswith('.txt'):
             filename += '.txt'
@@ -185,18 +168,18 @@ async def handler(
 
     state_obj: states.BindingGoodsSource = (await state.get_data())['data']
     await (
-        properties.auto_delivery.get_properties([state_obj.rule])
+        props.auto_delivery.get_properties([state_obj.rule])
         .get_parameter(['goods_source'])
         .set_value(source.source_id)
     )
 
     await state.clear()
-    utils.delete_message(message)
+    utils.delete_message(m)
 
     await NodeMenuContext(
-        trigger=message,
+        trigger=m,
         menu_id=MenuIds.props_node,
-        entry_path=properties.auto_delivery.get_properties([state_obj.rule]).path,
+        entry_path=props.auto_delivery.get_properties([state_obj.rule]).path,
         ui_history=state_obj.ui_history,
-    ).build_and_answer(tg_ui, message)
+    ).build_and_answer(tg_ui, m)
     await state_obj.query.message.delete()

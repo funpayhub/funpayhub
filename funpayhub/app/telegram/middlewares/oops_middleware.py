@@ -34,7 +34,7 @@ class OopsMiddleware(BaseMiddleware):
         from funpayhub.lib.exceptions import TranslatableException
 
         try:
-            await handler(event, data)
+            return await handler(event, data)
 
         except TelegramRetryAfter as e:
             if isinstance(event, CallbackQuery):
@@ -47,7 +47,7 @@ class OopsMiddleware(BaseMiddleware):
                     ).format(e.retry_after),
                     show_alert=True,
                 )
-                return
+                return None
 
         except TelegramBadRequest:
             logger.debug(_en('Telegram bad request!'), exc_info=True)

@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 
-__all__ = ['CallbackData', 'CallbackData', 'UnknownCallback', 'CallbackQueryFilter', 'join_callbacks']
+__all__ = [
+    'CallbackData',
+    'CallbackData',
+    'UnknownCallback',
+    'CallbackQueryFilter',
+    'join_callbacks',
+]
 
 
 import ast
@@ -13,8 +19,8 @@ from pydantic import Field, BaseModel, field_validator
 from aiogram.types import CallbackQuery
 from aiogram.filters import Filter
 
-from funpayhub.lib.telegram.callback_data.hashinator import HashinatorT1000
 from funpayhub.lib.telegram.ui.types import MenuHistoryNode
+from funpayhub.lib.telegram.callback_data.hashinator import HashinatorT1000
 
 
 T = TypeVar('T', bound='CallbackData')
@@ -125,7 +131,7 @@ class UnknownCallback(BaseModel):
             identifier=last_callback_str,
             history=callbacks[:-1],
             data=data,
-            ui_history=ui_history
+            ui_history=ui_history,
         )
 
     @staticmethod
@@ -304,7 +310,7 @@ class CallbackQueryFilter(Filter):
                 if isinstance(query, CallbackQuery):
                     query.__dict__['__parsed__'] = unpacked
             callback_data = self.callback_data.unpack(unpacked)
-            return {'callback_data': callback_data}
+            return {'callback_data': callback_data, 'cbd': callback_data}
         except (TypeError, ValueError):
             unpacked = getattr(query, '__parsed__', None)
             if unpacked.identifier == self.callback_data.__identifier__:
