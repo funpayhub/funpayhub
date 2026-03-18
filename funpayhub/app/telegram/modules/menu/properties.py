@@ -24,17 +24,13 @@ if TYPE_CHECKING:
 
 @r.message(CommandStart())
 @r.message(Command('menu'))
-async def send_menu(msg: Message, tg_ui: UIRegistry) -> None:
-    await MenuContextModel(menu_id=MenuIds.main_menu, trigger=msg).build_and_answer(tg_ui, msg)
+async def send_menu(msg: Message) -> None:
+    await MenuContextModel(menu_id=MenuIds.main_menu, trigger=msg).answer_to(msg)
 
 
 @r.message(Command('settings'))
-async def send_menu(msg: Message, tg_ui: UIRegistry) -> None:
-    await NodeMenuContext(
-        menu_id=MenuIds.props_node,
-        trigger=msg,
-        entry_path=[],
-    ).build_and_answer(tg_ui, msg)
+async def send_menu(msg: Message) -> None:
+    await NodeMenuContext(menu_id=MenuIds.props_node, trigger=msg, entry_path=[]).answer_to(msg)
 
 
 @r.callback_query(cbs.ToggleNotificationChannel.filter())
@@ -52,7 +48,6 @@ async def toggle_notification_channel(
     else:
         await param.add_item(chat_identifier)
     await param.save()
-    await tg_ui.context_from_history(callback_data.ui_history, trigger=query).build_and_apply(
-        tg_ui,
-        query.message,
+    await tg_ui.context_from_history(callback_data.ui_history, trigger=query).apply_to(
+        query.message
     )

@@ -36,7 +36,7 @@ ru = translater.translate
 
 
 @router.callback_query(cbs.OpenAddAutoDeliveryRuleMenu.filter())
-async def open_add_auto_delivery_rule_menu(query: CallbackQuery, tg_ui: UI, state: FSM) -> None:
+async def open_add_auto_delivery_rule_menu(query: CallbackQuery, state: FSM) -> None:
     """
     Открывает меню добавления правила автовыдачи и активирует состояние `AddingAutoDeliveryRule`.
     """
@@ -44,7 +44,7 @@ async def open_add_auto_delivery_rule_menu(query: CallbackQuery, tg_ui: UI, stat
     msg = await MenuContextModel(
         menu_id=MenuIds.add_auto_delivery_rule,
         trigger=query,
-    ).build_and_answer(tg_ui, query.message)
+    ).answer_to(query.message)
 
     await states.AddingAutoDeliveryRule(query=query, state_message=msg).set(state)
 
@@ -54,7 +54,6 @@ async def add_rule(
     query: CallbackQuery,
     properties: FPHProps,
     callback_data: cbs.AddAutoDeliveryRule,
-    tg_ui: UI,
     state: FSM,
 ) -> None:
     """
@@ -75,11 +74,11 @@ async def add_rule(
         trigger=query,
         menu_id=MenuIds.props_node,
         entry_path=entry.path,
-    ).build_and_apply(tg_ui, query.message)
+    ).apply_to(query.message)
 
 
 @router.message(states.AddingAutoDeliveryRule.filter(), lambda msg: msg.text)
-async def add_rule_from_msg(msg: Message, state: FSM, tg_ui: UI, properties: FPHProps) -> None:
+async def add_rule_from_msg(msg: Message, state: FSM, properties: FPHProps) -> None:
     """
     Добавляет правило автовыдачи в список параметры.
     Очищает состояние.
@@ -99,7 +98,7 @@ async def add_rule_from_msg(msg: Message, state: FSM, tg_ui: UI, properties: FPH
         trigger=msg,
         menu_id=MenuIds.props_node,
         entry_path=entry.path,
-    ).build_and_answer(tg_ui, msg)
+    ).answer_to(msg)
     utils.delete_message(data.message)
 
 
@@ -108,7 +107,6 @@ async def delete_auto_delivery_rule(
     query: CallbackQuery,
     properties: FPHProps,
     callback_data: cbs.DeleteAutoDeliveryRule,
-    tg_ui: UI,
 ) -> None:
     if callback_data.rule not in properties.auto_delivery.entries:
         await query.answer(ru('❌ Правило не найдено'), show_alert=True)
@@ -122,7 +120,7 @@ async def delete_auto_delivery_rule(
         menu_id=MenuIds.props_node,
         entry_path=properties.auto_delivery.path,
         ui_history=callback_data.ui_history[:-1],
-    ).build_and_apply(tg_ui, query.message)
+    ).apply_to(query.message)
 
 
 @router.callback_query(cbs.AutoDeliveryOpenGoodsSourcesList.filter())
@@ -130,14 +128,13 @@ async def open_bind_goods_menu(
     query: CallbackQuery,
     callback_data: cbs.AutoDeliveryOpenGoodsSourcesList,
     properties: FPHProps,
-    tg_ui: UI,
     state: FSM,
 ) -> None:
     await NodeMenuContext(
         trigger=query,
         menu_id=MenuIds.autodelivery_goods_sources_list,
         entry_path=properties.auto_delivery.get_properties([callback_data.rule]).path,
-    ).build_and_apply(tg_ui, query.message)
+    ).apply_to(query.message)
 
     await states.BindingGoodsSource(query=query, rule=callback_data.rule).set(state)
 
@@ -172,7 +169,11 @@ INVALID_CHARS = set('<>:"/\\|?*\0')  # todo: code duplicate
 
 @router.message(states.BindingGoodsSource.filter(), lambda msg: msg.text)
 async def handler(
-    message: Message, state: FSM, goods_manager: GoodsManager, properties: FPHProps, tg_ui: UI
+    message: Message,
+    state: FSM,
+    goods_manager: GoodsManager,
+    properties: FPHProps,
+    tg_ui: UI,
 ) -> None:
     for i in goods_manager._sources.values():
         if i.display_id == message.text:
