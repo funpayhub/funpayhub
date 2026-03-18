@@ -6,7 +6,7 @@ from pathlib import Path
 from aiogram import Router
 
 from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui import MenuContextModel
+from funpayhub.lib.telegram.ui import MenuContext
 from funpayhub.lib.goods_sources import FileGoodsSource
 from funpayhub.lib.base_app.telegram import utils
 from funpayhub.lib.telegram.callback_data import join_callbacks
@@ -36,22 +36,17 @@ ru = translater.translate
 
 
 @router.callback_query(cbs.OpenAddAutoDeliveryRuleMenu.filter())
-async def open_add_auto_delivery_rule_menu(query: CallbackQuery, state: FSM) -> None:
+async def open_add_auto_delivery_rule_menu(q: CallbackQuery, state: FSM) -> None:
     """
     Открывает меню добавления правила автовыдачи и активирует состояние `AddingAutoDeliveryRule`.
     """
-    await query.answer()
-    msg = await MenuContextModel(
-        menu_id=MenuIds.add_auto_delivery_rule,
-        trigger=query,
-    ).answer_to(query.message)
-
-    await states.AddingAutoDeliveryRule(query=query, state_message=msg).set(state)
+    msg = await MenuContext(menu_id=MenuIds.add_auto_delivery_rule, trigger=q).answer_to()
+    await states.AddingAutoDeliveryRule(query=q, state_message=msg).set(state)
 
 
 @router.callback_query(cbs.AddAutoDeliveryRule.filter())
 async def add_rule(
-    query: CallbackQuery,
+    q: CallbackQuery,
     properties: FPHProps,
     callback_data: cbs.AddAutoDeliveryRule,
     state: FSM,
@@ -62,7 +57,7 @@ async def add_rule(
     Открывает меню настроек правила автовыдачи.
     """
     if callback_data.rule in properties.auto_delivery.entries:
-        await query.answer(ru('❌ Правило уже существует.'), show_alert=True)
+        await q.answer(ru('❌ Правило уже существует.'), show_alert=True)
         return
 
     await states.AddingAutoDeliveryRule.clear(state)
@@ -70,11 +65,7 @@ async def add_rule(
     entry = properties.auto_delivery.add_entry(callback_data.rule)
     await properties.auto_delivery.save()
 
-    await NodeMenuContext(
-        trigger=query,
-        menu_id=MenuIds.props_node,
-        entry_path=entry.path,
-    ).apply_to(query.message)
+    await NodeMenuContext(menu_id=MenuIds.props_node, trigger=q, entry_path=entry.path).apply_to()
 
 
 @router.message(states.AddingAutoDeliveryRule.filter(), lambda msg: msg.text)
@@ -85,7 +76,7 @@ async def add_rule_from_msg(msg: Message, state: FSM, properties: FPHProps) -> N
     Открывает меню настроек правила автовыдачи.
     """
     if msg.text in properties.auto_delivery.entries:
-        await msg.reply(translater.translate('❌ Правило уже существует.'))
+        await msg.reply(ru('❌ Правило уже существует.'))
         return
 
     data = await states.AddingAutoDeliveryRule.get(state)
@@ -95,10 +86,8 @@ async def add_rule_from_msg(msg: Message, state: FSM, properties: FPHProps) -> N
     await properties.auto_delivery.save()
 
     await NodeMenuContext(
-        trigger=msg,
-        menu_id=MenuIds.props_node,
-        entry_path=entry.path,
-    ).answer_to(msg)
+        menu_id=MenuIds.props_node, trigger=msg, entry_path=entry.path
+    ).answer_to()
     utils.delete_message(data.message)
 
 

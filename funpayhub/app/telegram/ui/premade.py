@@ -7,8 +7,8 @@ __all__ = [
 ]
 
 from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui import MenuContextModel, MenuModification
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext
+from funpayhub.lib.telegram.ui import MenuContext, MenuModification
+from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContextOld
 from funpayhub.lib.telegram.callback_data import UnknownCallback
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import Dummy, OpenMenu
 
@@ -17,7 +17,7 @@ ru = translater.translate
 
 
 def confirmable_button2(
-    ctx: MenuContextModel,
+    ctx: MenuContext,
     id: str,
     text: str,
     callback_data: str = Dummy().pack(),
@@ -28,7 +28,7 @@ def confirmable_button2(
 
 
 def confirmable_button(
-    ctx: MenuContextModel,
+    ctx: MenuContext,
     text: str,
     confirm_id: str,
     callback_data: str = Dummy().pack(),
@@ -92,7 +92,7 @@ class AddRemoveButtonBaseModification(
 
     async def _modify(
         self,
-        ctx: MenuContextModel,
+        ctx: MenuContext,
         menu: Menu,
         delete_callback: str = Dummy().pack(),
     ):
@@ -107,5 +107,5 @@ class AddRemoveButtonBaseModification(
         menu.footer_keyboard.add_row(*buttons)
         return menu
 
-    async def modify(self, ctx: MenuContext, menu: Menu):
+    async def modify(self, ctx: MenuContextOld, menu: Menu):
         raise NotImplementedError()

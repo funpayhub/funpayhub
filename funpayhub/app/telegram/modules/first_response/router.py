@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from aiogram import Router
 
-from funpayhub.lib.telegram.ui import UIRegistry, MenuContext
+from funpayhub.lib.telegram.ui import UIRegistry, MenuContextOld
 from funpayhub.lib.base_app.telegram.utils import delete_message
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
@@ -38,7 +38,7 @@ async def open_menu(
     state: FSMContext,
     tg_ui: UIRegistry,
 ):
-    msg = await MenuContext(
+    msg = await MenuContextOld(
         menu_id=MenuIds.bind_first_response_to_offer,
         trigger=query,
     ).build_and_answer(tg_ui, query.message)

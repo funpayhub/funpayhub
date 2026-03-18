@@ -8,7 +8,7 @@ from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedErro
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.translater import Translater, translater
 from funpayhub.lib.telegram.ui import Button, KeyboardBuilder
-from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext, MenuContextModel
+from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext, MenuContextOld
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
@@ -33,9 +33,9 @@ ru = translater.translate
 class StartNotificationMenuBuilder(
     MenuBuilder,
     menu_id=MenuIds.start_notification,
-    context_type=MenuContext,
+    context_type=MenuContextOld,
 ):
-    async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub) -> Menu:
+    async def build(self, ctx: MenuContextOld, translater: Translater, hub: FunPayHub) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='main',
@@ -128,9 +128,9 @@ class FunPayStartNotificationMenuBuilder(
 class MainMenuBuilder(
     MenuBuilder,
     menu_id=MenuIds.main_menu,
-    context_type=MenuContextModel,
+    context_type=MenuContext,
 ):
-    async def build(self, ctx: MenuContextModel, hub: FunPayHub) -> Menu:
+    async def build(self, ctx: MenuContext, hub: FunPayHub) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='settings',
@@ -201,8 +201,8 @@ class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=Sta
         )
 
 
-class RequestsMenuBuilder(MenuBuilder, menu_id='fph:request_menu', context_type=MenuContext):
-    async def build(self, ctx: MenuContext, hub: FunPayHub) -> Menu:
+class RequestsMenuBuilder(MenuBuilder, menu_id='fph:request_menu', context_type=MenuContextOld):
+    async def build(self, ctx: MenuContextOld, hub: FunPayHub) -> Menu:
         counter = hub.funpay.session.counter
 
         text = (

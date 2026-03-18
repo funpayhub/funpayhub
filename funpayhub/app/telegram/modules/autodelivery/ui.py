@@ -10,8 +10,8 @@ from funpayhub.lib.telegram.ui import (
     Menu,
     Button,
     MenuBuilder,
+    MenuContext,
     KeyboardBuilder,
-    MenuContextModel,
     MenuModification,
 )
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
@@ -38,16 +38,16 @@ if TYPE_CHECKING:
 ru = translater.translate
 
 
-class NewSaleMenuContext(MenuContextModel):
+class NewSaleMenuContext(MenuContext):
     new_sale_event: NewSaleEvent
 
 
 class AddAutoDeliveryRuleMenuBuilder(
     MenuBuilder,
     menu_id=MenuIds.add_auto_delivery_rule,
-    context_type=MenuContextModel,
+    context_type=MenuContext,
 ):
-    async def build(self, ctx: MenuContextModel, hub: FPH) -> Menu:
+    async def build(self, ctx: MenuContext, hub: FPH) -> Menu:
         menu = Menu(
             main_text=ru('➕ Выберите лот из списка ниже или введите название вручную.'),
             finalizer=StripAndNavigationFinalizer(back_button=False),
@@ -139,7 +139,7 @@ class NewSaleNotificationMenuBuilder(
                 menu.footer_text = ru('<i>❌ Не удалось выдать товары.\nПодробности в логах.</i>')
         else:
             menu.footer_text = ru(
-                '<i>ℹ️ Товары не были выданы, т.к. не было найдено подходящего правила.</i>'
+                '<i>ℹ️ Товары не были выданы, т.к. не было найдено подходящего правила.</i>',
             )
 
         menu.header_keyboard.add_callback_button(

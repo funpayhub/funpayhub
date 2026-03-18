@@ -23,8 +23,8 @@ from .types import (
     MenuContext,
     ButtonBuilder,
     ButtonContext,
+    MenuContextOld,
     MenuHistoryNode,
-    MenuContextModel,
     MenuModification,
     ButtonModification,
 )
@@ -38,7 +38,7 @@ class _MenuBuilder:
 
     async def build(
         self,
-        context: MenuContext,
+        context: MenuContextOld,
         data: dict[str, Any],
         run_modifications: bool = True,
         finalize: bool = True,
@@ -134,7 +134,7 @@ class UIRegistry:
 
     async def build_menu(
         self,
-        context: MenuContext,
+        context: MenuContextOld,
         data: dict[str, Any] | None = None,
         run_modifications: bool = True,
         finalize: bool = True,
@@ -239,7 +239,7 @@ class UIRegistry:
         self,
         history: list[MenuHistoryNode],
         trigger: CallbackQuery | Message | None = None,
-    ) -> MenuContextModel:
+    ) -> MenuContext:
         if not history:
             raise ValueError('History is empty.')
 

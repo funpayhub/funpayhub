@@ -217,25 +217,31 @@ class Menu(Mapping):
     # InaccessibleMessage | None добавлены только чтобы mypy не ругался.
     # С этим надо что-то делать.
     # todo
-    async def answer_to(self, msg: Message | InaccessibleMessage | None, /) -> Message:
-        if msg is None or isinstance(msg, InaccessibleMessage):
-            raise ValueError('Inaccessible message.')
-
-        return await msg.answer(
+    async def answer_to(
+        self,
+        aiogram_obj: Message | InaccessibleMessage | None | CallbackQuery,
+        /,
+        *,
+        answer_query: bool = True,
+    ) -> Message:
+        msg = aiogram_obj if isinstance(aiogram_obj, Message) else aiogram_obj.message
+        new_msg = await msg.answer(
             text=self.total_text,
             reply_markup=self.total_keyboard(convert=True),
         )
+        if answer_query and isinstance(aiogram_obj, CallbackQuery):
+            await aiogram_obj.answer()
+        return new_msg
 
     async def apply_to(
         self,
-        msg: Message | InaccessibleMessage | None,
+        aiogram_obj: Message | InaccessibleMessage | None | CallbackQuery,
         /,
         *,
         text: bool = True,
         keyboard: bool = True,
     ) -> Message | bool:
-        if msg is None or isinstance(msg, InaccessibleMessage):
-            raise ValueError('Inaccessible message.')
+        msg = aiogram_obj if isinstance(aiogram_obj, Message) else aiogram_obj.message
 
         return await msg.edit_text(
             text=self.total_text if text else msg.text,
@@ -264,7 +270,7 @@ class Menu(Mapping):
 
 
 @dataclass(kw_only=True)
-class MenuContext:
+class MenuContextOld:
     """
     Базовый контекст для билдеров меню Telegram.
 
@@ -377,10 +383,10 @@ class MenuContext:
     def context_data(self) -> dict[str, Any]:
         """
         Возвращает словарь полей, объявленных в классе-наследнике,
-        исключая поля базового `MenuContext`.
+        исключая поля базового `MenuContextOld`.
         """
 
-        base_fields = {i.name for i in fields(MenuContext)}
+        base_fields = {i.name for i in fields(MenuContextOld)}
         return {k.name: getattr(self, k.name) for k in fields(self) if k.name not in base_fields}
 
 
@@ -392,7 +398,7 @@ class MenuHistoryNode(BaseModel):
     context_data: dict[str, Any] = Field(default_factory=dict)
 
 
-class MenuContextModel(BaseModel):
+class MenuContext(BaseModel):
     model_config = {'extra': 'allow', 'arbitrary_types_allowed': True}
 
     menu_id: str
@@ -464,26 +470,69 @@ class MenuContextModel(BaseModel):
 
     async def apply_to(
         self,
-        message: Message,
+        aiogram_obj: Message | CallbackQuery | None = None,
         *,
         text: bool = True,
         keyboard: bool = True,
         ui_registry: UIRegistry | None = None,
     ):
-        menu = await self.build_menu(ui_registry)
-        return await menu.apply_to(message, text=text, keyboard=keyboard)
+        """
+        Выполняет построение меню и применяет его к переданному объекту `aiogram_obj`.
 
-    async def answer_to(self, message: Message, ui_registry: UIRegistry | None = None) -> Message:
+        Если `ui_registry` не передан, используется глобальный UI реестр.
+        Если `aiogram_obj` не передан, используется `trigger` контекста.
+        Если ни `aiogram_obj` и `trigger` не переданы, возбуждается `ValueError`.
+
+        :param aiogram_obj: Объект для ответа, по умолчанию `None`. Если не передан, используется
+            `trigger` контекста.
+        :param text: Применять ли текст к новому меню. По умолчанию `True`.
+        :param keyboard: Применять ли клавиатуру к новому меню. По умолчанию `True`.
+        :param ui_registry: UI реестр для построения меню, по умолчанию `None`. Если не передан,
+            используется глобальный UI реестр.
+        """
+        if aiogram_obj is None:
+            if self.trigger is None:
+                raise ValueError('Context has no trigger and `aiogram_obj` is not provided.')
+            aiogram_obj = self.trigger
+
         menu = await self.build_menu(ui_registry)
-        return await menu.answer_to(message)
+        return await menu.apply_to(aiogram_obj, text=text, keyboard=keyboard)
+
+    async def answer_to(
+        self,
+        aiogram_obj: Message | CallbackQuery | None = None,
+        ui_registry: UIRegistry | None = None,
+        answer_query: bool = True,
+    ) -> Message:
+        """
+        Выполняет построение меню и отправляет его в ответ на переданный объект.
+
+        Если `ui_registry` не передан, используется глобальный UI реестр.
+        Если `aiogram_obj` не передан, используется `trigger` контекста.
+        Если ни `aiogram_obj` и `trigger` не переданы, возбуждается `ValueError`.
+
+        :param aiogram_obj: Объект для ответа, по умолчанию `None`. Если не передан, используется
+            `trigger` контекста.
+        :param ui_registry: UI реестр для построения меню, по умолчанию `None`. Если не передан,
+            используется глобальный UI реестр.
+        :param answer_query: Если `aiogram_obj` (или `trigger`) - `CallbackQuery`,
+            вызывает `query.answer()`.
+        """
+        if aiogram_obj is None:
+            if self.trigger is None:
+                raise ValueError('Context has no trigger and `aiogram_obj` is not provided.')
+            aiogram_obj = self.trigger
+
+        menu = await self.build_menu(ui_registry)
+        return await menu.answer_to(aiogram_obj, answer_query=answer_query)
 
     @property
     def context_data(self) -> dict[str, Any]:
         """
         Возвращает словарь полей, объявленных в классе-наследнике,
-        исключая поля базового `MenuContext`.
+        исключая поля базового `MenuContextOld`.
         """
-        base_fields = {i for i in MenuContextModel.model_fields}
+        base_fields = {i for i in MenuContext.model_fields}
         return {k: getattr(self, k) for k in self.__class__.model_fields if k not in base_fields}
 
     @classmethod
@@ -526,7 +575,7 @@ class MenuContextModel(BaseModel):
 
 @dataclass(kw_only=True)
 class ButtonContext:
-    menu_render_context: MenuContextModel
+    menu_render_context: MenuContext
     button_id: str
     data: dict[str, Any] = field(default_factory=dict)
 
@@ -534,9 +583,9 @@ class ButtonContext:
 class MenuBuilder:
     if TYPE_CHECKING:
         __menu_id__: str
-        __context_type__: type[MenuContextModel]
+        __context_type__: type[MenuContext]
         menu_id: str
-        context_type: type[MenuContextModel]
+        context_type: type[MenuContext]
 
     def __init__(self) -> None:
         self._wrapped: CallableWrapper[Menu] = CallableWrapper(getattr(self, 'build'))
@@ -565,10 +614,10 @@ class MenuBuilder:
                 )
             if not isinstance(context_type, type) or not issubclass(
                 context_type,
-                (MenuContext, MenuContextModel),
+                (MenuContextOld, MenuContext),
             ):
                 raise ValueError(
-                    "'context_type' must be a subclass of 'MenuContext'.",
+                    "'context_type' must be a subclass of 'MenuContextOld'.",
                 )
 
         if menu_id is not None:
@@ -578,7 +627,7 @@ class MenuBuilder:
 
         super().__init_subclass__(**kwargs)
 
-    async def __call__(self, ctx: MenuContext, data: dict[str, Any]) -> Menu:
+    async def __call__(self, ctx: MenuContextOld, data: dict[str, Any]) -> Menu:
         return await self._wrapped((ctx,), data)
 
     @classproperty
@@ -588,7 +637,7 @@ class MenuBuilder:
 
     @classproperty
     @classmethod
-    def context_type(cls) -> type[MenuContextModel]:
+    def context_type(cls) -> type[MenuContext]:
         return cls.__context_type__
 
 
@@ -636,7 +685,7 @@ class MenuModification:
     def modification_id(cls) -> str:
         return cls.__modification_id__
 
-    async def __call__(self, context: MenuContext, menu: Menu, data: dict[str, Any]) -> Menu:
+    async def __call__(self, context: MenuContextOld, menu: Menu, data: dict[str, Any]) -> Menu:
         if self.wrapped_filter is not None:
             result = await self.wrapped_filter((context, menu), data)
             if not result:

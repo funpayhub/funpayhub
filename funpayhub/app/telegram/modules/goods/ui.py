@@ -4,7 +4,7 @@ import html
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
-from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
+from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContextOld, KeyboardBuilder
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import (
     StripAndNavigationFinalizer,
@@ -23,18 +23,18 @@ if TYPE_CHECKING:
 
 
 @dataclass(kw_only=True)
-class GoodsInfoMenuContext(MenuContext):
+class GoodsInfoMenuContext(MenuContextOld):
     source_id: str
 
 
 class GoodsSourcesListMenuBuilder(
     MenuBuilder,
     menu_id=MenuIds.goods_sources_list,
-    context_type=MenuContext,
+    context_type=MenuContextOld,
 ):
     async def build(
         self,
-        ctx: MenuContext,
+        ctx: MenuContextOld,
         goods_manager: GoodsSourcesManager,
         translater: Tr,
     ) -> Menu:

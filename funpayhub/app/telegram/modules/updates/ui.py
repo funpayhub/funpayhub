@@ -13,7 +13,7 @@ import html
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
-from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, KeyboardBuilder
+from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContextOld, KeyboardBuilder
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -30,12 +30,12 @@ if TYPE_CHECKING:
 
 
 @dataclass(kw_only=True)
-class UpdateMenuContext(MenuContext):
+class UpdateMenuContext(MenuContextOld):
     update_info: UpdateInfo | None = None
 
 
 @dataclass(kw_only=True)
-class InstallUpdateMenuContext(MenuContext):
+class InstallUpdateMenuContext(MenuContextOld):
     instance_id: str
 
 

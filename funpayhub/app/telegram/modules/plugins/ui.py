@@ -21,7 +21,7 @@ from funpayhub.lib.telegram.ui import (
     Menu,
     Button,
     MenuBuilder,
-    MenuContext as MenuCtx,
+    MenuContextOld as MenuCtx,
     KeyboardBuilder,
 )
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu

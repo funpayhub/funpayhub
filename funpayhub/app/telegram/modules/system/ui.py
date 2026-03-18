@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from funpayhub import exit_codes
 
-from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
+from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContextOld, KeyboardBuilder
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -18,8 +18,8 @@ if TYPE_CHECKING:
     from funpayhub.app.main import FunPayHub
 
 
-class ControlMenuBuilder(MenuBuilder, menu_id=MenuIds.control, context_type=MenuContext):
-    async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub) -> Menu:
+class ControlMenuBuilder(MenuBuilder, menu_id=MenuIds.control, context_type=MenuContextOld):
+    async def build(self, ctx: MenuContextOld, translater: Translater, hub: FunPayHub) -> Menu:
         from funpayhub.app.telegram.modules.updates.callbacks import CheckForUpdates
 
         main_keyboard = KeyboardBuilder()

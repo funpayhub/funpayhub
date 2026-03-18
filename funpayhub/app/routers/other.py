@@ -12,7 +12,7 @@ from funpayhub.loggers import main as logger
 
 from funpayhub.lib.translater import _en
 from funpayhub.lib.telegram.ui import UIRegistry
-from funpayhub.lib.telegram.ui.types import MenuContext
+from funpayhub.lib.telegram.ui.types import MenuContextOld
 from funpayhub.lib.plugin.repository.loaders import URLRepositoryLoader
 
 from funpayhub.app.dispatching import Router
@@ -37,7 +37,7 @@ messages: list[Message] = []
 
 @router.on_telegram_start()
 async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub) -> None:
-    ctx = MenuContext(
+    ctx = MenuContextOld(
         chat_id=-1,
         menu_id=MenuIds.start_notification,
     )

@@ -14,7 +14,7 @@ import html
 from typing import TYPE_CHECKING
 from itertools import chain
 
-from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, MenuModification
+from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContextOld, MenuModification
 from funpayhub.lib.telegram.callback_data import join_callbacks
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
@@ -152,11 +152,11 @@ class ReplaceNameWithOfferNameModification(
 class BindToOfferMenu(
     MenuBuilder,
     menu_id=MenuIds.bind_first_response_to_offer,
-    context_type=MenuContext,
+    context_type=MenuContextOld,
 ):
     async def build(
         self,
-        ctx: MenuContext,
+        ctx: MenuContextOld,
         translater: Tr,
         hub: FPH,
         properties: FPHProps,
