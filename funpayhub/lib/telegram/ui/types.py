@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import warnings
 from typing import TYPE_CHECKING, Any, Self, Type, Literal, overload
 from dataclasses import field, fields, dataclass
 from collections.abc import Mapping, Iterable, Iterator, KeysView
@@ -438,8 +439,11 @@ class MenuContextModel(BaseModel):
         if self.view_page == -1:
             self.view_page = 0
 
-    async def build_menu(self, registry: UIRegistry) -> Menu:
-        return await registry.build_menu(self)
+    async def build_menu(self, ui_registry: UIRegistry | None = None) -> Menu:
+        if ui_registry is None:
+            from funpayhub.lib.telegram.ui.registry import ui_registry
+
+        return await ui_registry.build_menu(self)
 
     async def build_and_apply(
         self,
@@ -449,11 +453,28 @@ class MenuContextModel(BaseModel):
         text: bool = True,
         keyboard: bool = True,
     ) -> Message:
+        warnings.warn('`build_and_apply` устарел. Используйте `apply_to`.', DeprecationWarning)
         menu = await self.build_menu(registry)
         return await menu.apply_to(message, text=text, keyboard=keyboard)
 
     async def build_and_answer(self, registry: UIRegistry, message: Message) -> Message:
+        warnings.warn('`build_and_answer` устарел. Используйте `answer_to`.', DeprecationWarning)
         menu = await self.build_menu(registry)
+        return await menu.answer_to(message)
+
+    async def apply_to(
+        self,
+        message: Message,
+        *,
+        text: bool = True,
+        keyboard: bool = True,
+        ui_registry: UIRegistry | None = None,
+    ):
+        menu = await self.build_menu(ui_registry)
+        return await menu.apply_to(message, text=text, keyboard=keyboard)
+
+    async def answer_to(self, message: Message, ui_registry: UIRegistry | None = None) -> Message:
+        menu = await self.build_menu(ui_registry)
         return await menu.answer_to(message)
 
     @property
