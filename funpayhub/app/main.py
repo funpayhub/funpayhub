@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from aiogram.utils.token import TokenValidationError
 from funpaybotengine.runner.config import RunnerConfig
 
+from funpayhub import exit_codes
 from funpayhub.loggers import main as logger
 
 from funpayhub.lib.base_app import App
@@ -30,8 +31,6 @@ from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.workflow_data import get_wfd
 from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 
-from .. import exit_codes
-
 
 if TYPE_CHECKING:
     from .workflow_data import WorkflowData
@@ -47,22 +46,12 @@ class FunPayHub(App):
         telegram: Telegram
         workflow_data: WorkflowData
 
-    def __init__(self, properties: FunPayHubProperties, safe_mode: bool = False):
+    def __init__(self, props: FunPayHubProperties, safe_mode: bool = False):
         self._workflow_data = get_wfd()
-        if os.environ.get('TELEGRAM_TOKEN', None) and not properties.telegram.general.token.value:
-            token = os.environ['TELEGRAM_TOKEN']
-        else:
-            token = properties.telegram.general.token.value
-
         try:
-            telegram_app = Telegram(self, token, self._workflow_data)
+            telegram_app = Telegram(self, props.telegram.general.token.value, self._workflow_data)
         except TokenValidationError:
             sys.exit(exit_codes.TELEGRAM_TOKEN_ERROR)
-
-        self._stop_signal: asyncio.Future[int] = asyncio.Future()
-        self._stopped_signal = asyncio.Event()
-        self._running_lock = asyncio.Lock()
-        self._stopping_lock = asyncio.Lock()
 
         config = AppConfig(
             on_parameter_change_event_factory=ParameterValueChangedEvent,
@@ -70,29 +59,29 @@ class FunPayHub(App):
         )
 
         super().__init__(
-            version=properties.version.value,
+            version=props.version.value,
             config=config,
             dispatcher=HubDispatcher(workflow_data=self._workflow_data),
-            properties=properties,
-            plugin_manager=PluginManager(self, properties.version.value),
+            properties=props,
+            plugin_manager=PluginManager(self, props.version.value),
             translater=translater,
             safe_mode=safe_mode,
             telegram_app=telegram_app,
             workflow_data=self.workflow_data,
         )
-        self.telegram.config.max_menu_lines = properties.telegram.appearance.max_menu_lines.value
+        self.telegram.config.max_menu_lines = props.telegram.appearance.max_menu_lines.value
 
         self._funpay = FunPay(
             self,
-            bot_token=properties.general.golden_key.value or '__emtpy_golden_key__',
-            proxy=properties.general.proxy.value or None,
+            bot_token=props.general.golden_key.value or '__emtpy_golden_key__',
+            proxy=props.general.proxy.value or None,
             headers=None,
             workflow_data=self.workflow_data,
-            runner_config=RunnerConfig(interval=properties.general.runner_request_interval.value),
+            runner_config=RunnerConfig(interval=props.general.runner_request_interval.value),
         )
 
         self._plugin_manager._disabled_plugins = set(
-            properties.plugin_properties.disabled_plugins.value,
+            props.plugin_properties.disabled_plugins.value,
         )
 
         self._setup_dispatcher()
@@ -110,6 +99,11 @@ class FunPayHub(App):
                 'first_response_cache': self._funpay.first_response_cache,
             },
         )
+
+        self._stop_signal: asyncio.Future[int] = asyncio.Future()
+        self._stopped_signal = asyncio.Event()
+        self._running_lock = asyncio.Lock()
+        self._stopping_lock = asyncio.Lock()
 
     def _setup_dispatcher(self) -> None:
         self._dispatcher.connect_routers(*ROUTERS)
@@ -132,7 +126,7 @@ class FunPayHub(App):
 
         async with self._running_lock:
             try:
-                me = await self.telegram.bot.get_me()
+                await self.telegram.bot.get_me()
             except Exception:
                 return exit_codes.TELEGRAM_ERROR
 

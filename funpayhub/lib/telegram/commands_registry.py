@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+
+__all__ = ['Command', 'CommandsRegistry', 'commands_registry']
+
+
 from dataclasses import dataclass
 from collections import ChainMap
 from collections.abc import Generator
@@ -44,3 +48,6 @@ class CommandsRegistry:
             if not command.setup and setup_only:
                 continue
             yield command
+
+
+commands_registry = CommandsRegistry()

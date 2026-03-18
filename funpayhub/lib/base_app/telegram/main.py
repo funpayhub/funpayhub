@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+
+__all__ = ['TelegramAppConfig', 'TelegramApp']
+
+
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
@@ -12,8 +16,9 @@ from aiogram.client.default import DefaultBotProperties
 from funpayhub.lib.telegram import CommandsRegistry
 from funpayhub.lib.telegram.ui.registry import (
     UIRegistry,
-    ui_registry as default_ui_registry,
+    ui_registry as global_ui_registry,
 )
+from funpayhub.lib.telegram.commands_registry import commands_registry as global_commands_registry
 
 from .app import MENUS, BUTTONS, ROUTERS
 from ...telegram.callback_data import UnknownCallback
@@ -39,10 +44,7 @@ class TelegramApp:
         ui_registry: UIRegistry | None = None,
     ) -> None:
         self._config = config if config is not None else TelegramAppConfig()
-        self._dispatcher = Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
-        self._dispatcher.workflow_data = workflow_data
-        self._commands_registry = commands_registry or CommandsRegistry()
-        self._ui_registry = ui_registry if ui_registry is not None else default_ui_registry
+
         self._bot = Bot(
             token=bot_token,
             default=DefaultBotProperties(
@@ -52,6 +54,12 @@ class TelegramApp:
                 link_preview_is_disabled=True,
             ),
         )
+
+        self._dispatcher = Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
+        self._dispatcher.workflow_data = workflow_data
+
+        self._commands_registry = commands_registry or global_commands_registry
+        self._ui_registry = ui_registry if ui_registry is not None else global_ui_registry
 
         self._setup_dispatcher()
         self._setup_ui()

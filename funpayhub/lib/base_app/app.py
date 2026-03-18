@@ -70,6 +70,7 @@ class App:
     ):
         self._instance_id = '-'.join(map(random_part, [4, 4, 4]))
         setattr(builtins, 'APP_INSTANCE_ID', self._instance_id)
+
         self._version = version
         self._config = config
         self._safe_mode = safe_mode
@@ -90,10 +91,7 @@ class App:
         self._telegram = (
             telegram_app
             if telegram_app is not None
-            else TelegramApp(
-                bot_token=telegram_bot_token,
-                workflow_data=self.workflow_data,
-            )
+            else TelegramApp(bot_token=telegram_bot_token, workflow_data=self.workflow_data)
         )
 
         self._workflow_data.update(

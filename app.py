@@ -110,11 +110,7 @@ async def main() -> None:
     if locales_path.exists():
         translater.add_translations(locales_path.absolute())
 
-    app = FunPayHub(
-        properties=props,
-        translater=translater,
-        safe_mode=args.safe,
-    )
+    app = FunPayHub(props=props, safe_mode=args.safe)
 
     if app.telegram.bot.token and not props.telegram.general.token.value:
         await props.telegram.general.token.set_value(app.telegram.bot.token)
