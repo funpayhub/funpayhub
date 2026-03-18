@@ -28,7 +28,6 @@ from . import callbacks as cbs
 if TYPE_CHECKING:
     from funpaybotengine.dispatching.events import NewSaleEvent
 
-    from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.goods_sources import GoodsSourcesManager as GoodsManager
 
     from funpayhub.app.main import FunPayHub as FPH
@@ -218,10 +217,10 @@ class AddRemoveButtonToAutoDeliveryModification(
     async def filter(self, ctx: NodeMenuCtx, menu: Menu) -> bool:
         return len(ctx.entry_path) == 2 and ctx.entry_path[0] == 'auto_delivery'
 
-    async def modify(self, ctx: NodeMenuCtx, menu: Menu, translater: Tr) -> Menu:
+    async def modify(self, ctx: NodeMenuCtx, menu: Menu) -> Menu:
         delete_callback = cbs.DeleteAutoDeliveryRule(
             rule=ctx.entry_path[1],
-            from_callback=ctx.callback_data,
+            ui_history=ctx.as_ui_history(),
         ).pack()
 
-        return await self._modify(ctx, menu, translater, delete_callback=delete_callback)
+        return await self._modify(ctx, menu, 'delete_ad_rule', delete_callback=delete_callback)

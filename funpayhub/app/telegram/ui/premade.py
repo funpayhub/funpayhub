@@ -9,8 +9,7 @@ __all__ = [
 from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import MenuContext, MenuModification
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContextOld
-from funpayhub.lib.telegram.callback_data import UnknownCallback
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import Dummy, OpenMenu
+from funpayhub.lib.base_app.telegram.app.ui.callbacks import Dummy
 
 from funpayhub.app.telegram.callbacks import Confirmation
 
@@ -18,7 +17,7 @@ from funpayhub.app.telegram.callbacks import Confirmation
 ru = translater.translate
 
 
-def confirmable_button2(
+def confirmable_button(
     ctx: MenuContext,
     button_id: str,
     text: str,
@@ -30,87 +29,22 @@ def confirmable_button2(
 
     if has_key:
         return [
+            Button.callback_button(button_id, text, callback_data, style),
             Button.callback_button(
-                button_id=button_id,
-                callback_data=callback_data,
-                text=text,
-                style=style,
-            ),
-            Button.callback_button(
-                button_id=f'cancel_action:{button_id}',
-                callback_data=Confirmation(
-                    button_id=button_id,
-                    open=False,
-                    ui_history=ctx.as_ui_history(),
+                f'cancel_action:{button_id}',
+                ru('🔘 Отмена'),
+                Confirmation(
+                    button_id=button_id, open=False, ui_history=ctx.as_ui_history()
                 ).pack(),
-                text=ru('🔘 Отмена'),
             ),
         ]
-    return [
-        Button.callback_button(
-            button_id=button_id,
-            callback_data=Confirmation(
-                button_id=button_id,
-                open=True,
-                ui_history=ctx.as_ui_history(),
-            ).pack(),
-            text=text,
-            style=style,
-        ),
-    ]
-
-
-def confirmable_button(
-    ctx: MenuContext,
-    text: str,
-    confirm_id: str,
-    callback_data: str = Dummy().pack(),
-    menu_callback_data: UnknownCallback | None = None,
-    style: str | None = None,
-) -> list[Button]:
-    key = f'{confirm_id}:confirm_action'
-
-    callback_data_replace = (
-        OpenMenu(
-            menu_id=ctx.menu_id,
-            menu_page=ctx.menu_page,
-            view_page=ctx.view_page,
-            context_data=ctx.context_data,
-            data={**ctx.data},
-            history=ctx.callback_data_history,
-        )
-        if not menu_callback_data
-        else menu_callback_data.model_copy(deep=True)
+    return Button.callback_button(
+        button_id,
+        text,
+        Confirmation(button_id=button_id, open=True, ui_history=ctx.as_ui_history()).pack(),
+        style,
+        row=True,
     )
-
-    exists = ctx.data.get(key) or (
-        ctx.callback_data.data.get(key) if ctx.callback_data is not None else False
-    )
-
-    if not exists:
-        callback_data_replace.data[key] = True
-        return Button.callback_button(
-            button_id=f'ask_action:{confirm_id}',
-            text=text,
-            callback_data=callback_data_replace.pack(),
-            style=style,
-            row=True,
-        )
-
-    callback_data_replace.data[key] = False
-    return [
-        Button.callback_button(
-            button_id=f'confirm_action:{confirm_id}',
-            text=text,
-            callback_data=callback_data,
-            style=style,
-        ),
-        Button.callback_button(
-            button_id=f'cancel_action:{confirm_id}',
-            text=translater.translate('🔘 Отмена'),
-            callback_data=callback_data_replace.pack(),
-        ),
-    ]
 
 
 class AddRemoveButtonBaseModification(
@@ -127,12 +61,13 @@ class AddRemoveButtonBaseModification(
         self,
         ctx: MenuContext,
         menu: Menu,
+        button_id: str,
         delete_callback: str = Dummy().pack(),
-    ):
+    ) -> Menu:
         buttons = confirmable_button(
             ctx=ctx,
+            button_id=button_id,
             text=ru('🗑️ Удалить'),
-            confirm_id=self.modification_id,
             callback_data=delete_callback,
             style='danger',
         )
