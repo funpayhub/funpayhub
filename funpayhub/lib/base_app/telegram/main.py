@@ -10,7 +10,10 @@ from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
 
 from funpayhub.lib.telegram import CommandsRegistry
-from funpayhub.lib.telegram.ui.registry import UIRegistry
+from funpayhub.lib.telegram.ui.registry import (
+    UIRegistry,
+    ui_registry as default_ui_registry,
+)
 
 from .app import MENUS, BUTTONS, ROUTERS
 from ...telegram.callback_data import UnknownCallback
@@ -32,15 +35,14 @@ class TelegramApp:
         workflow_data: WorkflowData,
         *,
         config: TelegramAppConfig | None = None,
-        dispatcher: Dispatcher | None = None,
         commands_registry: CommandsRegistry | None = None,
         ui_registry: UIRegistry | None = None,
     ) -> None:
         self._config = config if config is not None else TelegramAppConfig()
-        self._dispatcher = dispatcher or Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
+        self._dispatcher = Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
         self._dispatcher.workflow_data = workflow_data
         self._commands_registry = commands_registry or CommandsRegistry()
-        self._ui_registry = ui_registry or UIRegistry(workflow_data=workflow_data)
+        self._ui_registry = ui_registry if ui_registry is not None else default_ui_registry
         self._bot = Bot(
             token=bot_token,
             default=DefaultBotProperties(

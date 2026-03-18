@@ -32,19 +32,9 @@ if TYPE_CHECKING:
 
 
 class Telegram(TelegramApp):
-    def __init__(
-        self,
-        hub: FunPayHub,
-        bot_token: str,
-        workflow_data: WorkflowData,
-    ) -> None:
+    def __init__(self, hub: FunPayHub, bot_token: str, workflow_data: WorkflowData) -> None:
         self._hub = hub
-
-        super().__init__(
-            bot_token=bot_token,
-            workflow_data=workflow_data,
-        )
-
+        super().__init__(bot_token=bot_token, workflow_data=workflow_data)
         self._setup_commands()
 
     @property

@@ -14,7 +14,7 @@ from funpaybotengine.runner.config import RunnerConfig
 from funpayhub.loggers import main as logger
 
 from funpayhub.lib.base_app import App
-from funpayhub.lib.translater import Translater, _en
+from funpayhub.lib.translater import _en, translater
 from funpayhub.lib.base_app.app import AppConfig
 
 from funpayhub.app.plugin import PluginManager
@@ -47,12 +47,7 @@ class FunPayHub(App):
         telegram: Telegram
         workflow_data: WorkflowData
 
-    def __init__(
-        self,
-        properties: FunPayHubProperties,
-        translater: Translater | None = None,
-        safe_mode: bool = False,
-    ):
+    def __init__(self, properties: FunPayHubProperties, safe_mode: bool = False):
         self._workflow_data = get_wfd()
         if os.environ.get('TELEGRAM_TOKEN', None) and not properties.telegram.general.token.value:
             token = os.environ['TELEGRAM_TOKEN']

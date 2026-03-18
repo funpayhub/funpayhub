@@ -5,7 +5,7 @@ from aiogram.types import CallbackQuery
 from funpayhub.lib.translater import _en
 
 
-__all__ = ['UIRegistry']
+__all__ = ['UIRegistry', 'ui_registry']
 
 
 from typing import Any, Type
@@ -97,7 +97,7 @@ class UIRegistry:
     def __init__(self, workflow_data: dict[str, Any] | None = None) -> None:
         self._menus: dict[str, _MenuBuilder] = {}
         self._buttons: dict[str, _ButtonBuilder] = {}
-        self._workflow_data: dict[str, Any] = workflow_data if workflow_data is not None else {}
+        self.workflow_data: dict[str, Any] = workflow_data if workflow_data is not None else {}
 
     def add_menu_builder(self, builder: Type[MenuBuilder], overwrite: bool = False) -> None:
         if not isinstance(builder, type) or not issubclass(builder, MenuBuilder):
@@ -158,7 +158,7 @@ class UIRegistry:
 
         result = await builder.build(
             context,
-            self._workflow_data,
+            self.workflow_data,
             run_modifications=run_modifications,
             finalize=finalize,
         )
@@ -231,7 +231,7 @@ class UIRegistry:
 
         return await builder.build(
             context,
-            self._workflow_data,
+            self.workflow_data,
             run_modifications=run_modifications,
         )
 
@@ -247,3 +247,6 @@ class UIRegistry:
         menu_builder = self.get_menu_builder(curr.menu_id)
         ctx_cls = menu_builder.builder.context_type
         return ctx_cls.from_ui_history(history, trigger=trigger)
+
+
+ui_registry = UIRegistry()

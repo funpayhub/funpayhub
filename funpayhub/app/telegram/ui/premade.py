@@ -6,18 +6,31 @@ __all__ = [
     'confirmable_button',
 ]
 
-from funpayhub.lib.translater import Translater
+from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import MenuContextModel, MenuModification
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContext
 from funpayhub.lib.telegram.callback_data import UnknownCallback
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import Dummy, OpenMenu
 
 
+ru = translater.translate
+
+
+def confirmable_button2(
+    ctx: MenuContextModel,
+    id: str,
+    text: str,
+    callback_data: str = Dummy().pack(),
+    style: str | None = None,
+) -> list[Button]:
+    key = f'{id}:confirm_action'
+    ...
+
+
 def confirmable_button(
     ctx: MenuContextModel,
     text: str,
     confirm_id: str,
-    translater: Translater,
     callback_data: str = Dummy().pack(),
     menu_callback_data: UnknownCallback | None = None,
     style: str | None = None,
@@ -81,14 +94,12 @@ class AddRemoveButtonBaseModification(
         self,
         ctx: MenuContextModel,
         menu: Menu,
-        translater: Translater,
         delete_callback: str = Dummy().pack(),
     ):
         buttons = confirmable_button(
             ctx=ctx,
-            text=translater.translate('🗑️ Удалить'),
+            text=ru('🗑️ Удалить'),
             confirm_id=self.modification_id,
-            translater=translater,
             callback_data=delete_callback,
             style='danger',
         )
