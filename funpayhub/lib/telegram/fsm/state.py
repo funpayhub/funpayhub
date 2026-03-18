@@ -9,7 +9,7 @@ __all__ = [
 
 
 import warnings
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any, Self, Literal, overload
 from dataclasses import dataclass
 
 from aiogram.filters import StateFilter as AiogramStateFilter
@@ -82,16 +82,53 @@ class State:
 
         return data['data']
 
+    @overload
     @classmethod
-    async def clear(cls, state: FSMContext, check: bool = True) -> None:
+    async def clear(
+        cls,
+        state: FSMContext,
+        check: Literal[False],
+        raise_: bool = ...,
+    ) -> None: ...
+
+    @overload
+    @classmethod
+    async def clear(
+        cls,
+        state: FSMContext,
+        check: Literal[True] = ...,
+        raise_: Literal[True] = ...,
+    ) -> Self: ...
+
+    @overload
+    @classmethod
+    async def clear(
+        cls,
+        state: FSMContext,
+        check: Literal[True] = ...,
+        raise_: Literal[False] = ...,
+    ) -> None: ...
+
+    @classmethod
+    async def clear(
+        cls, state: FSMContext, check: bool = True, raise_: bool = True
+    ) -> Self | None:
         if not check:
             await state.clear()
-            return
+            return None
 
-        obj = await state.get_state()
-        if obj != cls.identifier:
-            return
+        identifier = await state.get_state()
+        if identifier != cls.identifier:
+            if raise_:
+                raise RuntimeError('State mismatch.')
+            return None
+
+        obj = (await state.get_data()).get('data')
+        if not isinstance(obj, cls):
+            raise RuntimeError('State type mismatch.')
+
         await state.clear()
+        return obj
 
     @classmethod
     def filter(cls) -> StateFilter:
