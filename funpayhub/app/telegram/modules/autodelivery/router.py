@@ -20,7 +20,10 @@ from . import (
 
 
 if TYPE_CHECKING:
-    from aiogram.types import Message, CallbackQuery
+    from aiogram.types import (
+        Message,
+        CallbackQuery as Query,
+    )
     from aiogram.fsm.context import FSMContext as FSM
 
     from funpayhub.lib.telegram.ui import UIRegistry as UI
@@ -34,7 +37,7 @@ ru = translater.translate
 
 
 @router.callback_query(cbs.OpenAddAutoDeliveryRuleMenu.filter())
-async def open_add_auto_delivery_rule_menu(q: CallbackQuery, state: FSM):
+async def open_add_auto_delivery_rule_menu(q: Query, state: FSM):
     """
     Открывает меню добавления правила автовыдачи и активирует состояние `AddingAutoDeliveryRule`.
     """
@@ -43,44 +46,30 @@ async def open_add_auto_delivery_rule_menu(q: CallbackQuery, state: FSM):
 
 
 @router.callback_query(cbs.AddAutoDeliveryRule.filter())
-async def add_rule(q: CallbackQuery, props: FPHProps, cbd: cbs.AddAutoDeliveryRule, state: FSM):
-    """
-    Добавляет правило автовыдачи в список параметры.
-    Очищает состояние, если оно является `AddingAutoDeliveryRule`.
-    Открывает меню настроек правила автовыдачи.
-    """
-    if cbd.rule in props.auto_delivery.entries:
-        return q.answer(ru('❌ Правило уже существует.'), show_alert=True)
-
-    await states.AddingAutoDeliveryRule.clear(state, raise_=False)
-
-    entry = props.auto_delivery.add_entry(cbd.rule)
-    await props.auto_delivery.save()
-
-    await NodeMenuContext(menu_id=MenuIds.props_node, trigger=q, entry_path=entry.path).apply_to()
-
-
 @router.message(states.AddingAutoDeliveryRule.filter(), lambda m: m.text)
-async def add_rule_from_msg(m: Message, state: FSM, props: FPHProps):
-    """
-    Добавляет правило автовыдачи в список параметры.
-    Очищает состояние.
-    Открывает меню настроек правила автовыдачи.
-    """
-    if m.text in props.auto_delivery.entries:
-        return m.reply(ru('<b>❌ Правило уже существует.</b>'))
+async def add_rule(
+    obj: Query | Message, state: FSM, props: FPHProps, cbd: cbs.AddAutoDeliveryRule | None = None
+):
+    rule = cbd.rule if cbd is not None else obj.text
+    if rule in props.auto_delivery.entries:
+        return obj.answer(ru('❌ Правило уже существует.'), show_alert=True)
 
-    data = await states.AddingAutoDeliveryRule.clear(state)
+    state_obj = await states.AddingAutoDeliveryRule.clear(state)
 
-    entry = props.auto_delivery.add_entry(m.text)
+    entry = props.auto_delivery.add_entry(rule)
     await props.auto_delivery.save()
 
-    await NodeMenuContext(menu_id=MenuIds.props_node, trigger=m, entry_path=entry.path).answer_to()
-    utils.delete_message(data.state_message)
+    await NodeMenuContext(
+        menu_id=MenuIds.props_node,
+        trigger=obj,
+        entry_path=entry.path,
+        ui_history=state_obj.ui_history,
+    ).answer_to()
+    utils.delete_message(state_obj.state_message)
 
 
 @router.callback_query(cbs.DeleteAutoDeliveryRule.filter())
-async def delete_rule(q: CallbackQuery, props: FPHProps, cbd: cbs.DeleteAutoDeliveryRule):
+async def delete_rule(q: Query, props: FPHProps, cbd: cbs.DeleteAutoDeliveryRule):
     if cbd.rule not in props.auto_delivery.entries:
         return q.answer(ru('❌ Правило не найдено'), show_alert=True)
 
@@ -88,19 +77,16 @@ async def delete_rule(q: CallbackQuery, props: FPHProps, cbd: cbs.DeleteAutoDeli
     await props.auto_delivery.save()
 
     await NodeMenuContext(
-        trigger=q,
         menu_id=MenuIds.props_node,
+        trigger=q,
         entry_path=props.auto_delivery.path,
         ui_history=cbd.ui_history[:-1],
     ).apply_to()
 
 
-@router.callback_query(cbs.AutoDeliveryOpenGoodsSourcesList.filter())
+@router.callback_query(cbs.OpenBindGoodsMenu.filter())
 async def open_bind_goods_menu(
-    q: CallbackQuery,
-    cbd: cbs.AutoDeliveryOpenGoodsSourcesList,
-    props: FPHProps,
-    state: FSM,
+    q: Query, cbd: cbs.OpenBindGoodsMenu, props: FPHProps, state: FSM
 ) -> None:
     await NodeMenuContext(
         trigger=q,
@@ -113,7 +99,7 @@ async def open_bind_goods_menu(
 
 @router.callback_query(cbs.BindGoodsSourceToAutoDelivery.filter())
 async def bind_goods_source(
-    q: CallbackQuery,
+    q: Query,
     cbd: cbs.BindGoodsSourceToAutoDelivery,
     props: FPHProps,
     state: FSM,
@@ -139,7 +125,7 @@ INVALID_CHARS = set('<>:"/\\|?*\0')  # todo: code duplicate
 
 
 @router.message(states.BindingGoodsSource.filter(), lambda msg: msg.text)
-async def handler(m: Message, state: FSM, goods_manager: GoodsManager, props: FPHProps, tg_ui: UI):
+async def handler(m: Message, state: FSM, goods_manager: GoodsManager, props: FPHProps):
     for i in goods_manager._sources.values():
         if i.display_id == m.text:
             source = i

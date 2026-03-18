@@ -201,7 +201,7 @@ class ReplaceSourcesListButtonModification(
                 btn = Button.callback_button(
                     button_id='bind_goods_source',
                     text=ru('🗳 Источник товаров'),
-                    callback_data=cbs.AutoDeliveryOpenGoodsSourcesList(
+                    callback_data=cbs.OpenBindGoodsMenu(
                         rule=ctx.entry_path[-1],
                         ui_history=ctx.as_ui_history(),
                     ).pack(),

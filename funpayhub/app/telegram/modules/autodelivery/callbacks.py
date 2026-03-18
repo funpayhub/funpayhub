@@ -15,10 +15,7 @@ class DeleteAutoDeliveryRule(CallbackData, identifier='delete_autodelivery_rule'
     rule: str
 
 
-class AutoDeliveryOpenGoodsSourcesList(
-    CallbackData,
-    identifier='auto_delivery_open_goods_sources_list',
-):
+class OpenBindGoodsMenu(CallbackData, identifier='auto_delivery_open_goods_sources_list'):
     rule: str
 
 
