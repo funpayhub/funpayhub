@@ -21,3 +21,8 @@ class SendTemplate(CallbackData, identifier='st'):
 
 class MuteChat(CallbackData, identifier='mute_chat'):
     chat_id: int | str
+
+
+class Confirmation(CallbackData, identifier='confirmable_callback'):
+    button_id: str
+    open: bool = True

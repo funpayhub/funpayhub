@@ -12,19 +12,52 @@ from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContextOld
 from funpayhub.lib.telegram.callback_data import UnknownCallback
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import Dummy, OpenMenu
 
+from funpayhub.app.telegram.callbacks import Confirmation
+
 
 ru = translater.translate
 
 
 def confirmable_button2(
     ctx: MenuContext,
-    id: str,
+    button_id: str,
     text: str,
     callback_data: str = Dummy().pack(),
     style: str | None = None,
 ) -> list[Button]:
-    key = f'{id}:confirm_action'
-    ...
+    key = f'open_confirmation:{button_id}'
+    has_key = ctx.data.get(key)
+
+    if has_key:
+        return [
+            Button.callback_button(
+                button_id=button_id,
+                callback_data=callback_data,
+                text=text,
+                style=style,
+            ),
+            Button.callback_button(
+                button_id=f'cancel_action:{button_id}',
+                callback_data=Confirmation(
+                    button_id=button_id,
+                    open=False,
+                    ui_history=ctx.as_ui_history(),
+                ).pack(),
+                text=ru('🔘 Отмена'),
+            ),
+        ]
+    return [
+        Button.callback_button(
+            button_id=button_id,
+            callback_data=Confirmation(
+                button_id=button_id,
+                open=True,
+                ui_history=ctx.as_ui_history(),
+            ).pack(),
+            text=text,
+            style=style,
+        ),
+    ]
 
 
 def confirmable_button(

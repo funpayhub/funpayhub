@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from aiogram.fsm.context import FSMContext
 
     from funpayhub.lib.translater import Translater
+    from funpayhub.lib.telegram.ui import UIRegistry as UI
     from funpayhub.lib.hub.text_formatters import FormattersRegistry
 
     from funpayhub.app.main import FunPayHub
@@ -33,6 +34,15 @@ if TYPE_CHECKING:
 
 
 router = r = Router(name='fph:other')
+
+
+# To lib
+@router.callback_query(cbs.Confirmation.filter())
+async def confirmation(query: CallbackQuery, callback_data: cbs.Confirmation, tg_ui: UI) -> None:
+    key = f'open_confirmation:{callback_data.button_id}'
+    ctx = tg_ui.context_from_history(callback_data.ui_history, trigger=query)
+    ctx.data[key] = callback_data.open
+    await ctx.apply_to(query)
 
 
 # Commands

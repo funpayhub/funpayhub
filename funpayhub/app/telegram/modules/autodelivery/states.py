@@ -17,4 +17,5 @@ class AddingAutoDeliveryRule(StateFromQuery, identifier='fph:adding_autodelivery
 
 @dataclass
 class BindingGoodsSource(StateFromQuery, identifier='fph:binding_goods_source'):
+    state_message: Message
     rule: str

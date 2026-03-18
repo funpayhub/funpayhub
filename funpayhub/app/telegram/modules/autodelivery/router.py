@@ -48,7 +48,10 @@ async def open_add_auto_delivery_rule_menu(q: Query, state: FSM):
 @router.callback_query(cbs.AddAutoDeliveryRule.filter())
 @router.message(states.AddingAutoDeliveryRule.filter(), lambda m: m.text)
 async def add_rule(
-    obj: Query | Message, state: FSM, props: FPHProps, cbd: cbs.AddAutoDeliveryRule | None = None
+    obj: Query | Message,
+    state: FSM,
+    props: FPHProps,
+    cbd: cbs.AddAutoDeliveryRule | None = None,
 ):
     rule = cbd.rule if cbd is not None else obj.text
     if rule in props.auto_delivery.entries:
@@ -85,16 +88,14 @@ async def delete_rule(q: Query, props: FPHProps, cbd: cbs.DeleteAutoDeliveryRule
 
 
 @router.callback_query(cbs.OpenBindGoodsMenu.filter())
-async def open_bind_goods_menu(
-    q: Query, cbd: cbs.OpenBindGoodsMenu, props: FPHProps, state: FSM
-) -> None:
-    await NodeMenuContext(
+async def open_bind_goods_menu(q: Query, cbd: cbs.OpenBindGoodsMenu, props: FPHProps, state: FSM):
+    msg = await NodeMenuContext(
         trigger=q,
         menu_id=MenuIds.autodelivery_goods_sources_list,
         entry_path=props.auto_delivery.get_properties([cbd.rule]).path,
-    ).apply_to()
+    ).answer_to()
 
-    await states.BindingGoodsSource(query=q, rule=cbd.rule).set(state)
+    await states.BindingGoodsSource(query=q, rule=cbd.rule, state_message=msg).set(state)
 
 
 @router.callback_query(cbs.BindGoodsSourceToAutoDelivery.filter())
@@ -110,7 +111,7 @@ async def bind_goods_source(
     if source is None:
         return q.answer(ru('❌ Источник товаров не найден.'), show_alert=True)
 
-    await states.BindingGoodsSource.clear(state)
+    state_obj = await states.BindingGoodsSource.clear(state)
 
     await (
         props.auto_delivery.get_properties([cbd.rule])
@@ -119,18 +120,18 @@ async def bind_goods_source(
     )
 
     await tg_ui.context_from_history(cbd.ui_history[:-1], trigger=q).answer_to()
+    utils.delete_message(state_obj.state_message)
 
 
 INVALID_CHARS = set('<>:"/\\|?*\0')  # todo: code duplicate
 
 
 @router.message(states.BindingGoodsSource.filter(), lambda msg: msg.text)
-async def handler(m: Message, state: FSM, goods_manager: GoodsManager, props: FPHProps):
+async def handler(m: Message, state: FSM, goods_manager: GoodsManager, props: FPHProps, tg_ui: UI):
     for i in goods_manager._sources.values():
         if i.display_id == m.text:
             source = i
             break
-
     else:
         filename = m.text
         if (
@@ -151,12 +152,5 @@ async def handler(m: Message, state: FSM, goods_manager: GoodsManager, props: FP
         .set_value(source.source_id)
     )
 
-    utils.delete_message(m)
-
-    await NodeMenuContext(
-        trigger=m,
-        menu_id=MenuIds.props_node,
-        entry_path=props.auto_delivery.get_properties([state_obj.rule]).path,
-        ui_history=state_obj.ui_history,
-    ).answer_to()
-    await state_obj.query.message.delete()
+    await tg_ui.context_from_history(state_obj.ui_history, trigger=m).answer_to()
+    utils.delete_message(state_obj.state_message)
