@@ -2,25 +2,21 @@ from __future__ import annotations
 
 import html
 import shutil
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from aiogram import Bot, Router
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.filters import StateFilter
 
 from funpayhub.lib.exceptions import TranslatableException
+from funpayhub.lib.translater import translater
+from funpayhub.lib.base_app.telegram import utils
 from funpayhub.lib.plugin.installers import (
     HTTPSPluginInstaller,
     AiogramPluginInstaller,
     PluginInstallationError,
 )
-from funpayhub.lib.base_app.telegram.utils import delete_message
 from funpayhub.lib.plugin.repository.types import PluginsRepository
 from funpayhub.lib.plugin.repository.loaders import URLRepositoryLoader
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
 
-import funpayhub.app.telegram.modules.plugins.states
-import funpayhub.app.telegram.modules.plugins.callbacks
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.builders.context import StateUIContext
 
@@ -32,78 +28,65 @@ from . import (
 
 
 if TYPE_CHECKING:
-    from aiogram.types import Message, CallbackQuery
-    from aiogram.fsm.context import FSMContext
+    from aiogram.types import (
+        Message,
+        CallbackQuery as Query,
+    )
+    from aiogram.fsm.context import FSMContext as FSM
 
     from funpayhub.lib.plugin import PluginManager
-    from funpayhub.lib.translater import Translater as Tr
-    from funpayhub.lib.telegram.ui import UIRegistry
+    from funpayhub.lib.telegram.ui import UIRegistry as UI
     from funpayhub.lib.plugin.repository.manager import RepositoriesManager
 
-    from funpayhub.app.properties import FunPayHubProperties
-    from funpayhub.app.telegram.main import Telegram
+    from funpayhub.app.properties import FunPayHubProperties as FPHProps
 
 
 router = r = Router(name='fph:plugins')
+ru = translater.translate
 
 
 @router.callback_query(cbs.SetPluginStatus.filter())
 async def set_plugin_status(
-    query: CallbackQuery,
+    q: Query,
     plugin_manager: PluginManager,
-    translater: Tr,
-    callback_data: cbs.SetPluginStatus,
-    properties: FunPayHubProperties,
-) -> None:
-    if callback_data.plugin_id not in plugin_manager._plugins:
-        await query.answer(translater.translate('❌ Плагин не найден.'), show_alert=True)
-        return
+    cbd: cbs.SetPluginStatus,
+    props: FPHProps,
+) -> Any:
+    if cbd.plugin_id not in plugin_manager._plugins:
+        return q.answer(ru('❌ Плагин не найден.'), show_alert=True)
 
-    if callback_data.status and callback_data.plugin_id not in plugin_manager.disabled_plugins:
-        await query.answer(translater.translate('❌ Плагин уже активирован.'), show_alert=True)
-        return
+    if cbd.status and cbd.plugin_id not in plugin_manager.disabled_plugins:
+        return q.answer(ru('❌ Плагин уже активирован.'), show_alert=True)
 
-    if not callback_data.status and callback_data.plugin_id in plugin_manager.disabled_plugins:
-        await query.answer(translater.translate('❌ Плагин уже деактивирован.'), show_alert=True)
-        return
+    if not cbd.status and cbd.plugin_id in plugin_manager.disabled_plugins:
+        return q.answer(translater.translate('❌ Плагин уже деактивирован.'), show_alert=True)
 
-    if callback_data.status:
-        await plugin_manager.enable_plugin(plugin=callback_data.plugin_id)
-        await properties.plugin_properties.disabled_plugins.remove_item(callback_data.plugin_id)
+    if cbd.status:
+        await plugin_manager.enable_plugin(plugin=cbd.plugin_id)
+        await props.plugin_properties.disabled_plugins.remove_item(cbd.plugin_id)
     else:
-        await plugin_manager.disable_plugin(plugin=callback_data.plugin_id)
-        await properties.plugin_properties.disabled_plugins.add_item(callback_data.plugin_id)
+        await plugin_manager.disable_plugin(plugin=cbd.plugin_id)
+        await props.plugin_properties.disabled_plugins.add_item(cbd.plugin_id)
 
-    text = translater.translate(
-        '✅ Плагин активирован.' if callback_data.status else '✅ Плагин деактивирован.',
-    )
-    text += '\n' + translater.translate(
-        '🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub.',
-    )
-
-    await query.answer(text, show_alert=True)
+    text = ru('✅ Плагин активирован.' if cbd.status else '✅ Плагин деактивирован.')
+    text += '\n' + ru('🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub.')
+    return q.answer(text, show_alert=True)
 
 
 @router.callback_query(cbs.RemovePlugin.filter())
-async def set_plugin_status(
-    query: CallbackQuery,
-    plugin_manager: PluginManager,
-    translater: Tr,
-    callback_data: cbs.RemovePlugin,
-) -> None:
+async def set_plugin_status(q: Query, plugin_manager: PluginManager, cbd: cbs.RemovePlugin) -> Any:
     # todo: move logic to plugin manager
-    if callback_data.plugin_id not in plugin_manager._plugins:
-        await query.answer(translater.translate('❌ Плагин не найден.'), show_alert=True)
-        return
+    if cbd.plugin_id not in plugin_manager._plugins:
+        return q.answer(ru('❌ Плагин не найден.'), show_alert=True)
 
-    plugin = plugin_manager._plugins[callback_data.plugin_id]
+    plugin = plugin_manager._plugins[cbd.plugin_id]
     shutil.rmtree(plugin.path, ignore_errors=True)
-    del plugin_manager._plugins[callback_data.plugin_id]
+    del plugin_manager._plugins[cbd.plugin_id]
 
-    await query.answer(
-        translater.translate('✅ Плагин удален.')
+    return q.answer(
+        ru('✅ Плагин удален.')
         + '\n'
-        + translater.translate('🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub.'),
+        + ru('🔃 Чтобы изменения вступили в силу, перезапустите FunPay Hub.'),
         show_alert=True,
     )
 
@@ -113,59 +96,44 @@ async def set_plugin_status(
     lambda _, callback_data: callback_data.mode == 1,
 )
 async def install_plugin(
-    query: CallbackQuery,
-    state: FSMContext,
-    translater: Tr,
-    callback_data: funpayhub.app.telegram.modules.plugins.callbacks.InstallPlugin,
+    q: Query,
+    state: FSM,
+    cbd: cbs.InstallPlugin,
     plugin_manager: PluginManager,
-) -> None:
+) -> Any:
     if plugin_manager.installation_lock.locked():
-        await query.answer(
-            translater.translate(
+        return q.answer(
+            ru(
                 '❌ В данный момент уже устанавливается какой-то плагин.\n'
                 'Дождитесь окончания текущей установки и повторите попытку.',
             ),
             show_alert=True,
         )
-        return
 
-    msg = await query.message.answer(
-        text=translater.translate(
-            'Пришлите или перешлите сообщение с ZIP архивом плагина / ссылкой на ZIP архив плагина.',
+    msg = await StateUIContext(
+        menu_id=MenuIds.state_menu,
+        trigger=q,
+        text=ru(
+            'Пришлите или перешлите сообщение с '
+            'ZIP архивом плагина / ссылкой на ZIP архив плагина.',
         ),
-        reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[
-                [
-                    InlineKeyboardButton(
-                        text=translater.translate('🔘 Отмена'),
-                        callback_data=ClearState(delete_message=True).pack(),
-                    ),
-                ],
-            ],
-        ),
-    )
+        ui_history=cbd.ui_history,
+    ).answer_to()
 
-    data = funpayhub.app.telegram.modules.plugins.states.InstallingZipPlugin(
-        message=msg,
-        callback_query_obj=query,
-        callback_data=callback_data,
-    )
-    await state.set_state(data.identifier)
-    await state.set_data({'data': data})
-    await query.answer()
+    await states.InstallingZipPlugin(query=q, state_message=msg).set(state)
+    await q.answer()
 
 
-@router.message(StateFilter(states.InstallingZipPlugin.identifier))
+@router.message(states.InstallingZipPlugin.filter())
 async def install_plugin(
-    message: Message,
+    m: Message,
     plugin_manager: PluginManager,
-    translater: Tr,
     tg_bot: Bot,
-    state: FSMContext,
-) -> None:
+    state: FSM,
+) -> Any:
     if plugin_manager.installation_lock.locked():
-        await message.reply(
-            translater.translate(
+        return m.reply(
+            ru(
                 '❌ В данный момент уже устанавливается какой-то плагин.\n'
                 'Дождитесь окончания текущей установки и повторите попытку.',
             ),
@@ -173,164 +141,123 @@ async def install_plugin(
 
     args = ()
     kwargs = {}
-    if message.document:
+    if m.document:
+        installer, source, kwargs = AiogramPluginInstaller, m.document.file_id, {'bot': tg_bot}
+    elif m.reply_to_message and m.reply_to_message.document:
         installer = AiogramPluginInstaller
-        source = message.document.file_id
+        source = m.reply_to_message.document.file_id
         kwargs = {'bot': tg_bot}
-    elif message.reply_to_message and message.reply_to_message.document:
-        installer = AiogramPluginInstaller
-        source = message.reply_to_message.document.file_id
-        kwargs = {'bot': tg_bot}
-    elif message.text:
-        installer = HTTPSPluginInstaller
-        source = message.text
+    elif m.text:
+        installer, source = HTTPSPluginInstaller, m.text
     else:
-        await message.reply(
-            translater.translate(
+        return m.reply(
+            ru(
                 'Пришлите или перешлите сообщение с ZIP архивом плагина / ссылкой на ZIP архив плагина.',
             ),
         )
-        return
 
-    data: funpayhub.app.telegram.modules.plugins.states.InstallingZipPlugin = (
-        await state.get_data()
-    )['data']
-    await state.clear()
-    await data.message.delete()
+    data = await states.InstallingZipPlugin.clear(state)
+    utils.delete_message(data.state_message)
 
     try:
         await plugin_manager.install_plugin_from_source(installer, source, *args, **kwargs)
     except PluginInstallationError as e:
-        await message.answer(
-            translater.translate('Не удалось установить плагин.')
-            + '\n'
-            + html.escape(translater.translate(e.message) % e.args),
+        return m.answer(
+            ru('Не удалось установить плагин.') + '\n' + html.escape(ru(e.message) % e.args),
         )
-        return
 
-    await message.answer(translater.translate('Плагин успешно установлен!'))
+    return m.answer(ru('<b>🧩 Плагин успешно установлен!</b>'))
 
 
 # Repos
 @router.callback_query(cbs.AddRepository.filter())
-async def activate_add_repository_state(
-    query: CallbackQuery,
-    translater: Tr,
-    tg_ui: UIRegistry,
-    state: FSMContext,
-) -> None:
+async def activate_add_repository_state(q: Query, state: FSM) -> None:
     msg = await StateUIContext(
-        trigger=query,
         menu_id=MenuIds.state_menu,
-        text=translater.translate('🔗 Пришлите ссылку на репозиторий.'),
-    ).build_and_answer(tg_ui, query.message)
+        trigger=q,
+        text=ru('<b>🔗 Пришлите ссылку на репозиторий.</b>'),
+    ).answer_to()
 
-    await states.AddingRepository(state_message=msg, query=query).set(state)
-    await query.answer()
+    await states.AddingRepository(query=q, state_message=msg).set(state)
 
 
 @router.message(states.AddingRepository.filter(), lambda msg: msg.text)
-async def add_repository_state(
-    message: Message,
-    state: FSMContext,
-    repositories_manager: RepositoriesManager,
-    translater: Tr,
-    tg_ui: UIRegistry,
-) -> None:
+async def add_repo(m: Message, state: FSM, repositories_manager: RepositoriesManager) -> Any:
     data = await states.AddingRepository.get(state)
     await states.AddingRepository.clear(state)
-    delete_message(data.state_message)
+    utils.delete_message(data.state_message)
 
     try:
-        repo = await URLRepositoryLoader(url=message.text).load()
+        repo = await URLRepositoryLoader(url=m.text).load()
         repositories_manager.register_repository(repo)
     except Exception as e:
-        msg = translater.translate('❌ Не удалось установить репозиторий.')
+        msg = ru('<b>❌ Не удалось установить репозиторий.</b>')
         if isinstance(e, TranslatableException):
             msg += '\n\n' + e.format_args(translater.translate(e.message))
         else:
-            msg += '\n\n' + translater.translate('Подробности в логах.')
+            msg += '\n\n' + ru('Подробности в логах.')
 
-        await message.reply(msg)
-        return
+        return m.reply(msg)
 
     await ui.RepoInfoMenuContext(
-        trigger=message,
         menu_id=MenuIds.repository_info,
+        trigger=m,
         repo_id=repo.id,
-        callback_override=OpenMenu(
-            menu_id=MenuIds.repository_info,
-            history=data.callback_data.history,
-        ),
-    ).build_and_answer(tg_ui, message)
+        ui_history=data.ui_history,
+    ).answer_to()
 
 
 @router.callback_query(cbs.UpdateRepository.filter())
 async def update_repository(
-    query: CallbackQuery,
-    callback_data: cbs.UpdateRepository,
+    q: Query,
+    cbd: cbs.UpdateRepository,
     repositories_manager: RepositoriesManager,
-    translater: Tr,
-    tg: Telegram,
+    tg_ui: UI,
 ):
     try:
-        repository = await PluginsRepository.from_url(url=callback_data.url)
+        repository = await PluginsRepository.from_url(url=cbd.url)
     except Exception as e:
-        text = translater.translate('❌ Произошла ошибка при получении репозитория.')
+        text = ru('<b>❌ Произошла ошибка при получении репозитория.</b>')
         if isinstance(e, TranslatableException):
             text += '\n\n' + e.format_args(translater.translate(e.message))
         else:
-            text += '\n\n' + translater.translate('Подробности в логах.')
-        await query.answer(text, show_alert=True)
-        return
+            text += '\n\n' + ru('<b>Подробности в логах.</b>')
+        return q.answer(text, show_alert=True)
 
     try:
         repositories_manager.register_repository(repository, overwrite=True, save=True)
     except Exception as e:
-        text = translater.translate('❌ Произошла ошибка при сохранении репозитория.')
+        text = ru('<b>❌ Произошла ошибка при сохранении репозитория.</b>')
         if isinstance(e, TranslatableException):
             text += '\n\n' + e.format_args(translater.translate(e.message))
         else:
-            text += '\n\n' + translater.translate('Подробности в логах.')
-        await query.answer(text, show_alert=True)
-        return
+            text += '\n\n' + ru('<b>Подробности в логах.</b>')
+        return q.answer(text, show_alert=True)
 
-    await query.answer(translater.translate('✅ Репозиторий обновлен.'), show_alert=True)
-    await tg.fake_query(callback_data=callback_data.pack_history(hash=False), query=query)
+    await q.answer(ru('✅ Репозиторий обновлен.'), show_alert=True)
+    await tg_ui.context_from_history(cbd.ui_history, trigger=q).apply_to()
 
 
 @router.callback_query(cbs.InstallPluginFromURL.filter())
 async def install_plugin_from_url(
-    query: CallbackQuery,
-    callback_data: cbs.InstallPluginFromURL,
-    plugin_manager: PluginManager,
-    translater: Tr,
+    q: Query, cbd: cbs.InstallPluginFromURL, plugin_manager: PluginManager
 ):
-    await query.answer()
-    await query.message.answer(
-        translater.translate(
-            'Начинаю установку плагина из {url} . Это может занять некоторе время.',
-        ).format(url=callback_data.url),
-    )
+    await q.answer()
+    await q.message.answer(ru('<b>🧩 Загружаю плагин {url} .</b>', url=cbd.url))
     try:
         await plugin_manager.install_plugin_from_source(
             HTTPSPluginInstaller,
-            callback_data.url,
+            cbd.url,
             overwrite=True,
-            plugin_hash=callback_data.hash,
+            plugin_hash=cbd.hash,
         )
     except Exception as e:
-        text = translater.translate(
-            '❌ Произошла ошибка при установке плагина из {url}',
-        ).format(url=callback_data.url)
+        text = ru('<b>❌ Ошибка установки плагина {url} .</b>', url=cbd.url)
         if isinstance(e, TranslatableException):
             text += '\n\n' + e.format_args(translater.translate(e.message))
         else:
-            text += '\n\n' + translater.translate('Подробности в логах.')
+            text += '\n\n' + ru('<b>Подробности в логах.</b>')
 
-        await query.message.answer(text)
-        return
+        return q.message.answer(text)
 
-    await query.message.answer(
-        translater.translate('✅ Плагин установлен.\n\nПерезапустите FunPay Hub.'),
-    )
+    await q.message.answer(ru('<b>✅ Плагин установлен.\n\nПерезапустите FunPay Hub.</b>'))

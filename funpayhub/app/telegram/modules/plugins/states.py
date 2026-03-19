@@ -9,20 +9,16 @@ __all__ = [
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
-from funpayhub.lib.telegram.fsm import State, StateFromQuery
+from funpayhub.lib.telegram.fsm import StateFromQuery
 
 
 if TYPE_CHECKING:
-    from aiogram.types import Message, CallbackQuery
-
-    from funpayhub.lib.telegram.callback_data import UnknownCallback
+    from aiogram.types import Message
 
 
 @dataclass
-class InstallingZipPlugin(State, identifier='fph:installing_zip_plugin'):
-    message: Message
-    callback_query_obj: CallbackQuery
-    callback_data: UnknownCallback
+class InstallingZipPlugin(StateFromQuery, identifier='fph:installing_zip_plugin'):
+    state_message: Message
 
 
 @dataclass

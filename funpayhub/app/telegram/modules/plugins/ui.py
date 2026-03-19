@@ -13,15 +13,15 @@ __all__ = [
 
 import html
 from typing import TYPE_CHECKING
-from dataclasses import dataclass
 from html import escape
 
 from funpayhub.lib.exceptions import TranslatableException
+from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import (
     Menu,
     Button,
     MenuBuilder,
-    MenuContextOld as MenuCtx,
+    MenuContext,
     KeyboardBuilder,
 )
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
@@ -34,32 +34,31 @@ from . import callbacks as cbs
 
 if TYPE_CHECKING:
     from funpayhub.lib.plugin import PluginManager
-    from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.plugin.repository.manager import RepositoriesManager
 
     from funpayhub.app.main import FunPayHub
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
 
 
-@dataclass(kw_only=True)
-class PluginMenuContext(MenuCtx):
+ru = translater.translate
+
+
+class PluginMenuContext(MenuContext):
     plugin_id: str
 
 
-@dataclass(kw_only=True)
-class RepoInfoMenuContext(MenuCtx):
+class RepoInfoMenuContext(MenuContext):
     repo_id: str
 
 
-@dataclass(kw_only=True)
-class RepoPluginInfoMenuContext(MenuCtx):
+class RepoPluginInfoMenuContext(MenuContext):
     repo_id: str
     plugin_id: str
     version: str | None = None
 
 
-class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_type=MenuCtx):
-    async def build(self, ctx: MenuCtx, plugin_manager: PluginManager, translater: Tr) -> Menu:
+class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_type=MenuContext):
+    async def build(self, ctx: MenuContext, plugin_manager: PluginManager) -> Menu:
         keyboard = KeyboardBuilder()
         for i in plugin_manager._plugins.values():
             prefix = '🔴' if i.manifest.plugin_id in plugin_manager.disabled_plugins else '🟢'
@@ -73,31 +72,31 @@ class PluginsListMenuBuilder(MenuBuilder, menu_id=MenuIds.plugins_list, context_
                 callback_data=OpenMenu(
                     menu_id=MenuIds.plugin_info,
                     context_data={'plugin_id': i.manifest.plugin_id},
-                    from_callback=ctx.callback_data,
+                    ui_history=ctx.as_ui_history(),
                 ).pack(),
             )
 
         footer_keyboard = KeyboardBuilder()
         footer_keyboard.add_callback_button(
             button_id='open_installation_menu',
-            text=translater.translate('⤵ Установить'),
+            text=ru('⤵ Установить'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.install_plugin,
-                from_callback=ctx.callback_data,
+                ui_history=ctx.as_ui_history(),
             ).pack(),
         )
 
         footer_keyboard.add_callback_button(
             button_id='open_repositories',
-            text=translater.translate('🗃 Репозитории'),
+            text=ru('🗃 Репозитории'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.repositories_list,
-                from_callback=ctx.callback_data,
+                ui_history=ctx.as_ui_history(),
             ).pack(),
         )
 
         return Menu(
-            main_text=translater.translate('🧩 Расширения'),
+            main_text=ru('🧩 Плагины'),
             main_keyboard=keyboard,
             footer_keyboard=footer_keyboard,
             finalizer=StripAndNavigationFinalizer(),
@@ -112,9 +111,8 @@ class PluginInfoMenuBuilder(
     async def build(
         self,
         ctx: PluginMenuContext,
-        translater: Tr,
         plugin_manager: PluginManager,
-        properties: FPHProps,
+        props: FPHProps,
     ) -> Menu:
         plugin = plugin_manager._plugins[ctx.plugin_id]
         man = plugin.manifest
@@ -133,9 +131,7 @@ class PluginInfoMenuBuilder(
         blocks['info'].append(f'🆔 <b>ID: {man.plugin_id}</b>')
 
         if man.repo:
-            blocks['info'].append(
-                f'{translater.translate("⬛ <b>Репозиторий</b>")}: {escape(man.repo)}',
-            )
+            blocks['info'].append(f'{ru("⬛ <b>Репозиторий</b>")}: {escape(man.repo)}')
 
         author_info = []
         if man.author:
@@ -143,14 +139,10 @@ class PluginInfoMenuBuilder(
             if author.name:
                 author_info.append(f'<b>{escape(author.name)}</b>')
             if author.website:
-                author_info.append(
-                    f'<b><a href="{author.website}">{translater.translate("🌐 Вебсайт")}</a></b>',
-                )
+                author_info.append(f'<b><a href="{author.website}">{ru("🌐 Вебсайт")}</a></b>')
 
         if author_info:
-            blocks['info'].append(
-                f'{translater.translate("👤 <b>Разработчик</b>")}: {" | ".join(author_info)}',
-            )
+            blocks['info'].append(f'{ru("👤 <b>Разработчик</b>")}: {" | ".join(author_info)}')
 
         if man.author and man.author.social:
             for name, link in man.author.social.items():
@@ -158,7 +150,7 @@ class PluginInfoMenuBuilder(
 
         if man.description:
             blocks['description'].append(
-                escape(man.get_description(locale=properties.general.language.real_value)),
+                escape(man.get_description(locale=props.general.language.real_value)),
             )
 
         if plugin.error:
@@ -172,32 +164,32 @@ class PluginInfoMenuBuilder(
         if plugin.properties:
             keyboard.add_callback_button(
                 button_id='plugin_properties',
-                text=translater.translate('⚙️ Настройки'),
+                text=ru('⚙️ Настройки'),
                 callback_data=OpenMenu(
                     menu_id=MenuIds.props_node,
-                    from_callback=ctx.callback_data,
+                    ui_history=ctx.as_ui_history(),
                     context_data={'entry_path': plugin.properties.path},
                 ).pack(),
             )
 
         keyboard.add_callback_button(
             button_id='toggle_plugin_state',
-            text=translater.translate('🟢 Активировать')
+            text=ru('🟢 Активировать')
             if man.plugin_id in plugin_manager.disabled_plugins
-            else translater.translate('🔴 Деактивировать'),
+            else ru('🔴 Деактивировать'),
             callback_data=cbs.SetPluginStatus(
                 plugin_id=man.plugin_id,
                 status=man.plugin_id in plugin_manager.disabled_plugins,
-                history=ctx.callback_data.history if ctx.callback_data else [],
+                ui_history=ctx.as_ui_history(),
             ).pack(),
         )
 
         keyboard.add_callback_button(
             button_id='remove_plugin',
-            text=translater.translate('🗑️ Удалить'),
+            text=ru('🗑️ Удалить'),
             callback_data=cbs.RemovePlugin(
                 plugin_id=man.plugin_id,
-                history=ctx.callback_data.history if ctx.callback_data else [],
+                ui_history=ctx.ui_history,
             ).pack(),
         )
 
@@ -208,34 +200,31 @@ class PluginInfoMenuBuilder(
         )
 
 
-class InstallPluginMenuBuilder(MenuBuilder, menu_id=MenuIds.install_plugin, context_type=MenuCtx):
-    async def build(self, ctx: MenuCtx, translater: Tr) -> Menu:
-        kb = KeyboardBuilder()
-
-        kb.add_rows(
-            Button.callback_button(
-                button_id='install_plugin:1',
-                text=translater.translate('📦 Из ZIP архива'),
-                callback_data=cbs.InstallPlugin(mode=1).pack(),
-                row=True,
-            ),
-        )
-
-        return Menu(
-            main_text=translater.translate('⤵ Выберите вариант установки плагина.'),
-            main_keyboard=kb,
+class InstallPluginMenuBuilder(
+    MenuBuilder, menu_id=MenuIds.install_plugin, context_type=MenuContext
+):
+    async def build(self, ctx: MenuContext) -> Menu:
+        menu = Menu(
+            main_text=ru('<b>⤵ Выберите вариант установки плагина.</b>'),
             finalizer=StripAndNavigationFinalizer(),
         )
 
+        menu.main_keyboard.add_callback_button(
+            button_id='install_plugin:1',
+            text=translater.translate('📦 Из ZIP архива'),
+            callback_data=cbs.InstallPlugin(mode=1, ui_history=ctx.as_ui_history()).pack(),
+        )
+        return menu
 
-class ReposListMenuBuilder(MenuBuilder, menu_id=MenuIds.repositories_list, context_type=MenuCtx):
-    async def build(
-        self,
-        ctx: MenuCtx,
-        repositories_manager: RepositoriesManager,
-        translater: Tr,
-    ) -> Menu:
-        menu = Menu(finalizer=StripAndNavigationFinalizer())
+
+class ReposListMenuBuilder(
+    MenuBuilder, menu_id=MenuIds.repositories_list, context_type=MenuContext
+):
+    async def build(self, ctx: MenuContext, repositories_manager: RepositoriesManager) -> Menu:
+        menu = Menu(
+            main_text=ru('🗃 <b><u>Репозитории</u></b>'),
+            finalizer=StripAndNavigationFinalizer(),
+        )
 
         if 'com.github.funpayhub.repo' in repositories_manager._repositories:
             repos = {
@@ -254,17 +243,15 @@ class ReposListMenuBuilder(MenuBuilder, menu_id=MenuIds.repositories_list, conte
                 callback_data=OpenMenu(
                     menu_id=MenuIds.repository_info,
                     context_data={'repo_id': repo_id},
-                    from_callback=ctx.callback_data,
+                    ui_history=ctx.as_ui_history(),
                 ).pack(),
             )
 
         menu.footer_keyboard.add_callback_button(
             button_id='add_repository',
-            text=translater.translate('➕ Добавить репозиторий'),
-            callback_data=cbs.AddRepository(from_callback=ctx.callback_data).pack(),
+            text=ru('➕ Добавить репозиторий'),
+            callback_data=cbs.AddRepository(ui_history=ctx.as_ui_history()).pack(),
         )
-
-        menu.main_text = translater.translate('🗃 <b><u>Репозитории</u></b>')
 
         return menu
 
@@ -278,11 +265,15 @@ class RepoInfoMenuBuilder(
         self,
         ctx: RepoInfoMenuContext,
         repositories_manager: RepositoriesManager,
-        translater: Tr,
     ) -> Menu:
-        menu = Menu(finalizer=StripAndNavigationFinalizer())
-
         repo = repositories_manager.repositories[ctx.repo_id]
+
+        menu = Menu(
+            header_text=f'<b><u>{html.escape(repo.name)}</u></b>',
+            main_text=html.escape(repo.get_description(translater.current_language)),
+            finalizer=StripAndNavigationFinalizer(),
+        )
+
         for plugin_id, plugin in repo.plugins.items():
             menu.main_keyboard.add_callback_button(
                 button_id=f'open_plugin_info:{plugin_id}',
@@ -297,20 +288,18 @@ class RepoInfoMenuBuilder(
                 callback_data=OpenMenu(
                     menu_id=MenuIds.repo_plugin_info,
                     context_data={'repo_id': ctx.repo_id, 'plugin_id': plugin_id},
-                    from_callback=ctx.callback_data,
+                    ui_history=ctx.as_ui_history(),
                 ).pack(),
             )
 
         menu.footer_keyboard.add_callback_button(
             button_id='update_repo',
-            text=translater.translate('♻️ Обновить репозиторий'),
+            text=ru('♻️ Обновить репозиторий'),
             callback_data=cbs.UpdateRepository(
-                url=repo.url,
-                from_callback=ctx.callback_data,
+                url=repo.url, ui_history=ctx.as_ui_history()
             ).pack(),
         )
-        menu.header_text = f'<b><u>{html.escape(repo.name)}</u></b>'
-        menu.main_text = html.escape(repo.get_description(translater.current_language))
+
         return menu
 
 
@@ -323,7 +312,6 @@ class RepoPluginInfoMenuBuilder(
         self,
         ctx: RepoPluginInfoMenuContext,
         repositories_manager: RepositoriesManager,
-        translater: Tr,
         hub: FunPayHub,
     ) -> Menu:
         menu = Menu(finalizer=StripAndNavigationFinalizer())
@@ -342,9 +330,7 @@ class RepoPluginInfoMenuBuilder(
         blocks['info'].append(f'🆔 <b>ID: {ctx.plugin_id}</b>')
 
         if plugin.repo:
-            blocks['info'].append(
-                f'{translater.translate("⬛ <b>Репозиторий</b>")}: {escape(plugin.repo)}',
-            )
+            blocks['info'].append(f'{ru("⬛ <b>Репозиторий</b>")}: {escape(plugin.repo)}')
 
         author_info = []
         if plugin.author:
@@ -352,14 +338,10 @@ class RepoPluginInfoMenuBuilder(
             if author.name:
                 author_info.append(f'<b>{escape(author.name)}</b>')
             if author.website:
-                author_info.append(
-                    f'<b><a href="{author.website}">{translater.translate("🌐 Вебсайт")}</a></b>',
-                )
+                author_info.append(f'<b><a href="{author.website}">{ru("🌐 Вебсайт")}</a></b>')
 
         if author_info:
-            blocks['info'].append(
-                f'{translater.translate("👤 <b>Разработчик</b>")}: {" | ".join(author_info)}',
-            )
+            blocks['info'].append(f'{ru("👤 <b>Разработчик</b>")}: {" | ".join(author_info)}')
 
         if plugin.author and plugin.author.social:
             for name, link in plugin.author.social.items():
@@ -385,12 +367,16 @@ class RepoPluginInfoMenuBuilder(
             menu.main_keyboard.add_row(
                 Button.callback_button(
                     button_id=f'install_version:{v}',
-                    text=translater.translate('⤵️ Установить') + f' v{v}',
-                    callback_data=cbs.InstallPluginFromURL(url=info.url, hash=info.hash).pack(),
+                    text=ru('⤵️ Установить') + f' v{v}',
+                    callback_data=cbs.InstallPluginFromURL(
+                        url=info.url,
+                        hash=info.hash,
+                        ui_history=ctx.as_ui_history(),
+                    ).pack(),
                 ),
                 Button.callback_button(
                     button_id=f'change_log:{v}',
-                    text=translater.translate('📃 Список изменений'),
+                    text=ru('📃 Список изменений'),
                     callback_data='dummy',
                 ),
             )
@@ -398,10 +384,11 @@ class RepoPluginInfoMenuBuilder(
         if latest is not None:
             menu.footer_keyboard.add_callback_button(
                 button_id='install_latest_version',
-                text=translater.translate('⤵️ Установить последнюю версию'),
+                text=ru('⤵️ Установить последнюю версию'),
                 callback_data=cbs.InstallPluginFromURL(
                     url=plugin.versions[latest].url,
                     hash=plugin.versions[latest].hash,
+                    ui_history=ctx.as_ui_history(),
                 ).pack(),
             )
 
