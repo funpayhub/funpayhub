@@ -20,7 +20,11 @@ class StripAndNavigationFinalizer:
         self.max_lines_on_page = max_lines_on_page
 
     async def __call__(
-        self, ctx: MenuContext, menu: Menu, tg: TelegramApp, translater: Tr
+        self,
+        ctx: MenuContext,
+        menu: Menu,
+        tg: TelegramApp,
+        translater: Tr,
     ) -> Menu:
         max_lines = self.max_lines_on_page or tg.config.max_menu_lines
         total_pages = math.ceil(len(menu.main_keyboard) / max_lines) if menu.main_keyboard else 0
@@ -103,16 +107,11 @@ def build_menu_navigation_buttons(
     return kb
 
 
-async def build_view_navigation_buttons(
-    ctx: MenuContext,
-    total_pages: int = -1,
-) -> KeyboardBuilder:
+async def build_view_navigation_btns(ctx: MenuContext, total_pages: int = -1) -> KeyboardBuilder:
     kb: KeyboardBuilder = KeyboardBuilder()
-    callback_data = ctx.callback_data
-
     unknown_max_pages = total_pages == -1
 
-    if callback_data is None or (not unknown_max_pages and total_pages < 2):
+    if not unknown_max_pages and total_pages < 2:
         return kb
 
     page_amount_btn = Button.callback_button(
@@ -122,7 +121,7 @@ async def build_view_navigation_buttons(
         callback_data=cbs.ActivateChangingPageState(
             mode='text',
             total_pages=total_pages,
-            history=callback_data.as_history(),
+            ui_history=ctx.as_ui_history(),
         ).pack()
         if unknown_max_pages or total_pages > 1
         else cbs.Dummy().pack(),

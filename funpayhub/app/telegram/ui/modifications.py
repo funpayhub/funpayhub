@@ -54,7 +54,7 @@ class AutoDeliveryPropertiesMenuModification(
         return ctx.menu_id == MenuIds.props_node and ctx.entry_path == ['auto_delivery']
 
     async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr):
-        menu.main_keyboard.add_callback_button(
+        menu.footer_keyboard.add_callback_button(
             button_id='open_goods_sources_list',
             text=translater.translate('🗳 Источники товаров'),
             callback_data=OpenMenu(

@@ -8,7 +8,7 @@ from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, Ke
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import (
     StripAndNavigationFinalizer,
-    build_view_navigation_buttons,
+    build_view_navigation_btns,
 )
 
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -139,7 +139,7 @@ class GoodsSourceInfoMenuBuilder(
 
         return Menu(
             main_text=text,
-            header_keyboard=await build_view_navigation_buttons(ctx, -1),
+            header_keyboard=await build_view_navigation_btns(ctx, -1),
             main_keyboard=kb,
             finalizer=StripAndNavigationFinalizer(),
         )
@@ -171,5 +171,5 @@ class AddRemoveButtonToGoodsSourceInfoModification(
     modification_id='fph:add_remove_button_to_goods_source_info',
 ):
     async def modify(self, ctx: GoodsInfoMenuContext, menu: Menu) -> Menu:
-        cb = cbs.RemoveGoodsSource(source_id=ctx.source_id, ui_history=ctx.as_ui_history()).pack()
+        cb = cbs.RemoveGoodsSource(source_id=ctx.source_id, ui_history=ctx.ui_history).pack()
         return await self._modify(ctx, menu, 'delete_source', cb)
