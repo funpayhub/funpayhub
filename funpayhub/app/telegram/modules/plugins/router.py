@@ -91,10 +91,7 @@ async def set_plugin_status(q: Query, plugin_manager: PluginManager, cbd: cbs.Re
     )
 
 
-@router.callback_query(
-    cbs.InstallPlugin.filter(),
-    lambda _, callback_data: callback_data.mode == 1,
-)
+@router.callback_query(cbs.InstallPlugin.filter(), lambda _, cbd: cbd.mode == 1)
 async def install_plugin(
     q: Query,
     state: FSM,
@@ -152,7 +149,8 @@ async def install_plugin(
     else:
         return m.reply(
             ru(
-                'Пришлите или перешлите сообщение с ZIP архивом плагина / ссылкой на ZIP архив плагина.',
+                'Пришлите или перешлите сообщение с '
+                'ZIP архивом плагина / ссылкой на ZIP архив плагина.',
             ),
         )
 
@@ -240,7 +238,9 @@ async def update_repository(
 
 @router.callback_query(cbs.InstallPluginFromURL.filter())
 async def install_plugin_from_url(
-    q: Query, cbd: cbs.InstallPluginFromURL, plugin_manager: PluginManager
+    q: Query,
+    cbd: cbs.InstallPluginFromURL,
+    plugin_manager: PluginManager,
 ):
     await q.answer()
     await q.message.answer(ru('<b>🧩 Загружаю плагин {url} .</b>', url=cbd.url))
