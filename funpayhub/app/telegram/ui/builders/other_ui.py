@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING
 from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedError
 
 from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.translater import Translater, translater
+from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import Button, KeyboardBuilder
-from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext, MenuContextOld
+from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
@@ -23,7 +23,7 @@ from .context import (
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.main import FunPayHub
+    from funpayhub.app.main import FunPayHub as FPH
     from funpayhub.app.funpay.main import FunPay
 
 
@@ -33,42 +33,41 @@ ru = translater.translate
 class StartNotificationMenuBuilder(
     MenuBuilder,
     menu_id=MenuIds.start_notification,
-    context_type=MenuContextOld,
+    context_type=MenuContext,
 ):
-    async def build(self, ctx: MenuContextOld, translater: Translater, hub: FunPayHub) -> Menu:
+    async def build(self, ctx: MenuContext, hub: FPH) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='main',
-            text=translater.translate('🏠 Главное меню'),
-            callback_data=OpenMenu(menu_id=MenuIds.main_menu).pack(),
+            text=ru('🏠 Главное меню'),
+            callback_data=OpenMenu(
+                menu_id=MenuIds.main_menu,
+                ui_history=ctx.as_ui_history(),
+            ).pack(),
         )
 
         kb.add_callback_button(
             button_id='settings',
-            text=translater.translate('⚙️ Меню настроек'),
+            text=ru('⚙️ Меню настроек'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.props_node,
-                context_data={
-                    'entry_path': [],
-                },
+                context_data={'entry_path': []},
+                ui_history=ctx.as_ui_history(),
             ).pack(),
         )
 
-        text = translater.translate(
+        text = ru(
             '🐙 <b><u>FunPay Hub {version} запущен!</u></b>\n\n\n'
             '<b>🔄 Подключение к FunPay аккаунту ...</b>\n\n\n'
             '<i>⚙️ Вы уже можете пользоваться панелью управления, настраивать бота и т.д.\n\n'
             'Для открытия основного меню введите команду /menu\n'
             'Для открытия настроек введи команду /settings\n\n'
             '📝 После подключения к FunPay аккаунту данное сообщение будет обновлено.</i>',
-        ).format(
             version=hub.properties.version.value,
         )
 
         if hub.safe_mode:
-            text += '\n\n' + translater.translate(
-                '🛡️ <b><u>FunPayHub запущен в безопасном режиме!</u></b>',
-            )
+            text += '\n\n' + ru('🛡️ <b><u>FunPayHub запущен в безопасном режиме!</u></b>')
         return Menu(main_text=text)
 
 
@@ -77,16 +76,11 @@ class FunPayStartNotificationMenuBuilder(
     menu_id=MenuIds.funpay_start_notification,
     context_type=FunPayStartNotificationMenuContext,
 ):
-    async def build(
-        self,
-        ctx: FunPayStartNotificationMenuContext,
-        translater: Translater,
-        fp: FunPay,
-    ) -> Menu:
+    async def build(self, ctx: FunPayStartNotificationMenuContext, fp: FunPay, hub: FPH) -> Menu:
         if not ctx.error:
             page = await fp.bot.get_transactions_page()
             text = translater.translate(
-                '🎉 <b><u>FunPay Hub готов к работе!</u></b>\n\n\n'
+                '🎉 <b><u>FunPay Hub {version} готов к работе!</u></b>\n\n\n'
                 '👤 <b><i>Аккаунт: {username} '
                 '(<a href="https://funpay.com/users/{user_id}/">{user_id}</a>)</i></b>\n\n'
                 '📊 <b><i>Активные продажи: {active_sells}</i></b>'
@@ -95,7 +89,7 @@ class FunPayStartNotificationMenuBuilder(
                 '💰 <b><i>Сделки: {deals_balance}₽</i></b>\n\n'
                 'Для открытия основного меню введите команду /menu\n'
                 'Для открытия настроек используйте команду /settings',
-            ).format(
+                version=hub.properties.version.value,
                 username=fp.bot.username,
                 user_id=fp.bot.userid,
                 active_sells=page.header.sales,
@@ -106,31 +100,29 @@ class FunPayStartNotificationMenuBuilder(
                 deals_balance=page.deals_balance.value if page.deals_balance else 0,
             )
         elif isinstance(ctx.error, (BotUnauthenticatedError, UnauthorizedError)):
-            text = translater.translate(
-                '⚠️ <b><u>FunPay Hub запущен, но не удалось авторизоваться!</u></b>\n\n\n'
+            text = ru(
+                '⚠️ <b><u>FunPay Hub {version} запущен, но не удалось авторизоваться!</u></b>\n\n\n'
                 'ℹ️ Проверьте правильность вашего <b>golden_key</b> и попробуйте снова.\n\n'
                 '🐙 Вы всё ещё можете пользоваться панелью управления через Telegram бота.\n\n'
                 'Для открытия основного меню введите команду /menu\n'
                 'Для открытия настроек используйте команду /settings',
+                version=hub.properties.version.value,
             )
         else:
-            text = translater.translate(
-                '❌ <b><u>Произошла непредвиденная ошибка в FunPay Hub!</u></b>\n\n\n'
+            text = ru(
+                '❌ <b><u>Произошла непредвиденная ошибка в FunPay Hub {version}!</u></b>\n\n\n'
                 'ℹ️ Ошибка была зафиксирована, но вы всё ещё можете использовать Telegram бота.\n\n'
                 'Для открытия основного меню введите команду /menu\n'
                 'Для открытия настроек используйте команду /settings\n\n'
                 '📝 Подробности об ошибке можно найти в логах.',
+                version=hub.properties.version.value,
             )
 
         return Menu(main_text=text)
 
 
-class MainMenuBuilder(
-    MenuBuilder,
-    menu_id=MenuIds.main_menu,
-    context_type=MenuContext,
-):
-    async def build(self, ctx: MenuContext, hub: FunPayHub) -> Menu:
+class MainMenuBuilder(MenuBuilder, menu_id=MenuIds.main_menu, context_type=MenuContext):
+    async def build(self, ctx: MenuContext, hub: FPH) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='settings',
@@ -183,11 +175,11 @@ class MainMenuBuilder(
 
 
 class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=StateUIContext):
-    async def build(self, ctx: StateUIContext, translater: Translater) -> Menu:
+    async def build(self, ctx: StateUIContext) -> Menu:
         kb = KeyboardBuilder()
         kb.add_callback_button(
             button_id='clear_state',
-            text=translater.translate('🔘 Отмена'),
+            text=ru('🔘 Отмена'),
             callback_data=ClearState(
                 delete_message=ctx.delete_on_clear,
                 open_previous=ctx.open_previous_on_clear,
@@ -201,8 +193,8 @@ class StateMenuBuilder(MenuBuilder, menu_id=MenuIds.state_menu, context_type=Sta
         )
 
 
-class RequestsMenuBuilder(MenuBuilder, menu_id='fph:request_menu', context_type=MenuContextOld):
-    async def build(self, ctx: MenuContextOld, hub: FunPayHub) -> Menu:
+class RequestsMenuBuilder(MenuBuilder, menu_id='fph:request_menu', context_type=MenuContext):
+    async def build(self, ctx: MenuContext, hub: FPH) -> Menu:
         counter = hub.funpay.session.counter
 
         text = (
@@ -223,21 +215,22 @@ class NewReviewNotificationMenuBuilder(
     menu_id=MenuIds.review_notification,
     context_type=NewReviewNotificationMenuContext,
 ):
-    async def build(self, ctx: NewReviewNotificationMenuContext, translater: Translater) -> Menu:
+    async def build(self, ctx: NewReviewNotificationMenuContext) -> Menu:
         order_page = await ctx.review_event.get_order_page()
         menu = Menu(finalizer=StripAndNavigationFinalizer())
 
-        menu.header_text = translater.translate(
-            '<b>🌟 Вам оставили новый отзыв за заказ <a href="https://funpay.com/orders/{orderid}/">{orderid}</a>!</b>',
-        ).format(orderid=order_page.order_id)
+        menu.header_text = ru(
+            '<b>🌟 Вам оставили новый отзыв за заказ '
+            '<a href="https://funpay.com/orders/{orderid}/">{orderid}</a>!</b>',
+            orderid=order_page.order_id,
+        )
 
-        menu.main_text = translater.translate(
+        menu.main_text = ru(
             '📦 <b>Лот: {order_name}</b>\n'
             '👤 <b>Пользователь: <a href="https://funpay.com/users/{userid}/">{username}</a></b>\n'
             '⭐️ <b>Оценка: {rating} / 5</b>\n\n'
             '💬 <b>Текст отзыва:</b>\n'
             '<blockquote>{review_text}</blockquote>',
-        ).format(
             order_name=order_page.short_description,
             userid=str(order_page.chat.interlocutor.id),
             username=order_page.chat.interlocutor.username,
@@ -245,6 +238,7 @@ class NewReviewNotificationMenuBuilder(
             review_text=html.escape(order_page.review.text),
         )
 
+        texts = []
         if ctx.review_event.data.get('review_reply_error'):
             err = ctx.review_event.data['review_reply_error']
             if isinstance(err, TranslatableException):
@@ -252,21 +246,12 @@ class NewReviewNotificationMenuBuilder(
             else:
                 err_text = translater.translate('Подробности в логах.')
 
-            menu.main_text += (
-                '\n\n'
-                + translater.translate(
-                    '❌ Произоша ошибка при ответе на отзыв.',
-                )
-                + '\n'
-                + html.escape(err_text)
+            texts.append(
+                ru('❌ Произоша ошибка при ответе на отзыв.') + '\n' + html.escape(err_text),
             )
         elif ctx.review_event.data.get('review_reply_text'):
             text = html.escape(ctx.review_event.data['review_reply_text'])
-            menu.main_text += (
-                '\n\n'
-                + translater.translate('💬 <b>Текст ответа:</b>')
-                + f'\n<blockquote>{text}</blockquote>'
-            )
+            texts.append(ru('💬 <b>Текст ответа:</b>') + f'\n<blockquote>{text}</blockquote>')
 
         if ctx.review_event.data.get('chat_reply_error'):
             err = ctx.review_event.data['chat_reply_error']
@@ -277,7 +262,7 @@ class NewReviewNotificationMenuBuilder(
 
             menu.main_text += (
                 '\n\n'
-                + translater.translate(
+                + ru(
                     '❌ Произоша ошибка при ответе в чате на отзыв.',
                 )
                 + '\n'
@@ -287,14 +272,14 @@ class NewReviewNotificationMenuBuilder(
             text = html.escape(ctx.review_event.data['chat_reply_text'])
             menu.main_text += (
                 '\n\n'
-                + translater.translate('💬 <b>Текст ответа в чате:</b>')
+                + ru('💬 <b>Текст ответа в чате:</b>')
                 + f'\n<blockquote>{text}</blockquote>'
             )
 
         menu.header_keyboard.add_row(
             Button.callback_button(
                 button_id='answer_in_chat',
-                text=translater.translate('💬 Отв. в чат'),
+                text=ru('💬 Отв. в чат'),
                 callback_data=SendMessage(
                     to=order_page.chat.id,
                     name=order_page.chat.interlocutor.username,
@@ -302,7 +287,7 @@ class NewReviewNotificationMenuBuilder(
             ),
             Button.url_button(
                 button_id='open_chat',
-                text=translater.translate('💬 Чат'),
+                text=ru('💬 Чат'),
                 url=f'https://funpay.com/chat/?node={order_page.chat.id}',
             ),
             Button.url_button(

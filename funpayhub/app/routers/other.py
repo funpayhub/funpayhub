@@ -10,9 +10,8 @@ from eventry.asyncio.filter import all_of
 
 from funpayhub.loggers import main as logger
 
-from funpayhub.lib.translater import _en
-from funpayhub.lib.telegram.ui import UIRegistry
-from funpayhub.lib.telegram.ui.types import MenuContextOld
+from funpayhub.lib.translater import en as _en
+from funpayhub.lib.telegram.ui.types import MenuContext
 from funpayhub.lib.plugin.repository.loaders import URLRepositoryLoader
 
 from funpayhub.app.dispatching import Router
@@ -36,17 +35,12 @@ messages: list[Message] = []
 
 
 @router.on_telegram_start()
-async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub) -> None:
-    ctx = MenuContextOld(
-        chat_id=-1,
-        menu_id=MenuIds.start_notification,
-    )
-
-    menu = await tg_ui.build_menu(ctx)
+async def send_start_notification(hub: FunPayHub) -> None:
+    menu = await MenuContext(menu_id=MenuIds.start_notification).build_menu()
 
     async def send_notifications() -> None:
         tasks = hub.telegram.send_notification(
-            'system',
+            NotificationChannels.SYSTEM,
             menu.total_text,
             menu.total_keyboard(True),
         )
@@ -67,24 +61,17 @@ async def send_start_notification(tg_ui: UIRegistry, hub: FunPayHub) -> None:
 
 
 @router.on_funpay_start(as_task=True)
-async def edit_start_notifications(
-    error: Exception | None,
-    tg_ui: UIRegistry,
-    hub: FunPayHub,
-) -> None:
+async def edit_start_notifications(error: Exception | None) -> None:
     await sent_event.wait()
     for i in messages:
-        ctx = FunPayStartNotificationMenuContext(
-            menu_id=MenuIds.funpay_start_notification,
-            trigger=i,
-            error=error,
-        )
-        menu = await tg_ui.build_menu(ctx)
-
         try:
-            await i.edit_text(text=menu.total_text, reply_markup=menu.total_keyboard(True))
+            await FunPayStartNotificationMenuContext(
+                menu_id=MenuIds.funpay_start_notification,
+                trigger=i,
+                error=error,
+            ).apply_to()
         except:
-            continue
+            pass
 
 
 @router.on_funpay_start(
@@ -109,7 +96,8 @@ async def add_official_plugin_repo(repositories_manager: RepositoriesManager):
     logger.info(_en('Updating official plugins repo.'))
     try:
         repo = await URLRepositoryLoader(
-            'https://raw.githubusercontent.com/funpayhub/fph_plugins_repo/refs/heads/master/com.github.funpayhub.repo.json',
+            'https://raw.githubusercontent.com/funpayhub/fph_plugins_repo/refs/heads/master/'
+            'com.github.funpayhub.repo.json',
         ).load()
     except:
         logger.error(_en('An error occurred while downloading official repo.'), exc_info=True)
