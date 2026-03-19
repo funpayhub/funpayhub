@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 import warnings
 from typing import TYPE_CHECKING, Any, Self, Type, Literal, overload
-from dataclasses import field, fields, dataclass
+from dataclasses import field, dataclass
 from collections.abc import Mapping, Iterable, Iterator, KeysView
 
 from pydantic import Field, BaseModel
@@ -269,127 +269,6 @@ class Menu(Mapping):
         return KeysView(self)
 
 
-@dataclass(kw_only=True)
-class MenuContextOld:
-    """
-    Базовый контекст для билдеров меню Telegram.
-
-    Аргументы:
-        `menu_id`: Обязательный. ID меню, которое необходимо построить.
-        `menu_page`: Страница меню. Если не указана, будет получена из `callback_data` или `trigger`.
-        `view_page`: Страница текста меню. Если не указана, будет получена из `callback_data` или `trigger`.
-        `chat_id`: ID Telegram чата, куда будет выслано меню. Обязательно, если `trigger` не указан.
-        `thread_id`: ID темы в чате. Получается из `trigger`, если он указан.
-        `message_id`: ID сообщения, в которое будет вставлено меню. Получается из `trigger`, если он указан.
-        `trigger`: Триггер, вызвавший меню. Используется для получения `chat_id`, `thread_id` и `message_id`.
-        `callback_override`: Переопределяет `callback_data`.
-        `data`: Дополнительные данные контекста.
-
-    Правила и логика:
-        - Обязательно указать либо `chat_id`, либо `trigger`.
-        - Если указан `trigger`, `chat_id`, `thread_id` и `message_id` подтягиваются из него автоматически.
-        - callback_data определяется в следующем порядке:
-            1. `callback_override`, если передан.
-            2. ключ 'callback_data' в `data`, если он экземпляром `UnknownCallback`.
-            3. разбор `trigger`, если `trigger` — `CallbackQuery`.
-            4. иначе возвращает `None`.
-        - Если `menu_page` или `view_page` не указаны (`Ellipsis`),
-          сначала ищется соответствующее поле в `callback_data`, затем в `callback_data.data`,
-          и если не найдено — устанавливается 0.
-    """
-
-    menu_id: str
-    menu_page: int = ...
-    view_page: int = ...
-    chat_id: int = None
-    thread_id: int | None = None
-    message_id: int | None = None
-    trigger: Message | CallbackQuery | None = None
-    callback_override: UnknownCallback | None = None
-    data: dict[str, Any] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        if self.trigger is not None:
-            msg = self.trigger if isinstance(self.trigger, Message) else self.trigger.message
-            self.message_id = msg.message_id
-            self.chat_id = msg.chat.id
-            self.thread_id = msg.message_thread_id
-
-        if self.chat_id is None:
-            raise ValueError('Chat ID or trigger must be provided.')
-
-        if self.callback_data is not None:
-            self.data = self.callback_data.data
-
-        if self.menu_page is Ellipsis:
-            if self.callback_data is not None:
-                menu_page = getattr(self.callback_data, 'menu_page', None)
-                if isinstance(menu_page, int):
-                    self.menu_page = menu_page
-                else:
-                    self.menu_page = self.callback_data.data.get('menu_page', 0)
-            else:
-                self.menu_page = 0
-
-        if self.view_page is Ellipsis:
-            if self.callback_data is not None:
-                view_page = getattr(self.callback_data, 'view_page', None)
-                if isinstance(view_page, int):
-                    self.view_page = view_page
-                else:
-                    self.view_page = self.callback_data.data.get('view_page', 0)
-            else:
-                self.view_page = 0
-
-    @property
-    def callback_data(self) -> UnknownCallback | None:
-        from funpayhub.lib.telegram.callback_data import UnknownCallback
-
-        if self.callback_override is not None:
-            return self.callback_override
-
-        if isinstance(self.data.get('callback_data', None), UnknownCallback):  # todo: remove
-            return self.data.get('callback_data')
-
-        if isinstance(self.trigger, CallbackQuery):
-            if hasattr(self.trigger, '__parsed__'):
-                return getattr(self.trigger, '__parsed__')
-            return UnknownCallback.parse(self.trigger.data)
-        return None
-
-    @property
-    def callback_data_history(self) -> list[str]:
-        return self.callback_data.history if self.callback_data is not None else []
-
-    async def build_menu(self, registry: UIRegistry) -> Menu:
-        return await registry.build_menu(self)
-
-    async def build_and_apply(
-        self,
-        registry: UIRegistry,
-        message: Message,
-        *,
-        text: bool = True,
-        keyboard: bool = True,
-    ) -> Message:
-        menu = await self.build_menu(registry)
-        return await menu.apply_to(message, text=text, keyboard=keyboard)
-
-    async def build_and_answer(self, registry: UIRegistry, message: Message) -> Message:
-        menu = await self.build_menu(registry)
-        return await menu.answer_to(message)
-
-    @property
-    def context_data(self) -> dict[str, Any]:
-        """
-        Возвращает словарь полей, объявленных в классе-наследнике,
-        исключая поля базового `MenuContextOld`.
-        """
-
-        base_fields = {i.name for i in fields(MenuContextOld)}
-        return {k.name: getattr(self, k.name) for k in fields(self) if k.name not in base_fields}
-
-
 class MenuHistoryNode(BaseModel):
     menu_id: str
     menu_page: int
@@ -530,7 +409,7 @@ class MenuContext(BaseModel):
     def context_data(self) -> dict[str, Any]:
         """
         Возвращает словарь полей, объявленных в классе-наследнике,
-        исключая поля базового `MenuContextOld`.
+        исключая поля базового `MenuContext`.
         """
         base_fields = {i for i in MenuContext.model_fields}
         return {k: getattr(self, k) for k in self.__class__.model_fields if k not in base_fields}
@@ -612,12 +491,9 @@ class MenuBuilder:
                 raise ValueError(
                     f"'menu_id' must be a string, not {type(menu_id)}.",
                 )
-            if not isinstance(context_type, type) or not issubclass(
-                context_type,
-                (MenuContextOld, MenuContext),
-            ):
+            if not isinstance(context_type, type) or not issubclass(context_type, MenuContext):
                 raise ValueError(
-                    "'context_type' must be a subclass of 'MenuContextOld'.",
+                    "'context_type' must be a subclass of 'MenuContext'.",
                 )
 
         if menu_id is not None:
@@ -627,7 +503,7 @@ class MenuBuilder:
 
         super().__init_subclass__(**kwargs)
 
-    async def __call__(self, ctx: MenuContextOld, data: dict[str, Any]) -> Menu:
+    async def __call__(self, ctx: MenuContext, data: dict[str, Any]) -> Menu:
         return await self._wrapped((ctx,), data)
 
     @classproperty
@@ -685,7 +561,7 @@ class MenuModification:
     def modification_id(cls) -> str:
         return cls.__modification_id__
 
-    async def __call__(self, context: MenuContextOld, menu: Menu, data: dict[str, Any]) -> Menu:
+    async def __call__(self, context: MenuContext, menu: Menu, data: dict[str, Any]) -> Menu:
         if self.wrapped_filter is not None:
             result = await self.wrapped_filter((context, menu), data)
             if not result:
