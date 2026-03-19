@@ -3,37 +3,31 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
-from funpayhub.lib.telegram.fsm import State
+from funpayhub.lib.telegram.fsm import StateFromQuery
 
 
 if TYPE_CHECKING:
     from aiogram.types import Message
 
-    from funpayhub.lib.telegram.callback_data import UnknownCallback
-
 
 @dataclass
-class UploadingGoods(State, identifier='fph:uploading_goods'):
+class UploadingGoods(StateFromQuery, identifier='fph:uploading_goods'):
     source_id: str
-    message: Message
-    callback_data: UnknownCallback
+    state_message: Message
 
 
 @dataclass
-class RemovingGoods(State, identifier='fph:removing_goods'):
+class RemovingGoods(StateFromQuery, identifier='fph:removing_goods'):
     source_id: str
-    message: Message
-    callback_data: UnknownCallback
+    state_message: Message
 
 
 @dataclass
-class AddingGoods(State, identifier='fph:adding_goods'):
+class AddingGoods(StateFromQuery, identifier='fph:adding_goods'):
     source_id: str
-    message: Message
-    callback_data: UnknownCallback
+    state_message: Message
 
 
 @dataclass
-class AddingGoodsTxtSource(State, identifier='fph:adding_goods_txt_source'):
-    message: Message
-    callback_data: UnknownCallback
+class AddingGoodsTxtSource(StateFromQuery, identifier='fph:adding_goods_txt_source'):
+    state_message: Message
