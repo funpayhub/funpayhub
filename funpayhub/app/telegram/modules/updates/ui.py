@@ -12,6 +12,8 @@ __all__ = [
 import html
 from typing import TYPE_CHECKING
 
+from funpayhub.updater import UpdateInfo
+
 from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, KeyboardBuilder
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
@@ -22,8 +24,6 @@ from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.updater import UpdateInfo
-
     from funpayhub.app.main import FunPayHub as FPH
 
 
