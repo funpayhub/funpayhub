@@ -14,11 +14,10 @@ import html
 from typing import TYPE_CHECKING
 from itertools import chain
 
-from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContextOld, MenuModification
-from funpayhub.lib.telegram.callback_data import join_callbacks
+from funpayhub.lib.translater import translater
+from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, MenuModification
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
-from funpayhub.lib.translater import translater
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification, confirmable_button
@@ -28,7 +27,6 @@ from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
     from funpayhub.app.main import FunPayHub as FPH
@@ -53,7 +51,7 @@ class BindToOfferButtonModification(MenuModification, modification_id='fph:bind_
             ctx=ctx,
             button_id='clear_cache',
             text=ru('🗑️ Очистить кэш'),
-            callback_data=cbs.ClearFirstResponseCache(ui_history=ctx.as_ui_history()).pack(),
+            callback_data=cbs.ClearGreetingsCache(ui_history=ctx.as_ui_history()).pack(),
             style='danger',
         )
         menu.footer_keyboard.add_row(*buttons)
@@ -145,15 +143,9 @@ class ReplaceNameWithOfferNameModification(
 class BindToOfferMenu(
     MenuBuilder,
     menu_id=MenuIds.bind_first_response_to_offer,
-    context_type=MenuContextOld,
+    context_type=MenuContext,
 ):
-    async def build(
-        self,
-        ctx: MenuContextOld,
-        translater: Tr,
-        hub: FPH,
-        properties: FPHProps,
-    ) -> Menu:
+    async def build(self, ctx: MenuContext, hub: FPH, properties: FPHProps) -> Menu:
         menu = Menu(finalizer=StripAndNavigationFinalizer())
         menu.main_text = translater.translate(
             '⌨️ Выберите лот, к которому хотите привязать ответ на первое сообщение '
@@ -161,7 +153,7 @@ class BindToOfferMenu(
         )
         menu.footer_keyboard.add_callback_button(
             button_id='cancel',
-            text=translater.translate('🔘 Отмена'),
+            text=ru('🔘 Отмена'),
             callback_data=ClearState().pack(),
         )
 
@@ -182,10 +174,9 @@ class BindToOfferMenu(
                 menu.main_keyboard.add_callback_button(
                     button_id=f'bind_to_offer:{offer.id}',
                     text=offer.title,
-                    callback_data=cbs.BindFirstResponseToOffer(
+                    callback_data=cbs.BindGreetings(
                         offer_id=str(offer.id),
-                        history=ctx.callback_data_history,
+                        ui_history=ctx.ui_history,
                     ).pack(),
                 )
-
         return menu

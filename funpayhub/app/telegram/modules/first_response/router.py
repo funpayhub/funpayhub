@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
 
-from funpayhub.lib.telegram.ui import UIRegistry, MenuContextOld
-from funpayhub.lib.base_app.telegram.utils import delete_message
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+from funpayhub.lib.translater import translater
+from funpayhub.lib.telegram.ui import MenuContext
+from funpayhub.lib.base_app.telegram import utils
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
 from funpayhub.app.telegram.ui.ids import MenuIds
@@ -19,123 +19,63 @@ from . import (
 
 
 if TYPE_CHECKING:
-    from aiogram.types import Message, CallbackQuery
-    from aiogram.fsm.context import FSMContext
+    from aiogram.types import (
+        Message,
+        CallbackQuery as Query,
+    )
+    from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.lib.translater import Translater as Tr
+    from funpayhub.lib.telegram.ui import UIRegistry as UI
 
-    from funpayhub.app.main import FunPayHub
-    from funpayhub.app.properties import FunPayHubProperties
-    from funpayhub.app.telegram.main import Telegram
+    from funpayhub.app.properties import FunPayHubProperties as FPHProps
 
 
 router = Router(name='fph:first_response')
+ru = translater.translate
 
 
 @router.callback_query(cbs.OpenAddGreetingsToOfferMenu.filter())
-async def open_menu(
-    query: CallbackQuery,
-    state: FSMContext,
-    tg_ui: UIRegistry,
-):
-    msg = await MenuContextOld(
-        menu_id=MenuIds.bind_first_response_to_offer,
-        trigger=query,
-    ).build_and_answer(tg_ui, query.message)
-
-    await states.BindingGreetingsToOffer(query=query, state_message=msg).set(state)
-    await query.answer()
+async def open_menu(q: Query, state: FSM):
+    msg = await MenuContext(menu_id=MenuIds.bind_first_response_to_offer, trigger=q).answer_to()
+    await states.BindingGreetingsToOffer(query=q, state_message=msg).set(state)
 
 
-@router.callback_query(cbs.BindFirstResponseToOffer.filter())
-async def bind_first_response_to_offer(
-    query: CallbackQuery,
-    callback_data: cbs.BindFirstResponseToOffer,
-    state: FSMContext,
-    properties: FunPayHubProperties,
-    translater: Tr,
-    tg_ui: UIRegistry,
-):
-    if properties.first_response.has_offer(callback_data.offer_id):
-        await query.answer(
-            translater.translate(
-                '❌ К лоту {offer_id} уже привязан ответ на первое сообщение.',
-            ).format(offer_id=callback_data.offer_id),
+@router.callback_query(cbs.BindGreetings.filter())
+@router.message(states.BindingGreetingsToOffer.filter(), lambda msg: msg.text)
+async def bind_greetings(
+    obj: Query | Message,
+    state: FSM,
+    props: FPHProps,
+    cbd: cbs.BindGreetings | None = None,
+) -> Any:
+    offer_id = cbd.offer_id if cbd is not None else obj.text
+    if props.first_response.has_offer(offer_id):
+        return obj.answer(
+            ru('❌ К лоту {offer_id} уже привязан ответ на первое сообщение.', offer_id=offer_id),
             show_alert=True,
         )
-        return
 
-    props = await properties.first_response.add_for_offer(callback_data.offer_id)
+    state_obj = await states.BindingGreetingsToOffer.clear(state)
+    props = await props.first_response.add_for_offer(offer_id)
+
     await NodeMenuContext(
-        trigger=query,
         menu_id=MenuIds.props_node,
+        trigger=obj,
         entry_path=props.path,
-        callback_override=OpenMenu(
-            menu_id=MenuIds.props_node,
-            context_data={'entry_path': props.path},
-            history=callback_data.history,
-        ),
-    ).build_and_apply(tg_ui, query.message)
-
-    await states.BindingGreetingsToOffer.clear(state)
-
-
-@router.message(states.BindingGreetingsToOffer.filter(), lambda msg: msg.text)
-async def bind_first_response_to_offer_from_message(
-    message: Message,
-    properties: FunPayHubProperties,
-    state: FSMContext,
-    translater: Tr,
-    tg_ui: UIRegistry,
-):
-    if properties.first_response.has_offer(message.text):
-        await message.answer(
-            translater.translate('❌ К данному лоту уже привязан ответ на первое сообщение.'),
-        )
-        return
-
-    data = await states.BindingGreetingsToOffer.get(state)
-    await state.clear()
-
-    node = await properties.first_response.add_for_offer(message.text)
-    await NodeMenuContext(
-        trigger=message,
-        menu_id=MenuIds.props_node,
-        entry_path=node.path,
-        callback_override=OpenMenu(
-            menu_id=MenuIds.props_node,
-            context_data={'entry_path': node.path},
-            history=data.callback_data.history,
-        ),
-    ).build_and_answer(tg_ui, message)
-    delete_message(data.state_message)
+        ui_history=state_obj.ui_history,
+    ).answer_to(obj)
+    utils.delete_message(state_obj.state_message)
 
 
 @router.callback_query(cbs.RemoveGreetings.filter())
-async def remove_first_response_to_offer(
-    query: CallbackQuery,
-    callback_data: cbs.RemoveGreetings,
-    properties: FunPayHubProperties,
-    hub: FunPayHub,
-):
-    node = properties.first_response.detach_node(callback_data.offer_id)
+async def remove_greetings(q: Query, cbd: cbs.RemoveGreetings, props: FPHProps, tg_ui: UI) -> Any:
+    node = props.first_response.detach_node(cbd.offer_id)
     if node:
-        await properties.save()
-
-    if callback_data.execute_next:
-        await hub.telegram.fake_query(callback_data.execute_next, query)
+        await props.save()
+    await tg_ui.context_from_history(cbd.ui_history, trigger=q).apply_to()
 
 
-@router.callback_query(cbs.ClearFirstResponseCache.filter())
-async def clear_first_response_cache(
-    query: CallbackQuery,
-    callback_data: cbs.ClearFirstResponseCache,
-    first_response_cache: FirstResponseCache,
-    tg: Telegram,
-    translater: Tr,
-):
+@router.callback_query(cbs.ClearGreetingsCache.filter())
+async def clear_first_response_cache(q: Query, first_response_cache: FirstResponseCache) -> Any:
     await first_response_cache.reset()
-    await query.answer(translater.translate('✅ Кэш очищен.'), show_alert=True)
-
-    if callback_data.execute_next:
-        await tg.fake_query(callback_data=callback_data.execute_next, query=query)
+    return q.answer(ru('✅ Кэш очищен.'), show_alert=True)

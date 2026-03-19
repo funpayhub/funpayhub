@@ -7,7 +7,7 @@ class OpenAddGreetingsToOfferMenu(CallbackData, identifier='open_add_greetings_t
     pass
 
 
-class BindFirstResponseToOffer(CallbackData, identifier='bind_first_response_to_offer_menu'):
+class BindGreetings(CallbackData, identifier='bind_greetings'):
     offer_id: str
 
 
@@ -16,5 +16,4 @@ class RemoveGreetings(CallbackData, identifier='remove_greetings'):
     execute_next: str = ''
 
 
-class ClearFirstResponseCache(CallbackData, identifier='clear_first_response_cache'):
-    ...
+class ClearGreetingsCache(CallbackData, identifier='clear_greetings_cache'): ...

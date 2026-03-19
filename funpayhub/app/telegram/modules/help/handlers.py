@@ -27,9 +27,7 @@ need_help = set()
 class NeedHelpMiddleware(BaseMiddleware):
     async def __call__(self, handler, event: CallbackQuery, data) -> None:
         if event.from_user.id not in need_help:
-            await handler(event, data)
-            return
-
+            return await handler(event, data)
         await router.propagate_event('callback_query', event, **data)
 
 
