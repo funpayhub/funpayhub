@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
 
@@ -12,12 +12,14 @@ from .states import ChangingMenuPage
 
 
 if TYPE_CHECKING:
-    from aiogram.types import Message, CallbackQuery
-    from aiogram.fsm.context import FSMContext
+    from aiogram.types import (
+        Message,
+        CallbackQuery as Query,
+    )
+    from aiogram.fsm.context import FSMContext as FSM
 
     from funpayhub.lib.translater import Translater as Tr
-    from funpayhub.lib.telegram.ui import UIRegistry
-    from funpayhub.lib.base_app.telegram import TelegramApp
+    from funpayhub.lib.telegram.ui import UIRegistry as UI
 
 
 router = Router(name='app:base_ui')
@@ -27,70 +29,60 @@ router = Router(name='app:base_ui')
 # ------------------ Menu Rendering ------------------
 # ----------------------------------------------------
 @router.callback_query(cbs.OpenMenu.filter())
-async def open_custom_menu(
-    query: CallbackQuery,
-    tg_ui: UIRegistry,
-    callback_data: cbs.OpenMenu,
-) -> None:
-    menu_builder = tg_ui.get_menu_builder(callback_data.menu_id)
+async def open_custom_menu(q: Query, tg_ui: UI, cbd: cbs.OpenMenu) -> Any:
+    menu_builder = tg_ui.get_menu_builder(cbd.menu_id)
     ctx_class = menu_builder.builder.context_type
-    additional_data = {**callback_data.data}
+    additional_data = {**cbd.data}
 
-    parsed_callback: UnknownCallback = getattr(query, '__parsed__', None)
+    parsed_callback: UnknownCallback = getattr(q, '__parsed__', None)
     if parsed_callback is not None:
         parsed_callback.data['new_message'] = False
 
     ctx_instance = ctx_class(
-        menu_id=callback_data.menu_id,
-        menu_page=callback_data.menu_page,
-        view_page=callback_data.view_page,
-        ui_history=callback_data.ui_history,
-        trigger=query,
+        menu_id=cbd.menu_id,
+        trigger=q,
+        menu_page=cbd.menu_page,
+        view_page=cbd.view_page,
+        ui_history=cbd.ui_history,
         data=additional_data,
-        **callback_data.context_data,
+        **cbd.context_data,
     )
-    if callback_data.new_message:
-        await query.answer()
-        await ctx_instance.build_and_answer(tg_ui, query.message)
-    else:
-        await ctx_instance.build_and_apply(tg_ui, query.message)
+    await ctx_instance.answer_to() if cbd.new_message else await ctx_instance.apply_to()
 
 
 # ----------------------------------------------------
 # -------------------- Pagination --------------------
 # ----------------------------------------------------
 @router.callback_query(cbs.ChangePageTo.filter())
-async def page(query: CallbackQuery, callback_data: cbs.ChangePageTo, tg_ui: UIRegistry) -> None:
-    ctx = tg_ui.context_from_history(callback_data.ui_history, trigger=query)
-    ctx.menu_page = callback_data.keyboard if callback_data.keyboard is not None else ctx.menu_page
-    ctx.view_page = callback_data.text if callback_data.text is not None else ctx.view_page
-    await ctx.build_and_apply(tg_ui, query.message)
+async def page(q: Query, cbd: cbs.ChangePageTo, tg_ui: UI) -> None:
+    ctx = tg_ui.context_from_history(cbd.ui_history, trigger=q)
+    ctx.menu_page = cbd.keyboard if cbd.keyboard is not None else ctx.menu_page
+    ctx.view_page = cbd.text if cbd.text is not None else ctx.view_page
+    await ctx.apply_to()
 
 
 @router.callback_query(cbs.ActivateChangingPageState.filter())
 async def activate_manual_page_changing_state(
-    query: CallbackQuery,
-    state: FSMContext,
+    q: Query,
+    state: FSM,
     callback_data: cbs.ActivateChangingPageState,
     translater: Tr,
 ):
-    await query.answer()
+    await q.answer()
     await ChangingMenuPage(
-        query=query,
+        query=q,
         mode=callback_data.mode,
         max_pages=callback_data.total_pages,
-        state_msg=await query.message.answer(
-            text=translater.translate('🔢 Введите номер страницы.'),
-        ),
+        state_msg=await q.message.answer(translater.translate('🔢 Введите номер страницы.')),
     ).set(state)
 
 
 @router.message(ChangingMenuPage.filter())
-async def change_page_from_message(message: Message, state: FSMContext, tg_ui: UIRegistry) -> None:
-    if not message.text.isnumeric():
+async def change_page_from_message(m: Message, state: FSM, tg_ui: UI) -> None:
+    if not m.text.isnumeric():
         return
 
-    new_page_index = int(message.text) - 1
+    new_page_index = int(m.text) - 1
 
     data = await ChangingMenuPage.get(state)
     if data.max_pages != -1 and (new_page_index > data.max_pages - 1 or new_page_index < 0):
@@ -99,43 +91,35 @@ async def change_page_from_message(message: Message, state: FSMContext, tg_ui: U
     await state.clear()
     utils.delete_message(data.state_msg)
 
-    ctx = tg_ui.context_from_history(data.ui_history, trigger=message)
+    ctx = tg_ui.context_from_history(data.ui_history, trigger=m)
     if data.mode == 'keyboard':
         ctx.menu_page = new_page_index
     else:
         ctx.view_page = new_page_index
 
-    await ctx.build_and_answer(tg_ui, message)
+    await ctx.answer_to()
 
 
 @router.callback_query(cbs.GoBack.filter())
-async def go_back(query: CallbackQuery, callback_data: cbs.GoBack, tg_ui: UIRegistry) -> None:
-    if not callback_data.ui_history:
-        await query.answer()
-        return
-    await tg_ui.context_from_history(callback_data.ui_history, trigger=query).build_and_apply(
-        tg_ui,
-        query.message,
-    )
+async def go_back(q: Query, cbd: cbs.GoBack, tg_ui: UI) -> Any:
+    if not cbd.ui_history:
+        return q.answer()
+
+    await tg_ui.context_from_history(cbd.ui_history, trigger=q).apply_to(ui_registry=tg_ui)
 
 
 # ----------------------------------------------------
 # ----------------------- Other ----------------------
 # ----------------------------------------------------
 @router.callback_query(cbs.Dummy.filter())
-async def dummy(query: CallbackQuery) -> None:
-    await query.answer()
+async def dummy(q: Query) -> None:
+    await q.answer()
 
 
 @router.callback_query(cbs.ClearState.filter())
-async def clear_state(
-    query: CallbackQuery,
-    callback_data: cbs.ClearState,
-    state: FSMContext,
-    tg: TelegramApp,
-) -> None:
-    if callback_data.delete_message:
-        await query.message.delete()
-    elif callback_data.open_previous and callback_data.history:
-        await tg.fake_query(callback_data, query, pack_history=True)
+async def clear_state(q: Query, cbd: cbs.ClearState, state: FSM, tg_ui: UI) -> None:
     await state.clear()
+    if cbd.delete_message:
+        await q.message.delete()
+    elif cbd.open_previous and cbd.ui_history:
+        await tg_ui.context_from_history(cbd.ui_history, trigger=q).apply_to()
