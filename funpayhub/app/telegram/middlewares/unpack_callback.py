@@ -33,7 +33,6 @@ class UnpackMiddleware(BaseMiddleware):
             event.data,
             parsed.identifier,
             parsed.data,
-            parsed.history,
             parsed.ui_history,
         )
         return await handler(event, data)

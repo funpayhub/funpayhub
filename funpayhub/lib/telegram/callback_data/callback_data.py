@@ -3,10 +3,8 @@ from __future__ import annotations
 
 __all__ = [
     'CallbackData',
-    'CallbackData',
     'UnknownCallback',
     'CallbackQueryFilter',
-    'join_callbacks',
 ]
 
 
@@ -31,17 +29,13 @@ _ALLOWED = set(string.ascii_letters + string.digits + '._-')
 
 class UnknownCallback(BaseModel):
     identifier: str = Field(frozen=True)
-    history: list[str] = Field(default_factory=list, exclude=True)
-    from_callback: UnknownCallback | None = Field(default=None, exclude=True)
     data: dict[str, Any] = Field(default_factory=dict, exclude=True)
     ui_history: list[MenuHistoryNode] = Field(default_factory=list)
     unsigned_data: list[Any] = Field(default_factory=list, exclude=True)
     compact: bool = Field(default=False, exclude=True)
 
-    def pack(self, include_history: bool = True, hash: bool = True) -> str:
-        result = (repr(self.data) if self.data else '') + self.identifier
-        if include_history:
-            result = join_callbacks(*self.full_history, result)
+    def pack(self, hash: bool = True) -> str:
+        result = self.identifier + (repr(self.data) if self.data else '')
 
         if hash:
             result = HashinatorT1000.hash(result)
@@ -56,18 +50,10 @@ class UnknownCallback(BaseModel):
 
         result = ':'.join(self._serialize_value(v) for v in self.unsigned_data)
         result = f'{self.identifier}:{result}' if result else self.identifier
+        result = '!' + result
         if len(result) > 64:
             raise ValueError(f'Compacted callback data is too long ({len(result)} > 64).')
         return result
-
-    def pack_history(self, hash: bool = True) -> str:
-        result = join_callbacks(*self.full_history)
-        if hash:
-            result = HashinatorT1000.hash(result)
-        return result
-
-    def as_history(self) -> list[str]:
-        return [self.pack(include_history=True, hash=False)]
 
     def _serialize_value(self, value: Any) -> str:
         if isinstance(value, bool):
@@ -92,57 +78,25 @@ class UnknownCallback(BaseModel):
             value = HashinatorT1000.unhash(value)
 
         if UnknownCallback.is_compact(value):
-            split = value.split(':', 1)
+            split = value[1:].split(':', 1)
             return UnknownCallback(
                 identifier=split[0],
                 unsigned_data=split[1].split(':') if len(split) > 1 else [],
                 compact=True,
             )
 
-        callbacks = []
+        split = value.split('{', 1)
+        data_str = {}
+        if len(split) > 1:
+            data_str = '{' + split[1]
 
-        callback_start_index = 0
-        last_callback_args = ''
-        last_callback_str = ''
-        while True:
-            args_end_index = find_args_end(value, callback_start_index)
-            callback_end_index = value.find('>', args_end_index + 1)
-
-            if callback_end_index != -1:
-                callbacks.append(value[callback_start_index:callback_end_index])
-                callback_start_index = callback_end_index + 1
-                continue
-
-            callbacks.append(value[callback_start_index:])
-            if args_end_index != callback_start_index:  # if there are args
-                last_callback_args = value[callback_start_index : args_end_index + 1]
-                if last_callback_args.startswith('!'):
-                    last_callback_args = last_callback_args[1:]
-            last_callback_str = value[
-                args_end_index + (1 if args_end_index != callback_start_index else 0) :
-            ]
-            if last_callback_str.startswith('!'):
-                last_callback_str = last_callback_str[1:]
-            break
-
-        data = ast.literal_eval(last_callback_args) if last_callback_args else {}
+        data = ast.literal_eval(data_str)
         ui_history = data.pop('ui_history', [])
-        return UnknownCallback(
-            identifier=last_callback_str,
-            history=callbacks[:-1],
-            data=data,
-            ui_history=ui_history,
-        )
+        return UnknownCallback(identifier=split[0], data=data, ui_history=ui_history)
 
     @staticmethod
     def is_compact(value: str) -> bool:
-        if len(value) >= 64:
-            return False
-        if HashinatorT1000.is_hash(value):
-            return False
-        if value.startswith('!'):
-            return False
-        return True
+        return value.startswith('!')
 
     @field_validator('identifier', mode='after')
     @classmethod
@@ -157,16 +111,6 @@ class UnknownCallback(BaseModel):
             )
 
         return identifier
-
-    @property
-    def full_history(self) -> list[str]:
-        history = self.from_callback.as_history() if self.from_callback is not None else []
-        return history + self.history
-
-    def copy_history[R: UnknownCallback](self, other: R) -> R:
-        other.from_callback = self.from_callback
-        other.history = copy(self.history)
-        return other
 
 
 class CallbackData(UnknownCallback):
@@ -194,11 +138,7 @@ class CallbackData(UnknownCallback):
         """
         data = self.model_dump(mode='json', exclude={'identifier', 'compact'})
         data = self.data | data
-        result = (repr(data) if data else '') + self.__identifier__
-        if include_history:
-            result = join_callbacks(*self.full_history, result)
-        if not result.startswith('!'):
-            result = '!' + result
+        result = self.identifier + (repr(data) if data else '')
         if hash:
             result = HashinatorT1000.hash(result)
         return result
@@ -217,7 +157,8 @@ class CallbackData(UnknownCallback):
 
         data = self.model_dump(mode='json', exclude={'identifier', 'ui_history'})
         serialized = ':'.join(self._serialize_value(i) for i in data.values())
-        return f'{self.identifier}:{serialized}' if serialized else self.identifier
+        result = f'{self.identifier}:{serialized}' if serialized else self.identifier
+        return '!' + result
 
     @classmethod
     def unpack(cls: Type[T], value: str | UnknownCallback) -> T:
@@ -244,18 +185,14 @@ class CallbackData(UnknownCallback):
             return cls(**dict(zip(names, value.unsigned_data)))
 
         value.data.pop('data', None)
-        value.data.pop('history', None)
 
         required_fields = {name for name, field in cls.model_fields.items() if field.is_required()}
 
         if required_fields > value.data.keys():
             missing = required_fields - value.data.keys()
-            raise TypeError(
-                f'Fields {", ".join(missing)} ar missing.',
-            )
+            raise TypeError(f'Fields {", ".join(missing)} ar missing.')
 
         result = cls(**value.data)
-        result.history = copy(value.history)
         result.data = {k: v for k, v in value.data.items() if k not in cls.model_fields.keys()}
         result.ui_history = copy(value.ui_history)
 
@@ -316,83 +253,3 @@ class CallbackQueryFilter(Filter):
             if unpacked.identifier == self.callback_data.__identifier__:
                 pass
             return False
-
-
-def join_callbacks(*callbacks: str) -> str:
-    """
-    Объединяет последовательность предыдущих коллбэков с новым коллбэком в одну строку.
-
-    История коллбэков `callbacks_history` и новый коллбэк `callback_query`
-    соединяются с помощью разделителя `'>'`, чтобы образовать единый путь вызовов.
-
-    Пример:
-        >>> join_callbacks('start', 'menu', 'settings')
-        'start>menu>settings'
-
-        >>> join_callbacks('start>menu', 'settings')
-        'start>menu>settings'
-
-    :param callbacks: коллбэки.
-
-    :return: Строка, представляющая объединённую историю коллбэков.
-    """
-    return '>'.join('!' + i if not i.startswith('!') else i for i in callbacks)
-
-
-def find_args_end(text: str, start_pos: int = 0) -> int:
-    """
-    Находит конец аргументов в строке после `start_pos`.
-
-    Данная функция необходима для парсинга "некомпактных" callback data, потому
-    у которых формат: `!{'some_args': 'some_values'}identifier`.
-
-    `start_pos` всегда должен указывать на начало callback data (на `!`).
-
-    Пример:
-    start_pos = 0
-    text = !{'some_arg1': 'some_value'}identifier
-                                      ^
-                                      конец аргументов (return 27)
-
-    start_pos = 39
-    text = !{'some_arg1': 'some_value'}identifier>!{'some2': 'value2'}another
-                                                  ^                  ^
-                                                  start_pos          конец аргументов (return 58)
-    """
-    if text[start_pos] != '!':
-        raise ValueError(f'Invalid start position {start_pos} @ {text}')
-
-    # Если символ после `!` - не `{` - значит у callback data нет параметров, только идентификатор
-    if text[start_pos + 1] != '{':
-        return start_pos
-
-    # Параметры присутствуют. Сразу пропускаем маркер `!` и начало параметров `{` (`!{`).
-    index = start_pos + 2
-    in_quotes = False
-    quote: str | None = None
-    quotes = ['"', "'"]
-    depth = 1
-
-    next_index = index
-    while True:
-        index = next_index
-        next_index += 1
-
-        if text[index] in quotes:
-            if in_quotes and text[index] == quote:
-                in_quotes = False
-            elif not in_quotes:
-                in_quotes = True
-                quote = text[index]
-
-        elif not in_quotes:
-            if text[index] == '{' and not in_quotes:
-                depth += 1
-
-            elif text[index] == '}' and not in_quotes:
-                depth -= 1
-                if not depth:
-                    return index
-        else:
-            if text[index] == '\\' and in_quotes:
-                next_index += 1

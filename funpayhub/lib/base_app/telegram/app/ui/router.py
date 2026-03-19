@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any
 from aiogram import Router
 
 from funpayhub.lib.base_app.telegram import utils
-from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 from . import callbacks as cbs
 from .states import ChangingMenuPage
@@ -20,6 +19,7 @@ if TYPE_CHECKING:
 
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry as UI
+    from funpayhub.lib.telegram.callback_data import UnknownCallback
 
 
 router = Router(name='app:base_ui')
