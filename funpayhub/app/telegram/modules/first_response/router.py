@@ -111,10 +111,10 @@ async def bind_first_response_to_offer_from_message(
     delete_message(data.state_message)
 
 
-@router.callback_query(cbs.RemoveFirstResponseToOffer.filter())
+@router.callback_query(cbs.RemoveGreetings.filter())
 async def remove_first_response_to_offer(
     query: CallbackQuery,
-    callback_data: cbs.RemoveFirstResponseToOffer,
+    callback_data: cbs.RemoveGreetings,
     properties: FunPayHubProperties,
     hub: FunPayHub,
 ):

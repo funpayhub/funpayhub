@@ -72,14 +72,7 @@ class AddRemoveButtonToFirstResponseModification(
             ctx,
             menu,
             'delete_greetings',
-            delete_callback=cbs.RemoveFirstResponseToOffer(
-                offer_id=ctx.entry_path[-1],
-                ui_history=ctx.ui_history,
-                from_callback=ctx.callback_data,
-                execute_next=join_callbacks(*ctx.callback_data.history)
-                if ctx.callback_data
-                else '',
-            ).pack(),
+            cbs.RemoveGreetings(offer_id=ctx.entry_path[-1], ui_history=ctx.ui_history).pack(),
         )
 
 
