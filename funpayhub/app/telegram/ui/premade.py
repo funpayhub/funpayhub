@@ -8,7 +8,7 @@ __all__ = [
 
 from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import MenuContext, MenuModification
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuContextOld
+from funpayhub.lib.telegram.ui.types import Menu, Button
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import Dummy
 
 from funpayhub.app.telegram.callbacks import Confirmation
@@ -34,7 +34,9 @@ def confirmable_button(
                 f'cancel_action:{button_id}',
                 ru('🔘 Отмена'),
                 Confirmation(
-                    button_id=button_id, open=False, ui_history=ctx.as_ui_history()
+                    button_id=button_id,
+                    open=False,
+                    ui_history=ctx.as_ui_history(),
                 ).pack(),
             ),
         ]
@@ -75,5 +77,5 @@ class AddRemoveButtonBaseModification(
         menu.footer_keyboard.add_row(*buttons)
         return menu
 
-    async def modify(self, ctx: MenuContextOld, menu: Menu):
+    async def modify(self, ctx: MenuContext, menu: Menu):
         raise NotImplementedError()
