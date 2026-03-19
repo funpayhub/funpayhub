@@ -29,6 +29,8 @@ _ALLOWED = set(string.ascii_letters + string.digits + '._-')
 
 class UnknownCallback(BaseModel):
     identifier: str = Field(frozen=True)
+    """Идентификатор Callback'а."""
+
     data: dict[str, Any] = Field(default_factory=dict, exclude=True)
     ui_history: list[MenuHistoryNode] = Field(default_factory=list)
     unsigned_data: list[Any] = Field(default_factory=list, exclude=True)
@@ -45,7 +47,7 @@ class UnknownCallback(BaseModel):
         if self.data and not drop_data:
             raise RuntimeError(
                 f'Instance of {self.__class__.__name__} cannot be packed compactly: '
-                f'data is not empty.',
+                f'data is not empty. Pass `drop_data`=`True` to drop it.',
             )
 
         result = ':'.join(self._serialize_value(v) for v in self.unsigned_data)
@@ -70,7 +72,7 @@ class UnknownCallback(BaseModel):
 
     @classmethod
     def from_string(cls, query: str) -> UnknownCallback:
-        return CallbackData.parse(query)
+        return cls.parse(query)
 
     @staticmethod
     def parse(value: str) -> UnknownCallback:
