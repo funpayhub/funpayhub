@@ -3,10 +3,7 @@ from __future__ import annotations
 from funpayhub.lib.telegram.callback_data import CallbackData
 
 
-class OpenAddFirstResponseToOfferMenu(
-    CallbackData,
-    identifier='open_add_first_response_to_offer_menu',
-):
+class OpenAddGreetingsToOfferMenu(CallbackData, identifier='open_add_greetings_to_offer_menu'):
     pass
 
 
@@ -20,4 +17,4 @@ class RemoveFirstResponseToOffer(CallbackData, identifier='remove_first_response
 
 
 class ClearFirstResponseCache(CallbackData, identifier='clear_first_response_cache'):
-    execute_next: str = ''
+    ...

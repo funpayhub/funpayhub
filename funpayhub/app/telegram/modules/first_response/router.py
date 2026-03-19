@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 router = Router(name='fph:first_response')
 
 
-@router.callback_query(cbs.OpenAddFirstResponseToOfferMenu.filter())
+@router.callback_query(cbs.OpenAddGreetingsToOfferMenu.filter())
 async def open_menu(
     query: CallbackQuery,
     state: FSMContext,
@@ -43,7 +43,7 @@ async def open_menu(
         trigger=query,
     ).build_and_answer(tg_ui, query.message)
 
-    await states.BindingFirstResponseToOffer(query=query, state_message=msg).set(state)
+    await states.BindingGreetingsToOffer(query=query, state_message=msg).set(state)
     await query.answer()
 
 
@@ -77,10 +77,10 @@ async def bind_first_response_to_offer(
         ),
     ).build_and_apply(tg_ui, query.message)
 
-    await states.BindingFirstResponseToOffer.clear(state)
+    await states.BindingGreetingsToOffer.clear(state)
 
 
-@router.message(states.BindingFirstResponseToOffer.filter(), lambda msg: msg.text)
+@router.message(states.BindingGreetingsToOffer.filter(), lambda msg: msg.text)
 async def bind_first_response_to_offer_from_message(
     message: Message,
     properties: FunPayHubProperties,
@@ -94,7 +94,7 @@ async def bind_first_response_to_offer_from_message(
         )
         return
 
-    data = await states.BindingFirstResponseToOffer.get(state)
+    data = await states.BindingGreetingsToOffer.get(state)
     await state.clear()
 
     node = await properties.first_response.add_for_offer(message.text)

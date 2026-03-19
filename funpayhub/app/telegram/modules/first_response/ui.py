@@ -18,6 +18,7 @@ from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContextOld, MenuMod
 from funpayhub.lib.telegram.callback_data import join_callbacks
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+from funpayhub.lib.translater import translater
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification, confirmable_button
@@ -34,27 +35,25 @@ if TYPE_CHECKING:
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
 
 
+ru = translater.translate
+
+
 class BindToOfferButtonModification(MenuModification, modification_id='fph:bind_to_offer'):
     async def filter(self, ctx: NodeMenuContext, menu: Menu, properties: FPHProps) -> bool:
         return ctx.entry_path == properties.first_response.path
 
-    async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr) -> Menu:
+    async def modify(self, ctx: NodeMenuContext, menu: Menu) -> Menu:
         menu.footer_keyboard.add_callback_button(
             button_id='bind_to_offer',
-            text=translater.translate('➕ Привязать к лоту'),
-            callback_data=cbs.OpenAddFirstResponseToOfferMenu(
-                from_callback=ctx.callback_data,
-            ).pack(),
+            text=ru('➕ Привязать к лоту'),
+            callback_data=cbs.OpenAddGreetingsToOfferMenu(ui_history=ctx.as_ui_history()).pack(),
         )
 
         buttons = confirmable_button(
             ctx=ctx,
-            text=translater.translate('🗑️ Очистить кэш'),
-            confirm_id='clear_cache',
-            translater=translater,
-            callback_data=cbs.ClearFirstResponseCache(
-                execute_next=ctx.callback_data.pack(hash=False) if ctx.callback_data else '',
-            ).pack(),
+            button_id='clear_cache',
+            text=ru('🗑️ Очистить кэш'),
+            callback_data=cbs.ClearFirstResponseCache(ui_history=ctx.as_ui_history()).pack(),
             style='danger',
         )
         menu.footer_keyboard.add_row(*buttons)
@@ -68,13 +67,14 @@ class AddRemoveButtonToFirstResponseModification(
     async def filter(self, ctx: NodeMenuContext, menu: Menu, properties: FPHProps) -> bool:
         return len(ctx.entry_path) == 2 and ctx.entry_path[0] == properties.first_response.path[0]
 
-    async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr) -> Menu:
+    async def modify(self, ctx: NodeMenuContext, menu: Menu) -> Menu:
         return await self._modify(
             ctx,
             menu,
-            translater,
+            'delete_greetings',
             delete_callback=cbs.RemoveFirstResponseToOffer(
                 offer_id=ctx.entry_path[-1],
+                ui_history=ctx.ui_history,
                 from_callback=ctx.callback_data,
                 execute_next=join_callbacks(*ctx.callback_data.history)
                 if ctx.callback_data
