@@ -1,45 +1,39 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
 
 from funpayhub import exit_codes
 
-from funpayhub.lib.translater import _
+from funpayhub.lib.translater import translater
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from aiogram.types import CallbackQuery
+    from aiogram.types import CallbackQuery as Query
 
-    from funpayhub.lib.translater import Translater
-
-    from funpayhub.app.main import FunPayHub
+    from funpayhub.app.main import FunPayHub as FPH
 
 
 router = Router(name='fph:system')
+ru = translater.translate
 
 
 @router.callback_query(cbs.ShutDown.filter())
-async def shutdown(
-    query: CallbackQuery,
-    hub: FunPayHub,
-    callback_data: cbs.ShutDown,
-    translater: Translater,
-) -> None:
+async def shutdown(q: Query, hub: FPH, cbd: cbs.ShutDown) -> Any:
     texts = {
-        exit_codes.SHUTDOWN: _('⏹️ Выключаюсь...'),
-        exit_codes.RESTART: _('♻️ Перезапускаюсь...'),
-        exit_codes.RESTART_SAFE: _('♻️ Перезапускаюсь в безопасный режим...'),
-        exit_codes.RESTART_NON_SAFE: _('♻️ Перезапускаюсь в стандартный режим...'),
+        exit_codes.SHUTDOWN: ru('⏹️ Выключаюсь...'),
+        exit_codes.RESTART: ru('♻️ Перезапускаюсь...'),
+        exit_codes.RESTART_SAFE: ru('♻️ Перезапускаюсь в безопасный режим...'),
+        exit_codes.RESTART_NON_SAFE: ru('♻️ Перезапускаюсь в стандартный режим...'),
     }
-    text = texts.get(callback_data.exit_code, _('⏹️ Выключаюсь...'))
+    text = texts.get(cbd.exit_code, ru('⏹️ Выключаюсь...'))
 
     try:
-        await query.answer(text=translater.translate(text), show_alert=True)
+        await q.answer(text=translater.translate(text), show_alert=True)
     except:
         pass
 
-    await hub.shutdown(callback_data.exit_code)
+    await hub.shutdown(cbd.exit_code)
