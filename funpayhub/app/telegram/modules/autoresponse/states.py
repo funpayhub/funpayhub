@@ -8,17 +8,13 @@ __all__ = [
 
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
-
-from funpayhub.lib.telegram.fsm import State
+from funpayhub.lib.telegram.fsm import StateFromQuery
 
 
 if TYPE_CHECKING:
     from aiogram.types import Message
 
-    from funpayhub.lib.telegram.callback_data import UnknownCallback
-
 
 @dataclass
-class AddingCommand(State, identifier='fph:adding_command'):
-    message: Message
-    callback_data: UnknownCallback
+class AddingCommand(StateFromQuery, identifier='fph:adding_command'):
+    state_message: Message

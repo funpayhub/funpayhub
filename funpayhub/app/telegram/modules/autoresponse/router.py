@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
 from aiogram.filters import StateFilter
 
 from funpayhub.lib.base_app.telegram import utils
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.builders.context import StateUIContext
+from funpayhub.lib.translater import translater
 
 from . import (
     states,
@@ -25,7 +25,6 @@ if TYPE_CHECKING:
     )
     from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry as UI
 
     from funpayhub.app.main import FunPayHub as FPH
@@ -33,82 +32,43 @@ if TYPE_CHECKING:
 
 
 router = r = Router(name='fph:autoresponse')
+ru = translater.translate
 
 
 @r.callback_query(cbs.AddCommand.filter())
-async def set_state(
-    query: Query,
-    callback_data: cbs.AddCommand,
-    tg_ui: UI,
-    state: FSM,
-    translater: Tr,
-) -> None:
+async def set_state(q: Query, cbd: cbs.AddCommand, state: FSM) -> Any:
     msg = await StateUIContext(
         menu_id=MenuIds.state_menu,
-        trigger=query,
-        text=translater.translate('➕ Введите команду.'),
-        delete_on_clear=False,
-        open_previous_on_clear=True,
-    ).build_and_apply(tg_ui, query.message)
+        trigger=q,
+        text=ru('<b>➕ Введите команду.</b>'),
+        ui_history=cbd.ui_history
+    ).answer_to()
 
-    await states.AddingCommand(message=msg, callback_data=callback_data).set(state)
+    await states.AddingCommand(query=q, state_message=msg).set(state)
 
 
 @r.message(StateFilter(states.AddingCommand.identifier), lambda msg: msg.text)
-async def add_command(
-    message: Message,
-    properties: FPHProps,
-    hub: FPH,
-    tg_ui: UI,
-    state: FSM,
-    translater: Tr,
-) -> None:
-    data = await states.AddingCommand.get(state)
+async def add_command(m: Message, props: FPHProps, hub: FPH, tg_ui: UI, state: FSM) -> Any:
+    if m.text in props.auto_response.entries:
+        return m.answer(text=ru('<b>❌ Команда уже существует.</b>'))
 
-    if message.text in properties.auto_response.entries:
-        await message.answer(text=translater.translate('❌ Команда уже существует.'))
-        return
-
-    await state.clear()
-    entry = properties.auto_response.add_entry(message.text)
-    await properties.auto_response.save(same_file_only=True)
+    data = await states.AddingCommand.clear(state)
+    entry = props.auto_response.add_entry(m.text)
+    await props.auto_response.save(same_file_only=True)
     await hub.emit_node_attached_event(entry)
 
     await NodeMenuContext(
-        trigger=message,
-        menu_id=MenuIds.props_node,
-        entry_path=entry.path,
-        callback_override=data.callback_data.copy_history(
-            OpenMenu(menu_id=MenuIds.props_node, context_data={'entry_path': entry.path}),
-        ),
-    ).build_and_answer(tg_ui, data.message)
-
-    utils.delete_message(data.message)
+        menu_id=MenuIds.props_node, trigger=m, entry_path=entry.path, ui_history=data.ui_history
+    ).answer_to()
+    utils.delete_message(data.state_message)
 
 
 @r.callback_query(cbs.RemoveCommand.filter())
-async def delete_command(
-    query: Query,
-    properties: FPHProps,
-    callback_data: cbs.RemoveCommand,
-    translater: Tr,
-    tg_ui: UI,
-) -> None:
-    if callback_data.command not in properties.auto_response.entries:
-        await query.answer(translater.translate('❌ Команда не найдена.'), show_alert=True)
-        return
+async def delete_command(q: Query, props: FPHProps, cbd: cbs.RemoveCommand, tg_ui: UI) -> Any:
+    if cbd.command not in props.auto_response.entries:
+        return q.answer(ru('❌ Команда не найдена.'), show_alert=True)
 
-    properties.auto_response.detach_node(callback_data.command)
-    await properties.auto_response.save()
+    props.auto_response.detach_node(cbd.command)
+    await props.auto_response.save()
 
-    await NodeMenuContext(
-        trigger=query,
-        menu_id=MenuIds.props_node,
-        entry_path=properties.auto_response.path,
-        callback_override=OpenMenu(
-            menu_id=MenuIds.props_node,
-            context_data={'entry_path': properties.auto_response.path},
-            #  * > список команд > меню настроек команды
-            history=callback_data.history[:-2],
-        ),
-    ).build_and_apply(tg_ui, query.message)
+    await tg_ui.context_from_history(cbd.ui_history[:-1], trigger=q).apply_to()
