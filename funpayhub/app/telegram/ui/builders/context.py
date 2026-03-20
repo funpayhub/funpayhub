@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from dataclasses import field
 
+from funpaybotengine.types import Message
+from funpaybotengine.dispatching.events import ReviewEvent
+
 from funpayhub.lib.telegram.ui import MenuContext
-
-
-if TYPE_CHECKING:
-    from funpaybotengine.types import Message
-    from funpaybotengine.dispatching.events import ReviewEvent
 
 
 class NewMessageMenuContext(MenuContext):

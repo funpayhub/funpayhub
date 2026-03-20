@@ -4,6 +4,9 @@ import html
 from typing import TYPE_CHECKING
 from itertools import chain
 
+# For Pydantic models
+from funpaybotengine.dispatching.events import NewSaleEvent
+
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import (
@@ -26,8 +29,6 @@ from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpaybotengine.dispatching.events import NewSaleEvent
-
     from funpayhub.lib.goods_sources import GoodsSourcesManager as GoodsManager
 
     from funpayhub.app.main import FunPayHub as FPH
