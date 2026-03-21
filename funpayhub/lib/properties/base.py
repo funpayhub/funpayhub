@@ -24,8 +24,8 @@ class Node:
     def __init__(
         self,
         *,
-        parent: Properties | None = None,
         id: str,
+        parent: Properties | None = None,
         name: CallableValue[str],
         description: CallableValue[str],
         flags: Iterable[Any] | None = None,
@@ -129,15 +129,3 @@ class Node:
             if isinstance(i, flag_type):
                 return i
         return None
-
-    def matches_path(self, path: list[str]) -> bool:
-        self_path = self.path
-        if len(self_path) != len(path):
-            return False
-
-        for index, i in enumerate(path):
-            if i == '*':
-                continue
-            if self_path[index] != i:
-                return False
-        return True
