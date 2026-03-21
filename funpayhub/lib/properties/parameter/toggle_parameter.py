@@ -41,3 +41,6 @@ class ToggleParameter(MutableParameter[bool]):
     async def next_value(self, save: bool = True) -> bool:
         await self.toggle(save=save)
         return self.value
+
+    def __bool__(self) -> bool:
+        return self.value
