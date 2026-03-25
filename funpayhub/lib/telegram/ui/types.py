@@ -412,8 +412,7 @@ class MenuContext(BaseModel):
         исключая поля базового `MenuContext`.
         """
         base_fields = {i for i in MenuContext.model_fields}
-        serialized = self.model_dump(mode='json')
-        return {k: v for k, v in serialized.items() if k not in base_fields}
+        return self.model_dump(mode='json', exclude=base_fields)
 
     @classmethod
     def from_ui_history(
