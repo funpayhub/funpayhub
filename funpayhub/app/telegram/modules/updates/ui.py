@@ -10,7 +10,11 @@ __all__ = [
 
 
 import html
+from dataclasses import asdict
 from typing import TYPE_CHECKING
+
+from packaging.version import Version
+from pydantic import field_validator, field_serializer
 
 from funpayhub.updater import UpdateInfo
 
@@ -32,6 +36,24 @@ ru = translater.translate
 
 class UpdateMenuContext(MenuContext):
     update_info: UpdateInfo | None = None
+
+    @field_validator('update_info', mode='before')
+    @classmethod
+    def validate_update_info(cls, v):
+        if isinstance(v, dict):
+            v['version'] = Version(v['version'])
+        return v
+
+    @field_serializer('update_info', mode='plain')
+    def serialize_update_info(self, v: UpdateInfo | None):
+        print('serializer')
+        if v is None:
+            return None
+
+        d = asdict(v)
+        d['version'] = str(d['version'])
+        print(d)
+        return d
 
 
 class InstallUpdateMenuContext(MenuContext):
