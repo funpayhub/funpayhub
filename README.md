@@ -157,7 +157,7 @@ Windows
 -------
 **PowerShell (от имени администратора)**  
 ```
-Set-ExecutionPolicy Bypass -Scope Process -Force; (iwr https://raw.githubusercontent.com/funpayhub/fph_install_scripts/refs/heads/main/install_fph.ps1).Content | iex
+Set-ExecutionPolicy Bypass -Scope Process -Force; (iwr https://raw.githubusercontent.com/funpayhub/fph_install_scripts/refs/heads/main/install_fph.ps1 -UseBasicParsing).Content | iex
 ```
 
 
