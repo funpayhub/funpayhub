@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from funpayhub.app.properties.flags import FormattersQueryFlag
 from funpayhub.lib.properties import Properties, IntParameter, StringParameter
 from funpayhub.lib.translater import _
 from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
@@ -23,7 +24,7 @@ class FirstResponseProperties(Properties):
                 name=_('Текст приветствия'),
                 description=_('Текст, который будет отправлен пользователю при первом сообщении.'),
                 default_value='',
-                flags=[TelegramUIEmojiFlag('✉️')],
+                flags=[TelegramUIEmojiFlag('✉️'), FormattersQueryFlag('fph:message|fph:order')],
             ),
         )
 
