@@ -355,7 +355,7 @@ class RepoPluginInfoMenuBuilder(
         menu.main_text = '\n\n'.join('\n'.join(block) for block in blocks.values() if block)
 
         latest = None
-        for v, info in plugin.versions.items():
+        for v, info in sorted(plugin.versions.items(), key=lambda x: x[0], reverse=True):
             if hub.version not in info.app_version:
                 continue
 
@@ -367,7 +367,7 @@ class RepoPluginInfoMenuBuilder(
             menu.main_keyboard.add_row(
                 Button.callback_button(
                     button_id=f'install_version:{v}',
-                    text=ru('⤵️ Установить') + f' v{v}',
+                    text=f'⤵️ v{v}',
                     callback_data=cbs.InstallPluginFromURL(
                         url=info.url,
                         hash=info.hash,
