@@ -24,7 +24,7 @@ class FirstResponseProperties(Properties):
                 name=_('Текст приветствия'),
                 description=_('Текст, который будет отправлен пользователю при первом сообщении.'),
                 default_value='',
-                flags=[TelegramUIEmojiFlag('✉️'), FormattersQueryFlag('fph:message|fph:order')],
+                flags=[TelegramUIEmojiFlag('✉️'), FormattersQueryFlag('fph:message|fph:general')],
             ),
         )
 
@@ -86,6 +86,6 @@ class FirstResponseToOfferNode(Properties):
                 name=_('Текст приветствия'),
                 description=_('Текст, который будет отправлен пользователю при первом сообщении.'),
                 default_value='',
-                flags=[TelegramUIEmojiFlag('✉️')],
+                flags=[TelegramUIEmojiFlag('✉️'), FormattersQueryFlag('fph:message|fph:general')],
             ),
         )
