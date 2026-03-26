@@ -43,7 +43,8 @@ async def next_param_value(
     await param.next_value(save=True)
     await app.emit_parameter_changed_event(param)
     await tg_ui.context_from_history(callback_data.ui_history, trigger=q).build_and_apply(
-        tg_ui, q.message
+        tg_ui,
+        q.message,
     )
 
 
@@ -87,7 +88,11 @@ async def change_parameter_value(
 
 @router.message(StateFilter(states.ChangingParameterValue.identifier))
 async def edit_parameter(
-    message: Message, app: App, translater: Tr, state: FSM, tg_ui: UIRegistry
+    message: Message,
+    app: App,
+    translater: Tr,
+    state: FSM,
+    tg_ui: UIRegistry,
 ) -> None:
     data: states.ChangingParameterValue = (await state.get_data())['data']
     new_value = '' if message.text == '-' else message.text
@@ -106,7 +111,8 @@ async def edit_parameter(
 
     await app.emit_parameter_changed_event(data.parameter)
     await tg_ui.context_from_history(data.ui_history, trigger=message).build_and_answer(
-        tg_ui, message
+        tg_ui,
+        message,
     )
     delete_message(data.state_message)
 
@@ -139,7 +145,8 @@ async def make_list_item_action(
 
     await param.save()
     await tg_ui.context_from_history(callback_data.ui_history, trigger=query).build_and_apply(
-        tg_ui, query.message
+        tg_ui,
+        query.message,
     )
 
 
@@ -164,7 +171,11 @@ async def set_adding_list_item_state(
 
 @router.message(StateFilter(states.AddingListItem.identifier))
 async def edit_parameter(
-    message: Message, app: App, translater: Tr, state: FSM, tg_ui: UIRegistry
+    message: Message,
+    app: App,
+    translater: Tr,
+    state: FSM,
+    tg_ui: UIRegistry,
 ) -> None:
     data: states.AddingListItem = (await state.get_data())['data']
     try:
@@ -182,6 +193,7 @@ async def edit_parameter(
 
     await app.emit_parameter_changed_event(data.parameter)
     await tg_ui.context_from_history(data.ui_history, trigger=message).build_and_answer(
-        tg_ui, message
+        tg_ui,
+        message,
     )
     delete_message(data.state_message)

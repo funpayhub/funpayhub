@@ -24,10 +24,10 @@ class OnSaleConfirmation(Properties):
                 id='reply_in_chat',
                 name=_ru('Ответить в чате'),
                 description=_ru(
-                    'Отправлять ли ответное сообщение в чат при подтверждении заказа.'
+                    'Отправлять ли ответное сообщение в чат при подтверждении заказа.',
                 ),
                 default_value=True,
-            )
+            ),
         )
 
         self.response_text = self.attach_node(
@@ -37,5 +37,5 @@ class OnSaleConfirmation(Properties):
                 description=_ru('Текст, который будет отправлен в чат при подтверждении заказа.'),
                 default_value='',
                 flags=[TelegramUIEmojiFlag('📝'), FormattersQueryFlag('fph:general|fph:order')],
-            )
+            ),
         )

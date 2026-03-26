@@ -201,7 +201,9 @@ class PluginInfoMenuBuilder(
 
 
 class InstallPluginMenuBuilder(
-    MenuBuilder, menu_id=MenuIds.install_plugin, context_type=MenuContext
+    MenuBuilder,
+    menu_id=MenuIds.install_plugin,
+    context_type=MenuContext,
 ):
     async def build(self, ctx: MenuContext) -> Menu:
         menu = Menu(
@@ -218,7 +220,9 @@ class InstallPluginMenuBuilder(
 
 
 class ReposListMenuBuilder(
-    MenuBuilder, menu_id=MenuIds.repositories_list, context_type=MenuContext
+    MenuBuilder,
+    menu_id=MenuIds.repositories_list,
+    context_type=MenuContext,
 ):
     async def build(self, ctx: MenuContext, repositories_manager: RepositoriesManager) -> Menu:
         menu = Menu(
@@ -296,7 +300,8 @@ class RepoInfoMenuBuilder(
             button_id='update_repo',
             text=ru('♻️ Обновить репозиторий'),
             callback_data=cbs.UpdateRepository(
-                url=repo.url, ui_history=ctx.as_ui_history()
+                url=repo.url,
+                ui_history=ctx.as_ui_history(),
             ).pack(),
         )
 

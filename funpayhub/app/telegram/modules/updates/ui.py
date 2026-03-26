@@ -10,11 +10,11 @@ __all__ = [
 
 
 import html
-from dataclasses import asdict
 from typing import TYPE_CHECKING
+from dataclasses import asdict
 
-from packaging.version import Version
 from pydantic import field_validator, field_serializer
+from packaging.version import Version
 
 from funpayhub.updater import UpdateInfo
 

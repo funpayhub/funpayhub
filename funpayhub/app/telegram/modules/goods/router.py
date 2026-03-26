@@ -264,7 +264,10 @@ async def add_source(m: Message, state: FSM, tg_bot: TGBot, goods_manager: Goods
 
 @r.callback_query(cbs.RemoveGoodsSource.filter())
 async def del_source(
-    q: Query, cbd: cbs.RemoveGoodsSource, goods_manager: GoodsManager, tg_ui: UI
+    q: Query,
+    cbd: cbs.RemoveGoodsSource,
+    goods_manager: GoodsManager,
+    tg_ui: UI,
 ) -> Any:
     if goods_manager.get(cbd.source_id) is None:
         return q.answer(ru('❌ Источник товаров не найден.'), show_alert=True)

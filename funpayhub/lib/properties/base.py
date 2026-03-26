@@ -121,6 +121,16 @@ class Node:
     def flags(self) -> frozenset[Any]:
         return self._flags
 
+    def is_child(self, path_or_node: list[str] | Node) -> bool:
+        path = path_or_node if isinstance(path_or_node, list) else path_or_node.path
+        if path == self.path:
+            return False
+
+        if len(self.path) <= len(path):
+            return False
+
+        return path == self.path[:len(path)]
+
     def has_flag(self, flag: Any) -> bool:
         return flag in self._flags
 

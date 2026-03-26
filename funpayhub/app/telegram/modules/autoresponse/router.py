@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING, Any
 from aiogram import Router
 from aiogram.filters import StateFilter
 
+from funpayhub.lib.translater import translater
 from funpayhub.lib.base_app.telegram import utils
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 from funpayhub.app.telegram.ui.builders.context import StateUIContext
-from funpayhub.lib.translater import translater
 
 from . import (
     states,
@@ -41,7 +41,7 @@ async def set_state(q: Query, cbd: cbs.AddCommand, state: FSM) -> Any:
         menu_id=MenuIds.state_menu,
         trigger=q,
         text=ru('<b>➕ Введите команду.</b>'),
-        ui_history=cbd.ui_history
+        ui_history=cbd.ui_history,
     ).answer_to()
 
     await states.AddingCommand(query=q, state_message=msg).set(state)
@@ -58,7 +58,10 @@ async def add_command(m: Message, props: FPHProps, hub: FPH, tg_ui: UI, state: F
     await hub.emit_node_attached_event(entry)
 
     await NodeMenuContext(
-        menu_id=MenuIds.props_node, trigger=m, entry_path=entry.path, ui_history=data.ui_history
+        menu_id=MenuIds.props_node,
+        trigger=m,
+        entry_path=entry.path,
+        ui_history=data.ui_history,
     ).answer_to()
     utils.delete_message(data.state_message)
 
