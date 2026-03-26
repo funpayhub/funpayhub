@@ -24,6 +24,7 @@ class ListParameter[ItemType: CONTAINER_ALLOWED_TYPES](MutableParameter[list[Ite
         description: str,
         default_factory: Callable[[], list[ItemType]] = list,
         validator: Callable[[list[ItemType]], Awaitable[None]] | EllipsisType = ...,
+        item_converter: Callable[[Any], Awaitable[ItemType]] | EllipsisType = ...,
         add_item_validator: Callable[[list[ItemType], ItemType], Awaitable[None]]
         | EllipsisType = ...,
         remove_item_validator: Callable[[list[ItemType], ItemType], Awaitable[None]]
@@ -42,14 +43,18 @@ class ListParameter[ItemType: CONTAINER_ALLOWED_TYPES](MutableParameter[list[Ite
 
         self._add_item_validator = add_item_validator
         self._remove_item_validator = remove_item_validator
+        self._item_converter = item_converter
 
     async def add_item(
         self,
         item: ItemType,
         save: bool = True,
         skip_validator: bool = False,
+        skip_converter: bool = False,
     ) -> None:
         async with self._changing_lock:
+            if not skip_converter:
+                item = await self.item_convert(item)
             if not skip_validator:
                 await self.add_item_validate(item)
 
@@ -100,6 +105,11 @@ class ListParameter[ItemType: CONTAINER_ALLOWED_TYPES](MutableParameter[list[Ite
     async def remove_item_validate(self, item: ItemType) -> None:
         if not isinstance(self._remove_item_validator, EllipsisType):
             await self._remove_item_validator(copy(self._value), item)
+
+    async def item_convert(self, item: Any) -> ItemType:
+        if not isinstance(self._item_converter, EllipsisType):
+            return await self._item_converter(item)
+        return item
 
     @property
     def value(self) -> list[ItemType]:
