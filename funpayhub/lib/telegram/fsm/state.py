@@ -111,7 +111,10 @@ class State:
 
     @classmethod
     async def clear(
-        cls, state: FSMContext, check: bool = True, raise_: bool = True
+        cls,
+        state: FSMContext,
+        check: bool = True,
+        raise_: bool = True,
     ) -> Self | None:
         if not check:
             await state.clear()

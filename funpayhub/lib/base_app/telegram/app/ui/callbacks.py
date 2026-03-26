@@ -29,8 +29,7 @@ class ChangePageTo(CallbackData, identifier='change_page_to'):
     text: int | None = None
 
 
-class GoBack(CallbackData, identifier='go_back'):
-    ...
+class GoBack(CallbackData, identifier='go_back'): ...
 
 
 class ActivateChangingPageState(CallbackData, identifier='activate_changing_page_state'):

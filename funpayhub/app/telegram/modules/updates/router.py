@@ -68,7 +68,8 @@ async def download_upd(q: Query, cbd: cbs.DownloadUpdate, hub: FPH) -> Any:
 async def install_upd(query: Query, cbd: cbs.InstallUpdate, hub: FPH) -> Any:
     if cbd.instance_id != hub.instance_id:
         return query.answer(
-            ru('❌ Эта кнопка устарела :(\nОткройте меню заного.'), show_alert=True
+            ru('❌ Эта кнопка устарела :(\nОткройте меню заного.'),
+            show_alert=True,
         )
 
     if updating_lock.locked():

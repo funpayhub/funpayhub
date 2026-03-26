@@ -8,6 +8,7 @@ __all__ = [
 
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
+
 from funpayhub.lib.telegram.fsm import StateFromQuery
 
 

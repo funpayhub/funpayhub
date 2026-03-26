@@ -126,7 +126,7 @@ class Node:
         if path == self.path:
             return False
 
-        return path[:len(self.path)] == self.path
+        return path[: len(self.path)] == self.path
 
     def has_flag(self, flag: Any) -> bool:
         return flag in self._flags

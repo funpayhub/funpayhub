@@ -4,6 +4,7 @@ import asyncio
 from typing import TYPE_CHECKING
 from dataclasses import field, dataclass
 from itertools import chain
+from collections import defaultdict
 from collections.abc import Generator
 
 from funpaybotengine import Router
@@ -31,7 +32,6 @@ from funpayhub.app.formatters import (
     MessageFormattersCategory,
 )
 from funpayhub.app.properties import FunPayHubProperties
-from collections import defaultdict
 
 
 if TYPE_CHECKING:
@@ -111,7 +111,7 @@ class UpdateLastChats:
             except (UnauthorizedError, BotUnauthenticatedError):
                 logger.error(
                     _en(
-                        'Unable to get CPU data for users %s: unauthorized. Returning empty dict.'
+                        'Unable to get CPU data for users %s: unauthorized. Returning empty dict.',
                     ),
                 )
                 return {}
@@ -124,7 +124,7 @@ class UpdateLastChats:
                     logger.error(
                         _en(
                             'Failed to get CPU data for users %s: attempts exceeded. '
-                            'Returning empty dict.'
+                            'Returning empty dict.',
                         ),
                         (user_ids,),
                     )
@@ -133,7 +133,7 @@ class UpdateLastChats:
                 logger.error(
                     _en(
                         'An unexpected error occurred while getting CPU data for users %s. '
-                        'Returning empty dict.'
+                        'Returning empty dict.',
                     ),
                     (user_ids,),
                     exc_info=True,
@@ -251,7 +251,9 @@ async def on_first_message(
         new_chats: NewChats = await task
 
         if event.message.chat_id not in new_chats.chat_ids:
-            logger.debug(_en('Chat %s not found in new chats. Exiting handler.'), event.message.chat_id)
+            logger.debug(
+                _en('Chat %s not found in new chats. Exiting handler.'), event.message.chat_id
+            )
             return
 
         message = properties.first_response.text.value
@@ -276,7 +278,9 @@ async def on_first_message(
             formatted = await fp_formatters.format_text(
                 text=message,
                 context=NewMessageContext(new_message_event=event),
-                query=InCategory(MessageFormattersCategory).or_(InCategory(GeneralFormattersCategory)),
+                query=InCategory(MessageFormattersCategory).or_(
+                    InCategory(GeneralFormattersCategory)
+                ),
             )
         except Exception as e:
             logger.error(_en('Greetings text formatting error.'), exc_info=True)
@@ -287,6 +291,10 @@ async def on_first_message(
             await fp.send_messages_stack(formatted, event.message.chat_id)
             await first_response_cache.update(event.message.chat_id)
         except Exception as e:
-            logger.error(_en('An error occurred while responding to the 1st message.'), exc_info=True)
-            tg.send_error_notification(ru('❌ Произошла ошибка при ответе на первое сообщение.'), e)
+            logger.error(
+                _en('An error occurred while responding to the 1st message.'), exc_info=True
+            )
+            tg.send_error_notification(
+                ru('❌ Произошла ошибка при ответе на первое сообщение.'), e
+            )
             return

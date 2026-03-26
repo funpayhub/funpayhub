@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import MenuModification
 
 from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
-from funpayhub.lib.translater import translater
 
 from . import callbacks as cbs
 
@@ -48,5 +48,5 @@ class AddRemoveButtonToCommandModification(
             ctx,
             menu,
             'delete_ar_rule',
-            cbs.RemoveCommand(command=ctx.entry_path[1], ui_history=ctx.as_ui_history()).pack()
+            cbs.RemoveCommand(command=ctx.entry_path[1], ui_history=ctx.as_ui_history()).pack(),
         )
