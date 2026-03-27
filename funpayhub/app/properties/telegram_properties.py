@@ -17,7 +17,7 @@ from funpayhub.lib.properties import (
 from funpayhub.app.properties.flags import ParameterFlags as ParamFlags
 from funpayhub.app.properties.telegram_notifications import TelegramNotificationsProperties
 
-from .validators import entries_validator
+from .validators import proxy_validator, entries_validator
 from ...lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
@@ -71,6 +71,17 @@ class TelegramGeneral(Properties):
                 description=_('ID пользователей, у которых есть доступ к телеграм боту.'),
                 default_factory=list,
                 flags=[TelegramUIEmojiFlag('🔐')],
+            ),
+        )
+
+        self.proxy = self.attach_node(
+            StringParameter(
+                id='proxy',
+                name=_('Прокси'),
+                description=_('Прокси для Telegram бота.'),
+                validator=proxy_validator,
+                default_value='',
+                flags=[TelegramUIEmojiFlag('🔗')],
             ),
         )
 
