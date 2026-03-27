@@ -81,7 +81,7 @@ class TelegramGeneral(Properties):
                 description=_('Прокси для Telegram бота.'),
                 validator=proxy_validator,
                 default_value='',
-                flags=[TelegramUIEmojiFlag('🔗')],
+                flags=[TelegramUIEmojiFlag('🔗'), ParamFlags.PROTECT_VALUE],
             ),
         )
 
