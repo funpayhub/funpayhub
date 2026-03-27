@@ -49,7 +49,12 @@ class FunPayHub(App):
     def __init__(self, props: FunPayHubProperties, safe_mode: bool = False):
         self._workflow_data = get_wfd()
         try:
-            telegram_app = Telegram(self, props.telegram.general.token.value, self._workflow_data)
+            telegram_app = Telegram(
+                self,
+                props.telegram.general.token.value,
+                self._workflow_data,
+                proxy=props.general.proxy.value or None,
+            )
         except TokenValidationError:
             sys.exit(exit_codes.TELEGRAM_TOKEN_ERROR)
 

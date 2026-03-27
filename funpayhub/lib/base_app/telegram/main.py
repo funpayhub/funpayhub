@@ -11,6 +11,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 
 from funpayhub.lib.telegram import CommandsRegistry
 from funpayhub.lib.telegram.ui.registry import (
@@ -40,9 +41,11 @@ class TelegramApp:
         config: TelegramAppConfig | None = None,
         commands_registry: CommandsRegistry | None = None,
         ui_registry: UIRegistry | None = None,
+        proxy: str | None = None,
     ) -> None:
         self._config = config if config is not None else TelegramAppConfig()
 
+        session = AiohttpSession(proxy=proxy)
         self._bot = Bot(
             token=bot_token,
             default=DefaultBotProperties(
@@ -51,6 +54,7 @@ class TelegramApp:
                 allow_sending_without_reply=True,
                 link_preview_is_disabled=True,
             ),
+            session=session,
         )
 
         self._dispatcher = Dispatcher(fsm_strategy=FSMStrategy.USER_IN_TOPIC)
