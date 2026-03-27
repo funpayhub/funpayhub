@@ -53,6 +53,29 @@ class Parameter[ValueT](Node):
     def serialized_value(self) -> Any:
         return self.value
 
+    def __bool__(self) -> bool:
+        return bool(self.value)
+
+    def __eq__(self, other):
+        return self.value == other
+
+    def __gt__(self, other):
+        return self.value > other
+
+    def __ge__(self, other):
+        return self.value >= other
+
+    def __lt__(self, other):
+        return self.value < other
+
+    def __le__(self, other):
+        return self.value <= other
+
+    def __len__(self):
+        return len(self.value)
+
+
+
 
 class MutableParameter[ValueT](Parameter[ValueT]):
     if TYPE_CHECKING:
