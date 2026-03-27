@@ -5,6 +5,7 @@ from typing import Any, Literal, TYPE_CHECKING
 from pydantic import Field, BaseModel
 
 from funpayhub.lib.telegram.callback_data import CallbackData
+from funpayhub.lib.telegram.ui.types import MenuHistoryNode
 
 if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui import MenuContext
@@ -30,6 +31,7 @@ class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
     def from_menu_context(
         cls,
         context: MenuContext,
+        ui_history: list[MenuHistoryNode] | None = None,
         new_message: bool = False,
         context_data_update: dict | None = None,
         *,
@@ -42,7 +44,8 @@ class OpenMenu(CallbackData, Pageable, identifier='open_menu'):
             menu_page=context.menu_page if menu_page is None else menu_page,
             view_page=context.view_page if view_page is None else view_page,
             new_message=new_message,
-            context_data=new_context_data
+            context_data=new_context_data,
+            ui_history=ui_history or []
         )
 
 
