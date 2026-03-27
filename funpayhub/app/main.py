@@ -53,7 +53,7 @@ class FunPayHub(App):
                 self,
                 props.telegram.general.token.value,
                 self._workflow_data,
-                proxy=props.general.proxy.value or None,
+                proxy=props.telegram.general.proxy.value or None,
             )
         except TokenValidationError:
             sys.exit(exit_codes.TELEGRAM_TOKEN_ERROR)

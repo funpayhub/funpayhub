@@ -127,6 +127,11 @@ class App:
             if self._setup_completed:
                 return
 
+            try:
+                await self.telegram.bot.get_me()
+            except Exception:
+                sys.exit(exit_codes.TELEGRAM_ERROR)
+
             await self._repositories_manager._load_repositories()
             await self._load_file_goods_sources()
             await self._load_plugins()
