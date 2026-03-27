@@ -330,23 +330,6 @@ class MenuContext(BaseModel):
 
         return await ui_registry.build_menu(self)
 
-    async def build_and_apply(
-        self,
-        registry: UIRegistry,
-        message: Message,
-        *,
-        text: bool = True,
-        keyboard: bool = True,
-    ) -> Message:
-        warnings.warn('`build_and_apply` устарел. Используйте `apply_to`.', DeprecationWarning)
-        menu = await self.build_menu(registry)
-        return await menu.apply_to(message, text=text, keyboard=keyboard)
-
-    async def build_and_answer(self, registry: UIRegistry, message: Message) -> Message:
-        warnings.warn('`build_and_answer` устарел. Используйте `answer_to`.', DeprecationWarning)
-        menu = await self.build_menu(registry)
-        return await menu.answer_to(message)
-
     async def apply_to(
         self,
         aiogram_obj: Message | CallbackQuery | None = None,
@@ -413,6 +396,14 @@ class MenuContext(BaseModel):
         """
         base_fields = {i for i in MenuContext.model_fields}
         return self.model_dump(mode='json', exclude=base_fields)
+
+    @property
+    def menu_data(self) -> dict[str, Any]:
+        return {
+            'menu_id': self.menu_id,
+            'menu_page': self.menu_page,
+            'view_page': self.view_page
+        }
 
     @classmethod
     def from_ui_history(
