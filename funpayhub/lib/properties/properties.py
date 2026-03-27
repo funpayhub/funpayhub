@@ -20,6 +20,11 @@ from .base import Node
 from .parameter.base import Parameter, MutableParameter
 
 
+type NodeAttachedHook = Callable[['Node'], Awaitable[Any]]
+type NodeDetachedHook = Callable[['Node', 'Node'], Awaitable[Any]]
+type ParameterValueChangedHook = Callable[[Parameter], Awaitable[Any]]
+
+
 class Properties(Node):
     def __init__(
         self,
@@ -31,8 +36,9 @@ class Properties(Node):
         flags: Iterable[Any] | None = None,
         on_parameter_changed_hook: Callable[[MutableParameter], Awaitable[None]]
         | EllipsisType = ...,
-        on_node_attached_hook: Callable[[Node], Awaitable[None]] | EllipsisType = ...,
-        on_node_detached_hook: Callable[[Node], Awaitable[None]] | EllipsisType = ...,
+        on_node_attached_hook: NodeAttachedHook | None = None,
+        on_node_detached_hook: NodeDetachedHook | None = None,
+        on_parameter_value_changed_hook: ParameterValueChangedHook | None = None
     ) -> None:
         """
         Категория параметров.
@@ -52,9 +58,9 @@ class Properties(Node):
         self._file = file
         self._nodes: dict[str, Node] = {}
 
-        self._on_node_attached_hook = on_node_attached_hook
-        self._on_node_detached_hook = on_node_detached_hook
-        self._on_parameter_changed_hook = on_parameter_changed_hook
+        self.on_node_attached_hook = on_node_attached_hook
+        self.on_node_detached_hook = on_node_detached_hook
+        self.on_parameter_value_changed_hook = on_parameter_value_changed_hook
 
         super().__init__(
             id=id,
@@ -228,34 +234,6 @@ class Properties(Node):
         if not isinstance(result, Properties):
             raise LookupError(f'No properties with path {path}')
         return result
-
-    async def _execute_hook(
-        self,
-        hook: Literal['on_attach', 'on_detach', 'on_change'],
-        trigger: Node,
-    ) -> None:
-        if not self.is_root:
-            return await self.parent._execute_hook(hook, trigger)
-
-        hooks = {
-            'attach': self._on_node_attached_hook,
-            'detach': self._on_node_detached_hook,
-            'change': self._on_parameter_changed_hook,
-        }
-        hook_callable = hooks.get(hook)
-
-        if hook_callable in [None, Ellipsis]:
-            return None
-
-        try:
-            await hook_callable(trigger)
-        except Exception:
-            logger.error(
-                _en('An error occurred while executing %s trigger for %s'),
-                hook,
-                '.'.join(trigger.path),
-                exc_info=True,
-            )
 
     def __len__(self) -> int:
         return len(self.entries)

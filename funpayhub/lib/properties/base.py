@@ -142,17 +142,3 @@ class Node:
             if isinstance(i, flag_type):
                 return i
         return None
-
-    async def emit_node_attached(self, node: Node):
-        if self.parent is not None:
-            await self.parent.emit_node_attached(node)
-        else:
-            if self.on_node_attached_hook is not None:
-                await self.on_node_attached_hook(node)
-
-    async def emit_node_detached(self, node: Node, from_: Node | None = None):
-        if self.parent is not None:
-            await self.parent.emit_node_detached(node, from_ if from_ is not None else self)
-        else:
-            if self.on_node_detached_hook is not None:
-                await self.on_node_detached_hook(node)
