@@ -8,13 +8,11 @@ __all__ = ['Properties']
 
 import os
 import tomllib
-from typing import Any, Literal
-from types import EllipsisType, MappingProxyType
+from typing import Any
+from types import MappingProxyType
 from collections.abc import Callable, Iterable, Awaitable, Generator
 
 import tomli_w
-
-from funpayhub.loggers import main as logger
 
 from .base import Node
 from .parameter.base import Parameter, MutableParameter
@@ -34,8 +32,6 @@ class Properties(Node):
         description: str,
         file: str | None = None,
         flags: Iterable[Any] | None = None,
-        on_parameter_changed_hook: Callable[[MutableParameter], Awaitable[None]]
-        | EllipsisType = ...,
         on_node_attached_hook: NodeAttachedHook | None = None,
         on_node_detached_hook: NodeDetachedHook | None = None,
         on_parameter_value_changed_hook: ParameterValueChangedHook | None = None
