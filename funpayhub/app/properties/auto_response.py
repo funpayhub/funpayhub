@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import os
-import tomllib
+from typing import Any
 from types import MappingProxyType
 
 from funpayhub.lib.properties import (
@@ -118,17 +117,12 @@ class AutoResponseProperties(Properties):
             )
         return super().attach_node(node)
 
-    async def load(self) -> None:
-        if not os.path.exists(self.file):  # type: ignore #  always has file
-            return
-        with open(self.file, 'r', encoding='utf-8') as f:  # type: ignore #  always has file
-            data = tomllib.loads(f.read())
-
-        self._nodes = {}
-        for i in data:
+    async def load_from_dict(self, properties_dict: dict[str, Any]) -> None:
+        await super().load_from_dict(properties_dict)
+        for i in properties_dict:
             obj = AutoResponseEntryProperties(command=i)
-            await obj._set_values(data[i])
-            super().attach_node(obj)
+            await obj.load_from_dict(properties_dict[i])
+            self.attach_node(obj)
 
     def add_entry(self, command: str) -> AutoResponseEntryProperties:
         obj = AutoResponseEntryProperties(command)

@@ -4,6 +4,7 @@ from __future__ import annotations
 __all__ = ['Node']
 
 
+import logging
 from typing import TYPE_CHECKING, Any, Union, TypeVar, Callable
 from collections.abc import Iterable, Generator
 
@@ -14,6 +15,9 @@ if TYPE_CHECKING:
 
 ParamValueType = TypeVar('ParamValueType')
 CallableValue = Union[ParamValueType, Callable[[], ParamValueType]]
+
+
+logger = logging.getLogger('properties')
 
 
 def resolve(value: CallableValue[ParamValueType]) -> ParamValueType:
@@ -49,6 +53,8 @@ class Node:
         self._name = name
         self._description = description
         self._flags = frozenset(flags) if flags else frozenset()
+
+        self.__hooks__ = {}
 
     @property
     def id(self) -> str:
@@ -129,7 +135,7 @@ class Node:
         if len(self.path) <= len(path):
             return False
 
-        return path == self.path[:len(path)]
+        return path == self.path[: len(path)]
 
     def has_flag(self, flag: Any) -> bool:
         return flag in self._flags
@@ -139,3 +145,18 @@ class Node:
             if isinstance(i, flag_type):
                 return i
         return None
+
+    async def emit(self, hook: str, *args: Any, **kwargs: Any) -> None:
+        if hook in self.__hooks__:
+            try:
+                await self.__hooks__[hook](*args, **kwargs)
+            except Exception:
+                logger.error(
+                    'An error occured while running hook %s in node %s.',
+                    hook,
+                    self.path,
+                    exc_info=True,
+                )
+
+        if self.parent is not None:
+            await self.parent.emit(hook, *args, **kwargs)

@@ -1,23 +1,29 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _en
-
 
 __all__ = ['Properties']
 
 
 import os
+import logging
 import tomllib
-from typing import Any, Literal
-from types import EllipsisType, MappingProxyType
+from typing import Any
+from types import MappingProxyType
 from collections.abc import Callable, Iterable, Awaitable, Generator
 
 import tomli_w
 
-from funpayhub.loggers import main as logger
-
-from .base import Node
+from .base import Node, CallableValue
+from .hook_types import HookTypes
 from .parameter.base import Parameter, MutableParameter
+
+
+type ParameterValueChangedHook = Callable[[MutableParameter], Awaitable[Any]]
+type NodeAttachedHook = Callable[[Node], Awaitable[Any]]
+type NodeDetachedHook = Callable[[Node, Node], Awaitable[Any]]
+
+
+logger = logging.getLogger('properties')
 
 
 class Properties(Node):
@@ -25,14 +31,13 @@ class Properties(Node):
         self,
         *,
         id: str,
-        name: str,
-        description: str,
+        name: CallableValue[str],
+        description: CallableValue[str],
         file: str | None = None,
         flags: Iterable[Any] | None = None,
-        on_parameter_changed_hook: Callable[[MutableParameter], Awaitable[None]]
-        | EllipsisType = ...,
-        on_node_attached_hook: Callable[[Node], Awaitable[None]] | EllipsisType = ...,
-        on_node_detached_hook: Callable[[Node], Awaitable[None]] | EllipsisType = ...,
+        on_parameter_value_changed_hook: ParameterValueChangedHook | None = None,
+        on_node_attached_hook: NodeAttachedHook | None = None,
+        on_node_detached_hook: NodeDetachedHook | None = None,
     ) -> None:
         """
         Категория параметров.
@@ -54,7 +59,13 @@ class Properties(Node):
 
         self._on_node_attached_hook = on_node_attached_hook
         self._on_node_detached_hook = on_node_detached_hook
-        self._on_parameter_changed_hook = on_parameter_changed_hook
+        self._on_parameter_changed_hook = on_parameter_value_changed_hook
+
+        self.__hooks__ = {
+            HookTypes.on_parameter_value_changed: self._on_parameter_changed_hook,
+            HookTypes.on_node_attached: self._on_node_attached_hook,
+            HookTypes.on_node_detached: self._on_node_detached_hook,
+        }
 
         super().__init__(
             id=id,
@@ -109,6 +120,23 @@ class Properties(Node):
         self._nodes[node.id] = node
         return node
 
+    async def attach_node_and_emit[T: Node](
+        self,
+        node: T,
+        replace: bool = False,
+        emit_replaced: bool = False,
+    ) -> T:
+        if node.id in self._nodes:
+            if not replace:
+                raise ValueError(f'Node with ID {node.id!r} already exists.')
+            await self.detach_node_and_emit(node.id) if emit_replaced else self.detach_node(
+                node.id
+            )
+
+        node.parent = self
+        self._nodes[node.id] = node
+        return node
+
     def detach_node(self, node_id: str) -> Properties | None:
         node = self._nodes.get(node_id)
         if not isinstance(node, Properties):
@@ -116,6 +144,15 @@ class Properties(Node):
 
         self._nodes.pop(node_id)
         node.parent = None
+        return node
+
+    async def detach_node_and_emit(self, node_id: str) -> Node | None:
+        node = self._nodes.pop(node_id, None)
+        if node is None:
+            return None
+
+        node.parent = None
+        await self.emit(HookTypes.on_node_detached, node, self)
         return node
 
     def as_dict(
@@ -167,19 +204,18 @@ class Properties(Node):
         await self.load_from_dict(data)
 
     async def load_from_dict(self, properties_dict: dict[str, Any]) -> None:
-        await self._set_values(properties_dict)
-
-    async def _set_values(self, values: dict[str, Any]) -> None:
         for v in self._nodes.values():
             if isinstance(v, Properties):
                 if v.file:
                     await v.load()
-                elif v.id in values:
-                    await v.load_from_dict(values[v.id])
-            elif v.id not in values:
+                elif v.id in properties_dict:
+                    await v.load_from_dict(properties_dict[v.id])
+            elif v.id not in properties_dict:
                 continue
             elif isinstance(v, MutableParameter):
-                await v.set_value(values[v.id], save=False)
+                await v.set_value(properties_dict[v.id], save=False)
+
+    async def _set_values(self, values: dict[str, Any]) -> None: ...
 
     def get_node(
         self,
@@ -229,33 +265,29 @@ class Properties(Node):
             raise LookupError(f'No properties with path {path}')
         return result
 
-    async def _execute_hook(
-        self,
-        hook: Literal['on_attach', 'on_detach', 'on_change'],
-        trigger: Node,
-    ) -> None:
-        if not self.is_root:
-            return await self.parent._execute_hook(hook, trigger)
+    @property
+    def on_node_attached_hook(self) -> NodeAttachedHook | None:
+        return self.__hooks__.get(HookTypes.on_node_attached)
 
-        hooks = {
-            'attach': self._on_node_attached_hook,
-            'detach': self._on_node_detached_hook,
-            'change': self._on_parameter_changed_hook,
-        }
-        hook_callable = hooks.get(hook)
+    @property
+    def on_node_detached_hook(self) -> NodeDetachedHook | None:
+        return self.__hooks__.get(HookTypes.on_node_detached)
 
-        if hook_callable in [None, Ellipsis]:
-            return None
+    @property
+    def on_parameter_changed_hook(self) -> ParameterValueChangedHook | None:
+        return self.__hooks__.get(HookTypes.on_parameter_value_changed)
 
-        try:
-            await hook_callable(trigger)
-        except Exception:
-            logger.error(
-                _en('An error occurred while executing %s trigger for %s'),
-                hook,
-                '.'.join(trigger.path),
-                exc_info=True,
-            )
+    @on_node_attached_hook.setter
+    def on_node_attached_hook(self, value: NodeAttachedHook | None) -> None:
+        self.__hooks__[HookTypes.on_node_attached] = value
+
+    @on_node_detached_hook.setter
+    def on_node_detached_hook(self, value: NodeDetachedHook | None) -> None:
+        self.__hooks__[HookTypes.on_node_detached] = value
+
+    @on_parameter_changed_hook.setter
+    def on_parameter_changed_hook(self, value: ParameterValueChangedHook | None) -> None:
+        self.__hooks__[HookTypes.on_parameter_value_changed] = value
 
     def __len__(self) -> int:
         return len(self.entries)

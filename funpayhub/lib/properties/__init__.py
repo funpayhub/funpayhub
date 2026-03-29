@@ -17,8 +17,10 @@ __all__ = [
     'ListParameter',
     'SetParameter',
     'ChoiceParameter',
+    'HookTypes',
 ]
 
 from .base import Node
 from .parameter import *
+from .hook_types import HookTypes as HookTypes
 from .properties import *
