@@ -130,7 +130,7 @@ class Properties(Node):
             if not replace:
                 raise ValueError(f'Node with ID {node.id!r} already exists.')
             await self.detach_node_and_emit(node.id) if emit_replaced else self.detach_node(
-                node.id
+                node.id,
             )
 
         node.parent = self
@@ -213,9 +213,7 @@ class Properties(Node):
             elif v.id not in properties_dict:
                 continue
             elif isinstance(v, MutableParameter):
-                await v.set_value(properties_dict[v.id], save=False)
-
-    async def _set_values(self, values: dict[str, Any]) -> None: ...
+                await v.set_value(properties_dict[v.id], save=False, skip_hook=True)
 
     def get_node(
         self,

@@ -29,17 +29,17 @@ class ToggleParameter(MutableParameter[bool]):
             flags=flags,
         )
 
-    async def on(self, save: bool = True) -> None:
-        await self.set_value(True, skip_converter=True, save=save)
+    async def on(self, save: bool = True, skip_hook: bool = False) -> None:
+        await self.set_value(True, skip_converter=True, save=save, skip_hook=skip_hook)
 
-    async def off(self, save: bool = True) -> None:
-        await self.set_value(False, skip_converter=True, save=save)
+    async def off(self, save: bool = True, skip_hook: bool = False) -> None:
+        await self.set_value(False, skip_converter=True, save=save, skip_hook=skip_hook)
 
-    async def toggle(self, save: bool = True) -> None:
-        await self.set_value(not self.value, skip_converter=True, save=save)
+    async def toggle(self, save: bool = True, skip_hook: bool = False) -> None:
+        await self.set_value(not self.value, skip_converter=True, save=save, skip_hook=skip_hook)
 
-    async def next_value(self, save: bool = True) -> bool:
-        await self.toggle(save=save)
+    async def next_value(self, save: bool = True, skip_hook: bool = False) -> bool:
+        await self.toggle(save=save, skip_hook=skip_hook)
         return self.value
 
     def __bool__(self) -> bool:

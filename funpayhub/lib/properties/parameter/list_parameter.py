@@ -10,6 +10,8 @@ from collections.abc import Callable, Iterable, Awaitable
 
 from funpayhub.lib.properties.parameter.base import MutableParameter
 
+from .. import HookTypes
+
 
 if TYPE_CHECKING:
     from .base import CONTAINER_ALLOWED_TYPES
@@ -51,6 +53,7 @@ class ListParameter[ItemType: CONTAINER_ALLOWED_TYPES](MutableParameter[list[Ite
         save: bool = True,
         skip_validator: bool = False,
         skip_converter: bool = False,
+        skip_hook: bool = False,
     ) -> None:
         async with self._changing_lock:
             if not skip_converter:
@@ -62,11 +65,15 @@ class ListParameter[ItemType: CONTAINER_ALLOWED_TYPES](MutableParameter[list[Ite
             if save:
                 await self.save()
 
+        if not skip_hook:
+            await self.emit(HookTypes.on_parameter_value_changed, self)
+
     async def pop_item(
         self,
         index: int,
         save: bool = True,
         skip_validator: bool = False,
+        skip_hook: bool = False,
     ) -> ItemType | None:
         if index < 0 or index >= len(self.value):
             return None
@@ -81,11 +88,15 @@ class ListParameter[ItemType: CONTAINER_ALLOWED_TYPES](MutableParameter[list[Ite
                 await self.save()
             return result
 
+        if not skip_hook:
+            await self.emit(HookTypes.on_parameter_value_changed, self)
+
     async def remove_item(
         self,
         item: ItemType,
         save: bool = True,
         skip_validator: bool = False,
+        skip_hook: bool = False,
     ) -> None:
         if item not in self._value:
             return
@@ -97,6 +108,9 @@ class ListParameter[ItemType: CONTAINER_ALLOWED_TYPES](MutableParameter[list[Ite
             self._value.remove(item)
             if save:
                 await self.save()
+
+        if not skip_hook:
+            await self.emit(HookTypes.on_parameter_value_changed, self)
 
     async def add_item_validate(self, item: ItemType) -> None:
         if not isinstance(self._add_item_validator, EllipsisType):

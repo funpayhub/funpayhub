@@ -29,7 +29,6 @@ class Node:
         self,
         *,
         id: str,
-        parent: Properties | None = None,
         name: CallableValue[str],
         description: CallableValue[str],
         flags: Iterable[Any] | None = None,
@@ -37,7 +36,6 @@ class Node:
         """
         Базовый класс для параметров / категорий параметров.
 
-        :param parent: Родительский объект.
         :param id: ID объекта.
         :param name: Название объекта. Может быть строкой или функцией,
             которая не принимает аргументов и возвращает строку.
@@ -48,7 +46,7 @@ class Node:
         if not id:
             raise ValueError('Node ID cannot be empty.')
 
-        self._parent = parent
+        self._parent = None
         self._id = id
         self._name = name
         self._description = description

@@ -9,8 +9,7 @@ from funpayhub.lib.properties.base import Node
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.properties import Properties
-
+    from funpayhub.lib.properties import HookTypes, Properties
 
 type CONTAINER_ALLOWED_TYPES = int | float | str | bool
 
@@ -130,6 +129,7 @@ class MutableParameter[ValueT](Parameter[ValueT]):
         *,
         skip_converter: bool = False,
         skip_validator: bool = False,
+        skip_hook: bool = False,
         save: bool = True,
     ) -> None:
         """
@@ -140,6 +140,7 @@ class MutableParameter[ValueT](Parameter[ValueT]):
             валидатору в том виде, в котором оно было передано в данный метод.
         :param skip_validator: Пропустить этап валидации. Если `True`, значение будет установлено
             без проверки.
+        :param skip_hook: Пропустить выполнение хука.
         :param save: Сохранить значение в файл.
         """
         async with self._changing_lock:
@@ -151,6 +152,9 @@ class MutableParameter[ValueT](Parameter[ValueT]):
             self._value = value
             if save:
                 await self.save()
+
+        if not skip_hook:
+            await self.emit(HookTypes.on_parameter_value_changed, self)
 
     async def next_value(self, save: bool = True) -> ValueT:
         raise NotImplementedError(f'{self.__class__.__name__} does not support `.next_value`.')
