@@ -118,18 +118,9 @@ class Properties(Node):
         self._nodes[node.id] = node
         return node
 
-    async def attach_node_and_emit[T: Node](
-        self,
-        node: T,
-        replace: bool = False,
-        emit_replaced: bool = False,
-    ) -> T:
+    async def attach_node_and_emit[T: Node](self, node: T) -> T:
         if node.id in self._nodes:
-            if not replace:
-                raise ValueError(f'Node with ID {node.id!r} already exists.')
-            await self.detach_node_and_emit(node.id) if emit_replaced else self.detach_node(
-                node.id,
-            )
+            raise ValueError(f'Node with ID {node.id!r} already exists.')
 
         node.parent = self
         self._nodes[node.id] = node

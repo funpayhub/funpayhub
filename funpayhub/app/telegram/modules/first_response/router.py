@@ -69,7 +69,7 @@ async def bind_greetings(
 
 @router.callback_query(cbs.RemoveGreetings.filter())
 async def remove_greetings(q: Query, cbd: cbs.RemoveGreetings, props: FPHProps, tg_ui: UI) -> Any:
-    node = props.first_response.detach_node(cbd.offer_id)
+    node = await props.first_response.detach_node_and_emit(cbd.offer_id)
     if node:
         await props.save()
     await tg_ui.context_from_history(cbd.ui_history, trigger=q).apply_to()

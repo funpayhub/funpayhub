@@ -69,7 +69,7 @@ async def delete_command(q: Query, props: FPHProps, cbd: cbs.RemoveCommand, tg_u
     if cbd.command not in props.auto_response.entries:
         return q.answer(ru('❌ Команда не найдена.'), show_alert=True)
 
-    props.auto_response.detach_node(cbd.command)
+    await props.auto_response.detach_node_and_emit(cbd.command)
     await props.auto_response.save()
 
     await tg_ui.context_from_history(cbd.ui_history[:-1], trigger=q).apply_to()

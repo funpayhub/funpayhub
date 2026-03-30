@@ -76,7 +76,7 @@ async def delete_rule(q: Query, props: FPHProps, cbd: cbs.DeleteAutoDeliveryRule
     if cbd.rule not in props.auto_delivery.entries:
         return q.answer(ru('❌ Правило не найдено'), show_alert=True)
 
-    props.auto_delivery.detach_node(cbd.rule)
+    await props.auto_delivery.detach_node_and_emit(cbd.rule)
     await props.auto_delivery.save()
 
     await NodeMenuContext(
