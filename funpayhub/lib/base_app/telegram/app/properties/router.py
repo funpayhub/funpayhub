@@ -16,7 +16,10 @@ from .ui import NodeMenuIds, NodeMenuContext
 
 
 if TYPE_CHECKING:
-    from aiogram.types import Message, CallbackQuery
+    from aiogram.types import (
+        Message,
+        CallbackQuery as Query,
+    )
     from aiogram.fsm.context import FSMContext as FSM
 
     from funpayhub.lib.base_app import App
@@ -25,7 +28,7 @@ if TYPE_CHECKING:
         ListParameter,
     )
     from funpayhub.lib.translater import Translater as Tr
-    from funpayhub.lib.telegram.ui import UIRegistry
+    from funpayhub.lib.telegram.ui import UIRegistry as UI
 
 
 router = Router()
@@ -33,69 +36,62 @@ router = Router()
 
 @router.callback_query(cbs.NextParamValue.filter())
 async def next_param_value(
-    q: CallbackQuery,
-    properties: Props,
-    callback_data: cbs.NextParamValue,
+    q: Query,
+    props: Props,
+    cbd: cbs.NextParamValue,
     app: App,
-    tg_ui: UIRegistry,
+    tg_ui: UI,
 ) -> None:
-    param = properties.get_parameter(callback_data.path)
+    param = props.get_parameter(cbd.path)
     await param.next_value(save=True)
     await app.emit_parameter_changed_event(param)
-    await tg_ui.context_from_history(callback_data.ui_history, trigger=q).build_and_apply(
-        tg_ui,
-        q.message,
-    )
+    await tg_ui.context_from_history(cbd.ui_history, trigger=q).apply_to(ui_registry=tg_ui)
 
 
 @router.callback_query(cbs.ChooseParamValue.filter())
 async def choose_param_value(
-    query: CallbackQuery,
-    properties: Props,
-    callback_data: cbs.ChooseParamValue,
-    tg_ui: UIRegistry,
+    q: Query,
+    props: Props,
+    cbd: cbs.ChooseParamValue,
+    tg_ui: UI,
     app: App,
 ) -> None:
-    param = properties.get_parameter(callback_data.path)
-    await param.set_value(callback_data.choice_id)
+    param = props.get_parameter(cbd.path)
+    await param.set_value(cbd.choice_id)
     await app.emit_parameter_changed_event(param)
-    await tg_ui.context_from_history(callback_data.ui_history, trigger=query).build_and_apply(
-        tg_ui,
-        query.message,
-    )
+    await tg_ui.context_from_history(cbd.ui_history, trigger=q).apply_to(ui_registry=tg_ui)
 
 
 @router.callback_query(cbs.ManualParamValueInput.filter())
 async def change_parameter_value(
-    query: CallbackQuery,
-    properties: Props,
-    tg_ui: UIRegistry,
-    callback_data: cbs.ManualParamValueInput,
+    q: Query,
+    props: Props,
+    tg_ui: UI,
+    cbd: cbs.ManualParamValueInput,
     state: FSM,
 ) -> None:
     await state.clear()
 
-    entry = properties.get_parameter(callback_data.path)
+    entry = props.get_parameter(cbd.path)
     msg = await NodeMenuContext(
         menu_id=NodeMenuIds.props_param_manual_input,
-        trigger=query,
+        trigger=q,
         entry_path=entry.path,
-    ).build_and_answer(tg_ui, query.message)
+    ).answer_to(ui_registry=tg_ui)
 
-    await states.ChangingParameterValue(parameter=entry, query=query, state_message=msg).set(state)
-    await query.answer()
+    await states.ChangingParameterValue(parameter=entry, query=q, state_message=msg).set(state)
 
 
 @router.message(StateFilter(states.ChangingParameterValue.identifier))
 async def edit_parameter(
-    message: Message,
+    m: Message,
     app: App,
     translater: Tr,
     state: FSM,
-    tg_ui: UIRegistry,
+    tg_ui: UI,
 ) -> None:
     data: states.ChangingParameterValue = (await state.get_data())['data']
-    new_value = '' if message.text == '-' else message.text
+    new_value = '' if m.text == '-' else m.text
 
     try:
         await data.parameter.set_value(new_value)
@@ -110,76 +106,64 @@ async def edit_parameter(
         return
 
     await app.emit_parameter_changed_event(data.parameter)
-    await tg_ui.context_from_history(data.ui_history, trigger=message).build_and_answer(
-        tg_ui,
-        message,
-    )
+    await tg_ui.context_from_history(data.ui_history, trigger=m).answer_to(ui_registry=tg_ui)
     delete_message(data.state_message)
 
 
 @router.callback_query(cbs.ListParamItemAction.filter())
-async def make_list_item_action(
-    query: CallbackQuery,
-    callback_data: cbs.ListParamItemAction,
-    properties: Props,
-    tg_ui: UIRegistry,
-) -> None:
-    if callback_data.action is None:
-        await query.answer()
+async def list_action(q: Query, cbd: cbs.ListParamItemAction, props: Props, tg_ui: UI) -> None:
+    if cbd.action is None:
+        await q.answer()
         return
 
-    param: ListParameter = properties.get_parameter(callback_data.path)  # type: ignore
-    index = callback_data.item_index
-    if callback_data.action == 'remove':
+    param: ListParameter = props.get_parameter(cbd.path)  # type: ignore
+    index = cbd.item_index
+    if cbd.action == 'remove':
         await param.pop_item(index)
-    elif callback_data.action == 'move_up':
+    elif cbd.action == 'move_up':
         if index == 0:
-            await query.answer()
+            await q.answer()
             return
         param._value[index], param._value[index - 1] = param._value[index - 1], param._value[index]
-    elif callback_data.action == 'move_down':
+    elif cbd.action == 'move_down':
         if index == len(param.value) - 1:
-            await query.answer()
+            await q.answer()
             return
         param._value[index], param._value[index + 1] = param._value[index + 1], param._value[index]
 
     await param.save()
-    await tg_ui.context_from_history(callback_data.ui_history, trigger=query).build_and_apply(
-        tg_ui,
-        query.message,
-    )
+    await tg_ui.context_from_history(cbd.ui_history, trigger=q).apply_to(ui_registry=tg_ui)
 
 
 @router.callback_query(cbs.ListParamAddItem.filter())
 async def set_adding_list_item_state(
-    query: CallbackQuery,
-    properties: Props,
-    tg_ui: UIRegistry,
-    callback_data: cbs.ListParamAddItem,
+    q: Query,
+    props: Props,
+    tg_ui: UI,
+    cbd: cbs.ListParamAddItem,
     state: FSM,
 ) -> None:
-    entry: ListParameter[Any] = properties.get_parameter(callback_data.path)  # type: ignore
+    entry: ListParameter[Any] = props.get_parameter(cbd.path)  # type: ignore
     msg = await NodeMenuContext(
         menu_id=NodeMenuIds.props_add_list_item,
-        trigger=query,
+        trigger=q,
         entry_path=entry.path,
-    ).build_and_answer(tg_ui, query.message)
+    ).answer_to(ui_registry=tg_ui)
 
-    await states.AddingListItem(parameter=entry, query=query, state_message=msg).set(state)
-    await query.answer()
+    await states.AddingListItem(parameter=entry, query=q, state_message=msg).set(state)
 
 
 @router.message(StateFilter(states.AddingListItem.identifier))
 async def edit_parameter(
-    message: Message,
+    m: Message,
     app: App,
     translater: Tr,
     state: FSM,
-    tg_ui: UIRegistry,
+    tg_ui: UI,
 ) -> None:
     data: states.AddingListItem = (await state.get_data())['data']
     try:
-        await data.parameter.add_item(message.text)
+        await data.parameter.add_item(m.text)
         await data.parameter.save()
         await state.clear()
     except PropertiesError as e:
@@ -192,8 +176,5 @@ async def edit_parameter(
         return
 
     await app.emit_parameter_changed_event(data.parameter)
-    await tg_ui.context_from_history(data.ui_history, trigger=message).build_and_answer(
-        tg_ui,
-        message,
-    )
+    await tg_ui.context_from_history(data.ui_history, trigger=m).answer_to(ui_registry=tg_ui)
     delete_message(data.state_message)
