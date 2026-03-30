@@ -146,9 +146,9 @@ class Node:
         return None
 
     async def emit(self, hook: str, *args: Any, **kwargs: Any) -> None:
-        if (hook := self.__hooks__.get(hook)) is not None:
+        if (hook_obj := self.__hooks__.get(hook)) is not None:
             try:
-                await self.__hooks__[hook](*args, **kwargs)
+                await hook_obj(*args, **kwargs)
             except Exception:
                 logger.error(
                     'An error occured while running hook %s in node %s.',
