@@ -31,8 +31,12 @@ from funpayhub.app.telegram.main import Telegram
 from funpayhub.app.workflow_data import get_wfd
 from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 
+from .dispatching.events.properties_events import NodeDetachedEvent
+
 
 if TYPE_CHECKING:
+    from funpayhub.lib.properties import Node, MutableParameter
+
     from .workflow_data import WorkflowData
 
 
@@ -47,6 +51,10 @@ class FunPayHub(App):
         workflow_data: WorkflowData
 
     def __init__(self, props: FunPayHubProperties, safe_mode: bool = False):
+        props.on_node_attached_hook = self._on_node_attached_hook
+        props.on_node_detached_hook = self._on_node_detached_hook
+        props.on_parameter_value_changed_hook = self._on_param_value_changed_hook
+
         self._workflow_data = get_wfd()
         try:
             telegram_app = Telegram(
@@ -55,6 +63,7 @@ class FunPayHub(App):
                 self._workflow_data,
                 proxy=props.telegram.general.proxy.value or None,
             )
+            telegram_app.config.max_menu_lines = props.telegram.appearance.max_menu_lines.value
         except TokenValidationError:
             sys.exit(exit_codes.TELEGRAM_TOKEN_ERROR)
 
@@ -74,7 +83,6 @@ class FunPayHub(App):
             telegram_app=telegram_app,
             workflow_data=self.workflow_data,
         )
-        self.telegram.config.max_menu_lines = props.telegram.appearance.max_menu_lines.value
 
         self._funpay = FunPay(
             self,
@@ -193,6 +201,21 @@ class FunPayHub(App):
         logger.info(_en('Shutting down FunPayHub with exit code %d.'), code)
         self._stop_signal.set_result(code)
         await self._stopped_signal.wait()
+
+    # todo: move to base app ---
+    async def _on_param_value_changed_hook(self, param: MutableParameter) -> None:
+        event = ParameterValueChangedEvent(param)
+        await self.dispatcher.event_entry(event)
+
+    async def _on_node_attached_hook(self, node: Node) -> None:
+        event = NodeAttachedEvent(node)
+        await self.dispatcher.event_entry(event)
+
+    async def _on_node_detached_hook(self, node: Node, parent: Node) -> None:
+        event = NodeDetachedEvent(node, parent)
+        await self.dispatcher.event_entry(event)
+
+    # todo: ---
 
     @property
     def funpay(self) -> FunPay:

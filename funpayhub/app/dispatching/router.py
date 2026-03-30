@@ -12,6 +12,7 @@ from .handler_manager import HandlerManager
 _events = {
     'parameter_value_changed',
     'node_attached',
+    'node_detached',
     'telegram_start',
     'funpay_start',
     'offers_raised',
@@ -22,6 +23,7 @@ _events = {
 class Router(BaseRouter):
     on_parameter_value_changed: HandlerManager
     on_node_attached: HandlerManager
+    on_node_detached: HandlerManager
     on_offers_raised: HandlerManager
     on_telegram_start: HandlerManager
     on_funpay_start: HandlerManager

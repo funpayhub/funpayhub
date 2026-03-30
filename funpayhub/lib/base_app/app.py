@@ -7,7 +7,7 @@ import string
 import asyncio
 import builtins
 import traceback
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 from dataclasses import dataclass
 from pathlib import Path
 from contextlib import suppress
@@ -187,14 +187,6 @@ class App:
 
     async def shutdown(self, code: int, error_ok: bool = False) -> None:
         raise NotImplementedError()
-
-    async def emit_parameter_changed_event(self, parameter: MutableParameter[Any]) -> None:
-        event = self._config.on_parameter_change_event_factory(parameter)
-        await self.dispatcher.event_entry(event)
-
-    async def emit_node_attached_event(self, node: Node) -> None:
-        event = self._config.on_node_attached_event_factory(node)
-        await self.dispatcher.event_entry(event)
 
     @property
     def version(self) -> Version:

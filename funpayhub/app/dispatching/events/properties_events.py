@@ -45,3 +45,25 @@ class NodeAttachedEvent(HubEvent, event_name='fph:node_attached'):
     @property
     def node(self) -> Node:
         return self._node
+
+
+class NodeDetachedEvent(HubEvent, event_name='fph:node_detached'):
+    def __init__(self, node: Node, parent: Node) -> None:
+        super().__init__()
+        self._node = node
+        self._parent = parent
+
+    @property
+    def event_context_injection(self) -> dict[str, Any]:
+        return super().event_context_injection | {
+            'node': self.node,
+            'parent': self.parent,
+        }
+
+    @property
+    def node(self) -> Node:
+        return self._node
+
+    @property
+    def parent(self) -> Node:
+        return self._parent

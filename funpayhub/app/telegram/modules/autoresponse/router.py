@@ -27,7 +27,6 @@ if TYPE_CHECKING:
 
     from funpayhub.lib.telegram.ui import UIRegistry as UI
 
-    from funpayhub.app.main import FunPayHub as FPH
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
 
 
@@ -48,14 +47,13 @@ async def set_state(q: Query, cbd: cbs.AddCommand, state: FSM) -> Any:
 
 
 @r.message(StateFilter(states.AddingCommand.identifier), lambda msg: msg.text)
-async def add_command(m: Message, props: FPHProps, hub: FPH, tg_ui: UI, state: FSM) -> Any:
+async def add_command(m: Message, props: FPHProps, state: FSM) -> Any:
     if m.text in props.auto_response.entries:
         return m.answer(text=ru('<b>❌ Команда уже существует.</b>'))
 
     data = await states.AddingCommand.clear(state)
     entry = props.auto_response.add_entry(m.text)
     await props.auto_response.save(same_file_only=True)
-    await hub.emit_node_attached_event(entry)
 
     await NodeMenuContext(
         menu_id=MenuIds.props_node,
