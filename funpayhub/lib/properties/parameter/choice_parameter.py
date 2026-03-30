@@ -43,7 +43,7 @@ class ChoiceParameter[T: int | float | bool | str](MutableParameter[str]):
         flags: Iterable[Any] | None = None,
     ) -> None:
         if not choices:
-            raise ValueError('choices cannot be empty')  # todo
+            raise ValueError('choices cannot be empty')
 
         self._choices: dict[str, Choice[Any]] = {}
         for i in choices:
@@ -77,7 +77,7 @@ class ChoiceParameter[T: int | float | bool | str](MutableParameter[str]):
     def real_value(self) -> T:
         return self.choices[self.value].value
 
-    async def validate_value(self, value: str) -> None:
+    async def validate(self, value: str) -> None:
         if value not in self._choices:
             raise ValueError(f'No choice with id {value!r}.')
         await super().validate(value)
