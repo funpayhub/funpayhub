@@ -4,7 +4,6 @@ from typing import Any
 from types import MappingProxyType
 
 from funpayhub.lib.properties import (
-    Node,
     Properties,
     StringParameter,
     ToggleParameter,
@@ -109,20 +108,12 @@ class AutoResponseProperties(Properties):
     def entries(self) -> MappingProxyType[str, AutoResponseEntryProperties]:
         return super().entries  # type: ignore
 
-    def attach_node[P: Node](self, node: P) -> P:
-        if not isinstance(node, AutoResponseEntryProperties):
-            raise ValueError(
-                f'{self.__class__.__name__!r} allows attaching only for '
-                f'{AutoResponseEntryProperties.__name__!r} instances.',
-            )
-        return super().attach_node(node)
-
     async def load_from_dict(self, properties_dict: dict[str, Any]) -> None:
         await super().load_from_dict(properties_dict)
         for i in properties_dict:
             obj = AutoResponseEntryProperties(command=i)
             await obj.load_from_dict(properties_dict[i])
-            self.attach_node(obj)
+            self.attach_node(obj, replace=True)
 
     def add_entry(self, command: str) -> AutoResponseEntryProperties:
         obj = AutoResponseEntryProperties(command)

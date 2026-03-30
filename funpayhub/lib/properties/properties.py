@@ -7,9 +7,9 @@ __all__ = ['Properties']
 import os
 import logging
 import tomllib
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from types import MappingProxyType
-from collections.abc import Callable, Iterable, Awaitable, Generator
+from collections.abc import Iterable, Generator
 
 import tomli_w
 
@@ -18,9 +18,8 @@ from .hook_types import HookTypes
 from .parameter.base import Parameter, MutableParameter
 
 
-type ParameterValueChangedHook = Callable[[MutableParameter], Awaitable[Any]]
-type NodeAttachedHook = Callable[[Node], Awaitable[Any]]
-type NodeDetachedHook = Callable[[Node, Node], Awaitable[Any]]
+if TYPE_CHECKING:
+    from .hook_types import NodeAttachedHook, NodeDetachedHook, ParameterValueChangedHook
 
 
 logger = logging.getLogger('properties')
@@ -61,17 +60,16 @@ class Properties(Node):
         self._on_node_detached_hook = on_node_detached_hook
         self._on_parameter_changed_hook = on_parameter_value_changed_hook
 
-        self.__hooks__ = {
-            HookTypes.on_parameter_value_changed: self._on_parameter_changed_hook,
-            HookTypes.on_node_attached: self._on_node_attached_hook,
-            HookTypes.on_node_detached: self._on_node_detached_hook,
-        }
-
         super().__init__(
             id=id,
             name=name,
             description=description,
             flags=flags,
+            hooks={
+                HookTypes.on_parameter_value_changed: self._on_parameter_changed_hook,
+                HookTypes.on_node_attached: self._on_node_attached_hook,
+                HookTypes.on_node_detached: self._on_node_detached_hook,
+            },
         )
 
     @property
@@ -135,6 +133,7 @@ class Properties(Node):
 
         node.parent = self
         self._nodes[node.id] = node
+        await self.emit(HookTypes.on_node_attached, node)
         return node
 
     def detach_node(self, node_id: str) -> Properties | None:
@@ -272,7 +271,7 @@ class Properties(Node):
         return self.__hooks__.get(HookTypes.on_node_detached)
 
     @property
-    def on_parameter_changed_hook(self) -> ParameterValueChangedHook | None:
+    def on_parameter_value_changed_hook(self) -> ParameterValueChangedHook | None:
         return self.__hooks__.get(HookTypes.on_parameter_value_changed)
 
     @on_node_attached_hook.setter
@@ -283,8 +282,8 @@ class Properties(Node):
     def on_node_detached_hook(self, value: NodeDetachedHook | None) -> None:
         self.__hooks__[HookTypes.on_node_detached] = value
 
-    @on_parameter_changed_hook.setter
-    def on_parameter_changed_hook(self, value: ParameterValueChangedHook | None) -> None:
+    @on_parameter_value_changed_hook.setter
+    def on_parameter_value_changed_hook(self, value: ParameterValueChangedHook | None) -> None:
         self.__hooks__[HookTypes.on_parameter_value_changed] = value
 
     def __len__(self) -> int:

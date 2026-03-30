@@ -6,10 +6,13 @@ from asyncio import Lock
 from collections.abc import Callable, Iterable, Awaitable
 
 from funpayhub.lib.properties.base import Node
+from funpayhub.lib.properties.hook_types import HookTypes
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.properties import HookTypes, Properties
+    from funpayhub.lib.properties import Properties
+
+    from ..hook_types import ParameterValueChangedHook
 
 type CONTAINER_ALLOWED_TYPES = int | float | str | bool
 
@@ -205,3 +208,11 @@ class MutableParameter[ValueT](Parameter[ValueT]):
         converter: Callable[[Any], ValueT],
     ) -> None:
         self._converter = converter
+
+    @property
+    def on_parameter_value_changed_hook(self) -> ParameterValueChangedHook | None:
+        return self.__hooks__.get(HookTypes.on_parameter_value_changed)
+
+    @on_parameter_value_changed_hook.setter
+    def on_parameter_value_changed_hook(self, value: ParameterValueChangedHook | None) -> None:
+        self.__hooks__[HookTypes.on_parameter_value_changed] = value

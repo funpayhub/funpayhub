@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from types import MappingProxyType
 
-from funpayhub.lib.properties import Node, Properties, StringParameter, ToggleParameter
+from funpayhub.lib.properties import Properties, StringParameter, ToggleParameter
 from funpayhub.lib.translater import _
 from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
@@ -71,19 +71,11 @@ class AutoDeliveryProperties(Properties):
     def entries(self) -> MappingProxyType[str, AutoDeliveryEntryProperties]:
         return super().entries  # type: ignore
 
-    def attach_node[P: Node](self, node: P) -> P:
-        if not isinstance(node, AutoDeliveryEntryProperties):
-            raise ValueError(
-                f'{self.__class__.__name__!r} allows attaching only for '
-                f'{AutoDeliveryEntryProperties.__name__!r} instances.',
-            )
-        return super().attach_node(node)
-
     async def load_from_dict(self, properties_dict: dict[str, Any]) -> None:
         for i in properties_dict:
             obj = AutoDeliveryEntryProperties(offer_name=i)
             await obj.load_from_dict(properties_dict[i])
-            super().attach_node(obj)
+            super().attach_node(obj, replace=True)
 
     def add_entry(self, offer_name: str) -> AutoDeliveryEntryProperties:
         return self.attach_node(AutoDeliveryEntryProperties(offer_name))

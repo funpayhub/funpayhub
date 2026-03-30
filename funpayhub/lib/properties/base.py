@@ -32,6 +32,7 @@ class Node:
         name: CallableValue[str],
         description: CallableValue[str],
         flags: Iterable[Any] | None = None,
+        hooks: dict[str, Callable[..., Any]] | None = None,
     ) -> None:
         """
         Базовый класс для параметров / категорий параметров.
@@ -52,7 +53,7 @@ class Node:
         self._description = description
         self._flags = frozenset(flags) if flags else frozenset()
 
-        self.__hooks__ = {}
+        self.__hooks__ = hooks or {}
 
     @property
     def id(self) -> str:
@@ -145,7 +146,7 @@ class Node:
         return None
 
     async def emit(self, hook: str, *args: Any, **kwargs: Any) -> None:
-        if hook in self.__hooks__:
+        if (hook := self.__hooks__.get(hook)) is not None:
             try:
                 await self.__hooks__[hook](*args, **kwargs)
             except Exception:

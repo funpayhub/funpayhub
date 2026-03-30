@@ -8,9 +8,8 @@ from copy import copy
 from types import EllipsisType
 from collections.abc import Callable, Iterable, Awaitable
 
+from funpayhub.lib.properties.hook_types import HookTypes
 from funpayhub.lib.properties.parameter.base import MutableParameter
-
-from .. import HookTypes
 
 
 if TYPE_CHECKING:
@@ -86,10 +85,11 @@ class ListParameter[ItemType: CONTAINER_ALLOWED_TYPES](MutableParameter[list[Ite
             result = self._value.pop(index)
             if save:
                 await self.save()
-            return result
 
         if not skip_hook:
             await self.emit(HookTypes.on_parameter_value_changed, self)
+
+        return result
 
     async def remove_item(
         self,
