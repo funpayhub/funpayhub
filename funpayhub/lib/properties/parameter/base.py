@@ -159,11 +159,13 @@ class MutableParameter[ValueT](Parameter[ValueT]):
         if not skip_hook:
             await self.emit(HookTypes.on_parameter_value_changed, self)
 
-    async def next_value(self, save: bool = True) -> ValueT:
+    async def next_value(self, save: bool = True, skip_hook: bool = False) -> ValueT:
         raise NotImplementedError(f'{self.__class__.__name__} does not support `.next_value`.')
 
-    async def to_default(self, save: bool = True) -> None:
-        await self.set_value(self.default_value, skip_converter=True, save=save)
+    async def to_default(self, save: bool = True, skip_hook: bool = False) -> None:
+        await self.set_value(
+            self.default_value, skip_converter=True, save=save, skip_hook=skip_hook
+        )
 
     def convert(self, value: Any) -> ValueT:
         """

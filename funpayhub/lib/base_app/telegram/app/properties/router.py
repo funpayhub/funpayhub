@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
-from aiogram.filters import StateFilter
 
 from funpayhub.lib.exceptions import PropertiesError
 from funpayhub.lib.base_app.telegram.utils import delete_message
@@ -22,7 +21,6 @@ if TYPE_CHECKING:
     )
     from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.lib.base_app import App
     from funpayhub.lib.properties import (
         Properties as Props,
         ListParameter,
@@ -35,62 +33,37 @@ router = Router()
 
 
 @router.callback_query(cbs.NextParamValue.filter())
-async def next_param_value(
-    q: Query,
-    props: Props,
-    cbd: cbs.NextParamValue,
-    app: App,
-    tg_ui: UI,
-) -> None:
-    param = props.get_parameter(cbd.path)
-    await param.next_value(save=True)
-    await app.emit_parameter_changed_event(param)
+async def next_value(q: Query, props: Props, cbd: cbs.NextParamValue, tg_ui: UI) -> None:
+    await props.get_parameter(cbd.path).next_value(save=True)
     await tg_ui.context_from_history(cbd.ui_history, trigger=q).apply_to(ui_registry=tg_ui)
 
 
 @router.callback_query(cbs.ChooseParamValue.filter())
-async def choose_param_value(
-    q: Query,
-    props: Props,
-    cbd: cbs.ChooseParamValue,
-    tg_ui: UI,
-    app: App,
-) -> None:
-    param = props.get_parameter(cbd.path)
-    await param.set_value(cbd.choice_id)
-    await app.emit_parameter_changed_event(param)
+async def choose_value(q: Query, props: Props, cbd: cbs.ChooseParamValue, tg_ui: UI) -> None:
+    await props.get_parameter(cbd.path).set_value(cbd.choice_id)
     await tg_ui.context_from_history(cbd.ui_history, trigger=q).apply_to(ui_registry=tg_ui)
 
 
 @router.callback_query(cbs.ManualParamValueInput.filter())
-async def change_parameter_value(
+async def change_value_state(
     q: Query,
     props: Props,
     tg_ui: UI,
     cbd: cbs.ManualParamValueInput,
     state: FSM,
 ) -> None:
-    await state.clear()
-
     entry = props.get_parameter(cbd.path)
     msg = await NodeMenuContext(
         menu_id=NodeMenuIds.props_param_manual_input,
         trigger=q,
         entry_path=entry.path,
     ).answer_to(ui_registry=tg_ui)
-
     await states.ChangingParameterValue(parameter=entry, query=q, state_message=msg).set(state)
 
 
-@router.message(StateFilter(states.ChangingParameterValue.identifier))
-async def edit_parameter(
-    m: Message,
-    app: App,
-    translater: Tr,
-    state: FSM,
-    tg_ui: UI,
-) -> None:
-    data: states.ChangingParameterValue = (await state.get_data())['data']
+@router.message(states.ChangingParameterValue.filter())
+async def change_value(m: Message, translater: Tr, state: FSM, tg_ui: UI) -> None:
+    data = await states.ChangingParameterValue.get(state)
     new_value = '' if m.text == '-' else m.text
 
     try:
@@ -105,7 +78,6 @@ async def edit_parameter(
         )
         return
 
-    await app.emit_parameter_changed_event(data.parameter)
     await tg_ui.context_from_history(data.ui_history, trigger=m).answer_to(ui_registry=tg_ui)
     delete_message(data.state_message)
 
@@ -136,7 +108,7 @@ async def list_action(q: Query, cbd: cbs.ListParamItemAction, props: Props, tg_u
 
 
 @router.callback_query(cbs.ListParamAddItem.filter())
-async def set_adding_list_item_state(
+async def add_list_item_state(
     q: Query,
     props: Props,
     tg_ui: UI,
@@ -153,18 +125,11 @@ async def set_adding_list_item_state(
     await states.AddingListItem(parameter=entry, query=q, state_message=msg).set(state)
 
 
-@router.message(StateFilter(states.AddingListItem.identifier))
-async def edit_parameter(
-    m: Message,
-    app: App,
-    translater: Tr,
-    state: FSM,
-    tg_ui: UI,
-) -> None:
+@router.message(states.AddingListItem.filter())
+async def add_list_item(m: Message, translater: Tr, state: FSM, tg_ui: UI) -> None:
     data: states.AddingListItem = (await state.get_data())['data']
     try:
         await data.parameter.add_item(m.text)
-        await data.parameter.save()
         await state.clear()
     except PropertiesError as e:
         error_text = e.format_args(translater.translate(e.message))
@@ -175,6 +140,5 @@ async def edit_parameter(
         )
         return
 
-    await app.emit_parameter_changed_event(data.parameter)
     await tg_ui.context_from_history(data.ui_history, trigger=m).answer_to(ui_registry=tg_ui)
     delete_message(data.state_message)
