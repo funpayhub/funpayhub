@@ -33,6 +33,7 @@ MENU_MODIFICATIONS = {
         modifications.PropertiesMenuModification,
         modifications.AddGoodsSourcesBtnToADMod,
         modifications.AutoDeliveryNodeInfoModification,
+        modifications.ReviewResponseModification
     ],
     MenuIds.props_param_manual_input: [
         modifications.AddFormattersButtonModification,

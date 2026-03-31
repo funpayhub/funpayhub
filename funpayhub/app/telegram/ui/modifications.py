@@ -11,7 +11,7 @@ from funpayhub.app.properties.flags import FormattersQueryFlag
 from funpayhub.lib.translater import translater
 
 from .ids import MenuIds
-
+from funpayhub.app.properties.review_reply import ReviewReplyPropertiesEntry, ReviewReplyProperties
 
 if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui import Menu
@@ -129,4 +129,32 @@ class AutoDeliveryNodeInfoModification(MenuModification, modification_id='fph:ad
 
         menu.main_text = '\n\n'.join(parts)
 
+        return menu
+
+
+class ReviewResponseModification(MenuModification, modification_id='fph:review_response_mod'):
+    async def filter(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> bool:
+        node = props.get_node(ctx.entry_path)
+        return node.is_child(props.review_reply) and isinstance(node, ReviewReplyPropertiesEntry)
+
+    async def modify(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> Menu:
+        node: ReviewReplyPropertiesEntry = props.get_properties(ctx.entry_path)
+
+        parts = []
+
+        if node.review_reply_text.value:
+            parts.append(
+                f'<b><i>{ru('💬 Текст ответа на отзыв')}:</i></b>'
+                f'<blockquote>{html.escape(node.review_reply_text.value)}</blockquote>'
+            )
+
+        if node.chat_reply_text.value:
+            if node.review_reply_text.value:
+                parts.append(
+                    f'<b><i>{ru('💬 Текст ответа в чат')}:</i></b>'
+                    f'<blockquote>{html.escape(node.chat_reply_text.value)}</blockquote>'
+                )
+
+        if parts:
+            menu.main_text = menu.main_text.strip() + '\n\n' + '\n\n'.join(parts)
         return menu
