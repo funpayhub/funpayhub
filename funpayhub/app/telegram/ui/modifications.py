@@ -8,12 +8,12 @@ from funpayhub.lib.telegram.ui import Button, MenuModification
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
 from funpayhub.app.properties.flags import FormattersQueryFlag
+from funpayhub.lib.translater import translater
 
 from .ids import MenuIds
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import Menu
     from funpayhub.lib.goods_sources import GoodsSourcesManager
     from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
@@ -22,26 +22,28 @@ if TYPE_CHECKING:
     from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
 
 
+ru = translater.translate
+
+
 class PropertiesMenuModification(
     MenuModification,
     modification_id='fph:main_properties_menu_modification',
 ):
     async def filter(self, ctx: NodeMenuContext, menu: Menu) -> bool:
-        return ctx.menu_id == MenuIds.props_node and ctx.entry_path == []
+        return ctx.entry_path == []
 
-    async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr) -> Menu:
+    async def modify(self, ctx: NodeMenuContext, menu: Menu) -> Menu:
         menu.main_keyboard.insert(
             1,
-            [
-                Button.callback_button(
-                    button_id='open_current_chat_notifications',
-                    text=translater.translate('🔔 Уведомления'),
-                    callback_data=OpenMenu(
-                        menu_id=MenuIds.tg_chat_notifications,
-                        ui_history=ctx.as_ui_history(),
-                    ).pack(),
-                ),
-            ],
+            Button.callback_button(
+                button_id='open_current_chat_notifications',
+                text=ru('🔔 Уведомления'),
+                callback_data=OpenMenu(
+                    menu_id=MenuIds.tg_chat_notifications,
+                    ui_history=ctx.as_ui_history(),
+                ).pack(),
+                row=True,
+            ),
         )
         return menu
 
@@ -50,13 +52,13 @@ class AutoDeliveryPropertiesMenuModification(
     MenuModification,
     modification_id='fph:auto_delivery_properties_menu_modification',
 ):
-    async def filter(self, ctx: NodeMenuContext, menu: Menu) -> bool:
-        return ctx.menu_id == MenuIds.props_node and ctx.entry_path == ['auto_delivery']
+    async def filter(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> bool:
+        return ctx.entry_path == props.auto_delivery.path
 
-    async def modify(self, ctx: NodeMenuContext, menu: Menu, translater: Tr):
+    async def modify(self, ctx: NodeMenuContext, menu: Menu):
         menu.footer_keyboard.add_callback_button(
             button_id='open_goods_sources_list',
-            text=translater.translate('🗳 Источники товаров'),
+            text=ru('🗳 Источники товаров'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.goods_sources_list,
                 ui_history=ctx.as_ui_history(),
@@ -69,12 +71,12 @@ class AddFormattersButtonModification(
     MenuModification,
     modification_id='fph:add_formatters_button',
 ):
-    async def filter(self, ctx: NodeMenuContext, menu: Menu, properties: FPHProps) -> bool:
+    async def filter(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> bool:
         if not ctx.entry_path:
             return False
 
         try:
-            node = properties.get_node(ctx.entry_path)
+            node = props.get_node(ctx.entry_path)
         except Exception:
             return False
 
@@ -84,19 +86,13 @@ class AddFormattersButtonModification(
         r = node.get_flag(FormattersQueryFlag) is not None
         return r
 
-    async def modify(
-        self,
-        ctx: NodeMenuContext,
-        menu: Menu,
-        translater: Tr,
-        properties: FPHProps,
-    ) -> Menu:
-        node = properties.get_node(ctx.entry_path)
+    async def modify(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> Menu:
+        node = props.get_node(ctx.entry_path)
         flag = node.get_flag(FormattersQueryFlag)
 
         menu.footer_keyboard.add_callback_button(
             button_id='open_formatters_list',
-            text=translater.translate('🔖 Форматтеры'),
+            text=ru('🔖 Форматтеры'),
             callback_data=OpenMenu(
                 menu_id=MenuIds.formatters_list,
                 new_message=True,
@@ -111,15 +107,17 @@ class AutoDeliveryNodeInfoModification(
     MenuModification,
     modification_id='fph:auto_delivery_node_info_modification',
 ):
+    async def filter(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> bool:
+        return len(ctx.entry_path) == 2 and ctx.entry_path[0] == props.auto_delivery.path[0]
+
     async def modify(
         self,
         ctx: NodeMenuContext,
         menu: Menu,
-        translater: Tr,
-        properties: FPHProps,
+        props: FPHProps,
         goods_manager: GoodsSourcesManager,
     ) -> Menu:
-        node: AutoDeliveryEntryProperties = properties.get_properties(ctx.entry_path)
+        node: AutoDeliveryEntryProperties = props.get_properties(ctx.entry_path)
         menu.header_text = '<b><i>' + html.escape(node.id) + '</i></b>'
 
         parts = []
@@ -162,6 +160,3 @@ class AutoDeliveryNodeInfoModification(
         menu.main_text = '\n\n'.join(parts)
 
         return menu
-
-    async def filter(self, ctx: NodeMenuContext, menu: Menu, properties: FPHProps) -> bool:
-        return len(ctx.entry_path) == 2 and ctx.entry_path[0] == properties.auto_delivery.path[0]
