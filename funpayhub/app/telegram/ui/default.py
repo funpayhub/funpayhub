@@ -31,7 +31,7 @@ BUTTON_BUILDERS = []
 MENU_MODIFICATIONS = {
     MenuIds.props_node: [
         modifications.PropertiesMenuModification,
-        modifications.AutoDeliveryPropertiesMenuModification,
+        modifications.AddGoodsSourcesBtnToADMod,
         modifications.AutoDeliveryNodeInfoModification,
     ],
     MenuIds.props_param_manual_input: [

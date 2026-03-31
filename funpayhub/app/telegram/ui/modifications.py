@@ -48,10 +48,7 @@ class PropertiesMenuModification(
         return menu
 
 
-class AutoDeliveryPropertiesMenuModification(
-    MenuModification,
-    modification_id='fph:auto_delivery_properties_menu_modification',
-):
+class AddGoodsSourcesBtnToADMod(MenuModification, modification_id='fph:ad_add_goods_sources'):
     async def filter(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> bool:
         return ctx.entry_path == props.auto_delivery.path
 
@@ -67,24 +64,14 @@ class AutoDeliveryPropertiesMenuModification(
         return menu
 
 
-class AddFormattersButtonModification(
-    MenuModification,
-    modification_id='fph:add_formatters_button',
-):
+class AddFormattersButtonModification(MenuModification, modification_id='fph:formatters_flag_btn'):
     async def filter(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> bool:
-        if not ctx.entry_path:
-            return False
-
         try:
             node = props.get_node(ctx.entry_path)
         except Exception:
             return False
 
-        if not isinstance(node, StringParameter):
-            return False
-
-        r = node.get_flag(FormattersQueryFlag) is not None
-        return r
+        return isinstance(node, StringParameter) and node.get_flag(FormattersQueryFlag) is not None
 
     async def modify(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> Menu:
         node = props.get_node(ctx.entry_path)
@@ -103,12 +90,10 @@ class AddFormattersButtonModification(
         return menu
 
 
-class AutoDeliveryNodeInfoModification(
-    MenuModification,
-    modification_id='fph:auto_delivery_node_info_modification',
-):
+class AutoDeliveryNodeInfoModification(MenuModification, modification_id='fph:ad_info_mod'):
     async def filter(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> bool:
-        return len(ctx.entry_path) == 2 and ctx.entry_path[0] == props.auto_delivery.path[0]
+        node = props.get_node(ctx.entry_path)
+        return node.is_child(props.auto_delivery) and isinstance(node, AutoDeliveryEntryProperties)
 
     async def modify(
         self,
@@ -125,36 +110,21 @@ class AutoDeliveryNodeInfoModification(
             source = goods_manager.get(node.goods_source.value)
             if source is None:
                 parts.append(
-                    '<b><i>'
-                    + translater.translate('⚠️ Источник товаров')
-                    + '</i></b>'
-                    + f': <code>{html.escape(node.goods_source.value)}</code>\n'
-                    + '<b><i>'
-                    + translater.translate(
-                        '⚠️ Источник товаров недоступен. Автовыдача не работает!',
-                    )
-                    + '</i></b>',
+                    f'<b><i>{ru('⚠️ Источник товаров')}</i></b>: '
+                    f'<code>{html.escape(node.goods_source.value)}</code>\n'
+                    f'<b><i>{ru('⚠️ Источник недоступен. Автовыдача не работает!')}</i></b>'
                 )
             else:
                 parts.append(
-                    '<b><i>'
-                    + translater.translate('🗳 Источник товаров')
-                    + '</i></b>'
-                    + f': <code>{html.escape(source.display_id)}</code>\n'
-                    + '<b><i>'
-                    + translater.translate('🗳 Доступно товаров')
-                    + f': <code>{len(source)}</code>'
-                    + '</i></b>',
+                    f'<b><i>{ru('🗳 Источник товаров')}</i></b>: '
+                    f'<code>{html.escape(source.display_id)}</code>\n'
+                    f'<b><i>{ru('🗳 Доступно товаров')}: <code>{len(source)}</code></i></b>'
                 )
 
         if node.delivery_text.value:
             parts.append(
-                '<b><i>'
-                + translater.translate('💬 Текст выдачи')
-                + ':</i></b>'
-                + '<blockquote>'
-                + html.escape(node.delivery_text.value)
-                + '</blockquote>',
+                f'<b><i>{ru('💬 Текст выдачи')}:</i></b>'
+                f'<blockquote>{html.escape(node.delivery_text.value)}</blockquote>'
             )
 
         menu.main_text = '\n\n'.join(parts)
