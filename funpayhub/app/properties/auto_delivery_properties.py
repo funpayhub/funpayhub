@@ -77,5 +77,5 @@ class AutoDeliveryProperties(Properties):
             await obj.load_from_dict(properties_dict[i])
             self.attach_node(obj, replace=True)
 
-    async def add_entry(self, offer_name: str) -> AutoDeliveryEntryProperties:
+    async def add_node(self, offer_name: str) -> AutoDeliveryEntryProperties:
         return await self.attach_node_and_emit(AutoDeliveryEntryProperties(offer_name))

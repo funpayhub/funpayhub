@@ -52,7 +52,7 @@ async def add_command(m: Message, props: FPHProps, state: FSM) -> Any:
         return m.answer(text=ru('<b>❌ Команда уже существует.</b>'))
 
     data = await states.AddingCommand.clear(state)
-    entry = await props.auto_response.add_entry(m.text)
+    entry = await props.auto_response.add_node(m.text)
     await props.auto_response.save(same_file_only=True)
 
     await NodeMenuContext(

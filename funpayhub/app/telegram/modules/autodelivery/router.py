@@ -59,7 +59,7 @@ async def add_rule(
 
     state_obj = await states.AddingAutoDeliveryRule.clear(state)
 
-    entry = await props.auto_delivery.add_entry(rule)
+    entry = await props.auto_delivery.add_node(rule)
     await props.auto_delivery.save()
 
     await NodeMenuContext(

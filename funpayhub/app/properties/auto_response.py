@@ -115,7 +115,7 @@ class AutoResponseProperties(Properties):
             await obj.load_from_dict(properties_dict[i])
             self.attach_node(obj, replace=True)
 
-    def add_entry(self, command: str) -> AutoResponseEntryProperties:
+    async def add_node(self, command: str) -> AutoResponseEntryProperties:
         obj = AutoResponseEntryProperties(command)
-        super().attach_node(obj)
+        await self.attach_node_and_emit(obj)
         return obj
