@@ -12,7 +12,7 @@ from aiogram.client.default import DefaultBotProperties
 
 bot = Bot(
     token=os.environ['TELEGRAM_TOKEN'],
-    default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN),
+    default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN, link_preview_is_disabled=True),
 )
 
 with open(os.environ['GITHUB_EVENT_PATH'], 'r') as f:
@@ -27,7 +27,7 @@ def escape_md(text: str) -> str:
 async def send_notification():
     message = (
         '*' + escape_md(f'🎉 Новый релиз FunPay Hub: {event["release"]["tag_name"]}') + '*\n\n'
-        f'{event["release"]["body"]}\n\n'
+        f'{event["release"]["body"].strip()}\n\n'
         '*' + escape_md(f'🔗 Ссылка на релиз: {event["release"]["html_url"]}') + '*\n\n'
         '*'
         + escape_md(
