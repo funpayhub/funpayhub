@@ -60,7 +60,7 @@ class Translater:
         for tr in self._catalogs.get(language or self.current_language, []):
             result = tr.gettext(key)
             result = result if result != '__empty__' else ''
-            if tr != key:
+            if result != key:
                 break
 
         if result and (args or kwargs):
@@ -70,15 +70,19 @@ class Translater:
 
 
 translater = Translater()
+"""Глобальный объект переводчика."""
 
 
 def _(_: str, /) -> str:
+    """
+    Возвращает переданную строку без изменений.
+    Используется как маркер для экстракторов строк.
+    """
     return _
 
 
 en = _
 ru = _
-
 
 # Deprecated
 _en = _

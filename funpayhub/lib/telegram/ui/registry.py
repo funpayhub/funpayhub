@@ -134,7 +134,6 @@ class UIRegistry:
     async def build_menu(
         self,
         context: MenuContext,
-        data: dict[str, Any] | None = None,
         run_modifications: bool = True,
         finalize: bool = True,
         menu_id: str | None = None,
@@ -164,11 +163,7 @@ class UIRegistry:
         HashinatorT1000.save()
         return result
 
-    def add_button_builder(
-        self,
-        builder: Type[ButtonBuilder],
-        overwrite: bool = False,
-    ) -> None:
+    def add_button_builder(self, builder: Type[ButtonBuilder], overwrite: bool = False) -> None:
         if not isinstance(builder, type) or not issubclass(builder, ButtonBuilder):
             raise ValueError(
                 f'Button builder must be a subclass of ButtonBuilder, '
@@ -180,11 +175,7 @@ class UIRegistry:
         logger.info(_en('Adding button builder %s to registry...'), builder.button_id)
         self._buttons[builder.button_id] = _ButtonBuilder(builder())
 
-    def add_button_modification(
-        self,
-        modification: Type[ButtonModification],
-        button_id: str,
-    ) -> None:
+    def add_button_modification(self, modification: Type[ButtonModification],button_id: str) -> None:
         if not isinstance(modification, type) or not issubclass(modification, ButtonModification):
             raise ValueError(
                 f'Button modification must be a subclass of ButtonModification, '
@@ -207,10 +198,8 @@ class UIRegistry:
     def get_button_builder(self, button_id: str) -> _ButtonBuilder:
         return self._buttons[button_id]
 
-    async def build_button(
-        self,
+    async def build_button(self,
         context: ButtonContext,
-        data: dict[str, Any] | None = None,
         run_modifications: bool = True,
         button_id: str | None = None,
     ) -> Button:
