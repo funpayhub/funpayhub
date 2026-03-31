@@ -2,11 +2,10 @@ from __future__ import annotations
 
 
 __all__ = [
-    'BindToOfferButtonModification',
-    'AddRemoveButtonToFirstResponseModification',
+    'GreetingsMenuMod',
     'BindToOfferMenu',
     'ReplaceNameWithOfferNameModification',
-    'ModifyHeaderText',
+    'GreetingsNodeMenuMod'
 ]
 
 
@@ -36,11 +35,11 @@ if TYPE_CHECKING:
 ru = translater.translate
 
 
-class BindToOfferButtonModification(MenuModification, modification_id='fph:bind_to_offer'):
+class GreetingsMenuMod(MenuModification, modification_id='fph:greetings_menu_mod'):
     async def filter(self, ctx: NodeMenuContext, menu: Menu, properties: FPHProps) -> bool:
         return ctx.entry_path == properties.first_response.path
 
-    async def modify(self, ctx: NodeMenuContext, menu: Menu) -> Menu:
+    async def modify(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> Menu:
         menu.footer_keyboard.add_callback_button(
             button_id='bind_to_offer',
             text=ru('➕ Привязать к лоту'),
@@ -55,36 +54,35 @@ class BindToOfferButtonModification(MenuModification, modification_id='fph:bind_
             style='danger',
         )
         menu.footer_keyboard.add_row(*buttons)
+
+        parts = []
+        if props.first_response.text.value:
+            parts.append(
+                f'<b><i>{ru('💬 Текст ответа')}:</i></b>'
+                f'<blockquote>{html.escape(props.first_response.text.value)}</blockquote>'
+            )
+
+        if parts:
+            menu.main_text = menu.main_text.strip() + '\n\n' + '\n\n'.join(parts)
         return menu
 
 
-class AddRemoveButtonToFirstResponseModification(
-    AddRemoveButtonBaseModification,
-    modification_id='fph:add_remove_fr',
-):
-    async def filter(self, ctx: NodeMenuContext, menu: Menu, properties: FPHProps) -> bool:
-        return len(ctx.entry_path) == 2 and ctx.entry_path[0] == properties.first_response.path[0]
+class GreetingsNodeMenuMod(MenuModification, modification_id='fph:greetings_node_menu_mod'):
+    async def filter(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> bool:
+        node = props.get_node(ctx.entry_path)
+        return node.is_child(props.first_response) and isinstance(node, FirstResponseToOfferNode)
 
-    async def modify(self, ctx: NodeMenuContext, menu: Menu) -> Menu:
-        return await self._modify(
-            ctx,
-            menu,
-            'delete_greetings',
-            cbs.RemoveGreetings(offer_id=ctx.entry_path[-1], ui_history=ctx.ui_history).pack(),
-        )
+    async def modify(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps, hub: FPH) -> Menu:
+        node: FirstResponseToOfferNode = props.get_properties(ctx.entry_path)
 
+        await self.modify_header(ctx, menu, hub)
+        self.add_remove_button(ctx, menu)
+        self.modify_main_text(menu, node)
+        return menu
 
-class ModifyHeaderText(MenuModification, modification_id='fph:first_response_modify_header'):
-    async def filter(self, ctx: NodeMenuContext, menu: Menu, properties: FPHProps):
-        return (
-            len(ctx.entry_path) == 2
-            and ctx.entry_path[0] == properties.first_response.path[0]
-            and isinstance(properties.get_node(ctx.entry_path), FirstResponseToOfferNode)
-        )
-
-    async def modify(self, ctx: NodeMenuContext, menu: Menu, hub: FPH):
+    async def modify_header(self, ctx: NodeMenuContext, menu: Menu, hub: FPH) -> None:
         if not hub.funpay.authenticated:
-            return menu
+            return
 
         profile = await hub.funpay.profile()
         offers = {}
@@ -101,7 +99,31 @@ class ModifyHeaderText(MenuModification, modification_id='fph:first_response_mod
             menu.header_text = f'⚠️ <b><u>{offer_id}</u></b>'
         else:
             menu.header_text = f'<b>[{offer_id}] {html.escape(offers[offer_id].title)}</b>'
-        return menu
+
+    def add_remove_button(self, ctx: NodeMenuContext, menu: Menu) -> None:
+        menu.footer_keyboard.add_row(
+            *confirmable_button(
+                ctx=ctx,
+                button_id='delete_rule',
+                text=ru('🗑️ Удалить'),
+                callback_data=cbs.RemoveGreetings(
+                    offer_id=ctx.entry_path[-1],
+                    ui_history=ctx.ui_history
+                ).pack(),
+                style='danger',
+            )
+        )
+
+    def modify_main_text(self, menu: Menu, node: FirstResponseToOfferNode) -> None:
+        parts = []
+        if node.text.value:
+            parts.append(
+                f'<b><i>{ru('💬 Текст приветствия')}:</i></b>'
+                f'<blockquote>{html.escape(node.text.value)}</blockquote>'
+            )
+
+        if parts:
+            menu.main_text = menu.main_text.strip() + '\n\n' + '\n\n'.join(parts)
 
 
 class ReplaceNameWithOfferNameModification(

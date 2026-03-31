@@ -8,20 +8,18 @@ from funpayhub.app.telegram.ui.ids import MenuIds
 
 from .ui import (
     BindToOfferMenu,
-    ModifyHeaderText,
-    BindToOfferButtonModification,
+    GreetingsMenuMod,
     ReplaceNameWithOfferNameModification,
-    AddRemoveButtonToFirstResponseModification,
+    GreetingsNodeMenuMod
 )
 from .router import router as router
 
 
 MENU_MODS = {
     MenuIds.props_node: [
-        BindToOfferButtonModification,
-        AddRemoveButtonToFirstResponseModification,
+        GreetingsMenuMod,
+        GreetingsNodeMenuMod,
         ReplaceNameWithOfferNameModification,
-        ModifyHeaderText,
     ],
 }
 
