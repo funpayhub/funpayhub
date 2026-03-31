@@ -22,6 +22,28 @@ class AutoResponseEntryProperties(Properties):
             description=_('Настройки реакции на команду.'),
         )
 
+        self.response_text = self.attach_node(
+            StringParameter(
+                id='response_text',
+                name=_('Текст ответа'),
+                description=_('Текст ответа на команду.'),
+                default_value='',
+                flags=[FormattersQueryFlag('fph:general|fph:message')],
+            ),
+        )
+
+        self.reply = self.attach_node(
+            ToggleParameter(
+                id='reply',
+                name=_('Включить'),
+                description=_(
+                    'Вкл.: бот отвечает на команду (если указан текст ответа).\n'
+                    'Выкл.: бот не отвечает на команду.',
+                ),
+                default_value=True,
+            ),
+        )
+
         self.case_sensitive = self.attach_node(
             ToggleParameter(
                 id='case_sensitive',
@@ -30,18 +52,6 @@ class AutoResponseEntryProperties(Properties):
                     'Вкл.: различает заглавные и строчные.\nВыкл.: регистр игнорируется.',
                 ),
                 default_value=False,
-            ),
-        )
-
-        self.reply = self.attach_node(
-            ToggleParameter(
-                id='reply',
-                name=_('Отвечать'),
-                description=_(
-                    'Вкл.: бот отвечает на команду (если указан текст ответа).\n'
-                    'Выкл.: бот не отвечает на команду.',
-                ),
-                default_value=True,
             ),
         )
 
@@ -80,16 +90,6 @@ class AutoResponseEntryProperties(Properties):
                     'Выкл.: бот не обрабатывает команду, если ее отправили не вы.',
                 ),
                 default_value=True,
-            ),
-        )
-
-        self.response_text = self.attach_node(
-            StringParameter(
-                id='response_text',
-                name=_('Текст ответа'),
-                description=_('Текст ответа на команду.'),
-                default_value='',
-                flags=[FormattersQueryFlag('fph:general|fph:message')],
             ),
         )
 
