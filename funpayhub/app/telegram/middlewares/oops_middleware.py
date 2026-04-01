@@ -35,7 +35,6 @@ class OopsMiddleware(BaseMiddleware):
 
         try:
             return await handler(event, data)
-
         except TelegramRetryAfter as e:
             if isinstance(event, CallbackQuery):
                 await event.answer(

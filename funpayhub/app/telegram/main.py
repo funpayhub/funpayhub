@@ -20,7 +20,6 @@ from funpayhub.app.dispatching.events import TelegramStartEvent
 from funpayhub.app.telegram.middlewares import (
     OopsMiddleware,
     UnpackMiddleware,
-    AddDataMiddleware,
     IsAuthorizedMiddleware,
 )
 from funpayhub.app.notification_channels import NotificationChannels
@@ -52,12 +51,6 @@ class Telegram(TelegramApp):
     def _setup_dispatcher(self) -> None:
         super()._setup_dispatcher()
         self._dispatcher.include_routers(*ROUTERS)
-
-        middleware = AddDataMiddleware()
-        for i, o in self.dispatcher.observers.items():
-            if i == 'error':
-                continue
-            o.outer_middleware(middleware)
 
         self.dispatcher.callback_query.outer_middleware(OopsMiddleware())
         self.dispatcher.callback_query.outer_middleware(UnpackMiddleware())

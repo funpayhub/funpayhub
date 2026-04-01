@@ -35,7 +35,7 @@ messages = [
 ]
 
 
-attempted_users = set()
+answered_users = set()
 
 
 class IsAuthorizedMiddleware(BaseMiddleware):
@@ -46,42 +46,43 @@ class IsAuthorizedMiddleware(BaseMiddleware):
         data: dict[str, Any],
     ):
         if not isinstance(event, (Message, CallbackQuery)):
-            return
+            return await handler(event, data)
 
-        from_user = event.from_user
         properties: FunPayHubProperties = data['properties']
         authorized = properties.telegram.general.authorized_users.value
-        is_private_msg = isinstance(event, Message) and event.chat.type == 'private'
 
-        if from_user.id not in authorized:
-            if is_private_msg:
-                if event.text == properties.telegram.general.password.value:
-                    logger.warning(
-                        _('Пользователь %s (%d) получил доступ к Telegram боту!'),
-                        from_user.username,
-                        from_user.id,
-                    )
-                    await properties.telegram.general.authorized_users.add_item(from_user.id)
-                    await properties.telegram.notifications.system.add_item(
-                        f'{event.chat.id}.{event.message_thread_id}',
-                    )
-                    await event.answer_animation(
-                        'CAACAgIAAyEFAASIhDzaAAEBtElpj7bfPSwOh-oXPd0AAROIKNIS8J8AAkiXAAI6nHhIKHcQ9ltBktA6BA',
-                    )
-                    await event.answer('Доступ получен!')
-                elif from_user.id not in attempted_users:
-                    await event.answer(
-                        '🔐 <b>Отправьте пароль, который вы вводили при первичной настройке FPH.</b>'
-                    )
-                    attempted_users.add(from_user.id)
-            elif is_private_msg or isinstance(event, CallbackQuery):
-                logger.warning(
-                    _('Пользователь %s (%d) пытается получить доступ к Telegram боту!'),
-                    from_user.username,
-                    from_user.id,
-                )
-                if isinstance(event, CallbackQuery):
-                    await event.answer(random.choice(messages), show_alert=True)
+        if event.from_user.id in authorized:
+            return await handler(event, data)
+
+        if isinstance(event, CallbackQuery):
+            await event.answer(random.choice(messages), show_alert=True)
             return None
 
-        return await handler(event, data)
+        if not isinstance(event, Message) or event.chat.type == 'private':
+            return None
+
+        if event.text == properties.telegram.general.password.value:
+            logger.warning(
+                _('Пользователь %s (%d) получил доступ к Telegram боту!'),
+                event.from_user.username,
+                event.from_user.id,
+            )
+            await properties.telegram.general.authorized_users.add_item(event.from_user.id)
+            await properties.telegram.notifications.system.add_item(
+                f'{event.chat.id}.{event.message_thread_id}',
+            )
+            await event.answer_animation(
+                'CAACAgIAAyEFAASIhDzaAAEBtElpj7bfPSwOh-oXPd0AAROIKNIS8J8AAkiXAAI6nHhIKHcQ9ltBktA6BA',
+            )
+            await event.answer('Доступ получен!')
+        else:
+            logger.warning(
+                _('Пользователь %s (%d) пытается получить доступ к Telegram боту!'),
+                event.from_user.username,
+                event.from_user.id,
+            )
+            if event.from_user.id not in answered_users:
+                await event.answer(
+                    '🔐 <b>Отправьте пароль, который вы вводили при первичной настройке FPH.</b>'
+                )
+                answered_users.add(event.from_user.id)
