@@ -293,7 +293,7 @@ class NewReviewNotificationMenuBuilder(
             Button.url_button(
                 button_id='open_order',
                 text=translater.translate('🏷️ Заказ'),
-                url=f'https://funpay.com/orders/{order_page.order_id}',
+                url=f'https://funpay.com/orders/{order_page.order_id}/',
             ),
         )
         return menu
