@@ -58,7 +58,7 @@ class IsAuthorizedMiddleware(BaseMiddleware):
             await event.answer(random.choice(messages), show_alert=True)
             return None
 
-        if not isinstance(event, Message) or event.chat.type == 'private':
+        if event.chat.type != 'private':
             return None
 
         if event.text == properties.telegram.general.password.value:
