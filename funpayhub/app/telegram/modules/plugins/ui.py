@@ -26,6 +26,8 @@ from funpayhub.lib.telegram.ui import (
 )
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+from funpayhub.app.telegram.ui.premade import confirmable_button
+from collections import defaultdict
 
 from funpayhub.app.telegram.ui.ids import MenuIds
 
@@ -117,13 +119,7 @@ class PluginInfoMenuBuilder(
         plugin = plugin_manager._plugins[ctx.plugin_id]
         man = plugin.manifest
 
-        blocks = {
-            'name': [],
-            'info': [],
-            'social': [],
-            'description': [],
-            'error': [],
-        }
+        blocks = defaultdict(list)
 
         keyboard = KeyboardBuilder()
 
@@ -184,13 +180,17 @@ class PluginInfoMenuBuilder(
             ).pack(),
         )
 
-        keyboard.add_callback_button(
-            button_id='remove_plugin',
-            text=ru('🗑️ Удалить'),
-            callback_data=cbs.RemovePlugin(
-                plugin_id=man.plugin_id,
-                ui_history=ctx.ui_history,
-            ).pack(),
+        keyboard.add_row(
+            *confirmable_button(
+                button_id='remove_plugin',
+                ctx=ctx,
+                text=ru('🗑️ Удалить'),
+                callback_data=cbs.RemovePlugin(
+                    plugin_id=man.plugin_id,
+                    ui_history=ctx.ui_history,
+                ).pack(),
+                style='danger'
+            )
         )
 
         return Menu(
