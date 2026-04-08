@@ -230,7 +230,7 @@ class PluginManager[PluginCLS]:
         for step_name in self.steps_order:
             step = self._steps.get(step_name)
             if step is None:
-                logger.warning(_en('Step %s is not in plugin manager. Skipping.'), step_name)
+                logger.debug(_en('Step %s is not in plugin manager. Skipping.'), step_name)
                 continue
 
             for plugin_id, plugin in self._plugins.items():
@@ -241,11 +241,7 @@ class PluginManager[PluginCLS]:
                         step_name,
                     )
                     continue
-                logger.info(
-                    _en('Running %s step for plugin %s.'),
-                    step_name,
-                    plugin.manifest.plugin_id,
-                )
+                logger.debug(_en('Running %s step for plugin %s.'),step_name, plugin.manifest.plugin_id)
                 await step(plugin)
 
     def _load_entry_point(self, plugin_path: str | Path, manifest: PluginManifest) -> PluginCLS:

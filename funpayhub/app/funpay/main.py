@@ -132,6 +132,7 @@ class FunPay:
             try:
                 await self._bot.update()
                 await self.profile(update=True)
+                logger.info('FunPay Hub успешно подключился к аккаунту %s.', self._profile_page.username)
                 asyncio.create_task(self.hub.dispatcher.event_entry(FunPayStartEvent()))
                 return
             except (BotUnauthenticatedError, UnauthorizedError) as e:
@@ -169,7 +170,10 @@ class FunPay:
                 exception = e
                 break
 
-        logger.error(_en('Failed to make first request to FunPay.'))
+        logger.error(
+            'FunPay Hub не удалось подключиться к аккаунту FunPay. '
+            'Проверьте настройки через Telegram бота.'
+        )
         await self.hub.dispatcher.event_entry(FunPayStartEvent(error=exception))
         raise exception
 

@@ -23,6 +23,7 @@ from funpayhub.app.telegram.middlewares import (
     IsAuthorizedMiddleware,
 )
 from funpayhub.app.notification_channels import NotificationChannels
+from funpayhub.loggers import main as logger
 
 
 if TYPE_CHECKING:
@@ -97,6 +98,8 @@ class Telegram(TelegramApp):
         for button_id, modifications in BUTTON_MODS.items():
             for mod in modifications:
                 self.ui_registry.add_button_modification(mod, button_id)
+
+        logger.info('Telegram UI загружен!')
 
     async def start(self) -> None:
         commands_dict = defaultdict(list)

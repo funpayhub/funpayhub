@@ -82,6 +82,12 @@ dictConfig(
             'aiogram': {
                 'level': logging.DEBUG if args.debug else logging.WARNING,
             },
+            'funpaybotengine.session': {
+                'level': logging.DEBUG if args.debug else logging.WARNING,
+            },
+            'eventry': {
+                'level': logging.DEBUG if args.debug else logging.WARNING,
+            }
         },
     },
 )
