@@ -11,6 +11,7 @@ __all__ = [
 from typing import Any
 
 from funpaybotengine.types import Category
+from funpaybotengine.types.pages import ProfilePage
 
 from .base import HubEvent
 
@@ -53,3 +54,17 @@ class OffersRaisedEvent(HubEvent, event_name='fph:offers_raised'):
 
 
 class FunPayHubStoppedEvent(HubEvent, event_name='fph:funpayhub_stopped'): ...
+
+
+class FunPayProfileUpdated(HubEvent, event_name='fph:funpay_profile_updated'):
+    def __init__(self, profile: ProfilePage) -> None:
+        super().__init__()
+        self._profile_page = profile
+
+    @property
+    def profile_page(self) -> ProfilePage:
+        return self._profile_page
+
+    @property
+    def event_context_injection(self) -> dict[str, Any]:
+        return super().event_context_injection | {'profile': self.profile_page}
