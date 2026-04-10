@@ -74,10 +74,10 @@ class Telegram(TelegramApp):
         self._commands_registry.create_command('restart', 'hub', True, _('Перезапуск.'))
         self._commands_registry.create_command('safe_mode', 'hub', True, _('Безопасный режим.'))
         self._commands_registry.create_command(
-            'standard_mode',
-            'hub',
-            True,
-            _('Стандартный режим.'),
+            'standard_mode', 'hub', True, _('Стандартный режим.'),
+        )
+        self._commands_registry.create_command(
+            'update_funpay', 'hub', True, _('Обновить FunPay профиль')
         )
 
     def _setup_ui(self) -> None:

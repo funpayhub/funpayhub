@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from contextlib import suppress
 
 from aiogram import Router
@@ -78,6 +78,19 @@ async def standard_mode(message: Message, hub: FunPayHub, translater: Translater
 
     await message.reply(translater.translate('♻️ Перезапускаюсь в стандартный режим...'))
     await hub.shutdown(exit_codes.RESTART_NON_SAFE)
+
+
+@router.message(Command('update_funpay'))
+async def update_profile(m: Message, hub: FunPayHub) -> Any:
+    if not hub.funpay.authenticated:
+        return m.reply('<b>❌ Не авторизирован в FunPay аккаунт.</b>')
+
+    try:
+        await hub.funpay.profile(update=True, emit_event=True)
+    except Exception:
+        logger.error('Ошибка обновления профиля по команде из Telegram бота.', exc_info=True)
+        return m.reply('<b>❌ Ошибка при обновлении профиля.\nПодробности в логах.</b>')
+    return m.reply(f'<b>✅ Профиль обновлен!</b>')
 
 
 @r.startup()

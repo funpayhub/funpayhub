@@ -21,6 +21,7 @@ from funpaybotengine.exceptions import (
 from funpaybotengine.types.pages import ProfilePage
 from funpaybotengine.runner.config import RunnerConfig
 
+from funpayhub.app.dispatching.events.other_events import FunPayProfileUpdated
 from funpayhub.loggers import main as logger
 
 from funpayhub.lib.exceptions import TranslatableException
@@ -183,11 +184,15 @@ class FunPay:
         )
         self._dispatcher.connect_routers(*ALL_ROUTERS)
 
-    async def profile(self, update: bool = False) -> ProfilePage:
+    async def profile(self, update: bool = False, emit_event: bool = True) -> ProfilePage:
         if not self._profile_page or update:
             if not self._bot.initialized:
                 await self._bot.update()
             self._profile_page = await self._bot.get_profile_page(self._bot.userid)
+            if emit_event:
+                asyncio.create_task(
+                    self.hub.dispatcher.event_entry(FunPayProfileUpdated(self._profile_page))
+                )
         return self._profile_page
 
     async def send_messages_stack(
