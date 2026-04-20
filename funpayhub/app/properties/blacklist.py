@@ -92,15 +92,21 @@ class BlackList(Properties):
     def get_user(self, username: str) -> BlackListNode | None:
         return self._nodes.get(BlackListNode.username_to_node_id(username))
 
-    async def add_user(self, username: str) -> BlackListNode:
+    async def add_user(self, username: str, save: bool = True) -> BlackListNode:
         node_id = BlackListNode.username_to_node_id(username)
         if node_id in self._nodes:
             raise ValueError(f'User {username} already exists in blacklist.')
 
-        return await self.attach_node_and_emit(BlackListNode(username))
+        node = await self.attach_node_and_emit(BlackListNode(username))
+        if save:
+            await self.save()
+        return node
 
-    async def del_user(self, username: str) -> BlackListNode | None:
-        return await self.detach_node_and_emit(BlackListNode.username_to_node_id(username))
+    async def del_user(self, username: str, save: bool = True) -> BlackListNode | None:
+        node = await self.detach_node_and_emit(BlackListNode.username_to_node_id(username))
+        if save:
+            await self.save()
+        return node
 
     def is_ad_disabled_for(self, username: str) -> bool:
         node = self.get_user(username)

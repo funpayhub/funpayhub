@@ -6,6 +6,7 @@ from aiogram import Router
 
 from funpayhub.lib.base_app.telegram.utils import delete_message
 from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+from funpayhub.lib.telegram.ui.registry import ui_registry
 
 from funpayhub.app.telegram.ui.builders.context import StateUIContext
 
@@ -55,3 +56,9 @@ async def add_user(m: Message, state: FSM, props: FPHProps):
     ).answer_to(m)
 
     delete_message(data.state_msg)
+
+
+@router.callback_query(cbs.DeleteUser.filter())
+async def delete_user_from_blacklist(q: Query, props: FPHProps, cbd: cbs.DeleteUser):
+    await props.black_list.del_user(cbd.username)
+    await ui_registry.context_from_history(cbd.ui_history).apply_to(q)
