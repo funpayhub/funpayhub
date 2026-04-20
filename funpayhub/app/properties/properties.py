@@ -4,6 +4,7 @@ from typing import TypeVar
 
 from funpayhub.lib.properties import Parameter, Properties, ListParameter
 from funpayhub.lib.translater import _
+from .blacklist import BlackList
 
 from .review_reply import ReviewReplyProperties
 from .auto_response import AutoResponseProperties
@@ -59,4 +60,5 @@ class FunPayHubProperties(Properties):
                 flags=[TelegramUIEmojiFlag('📑')],
             ),
         )
+        self.black_list = self.attach_node(BlackList())
         self.plugin_properties = self.attach_node(PluginProperties())
