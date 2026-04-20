@@ -5,6 +5,7 @@ from html import escape
 
 from funpaybotengine import Router
 from funpaybotengine.dispatching import ReviewEvent
+from eventry.asyncio.filter import all_of
 
 from funpayhub.loggers import main as logger
 
@@ -79,8 +80,16 @@ async def review_filter(event: ReviewEvent, properties: FPHProps, fp: FunPay) ->
     return True
 
 
-@r.on_new_review(review_filter)
-@r.on_review_changed(review_filter)
+async def rr_enabled(event: ReviewEvent, props: FPHProps) -> bool:
+    return not props.black_list.is_rr_disabled_for(event.message.meta.buyer_username)
+
+
+async def rcr_enabled(event: ReviewEvent, props: FPHProps) -> bool:
+    return not props.black_list.is_rcr_disabled_for(event.message.meta.buyer_username)
+
+
+@r.on_new_review(all_of(review_filter, rr_enabled))
+@r.on_review_changed(all_of(review_filter, rr_enabled))
 async def reply_in_review(
     event: ReviewEvent,
     fp: FunPay,
@@ -118,8 +127,8 @@ async def reply_in_review(
     event['review_reply_text'] = text.entries[0]
 
 
-@r.on_new_review(review_filter)
-@r.on_review_changed(review_filter)
+@r.on_new_review(all_of(review_filter, rcr_enabled))
+@r.on_review_changed(all_of(review_filter, rcr_enabled))
 async def reply_in_chat(
     event: ReviewEvent,
     fp: FunPay,

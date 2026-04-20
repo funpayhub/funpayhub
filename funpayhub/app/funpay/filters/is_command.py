@@ -13,6 +13,8 @@ def is_fph_command(
 ) -> bool | dict[str, Any]:
     if not event.message.text:
         return False
+    if properties.black_list.is_ar_disabled_for(event.message.sender_username):
+        return False
 
     text = event.message.text
 

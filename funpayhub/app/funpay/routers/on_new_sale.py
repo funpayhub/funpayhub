@@ -65,6 +65,8 @@ async def auto_delivery_enabled_filter(
 
     if not props.auto_delivery.value or not props.delivery_text.value:
         return False
+    if properties.black_list.is_ad_disabled_for(order.counterparty.username):
+        return False
 
     return {'auto_delivery': props}
 

@@ -102,18 +102,18 @@ class BlackList(Properties):
     async def del_user(self, username: str) -> BlackListNode | None:
         return await self.detach_node_and_emit(BlackListNode.username_to_node_id(username))
 
-    def is_ad_banned_for(self, username: str) -> bool:
+    def is_ad_disabled_for(self, username: str) -> bool:
         node = self.get_user(username)
         return False if node is None else not node.auto_delivery.value
 
-    def is_ar_banned_for(self, username: str) -> bool:
+    def is_ar_disabled_for(self, username: str) -> bool:
         node = self.get_user(username)
         return False if node is None else node.auto_response.value
 
-    def is_rr_banned_for(self, username: str) -> bool:
+    def is_rr_disabled_for(self, username: str) -> bool:
         node = self.get_user(username)
         return False if node is None else node.review_reply.value
 
-    def is_rcr_banned_for(self, username: str) -> bool:
+    def is_rcr_disabled_for(self, username: str) -> bool:
         node = self.get_user(username)
         return False if node is None else node.review_chat_reply.value
