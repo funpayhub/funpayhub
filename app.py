@@ -87,7 +87,7 @@ dictConfig(
             },
             'eventry': {
                 'level': logging.DEBUG if args.debug else logging.WARNING,
-            }
+            },
         },
     },
 )

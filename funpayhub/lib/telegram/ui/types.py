@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import inspect
-import warnings
 from typing import TYPE_CHECKING, Any, Self, Type, Literal, overload
 from dataclasses import field, dataclass
 from collections.abc import Mapping, Iterable, Iterator, KeysView
@@ -402,7 +401,7 @@ class MenuContext(BaseModel):
         return {
             'menu_id': self.menu_id,
             'menu_page': self.menu_page,
-            'view_page': self.view_page
+            'view_page': self.view_page,
         }
 
     @classmethod

@@ -4,14 +4,15 @@ import html
 from typing import TYPE_CHECKING
 
 from funpayhub.lib.properties import StringParameter
+from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import Button, MenuModification
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
 from funpayhub.app.properties.flags import FormattersQueryFlag
-from funpayhub.lib.translater import translater
+from funpayhub.app.properties.review_reply import ReviewReplyPropertiesEntry
 
 from .ids import MenuIds
-from funpayhub.app.properties.review_reply import ReviewReplyPropertiesEntry, ReviewReplyProperties
+
 
 if TYPE_CHECKING:
     from funpayhub.lib.telegram.ui import Menu
@@ -110,21 +111,21 @@ class AutoDeliveryNodeInfoModification(MenuModification, modification_id='fph:ad
             source = goods_manager.get(node.goods_source.value)
             if source is None:
                 parts.append(
-                    f'<b><i>{ru('⚠️ Источник товаров')}</i></b>: '
+                    f'<b><i>{ru("⚠️ Источник товаров")}</i></b>: '
                     f'<code>{html.escape(node.goods_source.value)}</code>\n'
-                    f'<b><i>{ru('⚠️ Источник недоступен. Автовыдача не работает!')}</i></b>'
+                    f'<b><i>{ru("⚠️ Источник недоступен. Автовыдача не работает!")}</i></b>',
                 )
             else:
                 parts.append(
-                    f'<b><i>{ru('🗳 Источник товаров')}</i></b>: '
+                    f'<b><i>{ru("🗳 Источник товаров")}</i></b>: '
                     f'<code>{html.escape(source.display_id)}</code>\n'
-                    f'<b><i>{ru('🗳 Доступно товаров')}: <code>{len(source)}</code></i></b>'
+                    f'<b><i>{ru("🗳 Доступно товаров")}: <code>{len(source)}</code></i></b>',
                 )
 
         if node.delivery_text.value:
             parts.append(
-                f'<b><i>{ru('💬 Текст выдачи')}:</i></b>'
-                f'<blockquote>{html.escape(node.delivery_text.value)}</blockquote>'
+                f'<b><i>{ru("💬 Текст выдачи")}:</i></b>'
+                f'<blockquote>{html.escape(node.delivery_text.value)}</blockquote>',
             )
 
         menu.main_text = '\n\n'.join(parts)
@@ -144,15 +145,15 @@ class ReviewResponseModification(MenuModification, modification_id='fph:review_r
 
         if node.review_reply_text.value:
             parts.append(
-                f'<b><i>{ru('💬 Текст ответа на отзыв')}:</i></b>'
-                f'<blockquote>{html.escape(node.review_reply_text.value)}</blockquote>'
+                f'<b><i>{ru("💬 Текст ответа на отзыв")}:</i></b>'
+                f'<blockquote>{html.escape(node.review_reply_text.value)}</blockquote>',
             )
 
         if node.chat_reply_text.value:
             if node.review_reply_text.value:
                 parts.append(
-                    f'<b><i>{ru('💬 Текст ответа в чат')}:</i></b>'
-                    f'<blockquote>{html.escape(node.chat_reply_text.value)}</blockquote>'
+                    f'<b><i>{ru("💬 Текст ответа в чат")}:</i></b>'
+                    f'<blockquote>{html.escape(node.chat_reply_text.value)}</blockquote>',
                 )
 
         if parts:

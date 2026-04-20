@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 from io import BytesIO
 
 from aiogram.types import Message, ReactionTypeEmoji
+
 from funpayhub.lib.base_app.telegram import utils
 
 from funpayhub.app.telegram.states import SendingFunpayMessage
@@ -18,10 +19,11 @@ from .router import router
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.funpay.main import FunPay
-    from funpayhub.app.telegram.main import Telegram
     from aiogram.types import CallbackQuery as Query
     from aiogram.fsm.context import FSMContext as FSM
+
+    from funpayhub.app.funpay.main import FunPay
+    from funpayhub.app.telegram.main import Telegram
 
 
 @router.callback_query(cbs.SendMessage.filter())
@@ -52,6 +54,7 @@ async def send_funpay_message(m: Message, fp: FunPay, tg: Telegram, state: FSM) 
         await fp.send_message(chat_id=data.to, text=text, image=image, automatic_message=False)
     except Exception:
         import traceback
+
         print(traceback.format_exc())  # todo: logging
         return m.react(reaction=[ReactionTypeEmoji(emoji='💩')])
 

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+import html
 from typing import TYPE_CHECKING
 
-from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
 from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import MenuModification
 
 from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
-import html
+from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
 
 from . import callbacks as cbs
 
@@ -59,8 +59,8 @@ class CommandMenuMod(MenuModification, modification_id='fph:command_menu_mod'):
         parts = []
         if node.response_text.value:
             parts.append(
-                f'<b><i>{ru('💬 Текст ответа')}:</i></b>'
-                f'<blockquote>{html.escape(node.response_text.value)}</blockquote>'
+                f'<b><i>{ru("💬 Текст ответа")}:</i></b>'
+                f'<blockquote>{html.escape(node.response_text.value)}</blockquote>',
             )
 
         if parts:

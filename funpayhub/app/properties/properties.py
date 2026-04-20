@@ -4,8 +4,8 @@ from typing import TypeVar
 
 from funpayhub.lib.properties import Parameter, Properties, ListParameter
 from funpayhub.lib.translater import _
-from .blacklist import BlackList
 
+from .blacklist import BlackList
 from .review_reply import ReviewReplyProperties
 from .auto_response import AutoResponseProperties
 from .first_response import FirstResponseProperties

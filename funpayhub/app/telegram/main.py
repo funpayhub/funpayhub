@@ -9,6 +9,8 @@ from collections import defaultdict
 from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 from aiogram.methods import SendMessage, SendDocument
 
+from funpayhub.loggers import main as logger
+
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.properties import ListParameter
 from funpayhub.lib.translater import _
@@ -23,7 +25,6 @@ from funpayhub.app.telegram.middlewares import (
     IsAuthorizedMiddleware,
 )
 from funpayhub.app.notification_channels import NotificationChannels
-from funpayhub.loggers import main as logger
 
 
 if TYPE_CHECKING:
@@ -74,10 +75,16 @@ class Telegram(TelegramApp):
         self._commands_registry.create_command('restart', 'hub', True, _('Перезапуск.'))
         self._commands_registry.create_command('safe_mode', 'hub', True, _('Безопасный режим.'))
         self._commands_registry.create_command(
-            'standard_mode', 'hub', True, _('Стандартный режим.'),
+            'standard_mode',
+            'hub',
+            True,
+            _('Стандартный режим.'),
         )
         self._commands_registry.create_command(
-            'update_funpay', 'hub', True, _('Обновить FunPay профиль')
+            'update_funpay',
+            'hub',
+            True,
+            _('Обновить FunPay профиль'),
         )
 
     def _setup_ui(self) -> None:

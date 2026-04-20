@@ -30,6 +30,10 @@ from .updates import (
     MENUS as UPDATE_MENUS,
     router as updates_router,
 )
+from .blacklist import (
+    MENU_MODS as BLACKLIST_MENU_MODS,
+    router as blacklist_router,
+)
 from .autodelivery import (
     MENUS as AUTODELIVERY_MENUS,
     MENU_MODS as AUTODELIVERY_MENU_MODS,
@@ -46,7 +50,6 @@ from .first_response import (
     router as first_response_router,
 )
 from .funpay_actions import router as funpay_actions_router
-from .blacklist import router as blacklist_router, MENU_MODS as BLACKLIST_MENU_MODS
 
 
 ROUTERS = [
@@ -60,7 +63,7 @@ ROUTERS = [
     autodelivery_router,
     system_router,
     first_response_router,
-    blacklist_router
+    blacklist_router,
 ]
 
 MENUS = [
@@ -81,7 +84,7 @@ _mods = [
     GOODS_MENU_MODS,
     AUTODELIVERY_MENU_MODS,
     FIRST_RESPONSE_MENU_MODS,
-    BLACKLIST_MENU_MODS
+    BLACKLIST_MENU_MODS,
 ]
 
 for mods_dict in _mods:

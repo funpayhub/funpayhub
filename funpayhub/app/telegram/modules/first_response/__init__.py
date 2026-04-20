@@ -9,8 +9,8 @@ from funpayhub.app.telegram.ui.ids import MenuIds
 from .ui import (
     BindToOfferMenu,
     GreetingsMenuMod,
+    GreetingsNodeMenuMod,
     ReplaceNameWithOfferNameModification,
-    GreetingsNodeMenuMod
 )
 from .router import router as router
 

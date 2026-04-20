@@ -21,7 +21,6 @@ from funpaybotengine.exceptions import (
 from funpaybotengine.types.pages import ProfilePage
 from funpaybotengine.runner.config import RunnerConfig
 
-from funpayhub.app.dispatching.events.other_events import FunPayProfileUpdated
 from funpayhub.loggers import main as logger
 
 from funpayhub.lib.exceptions import TranslatableException
@@ -35,6 +34,7 @@ from funpayhub.app.funpay.routers import ALL_ROUTERS
 from funpayhub.app.first_response_cache import FirstResponseCache
 from funpayhub.app.funpay.offers_raiser import OffersRaiser
 from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
+from funpayhub.app.dispatching.events.other_events import FunPayProfileUpdated
 
 
 if TYPE_CHECKING:
@@ -133,7 +133,9 @@ class FunPay:
             try:
                 await self._bot.update()
                 await self.profile(update=True)
-                logger.info('FunPay Hub успешно подключился к аккаунту %s.', self._profile_page.username)
+                logger.info(
+                    'FunPay Hub успешно подключился к аккаунту %s.', self._profile_page.username
+                )
                 asyncio.create_task(self.hub.dispatcher.event_entry(FunPayStartEvent()))
                 return
             except (BotUnauthenticatedError, UnauthorizedError) as e:
@@ -173,7 +175,7 @@ class FunPay:
 
         logger.error(
             'FunPay Hub не удалось подключиться к аккаунту FunPay. '
-            'Проверьте настройки через Telegram бота.'
+            'Проверьте настройки через Telegram бота.',
         )
         await self.hub.dispatcher.event_entry(FunPayStartEvent(error=exception))
         raise exception
@@ -191,7 +193,7 @@ class FunPay:
             self._profile_page = await self._bot.get_profile_page(self._bot.userid)
             if emit_event:
                 asyncio.create_task(
-                    self.hub.dispatcher.event_entry(FunPayProfileUpdated(self._profile_page))
+                    self.hub.dispatcher.event_entry(FunPayProfileUpdated(self._profile_page)),
                 )
         return self._profile_page
 

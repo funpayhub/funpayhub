@@ -90,7 +90,7 @@ async def update_profile(m: Message, hub: FunPayHub) -> Any:
     except Exception:
         logger.error('Ошибка обновления профиля по команде из Telegram бота.', exc_info=True)
         return m.reply('<b>❌ Ошибка при обновлении профиля.\nПодробности в логах.</b>')
-    return m.reply(f'<b>✅ Профиль обновлен!</b>')
+    return m.reply('<b>✅ Профиль обновлен!</b>')
 
 
 @r.startup()

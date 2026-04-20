@@ -252,7 +252,8 @@ async def on_first_message(
 
         if event.message.chat_id not in new_chats.chat_ids:
             logger.debug(
-                _en('Chat %s not found in new chats. Exiting handler.'), event.message.chat_id
+                _en('Chat %s not found in new chats. Exiting handler.'),
+                event.message.chat_id,
             )
             return
 
@@ -279,7 +280,7 @@ async def on_first_message(
                 text=message,
                 context=NewMessageContext(new_message_event=event),
                 query=InCategory(MessageFormattersCategory).or_(
-                    InCategory(GeneralFormattersCategory)
+                    InCategory(GeneralFormattersCategory),
                 ),
             )
         except Exception as e:
@@ -292,9 +293,11 @@ async def on_first_message(
             await first_response_cache.update(event.message.chat_id)
         except Exception as e:
             logger.error(
-                _en('An error occurred while responding to the 1st message.'), exc_info=True
+                _en('An error occurred while responding to the 1st message.'),
+                exc_info=True,
             )
             tg.send_error_notification(
-                ru('❌ Произошла ошибка при ответе на первое сообщение.'), e
+                ru('❌ Произошла ошибка при ответе на первое сообщение.'),
+                e,
             )
             return

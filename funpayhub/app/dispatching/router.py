@@ -17,7 +17,7 @@ _events = {
     'funpay_start',
     'offers_raised',
     'funpayhub_stopped',
-    'funpay_profile_updated'
+    'funpay_profile_updated',
 }
 
 

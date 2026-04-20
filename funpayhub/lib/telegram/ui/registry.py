@@ -175,7 +175,9 @@ class UIRegistry:
         logger.debug(_en('Adding button builder %s to registry...'), builder.button_id)
         self._buttons[builder.button_id] = _ButtonBuilder(builder())
 
-    def add_button_modification(self, modification: Type[ButtonModification],button_id: str) -> None:
+    def add_button_modification(
+        self, modification: Type[ButtonModification], button_id: str
+    ) -> None:
         if not isinstance(modification, type) or not issubclass(modification, ButtonModification):
             raise ValueError(
                 f'Button modification must be a subclass of ButtonModification, '
@@ -198,7 +200,8 @@ class UIRegistry:
     def get_button_builder(self, button_id: str) -> _ButtonBuilder:
         return self._buttons[button_id]
 
-    async def build_button(self,
+    async def build_button(
+        self,
         context: ButtonContext,
         run_modifications: bool = True,
         button_id: str | None = None,

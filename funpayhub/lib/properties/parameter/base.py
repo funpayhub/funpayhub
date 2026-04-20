@@ -164,7 +164,10 @@ class MutableParameter[ValueT](Parameter[ValueT]):
 
     async def to_default(self, save: bool = True, skip_hook: bool = False) -> None:
         await self.set_value(
-            self.default_value, skip_converter=True, save=save, skip_hook=skip_hook
+            self.default_value,
+            skip_converter=True,
+            save=save,
+            skip_hook=skip_hook,
         )
 
     def convert(self, value: Any) -> ValueT:

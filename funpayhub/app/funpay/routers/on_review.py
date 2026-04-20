@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 from html import escape
 
 from funpaybotengine import Router
-from funpaybotengine.dispatching import ReviewEvent
 from eventry.asyncio.filter import all_of
+from funpaybotengine.dispatching import ReviewEvent
 
 from funpayhub.loggers import main as logger
 

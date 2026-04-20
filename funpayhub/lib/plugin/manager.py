@@ -241,7 +241,9 @@ class PluginManager[PluginCLS]:
                         step_name,
                     )
                     continue
-                logger.debug(_en('Running %s step for plugin %s.'),step_name, plugin.manifest.plugin_id)
+                logger.debug(
+                    _en('Running %s step for plugin %s.'), step_name, plugin.manifest.plugin_id
+                )
                 await step(plugin)
 
     def _load_entry_point(self, plugin_path: str | Path, manifest: PluginManifest) -> PluginCLS:

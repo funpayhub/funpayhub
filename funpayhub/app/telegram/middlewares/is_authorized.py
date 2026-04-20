@@ -83,6 +83,6 @@ class IsAuthorizedMiddleware(BaseMiddleware):
             )
             if event.from_user.id not in answered_users:
                 await event.answer(
-                    '🔐 <b>Отправьте пароль, который вы вводили при первичной настройке FPH.</b>'
+                    '🔐 <b>Отправьте пароль, который вы вводили при первичной настройке FPH.</b>',
                 )
                 answered_users.add(event.from_user.id)

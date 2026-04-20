@@ -5,7 +5,7 @@ __all__ = [
     'GreetingsMenuMod',
     'BindToOfferMenu',
     'ReplaceNameWithOfferNameModification',
-    'GreetingsNodeMenuMod'
+    'GreetingsNodeMenuMod',
 ]
 
 
@@ -19,7 +19,7 @@ from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification, confirmable_button
+from funpayhub.app.telegram.ui.premade import confirmable_button
 from funpayhub.app.properties.first_response import FirstResponseToOfferNode
 
 from . import callbacks as cbs
@@ -58,8 +58,8 @@ class GreetingsMenuMod(MenuModification, modification_id='fph:greetings_menu_mod
         parts = []
         if props.first_response.text.value:
             parts.append(
-                f'<b><i>{ru('💬 Текст ответа')}:</i></b>'
-                f'<blockquote>{html.escape(props.first_response.text.value)}</blockquote>'
+                f'<b><i>{ru("💬 Текст ответа")}:</i></b>'
+                f'<blockquote>{html.escape(props.first_response.text.value)}</blockquote>',
             )
 
         if parts:
@@ -108,18 +108,18 @@ class GreetingsNodeMenuMod(MenuModification, modification_id='fph:greetings_node
                 text=ru('🗑️ Удалить'),
                 callback_data=cbs.RemoveGreetings(
                     offer_id=ctx.entry_path[-1],
-                    ui_history=ctx.ui_history
+                    ui_history=ctx.ui_history,
                 ).pack(),
                 style='danger',
-            )
+            ),
         )
 
     def modify_main_text(self, menu: Menu, node: FirstResponseToOfferNode) -> None:
         parts = []
         if node.text.value:
             parts.append(
-                f'<b><i>{ru('💬 Текст приветствия')}:</i></b>'
-                f'<blockquote>{html.escape(node.text.value)}</blockquote>'
+                f'<b><i>{ru("💬 Текст приветствия")}:</i></b>'
+                f'<blockquote>{html.escape(node.text.value)}</blockquote>',
             )
 
         if parts:

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 from funpayhub.lib.properties import Properties, ToggleParameter
+from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class BlackListNode(Properties):
@@ -11,7 +11,7 @@ class BlackListNode(Properties):
         super().__init__(
             id=f'__user__{username}',
             name=username,
-            description=username
+            description=username,
         )
 
         self.auto_delivery = self.attach_node(
@@ -19,8 +19,8 @@ class BlackListNode(Properties):
                 id='auto_delivery',
                 name='Автовыдача',
                 description='Выдавать ли товар данном пользователю?',
-                default_value=False
-            )
+                default_value=False,
+            ),
         )
 
         self.auto_response = self.attach_node(
@@ -28,8 +28,8 @@ class BlackListNode(Properties):
                 id='block_ar',
                 name='Автоответ',
                 description='Разрешить ли автоответ для данного пользователя?',
-                default_value=False
-            )
+                default_value=False,
+            ),
         )
 
         self.review_reply = self.attach_node(
@@ -37,8 +37,8 @@ class BlackListNode(Properties):
                 id='review_reply',
                 name='Ответ на отзыв',
                 description='Отвечать ли на отзывы данного пользователя?',
-                default_value=False
-            )
+                default_value=False,
+            ),
         )
 
         self.review_chat_reply = self.attach_node(
@@ -46,8 +46,8 @@ class BlackListNode(Properties):
                 id='review_chat_reply',
                 name='Ответ в чат на отзыв',
                 description='Отправлять ли ответ на отзыв в чат для данного пользователя?',
-                default_value=False
-            )
+                default_value=False,
+            ),
         )
 
     @property
@@ -76,7 +76,7 @@ class BlackList(Properties):
             file='config/blacklist.toml',
             flags=[TelegramUIEmojiFlag('🚫')],
             name='Черный список',
-            description='Черный список пользователей.'
+            description='Черный список пользователей.',
         )
 
     async def load_from_dict(self, properties_dict: dict[str, Any]) -> None:

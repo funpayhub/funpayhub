@@ -1,7 +1,10 @@
 from __future__ import annotations
-from funpayhub.lib.telegram.fsm import StateFromQuery
-from dataclasses import dataclass
+
 from typing import TYPE_CHECKING
+from dataclasses import dataclass
+
+from funpayhub.lib.telegram.fsm import StateFromQuery
+
 
 if TYPE_CHECKING:
     from aiogram.types import Message
@@ -10,4 +13,3 @@ if TYPE_CHECKING:
 @dataclass
 class BlockingUser(StateFromQuery, identifier='blocking_user'):
     state_msg: Message
-

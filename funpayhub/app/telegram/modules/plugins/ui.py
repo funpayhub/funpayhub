@@ -14,6 +14,7 @@ __all__ = [
 import html
 from typing import TYPE_CHECKING
 from html import escape
+from collections import defaultdict
 
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.translater import translater
@@ -26,10 +27,9 @@ from funpayhub.lib.telegram.ui import (
 )
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
-from funpayhub.app.telegram.ui.premade import confirmable_button
-from collections import defaultdict
 
 from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.telegram.ui.premade import confirmable_button
 
 from . import callbacks as cbs
 
@@ -189,8 +189,8 @@ class PluginInfoMenuBuilder(
                     plugin_id=man.plugin_id,
                     ui_history=ctx.ui_history,
                 ).pack(),
-                style='danger'
-            )
+                style='danger',
+            ),
         )
 
         return Menu(
