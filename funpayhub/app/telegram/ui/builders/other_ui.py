@@ -220,21 +220,20 @@ class NewReviewNotificationMenuBuilder(
         menu = Menu(finalizer=StripAndNavigationFinalizer())
 
         menu.header_text = ru(
-            '<b>🌟 Вам оставили новый отзыв за заказ '
+            '<b>🔮 Вы получили {rating} за заказ '
             '<a href="https://funpay.com/orders/{orderid}/">{orderid}</a>!</b>',
             orderid=order_page.order_id,
+            rating='⭐' * (order_page.review.rating or 0),
         )
 
         menu.main_text = ru(
-            '📦 <b>Лот: {order_name}</b>\n'
-            '👤 <b>Пользователь: <a href="https://funpay.com/users/{userid}/">{username}</a></b>\n'
-            '⭐️ <b>Оценка: {rating} / 5</b>\n\n'
-            '💬 <b>Текст отзыва:</b>\n'
-            '<blockquote>{review_text}</blockquote>',
+            '💬 <b>Отзыв:</b>\n'
+            '<blockquote>{review_text}</blockquote>\n\n'
+            '👤 <a href="https://funpay.com/users/{userid}/">{username}</a>\n'
+            '📦 {order_name}',
             order_name=order_page.short_description,
             userid=str(order_page.chat.interlocutor.id),
             username=order_page.chat.interlocutor.username,
-            rating=str(order_page.review.rating),
             review_text=html.escape(order_page.review.text),
         )
 
