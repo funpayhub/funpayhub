@@ -19,6 +19,7 @@ from .context import (
     StateUIContext,
     NewReviewNotificationMenuContext,
     FunPayStartNotificationMenuContext,
+    SaleClosedNotificationMenuContext,
 )
 
 
@@ -295,4 +296,48 @@ class NewReviewNotificationMenuBuilder(
                 url=f'https://funpay.com/orders/{order_page.order_id}/',
             ),
         )
+        return menu
+
+
+class SaleClosedNotificationMenuBuilder(
+    MenuBuilder,
+    menu_id=MenuIds.sale_closed_notification,
+    context_type=SaleClosedNotificationMenuContext,
+):
+    async def build(self, ctx: SaleClosedNotificationMenuContext) -> Menu:
+        order = await ctx.sale_event.get_order_preview()
+        menu = Menu(finalizer=StripAndNavigationFinalizer())
+
+        menu.header_text = (
+            f'✅ <a href="https://funpay.com/orders/{order.id}/">Заказ #{order.id}</a> подтверждён!'
+        )
+
+        menu.main_text = (
+            f'<b>{html.escape(order.title)}</b>\n\n'
+            f'👤 <a href="https://funpay.com/users/{order.counterparty.id}/">'
+            f'{html.escape(order.counterparty.username)}</a>\n'
+            f'💵 <code>{order.total.value} {order.total.character}</code>'
+        )
+
+        menu.header_keyboard.add_row(
+            Button.callback_button(
+                button_id='refund',
+                text=ru('💸 Возврат'),
+                callback_data='dummy',
+            ),
+            Button.callback_button(
+                button_id='reply',
+                text=ru('🗨️ Ответить'),
+                callback_data=SendMessage(
+                    to=ctx.sale_event.message.chat_id,
+                    name=order.counterparty.username,
+                ).pack_compact(),
+            ),
+            Button.url_button(
+                button_id='open_chat',
+                text=ru('💬 Чат'),
+                url=f'https://funpay.com/chat/?node={ctx.sale_event.message.chat_id}',
+            ),
+        )
+
         return menu

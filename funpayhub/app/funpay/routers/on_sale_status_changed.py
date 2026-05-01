@@ -7,6 +7,11 @@ from funpaybotengine.dispatching import SaleStatusChangedEvent
 from funpaybotengine.types.enums import OrderStatus
 from funpaybotengine.dispatching.filters import FinalOrderStatusFilter, all_of
 
+from funpayhub.app.telegram.main import Telegram
+from funpayhub.app.telegram.ui.builders.context import SaleClosedNotificationMenuContext
+from funpayhub.app.telegram.ui.ids import MenuIds
+from funpayhub.app.notification_channels import NotificationChannels
+from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.loggers import main as logger
 
 from funpayhub.lib.translater import (
@@ -75,3 +80,13 @@ async def send_order_confirmation_message(
             ru('<b>❌ Ошибка отправления ответа на подтверждение заказа.</b>'),
             e,
         )
+
+@r.on_sale_closed(FinalOrderStatusFilter(OrderStatus.COMPLETED))
+async def send_closed_notification(event: SaleStatusChangedEvent, tg: Telegram, tg_ui: UIRegistry):
+    menu = await SaleClosedNotificationMenuContext(
+        menu_id=MenuIds.sale_closed_notification,
+        chat_id=-1,
+        sale_event=event,
+    ).build_menu(tg_ui)
+    tg.send_notification(NotificationChannels.SALE_STATUS_CHANGED, **menu)
+
