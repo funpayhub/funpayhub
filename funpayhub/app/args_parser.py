@@ -21,10 +21,17 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '-v',
+    '--verbose',
+    action='store_true',
+    help='Make FunPay Hub display more logs.',
+)
+
+parser.add_argument(
     '-d',
     '--debug',
     action='store_true',
-    help='Run FunPayHub in debug mode.',
+    help='Make FunPay Hub display all logs.',
 )
 
 parser.add_argument(
@@ -40,5 +47,6 @@ parser.add_argument(
     action='store_true',
     help='Setup telegram token and password.',
 )
+
 
 args = parser.parse_args()
