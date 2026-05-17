@@ -40,6 +40,7 @@ class MenuIds(BaseMenuIds):
 
     review_notification = 'fph:new_review_notification'
     bind_first_response_to_offer = 'fph:first_response_bind_to_offer'
+    sale_closed_notification = 'fph:sale_closed_notification'
 
 
 class ButtonIds(BaseButtonIds): ...

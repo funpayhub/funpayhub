@@ -194,3 +194,27 @@ class NewMessageNotificationAppearance(Properties):
                 default_value=False,
             ),
         )
+
+        self.show_funpay_system = self.attach_node(
+            ToggleParameter(
+                id='show_funpay_system',
+                name=_('Отображать системные FunPay'),
+                description=_(
+                    'Отображать ли системные СООБЩЕНИЯ FunPay '
+                    '(оплата заказа, подтверждение, написан отзыв и т.д.)',
+                ),
+                default_value=True,
+            ),
+        )
+
+        self.show_funpay_system_only = self.attach_node(
+            ToggleParameter(
+                id='show_funpay_system_only',
+                name=_('Увед., если только системные FunPay'),
+                description=_(
+                    'Присылать ли уведомление о новых сообщениях в чате, '
+                    'если все новые сообщения это системные от FunPay.',
+                ),
+                default_value=False,
+            ),
+        )

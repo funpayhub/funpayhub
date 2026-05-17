@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from funpaybotengine import Router
+from funpaybotengine.types.enums import MessageType
 from funpaybotengine.dispatching.events import RunnerEvent, NewMessageEvent, ChatChangedEvent
 
 from funpayhub.lib.telegram.ui import UIRegistry
@@ -81,6 +82,8 @@ async def send_new_message_notification(
             continue
         if i.message.from_me and not appearance_props.show_mine.value:
             continue
+        if i.message.meta.type != MessageType.NON_SYSTEM and not appearance_props.show_funpay_system.value:
+            continue
         msgs.append(i.message)
 
     if not msgs:
@@ -89,6 +92,7 @@ async def send_new_message_notification(
     only_mine = True
     only_automatic = True
     only_mine_from_hub = True
+    only_funpay_system = True
 
     for i in msgs:
         is_manual = fp.is_manual_message(i.id)
@@ -98,12 +102,14 @@ async def send_new_message_notification(
         only_mine &= i.from_me and not is_manual and not by_bot
         only_mine_from_hub &= is_manual
         only_automatic &= automatic
+        only_funpay_system &= i.meta.type != MessageType.NON_SYSTEM
 
     if any(
         [
             only_mine and not appearance_props.show_if_mine_only.value,
             only_automatic and not appearance_props.show_automatic_only.value,
             only_mine_from_hub and not appearance_props.show_mine_from_hub_only.value,
+            only_funpay_system and not appearance_props.show_funpay_system_only.value,
         ],
     ):
         return

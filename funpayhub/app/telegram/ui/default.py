@@ -22,6 +22,7 @@ MENU_BUILDERS = [
     other_ui.StateMenuBuilder,
     other_ui.RequestsMenuBuilder,
     other_ui.NewReviewNotificationMenuBuilder,
+    other_ui.SaleClosedNotificationMenuBuilder,
 ]
 
 
