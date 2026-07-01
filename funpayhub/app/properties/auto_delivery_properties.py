@@ -81,7 +81,9 @@ class AutoDeliveryProperties(Node):
         for i in data_dict:
             obj = AutoDeliveryEntryProperties(offer_name=i)
             await obj.load_from_dict(data_dict[i])
-            self._attach_node(obj, replace=True)
+            if i in self.subnodes:
+                self._detach_node(i)
+            self._attach_node(obj)
 
     async def add_node(self, offer_name: str) -> AutoDeliveryEntryProperties:
         return await self.attach_node(AutoDeliveryEntryProperties(offer_name))
