@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from funpayhub.lib.properties import Parameter, Properties, ListParameter
+from pyconfigtree import Node, Parameter
+from pyconfigtree.source.toml import TOMLSource
 from funpayhub.lib.translater import _
 
 from .blacklist import BlackList
@@ -18,25 +19,25 @@ from .auto_delivery_properties import AutoDeliveryProperties
 from ...lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
-T = TypeVar('T', bound=Properties)
+T = TypeVar('T', bound=Node)
 
 
-class FunPayHubProperties(Properties):
+class FunPayHubProperties(Node):
     def __init__(self) -> None:
         super().__init__(
-            id='props',
+            node_id='props',
             name=_('️Настройки'),
             description=_('Корневой раздел настроек FunPay Hub.'),
-            file='config/funpayhub.toml',
-            flags=[TelegramUIEmojiFlag('⚙')],
+            source=TOMLSource('config/funpayhub.toml'),
+            flags={TelegramUIEmojiFlag('⚙')},
         )
 
         self.version = self.attach_node(
             Parameter(
-                id='version',
+                node_id='version',
                 name='version',
                 description='version',
-                value='0.5.22',
+                value='0.6.0',
             ),
         )
         self.toggles = self.attach_node(TogglesProperties())
