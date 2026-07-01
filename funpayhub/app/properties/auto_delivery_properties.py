@@ -5,7 +5,7 @@ from types import MappingProxyType
 
 from pyconfigtree import Node, StringParameter, BoolParameter
 from pyconfigtree.source.toml import TOMLSource
-from funpayhub.lib.translater import _
+from funpayhub.lib.translater import ru, en
 from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
@@ -20,39 +20,39 @@ class AutoDeliveryEntryProperties(Node):
             description=f'Auto delivery options for {offer_name}',
         )
 
-        self.auto_delivery = self.attach_node(
+        self.auto_delivery = self._attach_node(
             BoolParameter(
                 node_id='auto_delivery',
-                name=_('Автовыдача'),
-                description=_('nodesc'),
+                name=ru('Автовыдача'),
+                description=en('nodesc'),
                 default_value=True,
             ),
         )
 
-        self.multi_delivery = self.attach_node(
+        self.multi_delivery = self._attach_node(
             BoolParameter(
                 node_id='multi_delivery',
-                name=_('Определять к-во товара'),
-                description=_('nodesc'),
+                name=ru('Определять к-во товара'),
+                description=en('nodesc'),
                 default_value=True,
             ),
         )
 
-        self.goods_source = self.attach_node(
+        self.goods_source = self._attach_node(
             StringParameter(
                 node_id='goods_source',
-                name=_('Источник товаров'),
-                description=_('nodesc'),
+                name=ru('Источник товаров'),
+                description=en('nodesc'),
                 default_value='',
                 flags={TelegramUIEmojiFlag('🗳')},
             ),
         )
 
-        self.delivery_text = self.attach_node(
+        self.delivery_text = self._attach_node(
             StringParameter(
                 node_id='delivery_text',
-                name=_('Текст выдачи'),
-                description=_('nodesc'),
+                name=ru('Текст выдачи'),
+                description=en('nodesc'),
                 default_value='',
             ),
         )
@@ -62,14 +62,14 @@ class AutoDeliveryProperties(Node):
     def __init__(self) -> None:
         super().__init__(
             node_id='auto_delivery',
-            name=_('Настройки автовыдачи'),
-            description=_('nodesc'),
+            name=ru('Настройки автовыдачи'),
+            description=en('nodesc'),
             source=TOMLSource('config/auto_delivery.toml'),
             flags={TelegramUIEmojiFlag('📦')},
         )
 
     @property
-    def entries(self) -> MappingProxyType[str, AutoDeliveryEntryProperties]:
+    def subnodes(self) -> MappingProxyType[str, AutoDeliveryEntryProperties]:
         return super().entries  # type: ignore
 
     async def load_from_dict(
