@@ -28,7 +28,7 @@ NodesUIRegistry.add_menu_builder(p.ChoiceParameter, builders.ChoiceParameterMenu
 NodesUIRegistry.add_menu_builder(p.ListParameter, builders.ListParameterMenuBuilder.menu_id)
 NodesUIRegistry.add_menu_builder(Node, builders.PropertiesMenuBuilder.menu_id)
 
-NodesUIRegistry.add_button_builder(p.BoolParameter, builders.ToggleParamButtonBuilder.button_id)
+NodesUIRegistry.add_button_builder(p.BoolParameter, builders.BoolParamBtnBuilder.button_id)
 NodesUIRegistry.add_button_builder(
     p.IntParameter,
     builders.ChangeParamValueButtonBuilder.button_id,
@@ -60,6 +60,6 @@ class NodeMenuIds:
 
 class NodeButtonIds:
     props_node = NodeButtonBuilder.button_id
-    props_toggle_param = builders.ToggleParamButtonBuilder.button_id
+    props_toggle_param = builders.BoolParamBtnBuilder.button_id
     props_change_param_value = builders.ChangeParamValueButtonBuilder.button_id
     props_open_param = builders.OpenParamMenuButtonBuilder.button_id

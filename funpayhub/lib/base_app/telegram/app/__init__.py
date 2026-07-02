@@ -23,7 +23,7 @@ MENUS = [
 ]
 BUTTONS = [
     builders.NodeButtonBuilder,
-    builders.ToggleParamButtonBuilder,
+    builders.BoolParamBtnBuilder,
     builders.ChangeParamValueButtonBuilder,
     builders.OpenParamMenuButtonBuilder,
 ]

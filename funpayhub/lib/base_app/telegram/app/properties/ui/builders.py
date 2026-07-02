@@ -10,11 +10,8 @@ from aiogram.types import (
 )
 
 from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.properties import (
-    Properties as Props,
-    parameter as param,
-)
-from funpayhub.lib.translater import _
+from pyconfigtree import Node as Props, parameter as param
+from funpayhub.lib.translater import ru, en
 from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, KeyboardBuilder
 from funpayhub.lib.base_app.telegram.app.ui import (
     callbacks as ui_cbs,
@@ -36,7 +33,7 @@ from .registry import NodeMenuBuilder, NodeButtonBuilder
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.properties import Node
+    from pyconfigtree import Node
     from funpayhub.lib.translater import Translater as Tr
     from funpayhub.lib.telegram.ui import UIRegistry as UI
 
@@ -60,15 +57,11 @@ def _toggle_emoji(node: Node, on: bool):
     return on_prefix if on else off_prefix
 
 
-class ToggleParamButtonBuilder(ButtonBuilder, button_id='toggle_parameter', context_type=BtnCtx):
+class BoolParamBtnBuilder(ButtonBuilder, button_id='bool_param', context_type=BtnCtx):
     async def build(self, ctx: BtnCtx, translater: Tr, properties: Props) -> Button:
         entry = properties.get_node(ctx.entry_path)
-        if not isinstance(entry, param.ToggleParameter):
-            raise TranslatableException(
-                _('%s is %s, not a `ToggleParameter`.'),
-                ctx.entry_path,
-                type(entry),
-            )
+        if not isinstance(entry, param.BoolParameter):
+            raise TranslatableException(en('%s is %s, not a `BoolParameter`.'), ctx.entry_path, type(entry))
 
         return Button.callback_button(
             button_id='toggle_param',
@@ -85,9 +78,9 @@ class ChangeParamValueButtonBuilder(ButtonBuilder, button_id='change_param', con
     async def build(self, ctx: BtnCtx, translater: Tr, properties: Props) -> Button:
         entry = properties.get_node(ctx.entry_path)
 
-        if entry.has_flag(ParameterFlags.HIDE_VALUE):
+        if ParameterFlags.HIDE_VALUE in entry.flags:
             val_str = ''
-        elif not entry.has_flag(ParameterFlags.PROTECT_VALUE):
+        elif ParameterFlags.PROTECT_VALUE not in entry.flags:
             val_str = f'{str(entry.value)[:20] + ("..." if len(str(entry.value)) > 20 else "")}'
         else:
             val_str = '•' * 8 if entry.value else ''
