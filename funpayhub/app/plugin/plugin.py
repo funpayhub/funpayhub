@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from funpaybotengine import Router as FPRouter
 
     from funpayhub.lib.plugin import PluginManifest
-    from funpayhub.lib.properties import Properties
+    from pyconfigtree import Node
     from funpayhub.lib.telegram.ui import (
         MenuBuilder,
         ButtonBuilder,
@@ -61,7 +61,7 @@ class Plugin:
     async def pre_setup(self) -> None:
         raise NotImplementedError()
 
-    async def properties(self) -> Properties:
+    async def properties(self) -> Node:
         raise NotImplementedError()
 
     async def setup_properties(self) -> None:

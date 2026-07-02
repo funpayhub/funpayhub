@@ -99,7 +99,7 @@ class AutoResponseProperties(Node):
 
     @property
     def entries(self) -> MappingProxyType[str, AutoResponseEntryProperties]:
-        return super().entries  # type: ignore
+        return super().subnodes  # type: ignore
 
     async def load_from_dict(
         self,

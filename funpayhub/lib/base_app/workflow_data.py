@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from aiogram import Bot, Dispatcher
 
 from funpayhub.lib.plugin import PluginManager
-from funpayhub.lib.properties import Properties
+from pyconfigtree import Node
 from funpayhub.lib.translater import Translater
 from funpayhub.lib.telegram.ui import UIRegistry
 from funpayhub.lib.goods_sources import GoodsSourcesManager
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 class WorkflowData(BaseWorkflowData):
     if TYPE_CHECKING:
         app: App
-        properties: Properties
+        properties: Node
         translater: Translater
         tg: TelegramApp
         tg_bot: Bot
@@ -41,7 +41,7 @@ class WorkflowData(BaseWorkflowData):
         self.check_items.update(
             {
                 'app': lambda v: isinstance(v, App),
-                'properties': lambda v: isinstance(v, Properties),
+                'properties': lambda v: isinstance(v, Node),
                 'translater': lambda v: isinstance(v, Translater),
                 'tg': lambda v: isinstance(v, TelegramApp),
                 'tg_bot': lambda v: isinstance(v, Bot),

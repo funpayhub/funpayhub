@@ -12,7 +12,7 @@ from .base import HubEvent
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.properties import Node, MutableParameter
+    from pyconfigtree import Node, MutableParameter
 
 
 class ParameterValueChangedEvent(HubEvent, event_name='fph:parameter_value_changed'):

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from pyconfigtree import Node, Parameter
+from pyconfigtree import Node, Parameter, ListParameter
 from pyconfigtree.source.toml import TOMLSource
-from funpayhub.lib.translater import _
+from funpayhub.lib.translater import ru
 
 from .blacklist import BlackList
 from .review_reply import ReviewReplyProperties
@@ -25,41 +25,41 @@ T = TypeVar('T', bound=Node)
 class FunPayHubProperties(Node):
     def __init__(self) -> None:
         super().__init__(
-            node_id='props',
-            name=_('️Настройки'),
-            description=_('Корневой раздел настроек FunPay Hub.'),
+            'props',
+            name=ru('️Настройки'),
+            description=ru('Корневой раздел настроек FunPay Hub.'),
             source=TOMLSource('config/funpayhub.toml'),
             flags={TelegramUIEmojiFlag('⚙')},
         )
 
-        self.version = self.attach_node(
+        self.version = self._attach_node(
             Parameter(
-                node_id='version',
+                'version',
                 name='version',
                 description='version',
                 value='0.6.0',
             ),
         )
-        self.toggles = self.attach_node(TogglesProperties())
-        self.general = self.attach_node(GeneralProperties())
-        self.telegram = self.attach_node(TelegramProperties())
-        self.auto_response = self.attach_node(AutoResponseProperties())
-        self.first_response = self.attach_node(FirstResponseProperties())
-        self.on_sale_confirmation = self.attach_node(OnSaleConfirmation())
-        self.auto_delivery = self.attach_node(AutoDeliveryProperties())
-        self.review_reply = self.attach_node(ReviewReplyProperties())
-        self.message_templates = self.attach_node(
+        self.toggles = self._attach_node(TogglesProperties())
+        self.general = self._attach_node(GeneralProperties())
+        self.telegram = self._attach_node(TelegramProperties())
+        self.auto_response = self._attach_node(AutoResponseProperties())
+        self.first_response = self._attach_node(FirstResponseProperties())
+        self.on_sale_confirmation = self._attach_node(OnSaleConfirmation())
+        self.auto_delivery = self._attach_node(AutoDeliveryProperties())
+        self.review_reply = self._attach_node(ReviewReplyProperties())
+        self.message_templates = self._attach_node(
             ListParameter[str](
-                id='message_templates',
-                name=_('Быстрые сообщения'),
-                description=_(
+                'message_templates',
+                name=ru('Быстрые сообщения'),
+                description=ru(
                     'Список заранее подготовленных текстов для быстрого ответа.\n'
                     'Вы можете сохранить часто используемые сообщения и затем выбирать их '
                     'из списка при ответе на входящие сообщения, не вводя текст вручную.',
                 ),
                 default_factory=list,
-                flags=[TelegramUIEmojiFlag('📑')],
+                flags={TelegramUIEmojiFlag('📑')},
             ),
         )
-        self.black_list = self.attach_node(BlackList())
-        self.plugin_properties = self.attach_node(PluginProperties())
+        self.black_list = self._attach_node(BlackList())
+        self.plugin_properties = self._attach_node(PluginProperties())

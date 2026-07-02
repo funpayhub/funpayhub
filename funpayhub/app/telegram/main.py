@@ -12,7 +12,7 @@ from aiogram.methods import SendMessage, SendDocument
 from funpayhub.loggers import main as logger
 
 from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.properties import ListParameter
+from pyconfigtree import ListParameter
 from funpayhub.lib.translater import _
 from funpayhub.lib.base_app.telegram.main import TelegramApp
 

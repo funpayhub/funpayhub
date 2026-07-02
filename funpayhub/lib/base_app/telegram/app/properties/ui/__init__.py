@@ -11,8 +11,8 @@ __all__ = [
     'NodeButtonIds',
 ]
 
-from funpayhub.lib.properties import (
-    Properties,
+from pyconfigtree import (
+    Node,
     parameter as p,
 )
 
@@ -26,9 +26,9 @@ NodesUIRegistry.add_menu_builder(p.FloatParameter, builders.ParamManualInputMenu
 NodesUIRegistry.add_menu_builder(p.StringParameter, builders.ParamManualInputMenuBuilder.menu_id)
 NodesUIRegistry.add_menu_builder(p.ChoiceParameter, builders.ChoiceParameterMenuBuilder.menu_id)
 NodesUIRegistry.add_menu_builder(p.ListParameter, builders.ListParameterMenuBuilder.menu_id)
-NodesUIRegistry.add_menu_builder(Properties, builders.PropertiesMenuBuilder.menu_id)
+NodesUIRegistry.add_menu_builder(Node, builders.PropertiesMenuBuilder.menu_id)
 
-NodesUIRegistry.add_button_builder(p.ToggleParameter, builders.ToggleParamButtonBuilder.button_id)
+NodesUIRegistry.add_button_builder(p.BoolParameter, builders.ToggleParamButtonBuilder.button_id)
 NodesUIRegistry.add_button_builder(
     p.IntParameter,
     builders.ChangeParamValueButtonBuilder.button_id,

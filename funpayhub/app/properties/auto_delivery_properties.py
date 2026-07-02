@@ -70,7 +70,7 @@ class AutoDeliveryProperties(Node):
 
     @property
     def subnodes(self) -> MappingProxyType[str, AutoDeliveryEntryProperties]:
-        return super().entries  # type: ignore
+        return super().subnodes  # type: ignore
 
     async def load_from_dict(
         self,

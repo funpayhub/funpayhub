@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _
+from funpayhub.lib.translater import ru
 
 
 __all__ = [
@@ -10,28 +10,28 @@ __all__ = [
 
 from typing import TypeVar
 
-from funpayhub.lib.properties import Properties, ListParameter
+from pyconfigtree import Node, ListParameter
 from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
-T = TypeVar('T', bound=Properties)
+T = TypeVar('T', bound=Node)
 
 
-class PluginProperties(Properties):
+class PluginProperties(Node):
     def __init__(self) -> None:
         super().__init__(
-            id='plugin_properties',
-            name=_('Плагины'),
-            description=_('Настройки плагинов.'),
-            flags=[TelegramUIEmojiFlag('🧩')],
+            'plugin_properties',
+            name=ru('Плагины'),
+            description=ru('Настройки плагинов.'),
+            flags={TelegramUIEmojiFlag('🧩')},
         )
 
-        self.disabled_plugins = self.attach_node(
+        self.disabled_plugins = self._attach_node(
             ListParameter(
-                id='disabled_plugins',
-                name=_('Отключенные плагины'),
-                description=_('Список ID отключенных плагинов.'),
+                'disabled_plugins',
+                name=ru('Отключенные плагины'),
+                description=ru('Список ID отключенных плагинов.'),
                 default_factory=list,
-                flags=[TelegramUIEmojiFlag('⛔')],
+                flags={TelegramUIEmojiFlag('⛔')},
             ),
         )

@@ -35,7 +35,7 @@ from .dispatching.events.properties_events import NodeDetachedEvent
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.properties import Node, MutableParameter
+    from pyconfigtree import Node, MutableParameter
 
     from .workflow_data import WorkflowData
 

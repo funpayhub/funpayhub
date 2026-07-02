@@ -1,42 +1,42 @@
 from __future__ import annotations
 
-from funpayhub.lib.properties import Properties, ToggleParameter
-from funpayhub.lib.translater import _
+from pyconfigtree import Node, BoolParameter
+from funpayhub.lib.translater import ru, en
 from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
-class TogglesProperties(Properties):
+class TogglesProperties(Node):
     def __init__(self) -> None:
         super().__init__(
-            id='toggles',
-            name=_('Глобальные переключатели'),
-            description=_('nodesc'),
-            flags=[TelegramUIEmojiFlag('🕹️')],
+            'toggles',
+            name=ru('Глобальные переключатели'),
+            description=en('nodesc'),
+            flags={TelegramUIEmojiFlag('🕹️')},
         )
 
-        self.auto_delivery = self.attach_node(
-            ToggleParameter(
-                id='auto_delivery',
-                name=_('Выдача товаров'),
-                description=_('nodesc'),
+        self.auto_delivery = self._attach_node(
+            BoolParameter(
+                'auto_delivery',
+                name=ru('Выдача товаров'),
+                description=en('nodesc'),
                 default_value=True,
             ),
         )
 
-        self.auto_response = self.attach_node(
-            ToggleParameter(
-                id='auto_response',
-                name=_('Автоответ'),
-                description=_('nodesc'),
+        self.auto_response = self._attach_node(
+            BoolParameter(
+                'auto_response',
+                name=ru('Автоответ'),
+                description=en('nodesc'),
                 default_value=True,
             ),
         )
 
-        self.auto_raise = self.attach_node(
-            ToggleParameter(
-                id='auto_raise',
-                name=_('Поднятие лотов'),
-                description=_('nodesc'),
+        self.auto_raise = self._attach_node(
+            BoolParameter(
+                'auto_raise',
+                name=ru('Поднятие лотов'),
+                description=en('nodesc'),
                 default_value=True,
             ),
         )

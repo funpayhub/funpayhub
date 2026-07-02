@@ -2,48 +2,49 @@ from __future__ import annotations
 
 from typing import Any
 
-from funpayhub.lib.properties import Properties, ToggleParameter
+from pyconfigtree import Node, BoolParameter
+from pyconfigtree.source.toml import TOMLSource
 from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
-class BlackListNode(Properties):
+class BlackListNode(Node):
     def __init__(self, username: str):
         super().__init__(
-            id=f'__user__{username}',
+            f'__user__{username}',
             name=username,
             description=username,
         )
 
-        self.auto_delivery = self.attach_node(
-            ToggleParameter(
-                id='auto_delivery',
+        self.auto_delivery = self._attach_node(
+            BoolParameter(
+                'auto_delivery',
                 name='Автовыдача',
                 description='Выдавать ли товар данном пользователю?',
                 default_value=False,
             ),
         )
 
-        self.auto_response = self.attach_node(
-            ToggleParameter(
-                id='block_ar',
+        self.auto_response = self._attach_node(
+            BoolParameter(
+                'block_ar',
                 name='Автоответ',
                 description='Разрешить ли автоответ для данного пользователя?',
                 default_value=False,
             ),
         )
 
-        self.review_reply = self.attach_node(
-            ToggleParameter(
-                id='review_reply',
+        self.review_reply = self._attach_node(
+            BoolParameter(
+                'review_reply',
                 name='Ответ на отзыв',
                 description='Отвечать ли на отзывы данного пользователя?',
                 default_value=False,
             ),
         )
 
-        self.review_chat_reply = self.attach_node(
-            ToggleParameter(
-                id='review_chat_reply',
+        self.review_chat_reply = self._attach_node(
+            BoolParameter(
+                'review_chat_reply',
                 name='Ответ в чат на отзыв',
                 description='Отправлять ли ответ на отзыв в чат для данного пользователя?',
                 default_value=False,
@@ -69,44 +70,50 @@ class BlackListNode(Properties):
         return node_id.startswith('__user__')
 
 
-class BlackList(Properties):
+class BlackList(Node):
     def __init__(self):
         super().__init__(
-            id='blacklist',
-            file='config/blacklist.toml',
-            flags=[TelegramUIEmojiFlag('🚫')],
+            'blacklist',
+            source=TOMLSource('config/blacklist.toml'),
+            flags={TelegramUIEmojiFlag('🚫')},
             name='Черный список',
             description='Черный список пользователей.',
         )
 
     async def load_from_dict(self, properties_dict: dict[str, Any]) -> None:
-        await super().load_from_dict(properties_dict)
         for k, v in properties_dict.items():
             if not BlackListNode.is_blacklist_node(k):
                 continue
 
             node = BlackListNode(BlackListNode.extract_username(k))
             await node.load_from_dict(v)
-            self.attach_node(node, replace=True)
+            if k in self.subnodes:
+                self._detach_node(k)
+            self._attach_node(node)
 
     def get_user(self, username: str) -> BlackListNode | None:
-        return self._nodes.get(BlackListNode.username_to_node_id(username))
+        node = self.subnodes.get(BlackListNode.username_to_node_id(username))
+        return node if isinstance(node, BlackListNode) else None
 
     async def add_user(self, username: str, save: bool = True) -> BlackListNode:
         node_id = BlackListNode.username_to_node_id(username)
-        if node_id in self._nodes:
+        if node_id in self.subnodes:
             raise ValueError(f'User {username} already exists in blacklist.')
 
-        node = await self.attach_node_and_emit(BlackListNode(username))
+        node = await self.attach_node(BlackListNode(username))
         if save:
             await self.save()
         return node
 
     async def del_user(self, username: str, save: bool = True) -> BlackListNode | None:
-        node = await self.detach_node_and_emit(BlackListNode.username_to_node_id(username))
+        node_id = BlackListNode.username_to_node_id(username)
+        try:
+            node = await self.detach_node(node_id)
+        except KeyError:
+            node = None
         if save:
             await self.save()
-        return node
+        return node  # type: ignore[return-value]
 
     def is_ad_disabled_for(self, username: str) -> bool:
         node = self.get_user(username)

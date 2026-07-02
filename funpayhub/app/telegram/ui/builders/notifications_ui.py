@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.properties import ListParameter
+from pyconfigtree import ListParameter
 from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import MenuContext, KeyboardBuilder
 from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder
