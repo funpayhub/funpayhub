@@ -42,6 +42,7 @@ class WorkflowData(BaseWorkflowData):
             {
                 'app': lambda v: isinstance(v, App),
                 'properties': lambda v: isinstance(v, Node),
+                'props': lambda v: isinstance(v, Node),
                 'translater': lambda v: isinstance(v, Translater),
                 'tg': lambda v: isinstance(v, TelegramApp),
                 'tg_bot': lambda v: isinstance(v, Bot),

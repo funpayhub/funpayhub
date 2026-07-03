@@ -7,12 +7,7 @@ from funpayhub.app.dispatching import Router
 
 if TYPE_CHECKING:
     from funpayhub.lib.plugin import PluginManager
-    from funpayhub.lib.properties import (
-        IntParameter,
-        ListParameter,
-        ChoiceParameter,
-        ToggleParameter,
-    )
+    from pyconfigtree import IntParameter, ListParameter, ChoiceParameter, BoolParameter
     from funpayhub.lib.translater import Translater
 
     from funpayhub.app.funpay.main import FunPay
@@ -22,43 +17,30 @@ if TYPE_CHECKING:
 router = r = Router(name='fph:on_parameter_change_router')
 
 
-@r.on_parameter_value_changed(
-    lambda parameter, properties: parameter is properties.general.language,
-    handler_id='fph:change_language',
-)
+@r.on_parameter_value_changed(lambda param, props: param is props.general.language)
 async def change_language(parameter: ChoiceParameter, translater: Translater) -> None:
-    translater.current_language = parameter.real_value
+    translater.current_language = parameter.value.value
+
+
+@r.on_parameter_value_changed(lambda param, props: param is props.toggles.auto_raise)
+async def start_stop_auto_raise(param: BoolParameter, fp: FunPay) -> None:
+    await fp.stop_raising_profile_offers() if param else await fp.start_raising_profile_offers()
 
 
 @r.on_parameter_value_changed(
-    lambda parameter, properties: parameter is properties.toggles.auto_raise,
-    handler_id='fph:toggle_auto_raise',
+    lambda param, props: param is props.telegram.appearance.max_menu_lines,
 )
-async def start_stop_auto_raise(parameter: ToggleParameter, fp: FunPay) -> None:
-    if not parameter.value:
-        await fp.stop_raising_profile_offers()
-    else:
-        await fp.start_raising_profile_offers()
+async def change_max_menu_lines(param: IntParameter, tg: Telegram):
+    tg.config.max_menu_lines = param.value
 
 
 @r.on_parameter_value_changed(
-    lambda parameter, properties: parameter is properties.telegram.appearance.max_menu_lines,
-    handler_id='fph:change_max_menu_lines',
+    lambda param, props: param is props.plugin_properties.disabled_plugins,
 )
-async def change_max_menu_lines(parameter: IntParameter, tg: Telegram):
-    tg.config.max_menu_lines = parameter.value
+async def update_disabled_plugins(param: ListParameter, plugin_manager: PluginManager):
+    plugin_manager._disabled_plugins = set(param.value)
 
 
-@r.on_parameter_value_changed(
-    lambda parameter, properties: parameter is properties.plugin_properties.disabled_plugins,
-    handler_id='fph:update_disabled_plugins',
-)
-async def update_disabled_plugins(parameter: ListParameter, plugin_manager: PluginManager):
-    plugin_manager._disabled_plugins = set(parameter.value)
-
-
-@r.on_parameter_value_changed(
-    lambda parameter, properties: parameter is properties.general.runner_request_interval,
-)
-async def update_runner_requests_interval(parameter: IntParameter, fp: FunPay) -> None:
-    fp._runner_config.interval = parameter.value
+@r.on_parameter_value_changed(lambda param, props: param is props.general.runner_request_interval)
+async def update_runner_requests_interval(param: IntParameter, fp: FunPay) -> None:
+    fp._runner_config.interval = param.value

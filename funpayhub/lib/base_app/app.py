@@ -39,8 +39,7 @@ if TYPE_CHECKING:
 
     from eventry.asyncio.event import Event
     from eventry.asyncio.dispatcher import Dispatcher
-
-    from funpayhub.lib.properties import Node, Properties, MutableParameter
+    from pyconfigtree import Node, MutableParameter
 
 
 def random_part(length) -> str:
@@ -59,7 +58,7 @@ class App:
         version: Version,
         config: AppConfig,
         dispatcher: Dispatcher,
-        properties: Properties,
+        properties: Node,
         plugin_manager: PluginManager,
         repositories_manager: RepositoriesManager | None = None,
         translater: Translater | None = None,
@@ -197,7 +196,7 @@ class App:
         return self._instance_id
 
     @property
-    def properties(self) -> Properties:
+    def properties(self) -> Node:
         return self._properties
 
     @property

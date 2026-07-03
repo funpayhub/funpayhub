@@ -3,7 +3,7 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
-from funpayhub.lib.properties import StringParameter
+from pyconfigtree import StringParameter
 from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import Button, MenuModification
 from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu

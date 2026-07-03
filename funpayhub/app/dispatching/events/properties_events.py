@@ -24,6 +24,7 @@ class ParameterValueChangedEvent(HubEvent, event_name='fph:parameter_value_chang
     def event_context_injection(self) -> dict[str, Any]:
         return {
             'parameter': self.parameter,
+            'param': self.parameter,
         }
 
     @property

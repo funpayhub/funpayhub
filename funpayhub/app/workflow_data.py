@@ -55,6 +55,7 @@ class WorkflowData(BaseWorkflowData):
                 'fp_bot': lambda v: isinstance(v, FPBot),
                 'fp_dispatcher': lambda v: isinstance(v, FPDispatcher),
                 'properties': lambda v: isinstance(v, FunPayHubProperties),
+                'props': lambda v: isinstance(v, FunPayHubProperties),
                 'plugins_manager': lambda v: isinstance(v, PluginManager),
                 'first_response_cache': lambda v: isinstance(v, FirstResponseCache),
             },
