@@ -1,6 +1,15 @@
 from __future__ import annotations
 
+__all__ = [
+    'ParameterFlags',
+    'PropertiesFlags',
+    'FlagEqualityMeta',
+    'TelegramUIEmojiFlag',
+    'TelegramToggleUIEmojiFlag',
+]
+
 from enum import auto
+from typing import Any
 
 
 class ParameterFlags:
@@ -24,7 +33,14 @@ class PropertiesFlags:
     HIDE = auto()
 
 
-class TelegramUIEmojiFlag:
+class FlagEqualityMeta(type):
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, self):
+            return True
+        return super().__eq__(other)
+
+
+class TelegramUIEmojiFlag(metaclass=FlagEqualityMeta):
     def __init__(self, emoji: str, premium_emoji_id: str | None = None) -> None:
         self._emoji = emoji
         self._premium_emoji_id = premium_emoji_id
@@ -38,8 +54,6 @@ class TelegramUIEmojiFlag:
         return self._premium_emoji_id
 
     def __eq__(self, o: object) -> bool:
-        if isinstance(o, type) and issubclass(o, TelegramUIEmojiFlag):
-            return True
         if isinstance(o, TelegramUIEmojiFlag):
             return self.emoji == o.emoji and self.premium_emoji_id == o.premium_emoji_id
         if isinstance(o, str):
@@ -50,7 +64,7 @@ class TelegramUIEmojiFlag:
         return id(self)
 
 
-class TelegramToggleUIEmojiFlag:
+class TelegramToggleUIEmojiFlag(metaclass=FlagEqualityMeta):
     def __init__(
         self,
         on_emoji: tuple[str, str | None] | None = None,
@@ -81,9 +95,3 @@ class TelegramToggleUIEmojiFlag:
     @property
     def off_emoji(self) -> TelegramUIEmojiFlag:
         return self._off_emoji
-
-    def __hash__(self) -> int:
-        return id(self)
-
-    def __eq__(self, o: object) -> bool:
-        return isinstance(o, type) and issubclass(o, TelegramUIEmojiFlag)
