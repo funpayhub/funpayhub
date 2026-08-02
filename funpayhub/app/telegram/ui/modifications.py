@@ -10,6 +10,7 @@ from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
 from funpayhub.app.properties.flags import FormattersQueryFlag
 from funpayhub.app.properties.review_reply import ReviewReplyPropertiesEntry
+from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
 
 from .ids import MenuIds
 
@@ -20,7 +21,6 @@ if TYPE_CHECKING:
     from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
     from funpayhub.app.properties import FunPayHubProperties as FPHProps
-    from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
 
 
 ru = translater.translate

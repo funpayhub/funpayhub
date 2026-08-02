@@ -89,7 +89,7 @@ class OffersRaiser:
                         logger.info(
                             _en('Offers of category %s has been raised. Next try in %d.'),
                             category.name,
-                            3600,
+                            result.wait,
                         )
                         if on_raise is not None:
                             with suppress(Exception):

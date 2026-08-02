@@ -240,9 +240,11 @@ async def add_source(m: Message, state: FSM, tg_bot: TGBot, goods_manager: Goods
     new_id = 'file://' + str(path)
 
     if new_id in goods_manager:
-        await m.reply(ru('<b>❌ Файл {file} уже существует.</b>', file=str(path)))
+        return await m.reply(ru('<b>❌ Файл {file} уже существует.</b>', file=str(path)))
 
     await state.clear()
+
+    path.parent.mkdir(parents=True, exist_ok=True)
 
     if m.document:
         file = await tg_bot.get_file(m.document.file_id)
