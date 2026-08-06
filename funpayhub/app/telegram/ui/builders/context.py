@@ -4,6 +4,7 @@ from dataclasses import field
 
 from funpaybotengine.types import Message
 from funpaybotengine.dispatching.events import ReviewEvent
+from funpaybotengine.dispatching import SaleStatusChangedEvent
 
 from funpayhub.lib.telegram.ui import MenuContext
 
@@ -31,3 +32,7 @@ class StateUIContext(MenuContext):
 
 class NewReviewNotificationMenuContext(MenuContext):
     review_event: ReviewEvent
+
+
+class SaleClosedNotificationMenuContext(MenuContext):
+    sale_event: SaleStatusChangedEvent
