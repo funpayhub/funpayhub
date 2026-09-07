@@ -23,10 +23,10 @@ from argparse import Namespace
 from logging.config import dictConfig
 
 import colorama
-
-from funpayhub import exit_codes
 from funpayhub.updater import apply_update
 from funpayhub.logger_conf import HubLogMessage, FileLoggerFormatter, ConsoleLoggerFormatter
+
+from funpayhub import exit_codes
 
 from funpayhub.app.args_parser import args
 

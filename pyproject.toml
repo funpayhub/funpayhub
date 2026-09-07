@@ -2,16 +2,12 @@
 name = "funpayhub"
 version = "0.5.22"
 description = "FunPay bot."
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 
 dependencies = [
-    "aiogram~=3.24.0",
-    "colorama~=0.4.6",
-    "eventry>=0.3.6,<0.4.0",
-    "funpaybotengine>=0.6.0,<0.7.0",
+    "eventry>=0.7.1, <0.8.0",
+    "hubplatform",
     "packaging~=25.0",
-    "pydantic>=2.12.5,<2.13",
-    "tomli-w~=1.2.0",
 ]
 
 authors = [
@@ -123,6 +119,9 @@ select = [
 [tool.ruff.lint.isort.sections]
 fphlib = ["funpayhub.lib.*"]
 fphapp = ["funpayhub.app.*"]
+
+[tool.uv.sources]
+hubplatform = { git = "https://github.com/funpayhub/platform", rev = "fd7b3a69abbea8808531bc61387bda49f745a9b3" }
 
 [tool.ruff.lint.isort]
 section-order = ["future", "standard-library", "third-party", "first-party", "fphlib", "fphapp", "local-folder"]
