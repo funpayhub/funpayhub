@@ -120,8 +120,11 @@ select = [
 fphlib = ["funpayhub.lib.*"]
 fphapp = ["funpayhub.app.*"]
 
-[tool.uv.sources]
-hubplatform = { git = "https://github.com/funpayhub/platform", rev = "fd7b3a69abbea8808531bc61387bda49f745a9b3" }
+[tool.uv.sources.hubplatform]
+git = "https://github.com/funpayhub/platform"
+rev = "79fd14185c42b05a4e251c412539bbe2e8c19338"
+subdirectory = "packages/hubplatform"
+
 
 [tool.ruff.lint.isort]
 section-order = ["future", "standard-library", "third-party", "first-party", "fphlib", "fphapp", "local-folder"]
