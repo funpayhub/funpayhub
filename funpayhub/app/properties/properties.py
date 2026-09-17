@@ -16,7 +16,6 @@ from .telegram_properties import TelegramProperties
 
 # from .on_sale_confirmation import OnSaleConfirmation
 # from .auto_delivery_properties import AutoDeliveryProperties
-# from ...lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class FunPayHubProperties(Properties):
@@ -53,7 +52,7 @@ class FunPayHubProperties(Properties):
                     'из списка при ответе на входящие сообщения, не вводя текст вручную.',
                 ),
                 default_factory=list,
-                # flags=[TelegramUIEmojiFlag('📑')],
+                metadata={'emoji': '📑'}
             ),
         )
         # self.black_list = self.attach_node(BlackList())

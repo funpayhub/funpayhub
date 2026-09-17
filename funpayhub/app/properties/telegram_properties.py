@@ -6,8 +6,6 @@ __all__ = ['TelegramProperties']
 
 from pyconfigtree import Properties, IntParameter, BoolParameter, ListParameter, StringParameter
 from hubplatform.i18n import I18nString
-
-# from funpayhub.app.properties.flags import ParameterFlags as ParamFlags
 from funpayhub.app.properties.telegram_notifications import TelegramNotificationsProperties
 
 
@@ -20,7 +18,7 @@ class TelegramProperties(Properties):
             node_id='telegram',
             name=I18nString('Настройки Telegram бота'),
             description=I18nString(''),
-            # flags={TelegramUIEmojiFlag('🔷')},
+            metadata={'emoji': '🔷'},
         )
 
         self.bot = self.attach_node(TelegramBot())
@@ -37,7 +35,7 @@ class TelegramBot(Properties):
                 fallback='Бот',
             ),
             description=I18nString(''),
-            # flags={TelegramUIEmojiFlag('🔧')},
+            metadata={'emoji': '🔧'},
         )
 
         self.token = self.attach_node(
@@ -49,7 +47,7 @@ class TelegramBot(Properties):
                 ),
                 description=I18nString(''),
                 default_value='',
-                # flags={ParamFlags.PROTECT_VALUE, TelegramUIEmojiFlag('🔑')},
+                metadata={'emoji': '🔑', 'protect_value': True},
             ),
         )
 
@@ -65,7 +63,7 @@ class TelegramBot(Properties):
                     fallback='Пароль от Telegram панели управления FunPayHub.',
                 ),
                 default_value='',
-                # flags={ParamFlags.PROTECT_VALUE, TelegramUIEmojiFlag('🔑')},
+                metadata={'emoji': '🔑', 'protect_value': True},
             ),
         )
 
@@ -81,7 +79,7 @@ class TelegramBot(Properties):
                     fallback='ID пользователей, у которых есть доступ к телеграм боту.',
                 ),
                 default_factory=list,
-                # flags={TelegramUIEmojiFlag('🔐')},
+                metadata={'emoji': '🔐'},
             ),
         )
 
@@ -98,7 +96,7 @@ class TelegramBot(Properties):
                 ),
                 # validator=proxy_validator,
                 default_value='',
-                # flags={TelegramUIEmojiFlag('🔗'), ParamFlags.PROTECT_VALUE},
+                metadata={'emoji': '🔗', 'protect_value': True},
             ),
         )
 
@@ -109,7 +107,7 @@ class TelegramAppearance(Properties):
             node_id='appearance',
             name=I18nString('Внешний вид'),
             description=I18nString('Настройки внешнего вида Telegram бота.'),
-            # flags={TelegramUIEmojiFlag('🎨')},
+            metadata={'emoji': '🎨'},
         )
 
         self.max_menu_blocks = self.attach_node(
@@ -126,7 +124,7 @@ class TelegramAppearance(Properties):
                 ),
                 default_value=6,
                 # validator=entries_validator,
-                # flags={TelegramUIEmojiFlag('📋')},
+                metadata={'emoji': '📋'},
             ),
         )
 
@@ -145,7 +143,7 @@ class NewMessageNotificationAppearance(Properties):
                 key='funpayhub.properties.telegram.appearance.new_message_notification.description',
                 fallback='Настройки вида Telegram уведомлений о новых сообщениях в чатах FunPay.',
             ),
-            # flags={TelegramUIEmojiFlag('💬')},
+            metadata={'emoji': '💬'},
         )
 
         self.show_mine = self.attach_node(
