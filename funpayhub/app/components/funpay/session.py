@@ -5,7 +5,16 @@ __all__ = [
     'FPBESession',
 ]
 
-from funpaybotengine.client.session import AioHttpSession
+import time
+from typing import Any, TypeVar
+from collections import Counter
+
+from funpaybotengine import Bot, AioHttpSession
+from funpaybotengine.methods import FunPayMethod
+from funpaybotengine.client.session import Response
+
+
+T = TypeVar('T', bound=Any)
 
 
 class FPBESession(AioHttpSession):
@@ -20,11 +29,11 @@ class FPBESession(AioHttpSession):
 
     async def make_request(
         self,
-        method: FunPayMethod[MethodReturnType],
+        method: FunPayMethod[T],
         bot: Bot,
         timeout: float | None = None,
         skip_session_cookies: bool = False,
-    ) -> Response[MethodReturnType]:
+    ) -> Response[T]:
         request_time = time.time()
         if not self._first_request:
             self._first_request = request_time

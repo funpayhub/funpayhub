@@ -18,7 +18,7 @@ class FunPayComponent(HubPlatformAppComponent):
     def __init__(self, properties: FunPayProperties) -> None:
         super().__init__()
         self._properties = properties
-        self._session = session if session is not None else FPBESession()
+        self._session = FPBESession()
         self._bot = Bot(golden_key='', session=self._session)
         self._router = Router(name='funpayhub.root')
         self._dispatcher = Dispatcher(self._router)
