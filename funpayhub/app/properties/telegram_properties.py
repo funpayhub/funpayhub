@@ -26,7 +26,7 @@ class TelegramProperties(Properties):
                 fallback='В данном разделе находятся настройки Telegram компонента FunPay Hub.',
             ),
             metadata={'emoji': '🔷'},
-            source=TOMLSource('config/telegram.toml')
+            source=TOMLSource('config/telegram.toml'),
         )
 
         self.bot = self.attach_node(TelegramBot())
