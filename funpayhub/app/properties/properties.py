@@ -52,7 +52,7 @@ class FunPayHubProperties(Properties):
                     'из списка при ответе на входящие сообщения, не вводя текст вручную.',
                 ),
                 default_factory=list,
-                metadata={'emoji': '📑'}
+                metadata={'emoji': '📑'},
             ),
         )
         # self.black_list = self.attach_node(BlackList())

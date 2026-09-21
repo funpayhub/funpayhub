@@ -3,6 +3,7 @@ from __future__ import annotations
 from pyconfigtree import Properties, ListParameter
 from hubplatform.i18n import I18nString
 from pyconfigtree.source.toml import TOMLSource
+
 from funpayhub.app.notification_channels import NotificationChannels
 
 
@@ -16,7 +17,7 @@ class TelegramNotificationsProperties(Properties):
             ),
             description=I18nString(''),
             source=TOMLSource('config/telegram_notifications.toml'),
-            metadata={'emoji': '🔔'}
+            metadata={'emoji': '🔔'},
         )
 
         self.system: ListParameter[str] = self.attach_node(
