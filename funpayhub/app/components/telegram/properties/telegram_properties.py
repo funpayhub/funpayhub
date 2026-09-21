@@ -8,9 +8,8 @@ from pyconfigtree import Properties, IntParameter, BoolParameter, ListParameter,
 from hubplatform.i18n import I18nString
 from pyconfigtree.source.toml import TOMLSource
 
-from funpayhub.app.properties.telegram_notifications import TelegramNotificationsProperties
-
 from .validators import proxy_validator, entries_validator
+from .telegram_notifications import TelegramNotificationsProperties
 
 
 class TelegramProperties(Properties):

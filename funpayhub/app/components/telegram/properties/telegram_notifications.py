@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+
+__all__ = ['TelegramNotificationsProperties']
+
+
 from pyconfigtree import Properties, ListParameter
 from hubplatform.i18n import I18nString
 from pyconfigtree.source.toml import TOMLSource
