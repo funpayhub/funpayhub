@@ -8,6 +8,7 @@ import os
 from hubplatform.app import HubPlatformApp
 from hubplatform.app.components.telegram import TelegramComponent as BaseTelegramComponent
 
+from .routers import ROUTER
 from .properties import TelegramProperties
 
 
@@ -16,6 +17,7 @@ class TelegramComponent(BaseTelegramComponent):
         telegram_token = os.environ.get('TELEGRAM_TOKEN', properties.bot.token.value)
         super().__init__(token=telegram_token)
         self._properties = properties
+        self.dispatcher.include_router(ROUTER)
 
     @property
     def properties(self) -> TelegramProperties:
