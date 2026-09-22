@@ -16,8 +16,9 @@ from types import MappingProxyType
 from pathlib import Path
 from collections.abc import Callable, Awaitable
 
-from funpayhub.loggers import plugins as logger
 from packaging.version import Version
+
+from funpayhub.loggers import plugins as logger
 
 from funpayhub.lib.exceptions import (
     PluginInstantiationError,

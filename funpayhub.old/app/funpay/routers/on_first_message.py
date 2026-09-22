@@ -8,7 +8,6 @@ from collections import defaultdict
 from collections.abc import Generator
 
 from funpaybotengine import Router
-from funpayhub.loggers import greetings_logger as logger
 from funpaybotengine.exceptions import (
     UnauthorizedError,
     BotUnauthenticatedError,
@@ -17,6 +16,8 @@ from funpaybotengine.exceptions import (
 from funpaybotengine.types.enums import MessageType
 from funpaybotengine.dispatching.events import NewMessageEvent, ChatChangedEvent
 from funpaybotengine.types.requests.runner import CPURequestObject
+
+from funpayhub.loggers import greetings_logger as logger
 
 from funpayhub.lib.translater import (
     en as _en,

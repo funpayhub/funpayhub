@@ -8,7 +8,6 @@ from collections import Counter
 from collections.abc import Callable, Awaitable
 
 from funpaybotengine import Bot, Dispatcher
-from funpayhub.loggers import main as logger
 from funpaybotengine.types import Message, Category
 from funpaybotengine.client import Response, AioHttpSession
 from funpaybotengine.methods import FunPayMethod, MethodReturnType
@@ -21,6 +20,8 @@ from funpaybotengine.exceptions import (
 )
 from funpaybotengine.types.pages import ProfilePage
 from funpaybotengine.runner.config import RunnerConfig
+
+from funpayhub.loggers import main as logger
 
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.translater import _en

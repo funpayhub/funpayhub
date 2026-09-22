@@ -12,8 +12,9 @@ from typing import Any, Type
 from dataclasses import field, dataclass
 
 from aiogram.types import Message
-from funpayhub.loggers import telegram_ui as logger
 from eventry.asyncio.callable_wrappers import CallableWrapper
+
+from funpayhub.loggers import telegram_ui as logger
 
 from .types import (
     Menu,

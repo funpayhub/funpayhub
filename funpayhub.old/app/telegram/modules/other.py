@@ -5,10 +5,10 @@ from contextlib import suppress
 
 from aiogram import Router
 from aiogram.filters import Command
-from funpayhub.loggers import main as logger
 from aiogram.exceptions import AiogramError
 
 from funpayhub import exit_codes
+from funpayhub.loggers import main as logger
 
 from funpayhub.lib.translater import _en
 from funpayhub.lib.base_app.telegram.utils import delete_message

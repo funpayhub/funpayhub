@@ -5,8 +5,9 @@ from typing import TYPE_CHECKING, Any
 from contextlib import suppress
 
 from funpaybotengine import Router
-from funpayhub.loggers import main as logger
 from funpaybotengine.dispatching.filters import all_of
+
+from funpayhub.loggers import main as logger
 
 from funpayhub.lib.exceptions import TranslatableException
 from funpayhub.lib.translater import _

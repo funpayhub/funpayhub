@@ -5,13 +5,26 @@ __all__ = [
     'FunPayComponent',
 ]
 
+from enum import Enum, auto
+
 from funpaybotengine import Bot, Router, Dispatcher
 from hubplatform.app import HubPlatformApp
+from hubplatform.i18n import I18nString
 from hubplatform.app.context import AppContext
 from hubplatform.app.app_component import HubPlatformAppComponent
 
+from funpayhub.loggers import funpay_component as logger
+
 from .session import FPBESession
 from .properties import FunPayProperties
+
+
+class FunPayComponentState(Enum):
+    READY = auto()
+    STOPPED = auto()
+    RUNNING = auto()
+    NOT_AUTHENTICATED = auto()
+    GOLDEN_KEY_CHECK_FAILED = auto()
 
 
 class FunPayComponent(HubPlatformAppComponent):
@@ -22,11 +35,41 @@ class FunPayComponent(HubPlatformAppComponent):
         self._bot = Bot(golden_key='', session=self._session)
         self._router = Router(name='funpayhub.root')
         self._dispatcher = Dispatcher(self._router)
+        self._state = FunPayComponentState.STOPPED
 
     async def setup(self, app: HubPlatformApp) -> None:
+        logger.info(I18nString('Setting up %s component...'), self.component_name)
+        logger.info(I18nString('Setting up %s component properties...'), self.component_name)
         app.properties.attach_node(self._properties)
+
+        logger.info(I18nString('Setting up %s component context...'), self.component_name)
         self._setup_context(app.app_context)
         self._dispatcher._event_context = app.app_context
+
+        logger.info(I18nString('Checking golden_key...'))
+        await self._check_golden_key()
+
+    async def _check_golden_key(self) -> None:
+        try:
+            await self._bot.update()
+        except Exception:
+            logger.error(
+                I18nString('An error occurred while checking golden key.'),
+                exc_info=True,
+            )
+            self._state = FunPayComponentState.GOLDEN_KEY_CHECK_FAILED
+            return
+
+        if self._bot.userid == -1:
+            logger.warning(I18nString('FunPay authentication failed: invalid golden key.'))
+            self._state = FunPayComponentState.NOT_AUTHENTICATED
+            return
+
+        logger.info(I18nString('FunPay successfully authenticated!.'))
+        logger.info(I18nString('User ID: %d'), self._bot.userid)
+        logger.info(I18nString('User name: %s'), self._bot.username)
+        logger.info(I18nString('Locale: %s'), self._bot.locale.name)
+        self._statue = FunPayComponentState.READY
 
     def _setup_context(self, ctx: AppContext) -> None:
         name = self.component_name
@@ -37,6 +80,10 @@ class FunPayComponent(HubPlatformAppComponent):
         ctx.provide(name, 'funpay_router', self._router)
 
     async def run(self) -> None:
+        if self._state is not FunPayComponentState.READY:
+            logger.warning(I18nString('Cannot start FunPay component: not ready.'))
+            return
+
         await self._bot.listen_events(self._dispatcher)
 
     def stop(self) -> None:
