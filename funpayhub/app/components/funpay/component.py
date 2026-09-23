@@ -16,6 +16,7 @@ from hubplatform.app.app_component import HubPlatformAppComponent
 from funpayhub.loggers import funpay_component as logger
 
 from .session import FPBESession
+from .extensions import TELEGRAM_COMPONENT_EXTENSION
 from .properties import FunPayProperties
 
 
@@ -45,6 +46,9 @@ class FunPayComponent(HubPlatformAppComponent):
         logger.info(I18nString('Setting up %s component context...'), self.component_name)
         self._setup_context(app.app_context)
         self._dispatcher._event_context = app.app_context
+
+        logger.info(I18nString('Setting up telegram extension...'))
+        app.add_component_extension('hubplatform.telegram', TELEGRAM_COMPONENT_EXTENSION)
 
         logger.info(I18nString('Checking golden_key...'))
         await self._check_golden_key()
