@@ -11,6 +11,8 @@ from pyconfigtree.source.toml import TOMLSource
 
 from .auto_response import AutoResponseProperties
 from .bot_properties import FunPayBotProperties
+from .first_response import FirstResponseProperties
+from .on_sale_confirmation import OnSaleConfirmation
 
 
 class FunPayProperties(Properties):
@@ -30,4 +32,6 @@ class FunPayProperties(Properties):
         )
 
         self.bot_properties = self.attach_node(FunPayBotProperties())
+        self.first_response = self.attach_node(FirstResponseProperties())
         self.auto_response = self.attach_node(AutoResponseProperties())
+        self.on_sale_confirmation = self.attach_node(OnSaleConfirmation())
