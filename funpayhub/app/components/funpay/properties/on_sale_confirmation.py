@@ -19,7 +19,7 @@ class OnSaleConfirmation(Properties):
         self.reply_in_chat = self.attach_node(
             BoolParameter(
                 node_id='reply_in_chat',
-                name=I18nString('Ответить в чате'),
+                name=I18nString('Отвечать в чате'),
                 description=I18nString(
                     'Отправлять ли ответное сообщение в чат при подтверждении заказа.',
                 ),

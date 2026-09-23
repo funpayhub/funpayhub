@@ -1,50 +1,52 @@
 from __future__ import annotations
 
-from funpayhub.lib.properties import Properties, StringParameter, ToggleParameter
-from funpayhub.lib.translater import _
 
-from funpayhub.app.properties.flags import FormattersQueryFlag
+__all__ = [
+    'ReviewReplyNode',
+    'ReviewReplyProperties',
+]
+
+from pyconfigtree import Properties, BoolParameter, StringParameter
+from hubplatform.i18n import I18nString
 
 
-class ReviewReplyPropertiesEntry(Properties):
-    def __init__(self, id: str, name: str, description: str) -> None:
-        super().__init__(id=id, name=name, description=description)
+class ReviewReplyNode(Properties):
+    def __init__(self, node_id: str, name: str, description: str) -> None:
+        super().__init__(node_id=node_id, name=name, description=description)
 
         self.reply_in_review = self.attach_node(
-            ToggleParameter(
-                id='reply_in_review',
-                name=_('Отвечать на отзыв'),
-                description=_('Оставлять ли ответ на отзыв.'),
+            BoolParameter(
+                node_id='reply_in_review',
+                name=I18nString('Отвечать на отзыв'),
+                description=I18nString('Оставлять ли ответ на отзыв.'),
                 default_value=False,
             ),
         )
 
         self.reply_in_chat = self.attach_node(
-            ToggleParameter(
-                id='reply_in_chat',
-                name=_('Отвечать сообщением'),
-                description=_('Отправлять ли ответное сообщение в чат.'),
+            BoolParameter(
+                node_id='reply_in_chat',
+                name=I18nString('Отвечать сообщением'),
+                description=I18nString('Отправлять ли ответное сообщение в чат.'),
                 default_value=False,
             ),
         )
 
         self.review_reply_text = self.attach_node(
             StringParameter(
-                id='review_reply_text',
-                name=_('Текст ответа'),
-                description=_('Текст ответа на отзыв.'),
+                node_id='review_reply_text',
+                name=I18nString('Текст ответа'),
+                description=I18nString('Текст ответа на отзыв.'),
                 default_value='',
-                flags=[FormattersQueryFlag('fph:general|fph:order')],
             ),
         )
 
         self.chat_reply_text = self.attach_node(
             StringParameter(
-                id='chat_reply_text',
-                name=_('Текст ответного сообщения'),
-                description=_('Текст ответного сообщения.'),
+                node_id='chat_reply_text',
+                name=I18nString('Текст ответного сообщения'),
+                description=I18nString('Текст ответного сообщения.'),
                 default_value='',
-                flags=[FormattersQueryFlag('fph:general|fph:order')],
             ),
         )
 
@@ -64,56 +66,56 @@ class ReviewReplyPropertiesEntry(Properties):
 class ReviewReplyProperties(Properties):
     def __init__(self) -> None:
         super().__init__(
-            id='review_reply',
-            name=_('⭐ Ответ на отзыв'),
-            description=_('Настройки ответа на отзыв / ответного сообщения.'),
+            node_id='review_reply',
+            name=I18nString('⭐ Ответ на отзыв'),
+            description=I18nString('Настройки ответа на отзыв / ответного сообщения.'),
         )
 
         self.five_stars = self.attach_node(
-            ReviewReplyPropertiesEntry(
-                id='five_stars',
-                name=_('⭐⭐⭐⭐⭐'),
-                description=_(
+            ReviewReplyNode(
+                node_id='five_stars',
+                name=I18nString('⭐⭐⭐⭐⭐'),
+                description=I18nString(
                     'Настройки ответа на отзыв / ответного сообщения на 5-зведночный отзыв.',
                 ),
             ),
         )
 
         self.four_stars = self.attach_node(
-            ReviewReplyPropertiesEntry(
-                id='four_stars',
-                name=_('⭐⭐⭐⭐'),
-                description=_(
+            ReviewReplyNode(
+                node_id='four_stars',
+                name=I18nString('⭐⭐⭐⭐'),
+                description=I18nString(
                     'Настройки ответа на отзыв / ответного сообщения на 4-зведночный отзыв.',
                 ),
             ),
         )
 
         self.three_stars = self.attach_node(
-            ReviewReplyPropertiesEntry(
-                id='three_stars',
-                name=_('⭐⭐⭐'),
-                description=_(
+            ReviewReplyNode(
+                node_id='three_stars',
+                name=I18nString('⭐⭐⭐'),
+                description=I18nString(
                     'Настройки ответа на отзыв / ответного сообщения на 3-зведночный отзыв.',
                 ),
             ),
         )
 
         self.two_stars = self.attach_node(
-            ReviewReplyPropertiesEntry(
-                id='two_stars',
-                name=_('⭐⭐'),
-                description=_(
+            ReviewReplyNode(
+                node_id='two_stars',
+                name=I18nString('⭐⭐'),
+                description=I18nString(
                     'Настройки ответа на отзыв / ответного сообщения на 2-зведночный отзыв.',
                 ),
             ),
         )
 
         self.one_stars = self.attach_node(
-            ReviewReplyPropertiesEntry(
-                id='one_stars',
-                name=_('⭐'),
-                description=_(
+            ReviewReplyNode(
+                node_id='one_stars',
+                name=I18nString('⭐'),
+                description=I18nString(
                     'Настройки ответа на отзыв / ответного сообщения на 1-зведночный отзыв.',
                 ),
             ),
