@@ -92,6 +92,10 @@ async def bind_source_list_menu(
             )
         )
 
+    menu.footer_keyboard.append(
+        KeyboardBlockSpec.prerendered_block(block_id='cancel', block=cancel_button())
+    )
+
     return MenuBuildingSpec(menu=menu, finalizer=StripAndNavigationFinalizer())
 
 
@@ -139,7 +143,7 @@ class ReplaceSourcesListButtonModification:
         if len(ctx.context.node_path) != (len(ad_props_path) + 1):
             return False
 
-        if ctx.context.node_path[: len(ad_props_path)] != ad_props_path:
+        if tuple(ctx.context.node_path[: len(ad_props_path)]) != ad_props_path:
             return False
         return True
 
@@ -149,8 +153,7 @@ class ReplaceSourcesListButtonModification:
         state: MenuBuildingState,
         funpay_props: FunPayProperties,
     ) -> MenuBuildingState:
-        entry_path = str([*ctx.context.node_path, 'goods_source'])
-
+        entry_path = [*ctx.context.node_path, 'goods_source']
         for index, block in enumerate(state.menu.main_keyboard):
             if block.block_id != f'hubplatform.properties.{":".join(entry_path)}':
                 continue

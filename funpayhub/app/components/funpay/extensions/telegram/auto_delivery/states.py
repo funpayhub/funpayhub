@@ -8,7 +8,7 @@ from hubplatform.telegram.fsm import State
 @dataclass
 class AddingAutoDeliveryRule(State, identifier='fph:adding_autodelivery_rule'):
     open_session: str
-    delete_message: int | None = None
+    delete_session: str | None = None
 
 
 @dataclass

@@ -16,7 +16,7 @@ from hubplatform.app.components.telegram.menu_ids import MenuIDs
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 
 from funpayhub.app.components.funpay.properties import FunPayProperties
-from lib.goods_sources import GoodsSourcesManager
+from hubplatform.goods_source import GoodsSourcesManager
 
 from . import (
     states,
@@ -42,7 +42,7 @@ async def open_add_auto_delivery_rule_menu(
     )
     await states.AddingAutoDeliveryRule(
         open_session=cbd.session_id,
-        delete_message=result.telegram_result.message_id,
+        delete_session=result.session.id,
     ).set(state)
 
     with suppress(Exception):
@@ -73,6 +73,8 @@ async def add_rule(
         environment=obj,
         history=session.history + [session.current],
     )
+    if state_obj.delete_session:
+        await ui_manager.close_session(state_obj.delete_session, trigger=obj)
 
 
 @router.callback_query(cbs.DeleteAutoDeliveryRule.filter())
@@ -147,7 +149,7 @@ async def bind_goods_source_from_msg(
     m: Message,
     state: FSM,
     goods_manager: GoodsSourcesManager,
-    props: FunPayProperties,
+    funpay_props: FunPayProperties,
     ui_manager: UIManager,
 ) -> None:
     if not m.text:
@@ -159,11 +161,11 @@ async def bind_goods_source_from_msg(
     if source.source_id in goods_manager:
         source = goods_manager[source.source_id]
     else:
-        goods_manager.add_source(FileGoodsSource, m.text)
+        await goods_manager.add_source(FileGoodsSource, m.text)
 
     state_obj = await states.BindingGoodsSource.clear(state)
     await (
-        props.auto_delivery.get_properties([state_obj.rule])
+        funpay_props.auto_delivery.get_properties([state_obj.rule])
         .get_parameter(['goods_source'])
         .set_value(source.source_id)
     )

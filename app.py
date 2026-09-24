@@ -13,8 +13,9 @@ from funpayhub.app.components.telegram import TelegramComponent, TelegramPropert
 
 setup_logging(global_translator())
 
-
+_app: HubPlatformApp | None = None
 async def main():
+    global _app
     props = FunPayHubProperties()
     await props.load()
 
@@ -34,6 +35,7 @@ async def main():
         translator=global_translator(),
         components=[telegram_component, funpay_component],
     )
+    _app = app
 
     await app.setup()
     await app.run()
