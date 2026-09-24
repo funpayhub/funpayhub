@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 from pathlib import Path
+from contextlib import suppress
 
-from aiogram import Router
 from aiogram.types import (
     Message,
     CallbackQuery as Query,
 )
 from hubplatform.i18n import I18nString
 from aiogram.fsm.context import FSMContext as FSM
+from hubplatform.telegram import Router
 from hubplatform.telegram.ui import UIManager, MenuContext
 from hubplatform.goods_source import FileGoodsSource
+from hubplatform.app.components.telegram.menu_ids import MenuIDs
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 
 from funpayhub.app.components.funpay.properties import FunPayProperties
@@ -19,22 +21,31 @@ from . import (
     states,
     callbacks as cbs,
 )
+from ..menu_ids import MenuIDs as ExtensionMenuIDs
 
 
 r = router = Router(name='fph:auto_delivery')
 
 
 @router.callback_query(cbs.OpenAddAutoDeliveryRuleMenu.filter())
-async def open_add_auto_delivery_rule_menu(q: Query, state: FSM, ui_manager: UIManager) -> None:
+async def open_add_auto_delivery_rule_menu(
+    q: Query,
+    state: FSM,
+    ui_manager: UIManager,
+    cbd: cbs.OpenAddAutoDeliveryRuleMenu,
+) -> None:
     result = await ui_manager.open_menu(
-        menu_id=MenuIds.add_auto_delivery_rule,
+        menu_id=ExtensionMenuIDs.auto_delivery.add_rule_menu,
         context=MenuContext(),
         environment=q,
     )
     await states.AddingAutoDeliveryRule(
-        open_session=result.session.id,
+        open_session=cbd.session_id,
         delete_message=result.telegram_result.message_id,
     ).set(state)
+
+    with suppress(Exception):
+        await q.answer()
 
 
 @router.callback_query(cbs.AddAutoDeliveryRule.filter())
@@ -51,11 +62,16 @@ async def add_rule(
         await obj.answer(I18nString('❌ Правило уже существует.'), show_alert=True)
 
     state_obj = await states.AddingAutoDeliveryRule.clear(state)
-
     entry = await funpay_props.auto_delivery.add_node(rule)
     await funpay_props.auto_delivery.save()
 
-    await ui_manager.replace_menu()
+    session = await ui_manager.session_storage.get(state_obj.open_session)
+    await ui_manager.open_menu(
+        menu_id=MenuIDs.properties.properties_menu,
+        context=NodeMenuContext(node_path=entry.path),
+        environment=obj,
+        history=session.history + [session.current],
+    )
 
 
 @router.callback_query(cbs.DeleteAutoDeliveryRule.filter())
@@ -64,18 +80,15 @@ async def delete_rule(
     funpay_props: FunPayProperties,
     cbd: cbs.DeleteAutoDeliveryRule,
     ui_manager: UIManager,
-):
+) -> None:
     if cbd.rule not in funpay_props.auto_delivery.persistent_subnodes:
-        return q.answer(ru('❌ Правило не найдено'), show_alert=True)
+        await q.answer(I18nString('❌ Правило не найдено'), show_alert=True)
+        return
 
     await funpay_props.auto_delivery.detach_node_with_hooks(cbd.rule)
     await funpay_props.auto_delivery.save()
 
-    async with ui_manager.edit_session(
-        session_id=cbd.session_id,
-        rerender=True,
-        trigger=q,
-    ) as s:
+    async with ui_manager.edit_session(session_id=cbd.session_id, rerender=True, trigger=q) as s:
         if s.history:
             s.current = s.history.pop()
 

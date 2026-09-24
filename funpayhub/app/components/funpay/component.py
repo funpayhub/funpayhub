@@ -11,6 +11,7 @@ from funpaybotengine import Bot, Router, Dispatcher
 from hubplatform.app import HubPlatformApp
 from hubplatform.i18n import I18nString
 from hubplatform.app.context import AppContext
+from funpaybotengine.types.pages import ProfilePage
 from hubplatform.app.app_component import HubPlatformAppComponent
 
 from funpayhub.loggers import funpay_component as logger
@@ -37,6 +38,7 @@ class FunPayComponent(HubPlatformAppComponent):
         self._router = Router(name='funpayhub.root')
         self._dispatcher = Dispatcher(self._router)
         self._state = FunPayComponentState.STOPPED
+        self._profile: ProfilePage | None = None
 
     async def setup(self, app: HubPlatformApp) -> None:
         logger.info(I18nString('Setting up %s component...'), self.component_name)
@@ -95,6 +97,13 @@ class FunPayComponent(HubPlatformAppComponent):
 
     async def wait_stop(self) -> None:
         await self._bot._stopped_event.wait()
+
+    async def profile(self, update: bool = False) -> ProfilePage:
+        if self._profile is None or update:
+            if not self._bot.initialized:
+                await self._bot.update()
+            self._profile = await self._bot.get_profile_page(self._bot.userid)
+        return self._profile
 
     @property
     def component_name(self) -> str:
