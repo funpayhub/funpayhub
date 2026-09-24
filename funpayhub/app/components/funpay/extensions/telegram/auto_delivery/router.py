@@ -101,7 +101,7 @@ async def open_bind_goods_menu(
     state: FSM,
     ui_manager: UIManager,
     funpay_props: FunPayProperties,
-):
+) -> None:
     result = await ui_manager.open_menu(
         menu_id=ExtensionMenuIDs.auto_delivery.bind_source_list_menu,
         context=NodeMenuContext(
@@ -123,7 +123,7 @@ async def bind_goods_source(
     state: FSM,
     goods_manager: GoodsSourcesManager,
     ui_manager: UIManager,
-):
+) -> None:
     source = goods_manager.get(cbd.source_id)
     if source is None:
         await q.answer(I18nString('❌ Источник товаров не найден.'), show_alert=True)
@@ -149,7 +149,7 @@ async def bind_goods_source_from_msg(
     goods_manager: GoodsSourcesManager,
     props: FunPayProperties,
     ui_manager: UIManager,
-):
+) -> None:
     if not m.text:
         return
 
