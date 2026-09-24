@@ -15,3 +15,4 @@ class AddingAutoDeliveryRule(State, identifier='fph:adding_autodelivery_rule'):
 class BindingGoodsSource(State, identifier='fph:binding_goods_source'):
     open_session: str
     rule: str
+    delete_session: str | None = None

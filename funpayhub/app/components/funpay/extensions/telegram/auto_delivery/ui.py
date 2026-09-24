@@ -4,6 +4,7 @@ import html
 from typing import TYPE_CHECKING
 from itertools import chain
 
+from hubplatform.goods_source import GoodsSourcesManager
 from hubplatform.i18n import I18nString
 from hubplatform.telegram.ui import (
     MenuSpec,
@@ -22,7 +23,12 @@ from hubplatform.app.components.telegram.properties.builders import NodeMenuCont
 from funpayhub.app.components.funpay.properties import FunPayProperties
 
 from ..menu_ids import MenuIDs as ExtensionMenuIDs
-from .callbacks import AddAutoDeliveryRule, OpenAddAutoDeliveryRuleMenu
+from .callbacks import (
+    AddAutoDeliveryRule,
+    OpenAddAutoDeliveryRuleMenu,
+    BindGoodsSourceToAutoDelivery,
+    OpenBindGoodsMenu,
+)
 
 
 if TYPE_CHECKING:
@@ -62,6 +68,33 @@ async def add_rule_menu(
     return MenuBuildingSpec(menu=menu, finalizer=StripAndNavigationFinalizer())
 
 
+@registry.add_menu_builder(
+    menu_id=ExtensionMenuIDs.auto_delivery.bind_source_list_menu,
+    context_type=NodeMenuContext,
+)
+async def bind_source_list_menu(
+    ctx: MenuBuildContext[NodeMenuContext],
+    goods_manager: GoodsSourcesManager,
+):
+    menu = MenuSpec()
+    menu.body_text = I18nString(
+        '🗳 Выберите источник товаров из списка или введтите название вручную.'
+    )
+
+    for source in goods_manager.values():
+        menu.main_keyboard.append(
+            KeyboardBlockSpec.callback_button(
+                block_id=f'bind_goods_source:{source.source_id}',
+                text=f'[{await source.len()}] {source.source_id}',
+                callback_data=BindGoodsSourceToAutoDelivery(
+                    rule=ctx.context.node_path[-1], source_id=source.source_id
+                ),
+            )
+        )
+
+    return MenuBuildingSpec(menu=menu, finalizer=StripAndNavigationFinalizer())
+
+
 @registry.add_menu_modification(
     menu_id=MenuIDs.properties.properties_menu,
     modification_id='fph:add_offer_button_modification',
@@ -88,4 +121,45 @@ class AddOfferButtonModification:
                 style='success',
             ),
         )
+        return state
+
+
+@registry.add_menu_modification(
+    menu_id=MenuIDs.properties.properties_menu,
+    modification_id='app:replace_sources_list_button',
+)
+class ReplaceSourcesListButtonModification:
+    async def filter(
+        self,
+        ctx: MenuBuildContext[NodeMenuContext],
+        state: MenuBuildingState,
+        funpay_props: FunPayProperties,
+    ) -> bool:
+        ad_props_path = funpay_props.auto_delivery.path
+        if len(ctx.context.node_path) != (len(ad_props_path) + 1):
+            return False
+
+        if ctx.context.node_path[: len(ad_props_path)] != ad_props_path:
+            return False
+        return True
+
+    async def __call__(
+        self,
+        ctx: MenuBuildContext[NodeMenuContext],
+        state: MenuBuildingState,
+        funpay_props: FunPayProperties,
+    ) -> MenuBuildingState:
+        entry_path = str([*ctx.context.node_path, 'goods_source'])
+
+        for index, block in enumerate(state.menu.main_keyboard):
+            if block.block_id != f'hubplatform.properties.{":".join(entry_path)}':
+                continue
+
+            btn = KeyboardBlockSpec.callback_button(
+                block_id='bind_goods_source',
+                text=I18nString('🗳 Источник товаров'),
+                callback_data=OpenBindGoodsMenu(rule=ctx.context.node_path[-1]).pack(),
+            )
+            state.menu.main_keyboard[index] = btn
+            break
         return state

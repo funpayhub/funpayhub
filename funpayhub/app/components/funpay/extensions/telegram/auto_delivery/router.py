@@ -16,6 +16,7 @@ from hubplatform.app.components.telegram.menu_ids import MenuIDs
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 
 from funpayhub.app.components.funpay.properties import FunPayProperties
+from lib.goods_sources import GoodsSourcesManager
 
 from . import (
     states,
@@ -94,62 +95,74 @@ async def delete_rule(
 
 
 @router.callback_query(cbs.OpenBindGoodsMenu.filter())
-async def open_bind_goods_menu(q: Query, cbd: cbs.OpenBindGoodsMenu, props: FPHProps, state: FSM):
-    msg = await NodeMenuContext(
-        trigger=q,
-        menu_id=MenuIds.autodelivery_goods_sources_list,
-        entry_path=props.auto_delivery.get_properties([cbd.rule]).path,
-    ).answer_to()
+async def open_bind_goods_menu(
+    q: Query,
+    cbd: cbs.OpenBindGoodsMenu,
+    state: FSM,
+    ui_manager: UIManager,
+    funpay_props: FunPayProperties,
+):
+    result = await ui_manager.open_menu(
+        menu_id=ExtensionMenuIDs.auto_delivery.bind_source_list_menu,
+        context=NodeMenuContext(
+            node_path=funpay_props.auto_delivery.get_properties([cbd.rule]).path
+        ),
+        environment=q,
+    )
 
-    await states.BindingGoodsSource(query=q, rule=cbd.rule, state_message=msg).set(state)
+    await states.BindingGoodsSource(
+        rule=cbd.rule, delete_session=result.session.id, open_session=cbd.session_id
+    ).set(state)
 
 
 @router.callback_query(cbs.BindGoodsSourceToAutoDelivery.filter())
 async def bind_goods_source(
     q: Query,
     cbd: cbs.BindGoodsSourceToAutoDelivery,
-    props: FPHProps,
+    funpay_props: FunPayProperties,
     state: FSM,
-    goods_manager: GoodsManager,
-    tg_ui: UI,
+    goods_manager: GoodsSourcesManager,
+    ui_manager: UIManager,
 ):
     source = goods_manager.get(cbd.source_id)
     if source is None:
-        return q.answer(ru('❌ Источник товаров не найден.'), show_alert=True)
+        await q.answer(I18nString('❌ Источник товаров не найден.'), show_alert=True)
+        return
 
     state_obj = await states.BindingGoodsSource.clear(state)
 
     await (
-        props.auto_delivery.get_properties([cbd.rule])
+        funpay_props.auto_delivery.get_properties([cbd.rule])
         .get_parameter(['goods_source'])
         .set_value(cbd.source_id)
     )
 
-    await tg_ui.context_from_history(cbd.ui_history[:-1], trigger=q).answer_to()
-    utils.delete_message(state_obj.state_message)
+    await ui_manager.clone_session(state_obj.open_session, environment=q)
+    if state_obj.delete_session is not None:
+        await ui_manager.close_session(state_obj.delete_session, trigger=q)
 
 
 INVALID_CHARS = set('<>:"/\\|?*\0')  # todo: code duplicate
 
 
 @router.message(states.BindingGoodsSource.filter(), lambda msg: msg.text)
-async def handler(m: Message, state: FSM, goods_manager: GoodsManager, props: FPHProps, tg_ui: UI):
-    for i in goods_manager._sources.values():
-        if i.display_id == m.text:
-            source = i
-            break
+async def bind_goods_source_from_msg(
+    m: Message,
+    state: FSM,
+    goods_manager: GoodsSourcesManager,
+    props: FunPayProperties,
+    ui_manager: UIManager,
+):
+    if not m.text:
+        return
+
+    path = Path('storage/goods') / m.text
+
+    source = FileGoodsSource(source=path)
+    if source.source_id in goods_manager:
+        source = goods_manager[source.source_id]
     else:
-        filename = m.text
-        if (
-            filename in ['.', '..']
-            or filename.endswith((' ', '.'))
-            or any(c in INVALID_CHARS for c in filename)
-            or any(ord(c) < 32 for c in filename)
-        ):
-            return m.reply(ru('<b>❌ Невалидное имя файла.</b>'))
-        if not filename.endswith('.txt'):
-            filename += '.txt'
-        source = await goods_manager.add_source(FileGoodsSource, Path('storage/goods') / filename)
+        goods_manager.add_source(FileGoodsSource, m.text)
 
     state_obj = await states.BindingGoodsSource.clear(state)
     await (
@@ -158,5 +171,6 @@ async def handler(m: Message, state: FSM, goods_manager: GoodsManager, props: FP
         .set_value(source.source_id)
     )
 
-    await tg_ui.context_from_history(state_obj.ui_history, trigger=m).answer_to()
-    utils.delete_message(state_obj.state_message)
+    await ui_manager.clone_session(state_obj.open_session, environment=m)
+    if state_obj.delete_session:
+        await ui_manager.close_session(state_obj.delete_session, trigger=m)
