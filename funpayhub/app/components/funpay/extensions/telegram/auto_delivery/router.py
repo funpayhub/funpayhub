@@ -142,9 +142,6 @@ async def bind_goods_source(
         await ui_manager.close_session(state_obj.delete_session, trigger=q)
 
 
-INVALID_CHARS = set('<>:"/\\|?*\0')  # todo: code duplicate
-
-
 @router.message(states.BindingGoodsSource.filter(), lambda msg: msg.text)
 async def bind_goods_source_from_msg(
     m: Message,
