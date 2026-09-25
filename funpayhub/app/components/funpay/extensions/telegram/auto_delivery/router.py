@@ -92,7 +92,9 @@ async def delete_rule(
     await funpay_props.auto_delivery.save()
 
     async with telegram_ui_manager.edit_session(
-        session_id=cbd.session_id, rerender=True, trigger=q
+        session_id=cbd.session_id,
+        rerender=True,
+        trigger=q,
     ) as s:
         if s.history:
             s.current = s.history.pop()

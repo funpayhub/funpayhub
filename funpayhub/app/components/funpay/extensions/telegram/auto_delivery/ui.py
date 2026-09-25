@@ -16,7 +16,7 @@ from hubplatform.telegram.ui import (
 )
 from hubplatform.goods_source import GoodsSourcesManager
 from hubplatform.app.components.telegram.menu_ids import MenuIDs
-from hubplatform.app.components.telegram.ui.widgets import cancel_button
+from hubplatform.app.components.telegram.ui.widgets import cancel_button, confirmable_button
 from hubplatform.app.components.telegram.ui.finalizers import StripAndNavigationFinalizer
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 
@@ -26,6 +26,7 @@ from ..menu_ids import MenuIDs as ExtensionMenuIDs
 from .callbacks import (
     OpenBindGoodsMenu,
     AddAutoDeliveryRule,
+    DeleteAutoDeliveryRule,
     OpenAddAutoDeliveryRuleMenu,
     BindGoodsSourceToAutoDelivery,
 )
@@ -129,41 +130,62 @@ class AddOfferButtonModification:
         return state
 
 
+async def is_ad_node_filter(
+    ctx: MenuBuildContext[NodeMenuContext],
+    state: MenuBuildingState,
+    funpay_props: FunPayProperties,
+) -> bool:
+    ad_props_path = funpay_props.auto_delivery.path
+    if len(ctx.context.node_path) != (len(ad_props_path) + 1):
+        return False
+
+    if tuple(ctx.context.node_path[: len(ad_props_path)]) != ad_props_path:
+        return False
+    return True
+
+
 @registry.add_menu_modification(
     menu_id=MenuIDs.properties.properties_menu,
     modification_id='app:replace_sources_list_button',
+    filter=is_ad_node_filter,
 )
-class ReplaceSourcesListButtonModification:
-    async def filter(
-        self,
-        ctx: MenuBuildContext[NodeMenuContext],
-        state: MenuBuildingState,
-        funpay_props: FunPayProperties,
-    ) -> bool:
-        ad_props_path = funpay_props.auto_delivery.path
-        if len(ctx.context.node_path) != (len(ad_props_path) + 1):
-            return False
+async def replace_sources_list_button_modification(
+    ctx: MenuBuildContext[NodeMenuContext],
+    state: MenuBuildingState,
+) -> MenuBuildingState:
+    entry_path = [*ctx.context.node_path, 'goods_source']
+    for index, block in enumerate(state.menu.main_keyboard):
+        if block.block_id != f'hubplatform.properties.{":".join(entry_path)}':
+            continue
 
-        if tuple(ctx.context.node_path[: len(ad_props_path)]) != ad_props_path:
-            return False
-        return True
+        btn = KeyboardBlockSpec.callback_button(
+            block_id='bind_goods_source',
+            text=I18nString('🗳 Источник товаров'),
+            callback_data=OpenBindGoodsMenu(rule=ctx.context.node_path[-1]).pack(),
+        )
+        state.menu.main_keyboard[index] = btn
+        break
+    return state
 
-    async def __call__(
-        self,
-        ctx: MenuBuildContext[NodeMenuContext],
-        state: MenuBuildingState,
-        funpay_props: FunPayProperties,
-    ) -> MenuBuildingState:
-        entry_path = [*ctx.context.node_path, 'goods_source']
-        for index, block in enumerate(state.menu.main_keyboard):
-            if block.block_id != f'hubplatform.properties.{":".join(entry_path)}':
-                continue
 
-            btn = KeyboardBlockSpec.callback_button(
-                block_id='bind_goods_source',
-                text=I18nString('🗳 Источник товаров'),
-                callback_data=OpenBindGoodsMenu(rule=ctx.context.node_path[-1]).pack(),
-            )
-            state.menu.main_keyboard[index] = btn
-            break
-        return state
+@registry.add_menu_modification(
+    menu_id=MenuIDs.properties.properties_menu,
+    modification_id='app:auto_delivery.node.add_remove_button',
+    filter=is_ad_node_filter,
+)
+async def add_remove_button_to_ad_node(
+    ctx: MenuBuildContext[NodeMenuContext], state: MenuBuildingState
+) -> MenuBuildingState:
+    state.menu.footer_keyboard.append(
+        KeyboardBlockSpec.prerendered_block(
+            block_id='delete_rule',
+            block=confirmable_button(
+                id='delete_rule',
+                ctx=ctx.context,
+                text=I18nString('Удалить'),
+                callback_data=DeleteAutoDeliveryRule(rule=ctx.context.node_path[-1]),
+                style='danger',
+            ),
+        ),
+    )
+    return state
