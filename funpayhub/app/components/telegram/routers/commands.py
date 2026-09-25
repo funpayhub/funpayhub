@@ -14,8 +14,8 @@ router = Router(name='app:telegram_commands')
 
 @router.message(Command('menu'))
 @router.message(Command('start'))
-async def send_properties_menu(m: Message, ui_manager: UIManager) -> None:
-    await ui_manager.open_menu(
+async def send_properties_menu(m: Message, telegram_ui_manager: UIManager) -> None:
+    await telegram_ui_manager.open_menu(
         menu_id=MenuIDs.properties.properties_menu,
         context=NodeMenuContext(node_path=[]),
         environment=m,
@@ -24,8 +24,8 @@ async def send_properties_menu(m: Message, ui_manager: UIManager) -> None:
 
 # todo: remove later
 @router.message(Command('sources'))
-async def send_sources_menu(m: Message, ui_manager: UIManager) -> None:
-    await ui_manager.open_menu(
+async def send_sources_menu(m: Message, telegram_ui_manager: UIManager) -> None:
+    await telegram_ui_manager.open_menu(
         menu_id=MenuIDs.goods_sources.sources_list_menu,
         context=MenuContext(),
         environment=m,
@@ -33,8 +33,8 @@ async def send_sources_menu(m: Message, ui_manager: UIManager) -> None:
 
 
 @router.message(Command('expressions'))
-async def send_expressions_list_menu(m: Message, ui_manager: UIManager) -> None:
-    await ui_manager.open_menu(
+async def send_expressions_list_menu(m: Message, telegram_ui_manager: UIManager) -> None:
+    await telegram_ui_manager.open_menu(
         menu_id=MenuIDs.expressions.expressions_list_menu,
         context=ExpressionsListMenuContext(),
         environment=m,

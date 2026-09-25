@@ -11,12 +11,11 @@ from hubplatform.i18n import I18nString
 from aiogram.fsm.context import FSMContext as FSM
 from hubplatform.telegram import Router
 from hubplatform.telegram.ui import UIManager, MenuContext
-from hubplatform.goods_source import FileGoodsSource
+from hubplatform.goods_source import FileGoodsSource, GoodsSourcesManager
 from hubplatform.app.components.telegram.menu_ids import MenuIDs
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 
 from funpayhub.app.components.funpay.properties import FunPayProperties
-from hubplatform.goods_source import GoodsSourcesManager
 
 from . import (
     states,
@@ -32,10 +31,10 @@ r = router = Router(name='fph:auto_delivery')
 async def open_add_auto_delivery_rule_menu(
     q: Query,
     state: FSM,
-    ui_manager: UIManager,
+    telegram_ui_manager: UIManager,
     cbd: cbs.OpenAddAutoDeliveryRuleMenu,
 ) -> None:
-    result = await ui_manager.open_menu(
+    result = await telegram_ui_manager.open_menu(
         menu_id=ExtensionMenuIDs.auto_delivery.add_rule_menu,
         context=MenuContext(),
         environment=q,
@@ -55,7 +54,7 @@ async def add_rule(
     obj: Query | Message,
     state: FSM,
     funpay_props: FunPayProperties,
-    ui_manager: UIManager,
+    telegram_ui_manager: UIManager,
     cbd: cbs.AddAutoDeliveryRule | None = None,
 ) -> None:
     rule = cbd.rule if cbd is not None else obj.text
@@ -66,15 +65,16 @@ async def add_rule(
     entry = await funpay_props.auto_delivery.add_node(rule)
     await funpay_props.auto_delivery.save()
 
-    session = await ui_manager.session_storage.get(state_obj.open_session)
-    await ui_manager.open_menu(
-        menu_id=MenuIDs.properties.properties_menu,
-        context=NodeMenuContext(node_path=entry.path),
-        environment=obj,
-        history=session.history + [session.current],
-    )
+    if state_obj.open_session:
+        session = await telegram_ui_manager.session_storage.get(state_obj.open_session)
+        await telegram_ui_manager.open_menu(
+            menu_id=MenuIDs.properties.properties_menu,
+            context=NodeMenuContext(node_path=entry.path),
+            environment=obj,
+            history=session.history + [session.current],
+        )
     if state_obj.delete_session:
-        await ui_manager.close_session(state_obj.delete_session, trigger=obj)
+        await telegram_ui_manager.close_session(state_obj.delete_session, trigger=obj)
 
 
 @router.callback_query(cbs.DeleteAutoDeliveryRule.filter())
@@ -82,7 +82,7 @@ async def delete_rule(
     q: Query,
     funpay_props: FunPayProperties,
     cbd: cbs.DeleteAutoDeliveryRule,
-    ui_manager: UIManager,
+    telegram_ui_manager: UIManager,
 ) -> None:
     if cbd.rule not in funpay_props.auto_delivery.persistent_subnodes:
         await q.answer(I18nString('❌ Правило не найдено'), show_alert=True)
@@ -91,7 +91,9 @@ async def delete_rule(
     await funpay_props.auto_delivery.detach_node_with_hooks(cbd.rule)
     await funpay_props.auto_delivery.save()
 
-    async with ui_manager.edit_session(session_id=cbd.session_id, rerender=True, trigger=q) as s:
+    async with telegram_ui_manager.edit_session(
+        session_id=cbd.session_id, rerender=True, trigger=q
+    ) as s:
         if s.history:
             s.current = s.history.pop()
 
@@ -101,19 +103,21 @@ async def open_bind_goods_menu(
     q: Query,
     cbd: cbs.OpenBindGoodsMenu,
     state: FSM,
-    ui_manager: UIManager,
+    telegram_ui_manager: UIManager,
     funpay_props: FunPayProperties,
 ) -> None:
-    result = await ui_manager.open_menu(
+    result = await telegram_ui_manager.open_menu(
         menu_id=ExtensionMenuIDs.auto_delivery.bind_source_list_menu,
         context=NodeMenuContext(
-            node_path=funpay_props.auto_delivery.get_properties([cbd.rule]).path
+            node_path=funpay_props.auto_delivery.get_properties([cbd.rule]).path,
         ),
         environment=q,
     )
 
     await states.BindingGoodsSource(
-        rule=cbd.rule, delete_session=result.session.id, open_session=cbd.session_id
+        rule=cbd.rule,
+        delete_session=result.session.id,
+        open_session=cbd.session_id,
     ).set(state)
 
 
@@ -124,7 +128,7 @@ async def bind_goods_source(
     funpay_props: FunPayProperties,
     state: FSM,
     goods_manager: GoodsSourcesManager,
-    ui_manager: UIManager,
+    telegram_ui_manager: UIManager,
 ) -> None:
     source = goods_manager.get(cbd.source_id)
     if source is None:
@@ -139,9 +143,10 @@ async def bind_goods_source(
         .set_value(cbd.source_id)
     )
 
-    await ui_manager.clone_session(state_obj.open_session, environment=q)
+    if state_obj.open_session:
+        await telegram_ui_manager.clone_session(state_obj.open_session, environment=q)
     if state_obj.delete_session is not None:
-        await ui_manager.close_session(state_obj.delete_session, trigger=q)
+        await telegram_ui_manager.close_session(state_obj.delete_session, trigger=q)
 
 
 @router.message(states.BindingGoodsSource.filter(), lambda msg: msg.text)
@@ -150,7 +155,7 @@ async def bind_goods_source_from_msg(
     state: FSM,
     goods_manager: GoodsSourcesManager,
     funpay_props: FunPayProperties,
-    ui_manager: UIManager,
+    telegram_ui_manager: UIManager,
 ) -> None:
     if not m.text:
         return
@@ -170,6 +175,7 @@ async def bind_goods_source_from_msg(
         .set_value(source.source_id)
     )
 
-    await ui_manager.clone_session(state_obj.open_session, environment=m)
+    if state_obj.open_session:
+        await telegram_ui_manager.clone_session(state_obj.open_session, environment=m)
     if state_obj.delete_session:
-        await ui_manager.close_session(state_obj.delete_session, trigger=m)
+        await telegram_ui_manager.close_session(state_obj.delete_session, trigger=m)

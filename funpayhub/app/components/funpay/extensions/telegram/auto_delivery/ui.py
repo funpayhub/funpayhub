@@ -4,7 +4,6 @@ import html
 from typing import TYPE_CHECKING
 from itertools import chain
 
-from hubplatform.goods_source import GoodsSourcesManager
 from hubplatform.i18n import I18nString
 from hubplatform.telegram.ui import (
     MenuSpec,
@@ -15,6 +14,7 @@ from hubplatform.telegram.ui import (
     KeyboardBlockSpec,
     MenuBuildingState,
 )
+from hubplatform.goods_source import GoodsSourcesManager
 from hubplatform.app.components.telegram.menu_ids import MenuIDs
 from hubplatform.app.components.telegram.ui.widgets import cancel_button
 from hubplatform.app.components.telegram.ui.finalizers import StripAndNavigationFinalizer
@@ -24,10 +24,10 @@ from funpayhub.app.components.funpay.properties import FunPayProperties
 
 from ..menu_ids import MenuIDs as ExtensionMenuIDs
 from .callbacks import (
+    OpenBindGoodsMenu,
     AddAutoDeliveryRule,
     OpenAddAutoDeliveryRuleMenu,
     BindGoodsSourceToAutoDelivery,
-    OpenBindGoodsMenu,
 )
 
 
@@ -78,7 +78,7 @@ async def bind_source_list_menu(
 ):
     menu = MenuSpec()
     menu.body_text = I18nString(
-        '🗳 Выберите источник товаров из списка или введтите название вручную.'
+        '🗳 Выберите источник товаров из списка или введтите название вручную.',
     )
 
     for source in goods_manager.values():
@@ -87,13 +87,14 @@ async def bind_source_list_menu(
                 block_id=f'bind_goods_source:{source.source_id}',
                 text=f'[{await source.len()}] {source.source_id}',
                 callback_data=BindGoodsSourceToAutoDelivery(
-                    rule=ctx.context.node_path[-1], source_id=source.source_id
+                    rule=ctx.context.node_path[-1],
+                    source_id=source.source_id,
                 ),
-            )
+            ),
         )
 
     menu.footer_keyboard.append(
-        KeyboardBlockSpec.prerendered_block(block_id='cancel', block=cancel_button())
+        KeyboardBlockSpec.prerendered_block(block_id='cancel', block=cancel_button()),
     )
 
     return MenuBuildingSpec(menu=menu, finalizer=StripAndNavigationFinalizer())
