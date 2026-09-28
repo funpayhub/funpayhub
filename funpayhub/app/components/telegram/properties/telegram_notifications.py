@@ -4,11 +4,72 @@ from __future__ import annotations
 __all__ = ['TelegramNotificationsProperties']
 
 
+from typing import Any
+
 from pyconfigtree import Properties, ListParameter
 from hubplatform.i18n import I18nString
 from pyconfigtree.source.toml import TOMLSource
 
 from funpayhub.app.notification_channels import NotificationChannels
+
+
+class NotificationsChannel(ListParameter[str]):
+    def __init__(
+        self,
+        channel_id: str,
+        name: str,
+        description: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(
+            node_id=channel_id,
+            name=name,
+            description=description,
+            default_factory=list,
+            metadata=metadata,
+        )
+
+    @property
+    def chats(self) -> list[tuple[int, int | None]]:
+        result = []
+        for i in self._value:
+            chat_id, thread_id = i.split('.')
+            result.append((int(chat_id), int(thread_id) if thread_id.isnumeric() else None))
+        return result
+
+    async def add_chat(
+        self,
+        chat_id: int,
+        thread_id: int | None = None,
+        run_hook: bool = True,
+        save: bool = True,
+    ) -> None:
+        if not isinstance(chat_id, int):
+            raise TypeError('Chat ID must be an integer.')
+
+        if thread_id is not None and not isinstance(thread_id, int):
+            raise TypeError('Thread ID must be an integer or None.')
+
+        result = f'{chat_id}.{thread_id}'
+        if result in self._value:
+            return
+
+        await self.add_items(result, run_hook=run_hook, save=save)
+
+    async def remove_chat(
+        self,
+        chat_id: int,
+        thread_id: int | None = None,
+        run_hook: bool = True,
+        save: bool = True,
+    ) -> None:
+        result = f'{chat_id}.{thread_id}'
+        try:
+            index = self._value.index(result)
+        except ValueError:
+            return
+
+        await self.pop_items(index, run_hook=run_hook, save=save)
 
 
 class TelegramNotificationsProperties(Properties):
