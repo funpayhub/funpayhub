@@ -1,15 +1,16 @@
-from funpaybotengine import Router
-from funpaybotengine.dispatching.events import ChatChanged, NewMessage
-from funpayhub.app.components.telegram import TelegramComponent, TelegramProperties
-from funpayhub.app.components.funpay import FunPayComponent
-from hubplatform.telegram.ui import UIManager
-from funpaybotengine.runner import EventsPack
-from funpaybotengine.types import Message
+from __future__ import annotations
 
+from funpaybotengine import Router
+from funpaybotengine.types import Message
+from funpaybotengine.runner import EventsPack
+from hubplatform.telegram.ui import UIManager
+from funpaybotengine.dispatching.events import NewMessage, ChatChanged
+
+from funpayhub.app.components.funpay import FunPayComponent
+from funpayhub.app.components.telegram import TelegramProperties
 
 
 router = Router(name='app:on_new_message')
-
 
 
 @router.on_chat_changed(handler_id='fph:new_message_notification')
@@ -19,7 +20,7 @@ async def send_new_message_notification(
     telegram_component: TelegramProperties,
     telegram_ui_manager: UIManager,
     telegram_props: TelegramProperties,
-    funpay: FunPayComponent
+    funpay: FunPayComponent,
 ) -> None:
     msgs: list[Message] = []
     appearance_props = properties.telegram.appearance.new_message_appearance

@@ -3,16 +3,15 @@ from __future__ import annotations
 
 __all__ = ['TelegramComponent']
 
-import asyncio
 import os
+import asyncio
 
-from aiogram.types import InlineKeyboardMarkup, Message
-from hubplatform.app import HubPlatformApp
-from hubplatform.app.components.telegram import TelegramComponent as BaseTelegramComponent
-from hubplatform.telegram.ui import MenuEnvironment, MenuDeliveryResult
 from pyconfigtree import ListParameter
-
+from hubplatform.app import HubPlatformApp
 from lib.telegram.ui import MenuContext
+from hubplatform.telegram.ui import MenuEnvironment, MenuDeliveryResult
+from hubplatform.app.components.telegram import TelegramComponent as BaseTelegramComponent
+
 from .routers import ROUTER
 from .properties import TelegramProperties
 
@@ -61,8 +60,8 @@ class TelegramComponent(BaseTelegramComponent):
                         context=menu_context,
                         environment=MenuEnvironment(chat_id=chat_id, thread_id=thread_id),
                         bot=self._bot,
-                    )
-                )
+                    ),
+                ),
             )
 
         return tasks

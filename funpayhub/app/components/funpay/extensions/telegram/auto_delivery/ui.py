@@ -174,7 +174,8 @@ async def replace_sources_list_button_modification(
     filter=is_ad_node_filter,
 )
 async def add_remove_button_to_ad_node(
-    ctx: MenuBuildContext[NodeMenuContext], state: MenuBuildingState
+    ctx: MenuBuildContext[NodeMenuContext],
+    state: MenuBuildingState,
 ) -> MenuBuildingState:
     state.menu.footer_keyboard.append(
         KeyboardBlockSpec.prerendered_block(

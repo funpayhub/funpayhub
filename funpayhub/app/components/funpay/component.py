@@ -19,6 +19,7 @@ from funpayhub.loggers import funpay_component as logger
 from .session import FPBESession
 from .extensions import TELEGRAM_COMPONENT_EXTENSION
 from .properties import FunPayProperties
+from .first_response_cache import FirstResponseCache
 
 
 class FunPayComponentState(Enum):
@@ -30,7 +31,12 @@ class FunPayComponentState(Enum):
 
 
 class FunPayComponent(HubPlatformAppComponent):
-    def __init__(self, properties: FunPayProperties) -> None:
+    def __init__(
+        self,
+        properties: FunPayProperties,
+        *,
+        first_response_cache: FirstResponseCache | None = None,
+    ) -> None:
         super().__init__()
         self._properties = properties
         self._session = FPBESession()
@@ -38,6 +44,11 @@ class FunPayComponent(HubPlatformAppComponent):
         self._router = Router(name='funpayhub.root')
         self._dispatcher = Dispatcher(self._router)
         self._state = FunPayComponentState.STOPPED
+        self._first_response_cache = (
+            first_response_cache
+            if first_response_cache is not None
+            else FirstResponseCache('storage/first_response_cache.json')
+        )
         self._profile: ProfilePage | None = None
 
     async def setup(self, app: HubPlatformApp) -> None:
@@ -84,6 +95,7 @@ class FunPayComponent(HubPlatformAppComponent):
         ctx.provide(name, 'funpay_bot', self._bot)
         ctx.provide(name, 'funpay_dispatcher', self._dispatcher)
         ctx.provide(name, 'funpay_router', self._router)
+        ctx.provide(name, 'first_response_cache', self._first_response_cache)
 
     async def run(self) -> None:
         if self._state is not FunPayComponentState.READY:
@@ -128,3 +140,7 @@ class FunPayComponent(HubPlatformAppComponent):
     @property
     def properties(self) -> FunPayProperties:
         return self._properties
+
+    @property
+    def first_response_cache(self) -> FirstResponseCache:
+        return self._first_response_cache
