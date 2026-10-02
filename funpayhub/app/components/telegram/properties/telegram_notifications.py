@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 
-__all__ = ['TelegramNotificationsProperties']
+__all__ = ['TelegramNotificationsProperties', 'NotificationsChannel', 'NotificationsCategory']
 
 from typing import Any
 from collections.abc import Sequence, Generator
@@ -136,7 +136,9 @@ class NotificationsCategory(Properties):
                 yield from i.channels()
 
     def get_channel(
-        self, notifications_path: Sequence[str], from_root: bool = False
+        self,
+        notifications_path: Sequence[str],
+        from_root: bool = False,
     ) -> NotificationsChannel:
         node = self if not from_root else self.get_notifications_root()
         result = node.get_node(notifications_path)
@@ -156,11 +158,7 @@ class SystemNotificationsCategory(NotificationsCategory):
                 key='funpayhub.properties.telegram.notifications.system.name',
                 fallback='Системные',
             ),
-            description=I18nString(
-                key='funpayhub.properties.telegram.notifications.system.description',
-                fallback='Список чатов, подписанных на уведомления о запуске / остановке '
-                'FunPayHub и прочих системных событиях (формат: "chat_id.thread_it").',
-            ),
+            description=I18nString(''),
         )
 
         self.system = self.attach_node(
