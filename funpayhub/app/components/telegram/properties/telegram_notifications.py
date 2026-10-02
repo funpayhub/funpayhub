@@ -3,14 +3,42 @@ from __future__ import annotations
 
 __all__ = ['TelegramNotificationsProperties']
 
-
 from typing import Any
+from collections.abc import Sequence, Generator
 
 from pyconfigtree import Properties, ListParameter
 from hubplatform.i18n import I18nString
+from pyconfigtree.base import T
 from pyconfigtree.source.toml import TOMLSource
 
-from funpayhub.app.notification_channels import NotificationChannels
+
+def _get_notifications_root(
+    node: NotificationsChannel | NotificationsCategory,
+) -> NotificationsCategory:
+    current = node
+    while True:
+        if isinstance(current, NotificationsCategory) and current.is_notifications_root:
+            break
+        if current.parent is None or not isinstance(current.parent, NotificationsCategory):
+            raise ValueError(f'Cant find root notifications category for node {node.path!r}')
+        current = current.parent
+    return current
+
+
+def _get_notifications_path(
+    node: NotificationsChannel | NotificationsCategory,
+) -> tuple[str, ...]:
+    current = node
+    path = []
+    while True:
+        if isinstance(current, NotificationsCategory) and current.is_notifications_root:
+            break
+        if current.parent is None or not isinstance(current.parent, NotificationsCategory):
+            raise ValueError(f'Cant determine notifications path for node {node.path!r}: no root.')
+
+        path.append(current.id)
+        current = current.parent
+    return tuple(reversed(path))
 
 
 class NotificationsChannel(ListParameter[str]):
@@ -36,6 +64,9 @@ class NotificationsChannel(ListParameter[str]):
             chat_id, thread_id = i.split('.')
             result.append((int(chat_id), int(thread_id) if thread_id.isnumeric() else None))
         return result
+
+    def has_chat(self, chat_id: int, thread_id: int | None = None) -> bool:
+        return f'{chat_id}.{thread_id}' in self._value
 
     async def add_chat(
         self,
@@ -71,8 +102,101 @@ class NotificationsChannel(ListParameter[str]):
 
         await self.pop_items(index, run_hook=run_hook, save=save)
 
+    def get_notifications_root(self) -> NotificationsCategory:
+        return _get_notifications_root(self)
 
-class TelegramNotificationsProperties(Properties):
+    def get_notifications_path(self) -> tuple[str, ...]:
+        return _get_notifications_path(self)
+
+
+class NotificationsCategory(Properties):
+    _root: bool = False
+
+    def attach_node(self, node: T, *, virtual: bool = False) -> T:
+        if isinstance(node, NotificationsCategory):
+            if node._root:
+                raise ValueError('Cant attach root notifications category!')
+        return super().attach_node(node, virtual=virtual)
+
+    @property
+    def is_notifications_root(self) -> bool:
+        return self._root
+
+    def get_notifications_root(self) -> NotificationsCategory:
+        return _get_notifications_root(self)
+
+    def get_notifications_path(self) -> tuple[str, ...]:
+        return _get_notifications_path(self)
+
+    def channels(self) -> Generator[NotificationsChannel, None, None]:
+        for i in self.persistent_subnodes.values():
+            if isinstance(i, NotificationsChannel):
+                yield i
+            elif isinstance(i, NotificationsCategory):
+                yield from i.channels()
+
+    def get_channel(
+        self, notifications_path: Sequence[str], from_root: bool = False
+    ) -> NotificationsChannel:
+        node = self if not from_root else self.get_notifications_root()
+        result = node.get_node(notifications_path)
+        if not isinstance(result, NotificationsChannel):
+            raise LookupError(
+                f'Cant find notifications channel with path '
+                f'{notifications_path!r} at {node.path!r}',
+            )
+        return result
+
+
+class SystemNotificationsCategory(NotificationsCategory):
+    def __init__(self) -> None:
+        super().__init__(
+            node_id='system',
+            name=I18nString(
+                key='funpayhub.properties.telegram.notifications.system.name',
+                fallback='Системные',
+            ),
+            description=I18nString(
+                key='funpayhub.properties.telegram.notifications.system.description',
+                fallback='Список чатов, подписанных на уведомления о запуске / остановке '
+                'FunPayHub и прочих системных событиях (формат: "chat_id.thread_it").',
+            ),
+        )
+
+        self.system = self.attach_node(
+            NotificationsChannel(
+                channel_id='system',
+                name=I18nString(
+                    key='funpayhub.properties.telegram.notifications.system.name',
+                    fallback='Системные',
+                ),
+                description=I18nString(
+                    key='funpayhub.properties.telegram.notifications.system.description',
+                    fallback='Список чатов, подписанных на уведомления о запуске / остановке '
+                    'FunPayHub и прочих системных событиях (формат: "chat_id.thread_it").',
+                ),
+            ),
+        )
+
+        self.error = self.attach_node(
+            NotificationsChannel(
+                channel_id='error',
+                name=I18nString(
+                    key='funpayhub.properties.telegram.notifications.errors.name',
+                    fallback='Ошибки',
+                ),
+                description=I18nString(
+                    key='funpayhub.properties.telegram.notifications.errors.description',
+                    fallback='Список чатов, подписанных на уведомления об ошибках в работе FunPayHub '
+                    '(формат: "chat_id.thread_it").',
+                ),
+            ),
+        )
+
+
+class TelegramNotificationsProperties(NotificationsCategory):
+    _root = True
+
     def __init__(self) -> None:
         super().__init__(
             node_id='telegram_notifications',
@@ -85,160 +209,4 @@ class TelegramNotificationsProperties(Properties):
             metadata={'emoji': '🔔'},
         )
 
-        self.system: ListParameter[str] = self.attach_node(
-            ListParameter(
-                node_id=NotificationChannels.SYSTEM,
-                name=I18nString(
-                    key='funpayhub.properties.telegram.notifications.system.name',
-                    fallback='Системные',
-                ),
-                description=I18nString(
-                    key='funpayhub.properties.telegram.notifications.system.description',
-                    fallback='Список чатов, подписанных на уведомления о запуске / остановке '
-                    'FunPayHub и прочих системных событиях (формат: "chat_id.thread_it").',
-                ),
-                default_factory=list,
-            ),
-        )
-
-        self.error: ListParameter[str] = self.attach_node(
-            ListParameter(
-                node_id=NotificationChannels.ERROR,
-                name=I18nString(
-                    key='funpayhub.properties.telegram.notifications.errors.name',
-                    fallback='Ошибки',
-                ),
-                description=I18nString(
-                    key='funpayhub.properties.telegram.notifications.errors.description',
-                    fallback='Список чатов, подписанных на уведомления об ошибках в работе FunPayHub '
-                    '(формат: "chat_id.thread_it").',
-                ),
-                default_factory=list,
-            ),
-        )
-
-        self.offers_raised: ListParameter[str] = self.attach_node(
-            ListParameter(
-                node_id=NotificationChannels.OFFER_RAISED,
-                name=I18nString(
-                    key='funpayhub.properties.telegram.notifications.offers_raised.name',
-                    fallback='Поднятие лотов',
-                ),
-                description=I18nString(
-                    key='funpayhub.properties.telegram.notifications.offers_raised.description',
-                    fallback='Список чатов, подписанных на уведомления о поднятии лотов '
-                    '(формат: "chat_id.thread_it").',
-                ),
-                default_factory=list,
-            ),
-        )
-
-        self.new_message: ListParameter[str] = self.attach_node(
-            ListParameter(
-                node_id=NotificationChannels.NEW_MESSAGE,
-                name=I18nString(
-                    key='funpayhub.properties.telegram.notifications.new_message.name',
-                    fallback='Новое сообщение',
-                ),
-                description=I18nString(
-                    key='funpayhub.properties.telegram.notifications.new_message.description',
-                    fallback='Список чатов, подписанных на уведомления о новых сообщениях '
-                    '(формат: "chat_id.thread_it").',
-                ),
-                default_factory=list,
-            ),
-        )
-
-        self.new_sale: ListParameter[str] = self.attach_node(
-            ListParameter(
-                node_id=NotificationChannels.NEW_SALE,
-                name=I18nString(
-                    key='funpayhub.properties.telegram.notifications.new_sale.name',
-                    fallback='Новый заказ',
-                ),
-                description=I18nString(
-                    key='funpayhub.properties.telegram.notifications.new_sale.description',
-                    fallback='Список чатов, подписанных на уведомления о новых заказах '
-                    '(формат: "chat_id.thread_it").',
-                ),
-                default_factory=list,
-            ),
-        )
-
-        self.sale_status_changed: ListParameter[str] = self.attach_node(
-            ListParameter(
-                node_id=NotificationChannels.SALE_STATUS_CHANGED,
-                name=I18nString(
-                    key='funpayhub.properties.telegram.notifications.sale_status_changed.name',
-                    fallback='Изменение статуса заказа',
-                ),
-                description=I18nString(
-                    key='funpayhub.properties.telegram.notifications.sale_status_changed'
-                    '.description',
-                    fallback='Список чатов, подписанных на уведомления об изменениях статус заказа '
-                    '(завершение, возврат средств, переоткрытие и т.д.) '
-                    '(формат: "chat_id.thread_it").',
-                ),
-                default_factory=list,
-            ),
-        )
-
-        self.review_1: ListParameter[str] = self.attach_node(
-            ListParameter(
-                node_id=NotificationChannels.REVIEW_1,
-                name=I18nString(
-                    key='funpayhub.properties.telegram.notifications.review_1.name',
-                    fallback='Отзывы с 1 звездой',
-                ),
-                description=I18nString(''),
-                default_factory=list,
-            ),
-        )
-
-        self.review_2: ListParameter[str] = self.attach_node(
-            ListParameter(
-                node_id=NotificationChannels.REVIEW_2,
-                name=I18nString(
-                    key='funpayhub.properties.telegram.notifications.review_2.name',
-                    fallback='Отзывы с 2 звездами',
-                ),
-                description=I18nString(''),
-                default_factory=list,
-            ),
-        )
-
-        self.review_3: ListParameter[str] = self.attach_node(
-            ListParameter(
-                node_id=NotificationChannels.REVIEW_3,
-                name=I18nString(
-                    key='funpayhub.properties.telegram.notifications.review_3.name',
-                    fallback='Отзывы с 3 звездами',
-                ),
-                description=I18nString(''),
-                default_factory=list,
-            ),
-        )
-
-        self.review_4: ListParameter[str] = self.attach_node(
-            ListParameter(
-                node_id=NotificationChannels.REVIEW_4,
-                name=I18nString(
-                    key='funpayhub.properties.telegram.notifications.review_4.name',
-                    fallback='Отзывы с 4 звездами',
-                ),
-                description=I18nString(''),
-                default_factory=list,
-            ),
-        )
-
-        self.review_5: ListParameter[str] = self.attach_node(
-            ListParameter(
-                node_id=NotificationChannels.REVIEW_5,
-                name=I18nString(
-                    key='funpayhub.properties.telegram.notifications.review_5.name',
-                    fallback='Отзывы с 5 звездами',
-                ),
-                description=I18nString(''),
-                default_factory=list,
-            ),
-        )
+        self.system = self.attach_node(SystemNotificationsCategory())
