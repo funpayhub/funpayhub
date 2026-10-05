@@ -20,7 +20,7 @@ from hubplatform.app.components.telegram.ui.widgets import cancel_button, confir
 from hubplatform.app.components.telegram.ui.finalizers import StripAndNavigationFinalizer
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 
-from funpayhub.app.components.funpay.properties import FunPayProperties
+from funpayhub.app.components.funpay_component.properties import FunPayProperties
 
 from ..menu_ids import MenuIDs as ExtensionMenuIDs
 from .callbacks import (
@@ -33,7 +33,7 @@ from .callbacks import (
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.components.funpay import FunPayComponent
+    from funpayhub.app.components.funpay_component import FunPayComponent
 
 
 registry = UIRegistry()

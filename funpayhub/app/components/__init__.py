@@ -1,4 +1,4 @@
 from __future__ import annotations
 
-from .funpay import FunPayComponent as FunPayComponent
-from .telegram import TelegramComponent as TelegramComponent
+from .funpay_component import FunPayComponent as FunPayComponent
+from .telegram_component import TelegramComponent as TelegramComponent

@@ -7,8 +7,8 @@ from hubplatform.logging.style import setup_logging
 from hubplatform.expressions.registry import global_expressions_registry
 
 from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.app.components.funpay import FunPayComponent, FunPayProperties
-from funpayhub.app.components.telegram import TelegramComponent, TelegramProperties
+from funpayhub.app.components.funpay_component import FunPayComponent, FunPayProperties
+from funpayhub.app.components.telegram_component import TelegramComponent, TelegramProperties
 
 
 setup_logging(global_translator())

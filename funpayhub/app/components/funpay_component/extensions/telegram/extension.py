@@ -5,8 +5,8 @@ __all__ = ['EXTENSION']
 
 from hubplatform.app.components.telegram.component import TelegramComponentExtension
 
-from funpayhub.app.components.telegram import TelegramComponent
-from funpayhub.app.components.funpay.properties.telegram_notifications import (
+from funpayhub.app.components.telegram_component import TelegramComponent
+from funpayhub.app.components.funpay_component.properties.telegram_notifications import (
     FunPayNotificationsCategory,
 )
 

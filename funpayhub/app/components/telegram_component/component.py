@@ -12,8 +12,12 @@ from hubplatform.app import HubPlatformApp
 from hubplatform.telegram.ui import MenuContext, MenuEnvironment, MenuDeliveryResult
 from hubplatform.app.components.telegram import TelegramComponent as BaseTelegramComponent
 
-from .routers import ROUTER
 from .properties import TelegramProperties
+from .components.commands import router as commands_router
+from .components.notifications_ui import (
+    router as notifications_ui_router,
+    registry as notifications_ui_registry,
+)
 
 
 class TelegramComponent(BaseTelegramComponent):
@@ -21,7 +25,13 @@ class TelegramComponent(BaseTelegramComponent):
         telegram_token = os.environ.get('TELEGRAM_TOKEN', properties.bot.token.value)
         super().__init__(token=telegram_token)
         self._properties = properties
-        self.dispatcher.include_router(ROUTER)
+        self.dispatcher.include_routers(
+            commands_router,
+            notifications_ui_router,
+        )
+        self.ui_registry.merge_from(
+            notifications_ui_registry,
+        )
 
     @property
     def properties(self) -> TelegramProperties:
@@ -29,6 +39,7 @@ class TelegramComponent(BaseTelegramComponent):
 
     async def setup(self, app: HubPlatformApp) -> None:
         app.properties.attach_node(self._properties)
+        app.app_context.provide(self.component_name, 'telegram_properties', self._properties)
         await super().setup(app)
 
     def send_menu_notification(

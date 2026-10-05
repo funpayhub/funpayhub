@@ -15,7 +15,7 @@ from hubplatform.goods_source import FileGoodsSource, GoodsSourcesManager
 from hubplatform.app.components.telegram.menu_ids import MenuIDs
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 
-from funpayhub.app.components.funpay.properties import FunPayProperties
+from funpayhub.app.components.funpay_component.properties import FunPayProperties
 
 from . import (
     states,

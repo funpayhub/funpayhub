@@ -128,12 +128,25 @@ class NotificationsCategory(Properties):
     def get_notifications_path(self) -> tuple[str, ...]:
         return _get_notifications_path(self)
 
-    def channels(self) -> Generator[NotificationsChannel, None, None]:
+    def channels(self, recursive: bool = False) -> Generator[NotificationsChannel, None, None]:
         for i in self.persistent_subnodes.values():
             if isinstance(i, NotificationsChannel):
                 yield i
             elif isinstance(i, NotificationsCategory):
-                yield from i.channels()
+                if not recursive:
+                    continue
+                yield from i.channels(recursive=True)
+
+    def subcategories(
+        self,
+        recursive: bool = False,
+    ) -> Generator[NotificationsCategory, None, None]:
+        for i in self.persistent_subnodes.values():
+            if isinstance(i, NotificationsCategory):
+                yield i
+                if not recursive:
+                    continue
+                yield from i.subcategories(recursive=True)
 
     def get_channel(
         self,
@@ -145,6 +158,20 @@ class NotificationsCategory(Properties):
         if not isinstance(result, NotificationsChannel):
             raise LookupError(
                 f'Cant find notifications channel with path '
+                f'{notifications_path!r} at {node.path!r}',
+            )
+        return result
+
+    def get_category(
+        self,
+        notifications_path: Sequence[str],
+        from_root: bool = False,
+    ) -> NotificationsCategory:
+        node = self if not from_root else self.get_notifications_root()
+        result = node.get_node(notifications_path)
+        if not isinstance(result, NotificationsCategory):
+            raise LookupError(
+                f'Cant find notifications category with path '
                 f'{notifications_path!r} at {node.path!r}',
             )
         return result

@@ -7,7 +7,7 @@ __all__ = [
 
 from hubplatform.i18n import I18nString
 
-from funpayhub.app.components.telegram.properties.telegram_notifications import (
+from funpayhub.app.components.telegram_component.properties.telegram_notifications import (
     NotificationsChannel,
     NotificationsCategory,
 )

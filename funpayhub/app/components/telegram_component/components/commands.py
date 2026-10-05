@@ -8,6 +8,9 @@ from hubplatform.app.components.telegram.menu_ids import MenuIDs
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 from hubplatform.app.components.telegram.expressions.builders import ExpressionsListMenuContext
 
+from .notifications_ui.ui import NotificationsMenuContext
+from .notifications_ui.menu_ids import NotificationsUIMenuIDs
+
 
 router = Router(name='app:telegram_commands')
 
@@ -37,5 +40,14 @@ async def send_expressions_list_menu(m: Message, telegram_ui_manager: UIManager)
     await telegram_ui_manager.open_menu(
         menu_id=MenuIDs.expressions.expressions_list_menu,
         context=ExpressionsListMenuContext(),
+        environment=m,
+    )
+
+
+@router.message(Command('notifications'))
+async def send_notifications_menu(m: Message, telegram_ui_manager: UIManager) -> None:
+    await telegram_ui_manager.open_menu(
+        menu_id=NotificationsUIMenuIDs.current_chat_notifications,
+        context=NotificationsMenuContext(category_path=[]),
         environment=m,
     )

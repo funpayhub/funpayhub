@@ -6,8 +6,8 @@ from funpaybotengine.runner import EventsPack
 from hubplatform.telegram.ui import UIManager
 from funpaybotengine.dispatching.events import NewMessage, ChatChanged
 
-from funpayhub.app.components.funpay import FunPayComponent
-from funpayhub.app.components.telegram import TelegramProperties
+from funpayhub.app.components.funpay_component import FunPayComponent
+from funpayhub.app.components.telegram_component import TelegramProperties
 
 
 router = Router(name='app:on_new_message')
