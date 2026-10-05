@@ -19,11 +19,11 @@ async def send_new_message_notification(
     events_pack: EventsPack,
     telegram_component: TelegramProperties,
     telegram_ui_manager: UIManager,
-    telegram_props: TelegramProperties,
+    telegram_properties: TelegramProperties,
     funpay: FunPayComponent,
 ) -> None:
     msgs: list[Message] = []
-    appearance_props = properties.telegram.appearance.new_message_appearance
+    appearance_props = telegram_properties.appearance.new_message_appearance
 
     for i in events_pack.events:
         if (

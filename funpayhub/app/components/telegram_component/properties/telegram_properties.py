@@ -130,6 +130,15 @@ class TelegramAppearance(Properties):
             metadata={'emoji': '🎨'},
         )
 
+        self.render_as_inline_keyboard = self.attach_node(
+            BoolParameter(
+                node_id='render_as_inline_keyboard',
+                name=I18nString('Клавиатура под сообщением'),
+                description=I18nString(''),
+                default_value=False,
+            ),
+        )
+
         self.max_menu_blocks = self.attach_node(
             IntParameter(
                 node_id='max_menu_blocks',
