@@ -5,10 +5,10 @@ from aiogram.filters import Command
 from hubplatform.telegram import Router
 from hubplatform.telegram.ui import UIManager, MenuContext
 from hubplatform.app.components.telegram.menu_ids import MenuIDs
-from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 from hubplatform.app.components.telegram.expressions.builders import ExpressionsListMenuContext
 
 from .notifications_ui.ui import NotificationsMenuContext
+from .main_menu_ui.menu_ids import MainMenuUIIds
 from .notifications_ui.menu_ids import NotificationsUIMenuIDs
 
 
@@ -19,8 +19,8 @@ router = Router(name='app:telegram_commands')
 @router.message(Command('start'))
 async def send_properties_menu(m: Message, telegram_ui_manager: UIManager) -> None:
     await telegram_ui_manager.open_menu(
-        menu_id=MenuIDs.properties.properties_menu,
-        context=NodeMenuContext(node_path=[]),
+        menu_id=MainMenuUIIds.main_menu,
+        context=MenuContext(),
         environment=m,
     )
 
