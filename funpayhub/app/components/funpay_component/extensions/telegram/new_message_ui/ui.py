@@ -71,22 +71,22 @@ async def build_new_funpay_message_menu(
             if not msg.text:
                 continue
 
-            texts.append(f'<blockquote><b>{html.escape(msg.text)}</b></blockquote>')
+            texts.append(
+                f'<blockquote><b>{html.escape(msg.text).replace("\n", "<br/>")}</b></blockquote>',
+            )
             continue
 
         user_info = await gen_user_info(msg, funpay_component)
         user_info = f'<a href="https://funpay.com/users/{msg.sender_id}/">{user_info}</a>'
         if msg.text:
-            text = html.escape(msg.text)
-            if msg.sender_id == 0:
-                text = f'<b>{text}</b>'
+            text = html.escape(msg.text).replace('\n', '<br/>')
         elif msg.image_url:
             text = f'\n<img src="{msg.image_url}"/>'
         else:
             text = ''
-        texts.append(f'{user_info}: {text}')
+        texts.append(f'<blockquote>{user_info}: {text}</blockquote>')
 
-    menu.body_text = '\n\n'.join(texts)
+    menu.body_text = ''.join(texts)
     menu.footer_text = I18nString(
         f'<i>Чат: <a href="https://funpay.com/chat/?node={ctx.context.funpay_chat_id}">'
         f'{ctx.context.funpay_chat_name} ({ctx.context.funpay_chat_id})'
