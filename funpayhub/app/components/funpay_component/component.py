@@ -5,7 +5,9 @@ __all__ = [
     'FunPayComponent',
 ]
 
+import os
 from enum import Enum, auto
+from types import MappingProxyType
 
 from funpaybotengine import Bot, Router, Dispatcher
 from hubplatform.app import HubPlatformApp
@@ -20,6 +22,7 @@ from .session import FPBESession
 from .extensions import TELEGRAM_COMPONENT_EXTENSION
 from .properties import FunPayProperties
 from .first_response_cache import FirstResponseCache
+from .routers.on_new_message import router as on_new_message_router
 
 
 class FunPayComponentState(Enum):
@@ -39,8 +42,11 @@ class FunPayComponent(HubPlatformAppComponent):
     ) -> None:
         super().__init__()
         self._properties = properties
-        self._session = FPBESession()
-        self._bot = Bot(golden_key='', session=self._session)
+        self._session = FPBESession(proxy=os.environ.get('DOTHUB_FUNPAY_PROXY', None))
+        self._bot = Bot(
+            golden_key=os.environ.get('DOTHUB_FUNPAY_GOLDENKEY', ''),
+            session=self._session,
+        )
         self._router = Router(name='funpayhub.root')
         self._dispatcher = Dispatcher(self._router)
         self._state = FunPayComponentState.STOPPED
@@ -51,6 +57,8 @@ class FunPayComponent(HubPlatformAppComponent):
         )
         self._profile: ProfilePage | None = None
 
+        self._router.attach_router(on_new_message_router)
+
     async def setup(self, app: HubPlatformApp) -> None:
         logger.info(I18nString('Setting up %s component...'), self.component_name)
         logger.info(I18nString('Setting up %s component properties...'), self.component_name)
@@ -59,6 +67,7 @@ class FunPayComponent(HubPlatformAppComponent):
         logger.info(I18nString('Setting up %s component context...'), self.component_name)
         self._setup_context(app.app_context)
         self._dispatcher._event_context = app.app_context
+        self._dispatcher._event_context_proxy = MappingProxyType(self._dispatcher._event_context)
 
         logger.info(I18nString('Setting up telegram extension...'))
         app.add_component_extension('hubplatform.telegram', TELEGRAM_COMPONENT_EXTENSION)
@@ -86,11 +95,12 @@ class FunPayComponent(HubPlatformAppComponent):
         logger.info(I18nString('User ID: %d'), self._bot.userid)
         logger.info(I18nString('User name: %s'), self._bot.username)
         logger.info(I18nString('Locale: %s'), self._bot.locale.name)
-        self._statue = FunPayComponentState.READY
+        self._state = FunPayComponentState.READY
 
     def _setup_context(self, ctx: AppContext) -> None:
         name = self.component_name
         ctx.provide(name, 'funpay', self)
+        ctx.provide(name, 'funpay_component', self)
         ctx.provide(name, 'funpay_props', self._properties)
         ctx.provide(name, 'funpay_bot', self._bot)
         ctx.provide(name, 'funpay_dispatcher', self._dispatcher)
@@ -144,3 +154,17 @@ class FunPayComponent(HubPlatformAppComponent):
     @property
     def first_response_cache(self) -> FirstResponseCache:
         return self._first_response_cache
+
+    async def is_sent_through_app(self, message_id: int) -> bool:
+        return False  # todo
+
+    async def mark_message_as_sent_through_app(self, *message_id: int) -> None: ...
+
+    async def unmark_message_as_sent_through_app(self, *message_id: int) -> None: ...
+
+    async def is_automatic_message(self, message_id: int) -> bool:
+        return False  # todo
+
+    async def mark_message_as_automatic(self, *message_id: int) -> None: ...
+
+    async def unmark_message_as_automatic(self, *message_id: int) -> None: ...

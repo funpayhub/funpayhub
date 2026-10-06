@@ -42,6 +42,7 @@ class TelegramComponent(BaseTelegramComponent):
     async def setup(self, app: HubPlatformApp) -> None:
         app.properties.attach_node(self._properties)
         app.app_context.provide(self.component_name, 'telegram_properties', self._properties)
+        app.app_context.provide(self.component_name, 'telegram_component', self)
         await super().setup(app)
 
     def send_menu_notification(

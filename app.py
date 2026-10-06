@@ -57,7 +57,8 @@ async def main():
         telegram_ui_manager.render_as_inline_keyboard = parameter.value
 
     async def tmpfilter(
-        parameter: MutableParameter, telegram_properties: TelegramProperties
+        parameter: MutableParameter,
+        telegram_properties: TelegramProperties,
     ) -> bool:
         return parameter is telegram_properties.appearance.render_as_inline_keyboard
 

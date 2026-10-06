@@ -1,41 +1,56 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from funpaybotengine import Router
 from funpaybotengine.types import Message
 from funpaybotengine.runner import EventsPack
-from hubplatform.telegram.ui import UIManager
 from funpaybotengine.dispatching.events import NewMessage, ChatChanged
 
-from funpayhub.app.components.funpay_component import FunPayComponent
 from funpayhub.app.components.telegram_component import TelegramProperties
+
+from ..extensions.telegram.new_message_ui.ui import NewFunPayMessageMenuContext
+from ..extensions.telegram.new_message_ui.menu_ids import NewFunPayMessageUIMenuIDs
+
+
+if TYPE_CHECKING:
+    from funpayhub.app.components.funpay_component import FunPayComponent
+    from funpayhub.app.components.telegram_component import TelegramComponent
 
 
 router = Router(name='app:on_new_message')
 
 
-@router.on_chat_changed(handler_id='fph:new_message_notification')
+@router.on_chat_changed(name='fph:new_message_notification')
 async def send_new_message_notification(
     event: ChatChanged,
     events_pack: EventsPack,
-    telegram_component: TelegramProperties,
-    telegram_ui_manager: UIManager,
+    telegram_component: TelegramComponent,
     telegram_properties: TelegramProperties,
-    funpay: FunPayComponent,
+    funpay_component: FunPayComponent,
 ) -> None:
+    print('NEW MESSAGE')
     msgs: list[Message] = []
     appearance_props = telegram_properties.appearance.new_message_appearance
 
+    automatic_msgs: set[int] = set()
+    manual_msgs: set[int] = set()
+
     for i in events_pack.events:
-        if (
-            not isinstance(i, NewMessage)
-            or i.name != NewMessage.__event_name__
-            or i.message.chat_id != event.chat_preview.id
-        ):
+        if not isinstance(i, NewMessage) or i.message.chat_id != event.chat_preview.id:
             continue
 
-        if fp.is_manual_message(i.message.id) and not appearance_props.show_mine_from_hub.value:
+        through_app = await funpay_component.is_sent_through_app(i.message.id)
+        automatic = await funpay_component.is_automatic_message(i.message.id)
+        manual = through_app and not automatic
+        if automatic_msgs:
+            automatic_msgs.add(i.message.id)
+        if manual:
+            manual_msgs.add(i.message.id)
+
+        if manual and not appearance_props.show_mine_from_hub.value:
             continue
-        if await i.message.is_sent_by_bot() and not appearance_props.show_automatic.value:
+        if automatic and not appearance_props.show_automatic.value:
             continue
         if i.message.from_me and not appearance_props.show_mine.value:
             continue
@@ -49,12 +64,11 @@ async def send_new_message_notification(
     only_mine_from_hub = True
 
     for i in msgs:
-        is_manual = fp.is_manual_message(i.id)
-        by_bot = await i.is_sent_by_bot()
-        automatic = (not is_manual) and by_bot
+        manual = i.id in manual_msgs
+        automatic = i.id in automatic_msgs
 
-        only_mine &= i.from_me and not is_manual and not by_bot
-        only_mine_from_hub &= is_manual
+        only_mine &= i.from_me and not manual and not automatic
+        only_mine_from_hub &= manual
         only_automatic &= automatic
 
     if any(
@@ -66,17 +80,12 @@ async def send_new_message_notification(
     ):
         return
 
-    context = NewMessageMenuContext(
-        chat_id=-1,  # todo
-        menu_id=MenuIds.new_funpay_message,
-        funpay_chat_id=event.chat_preview.id,
-        funpay_chat_name=event.chat_preview.username,
-        messages=msgs,
-    )
-    menu = await tg_ui.build_menu(context, data)
-
-    telegram_component.send_notification(
-        'new_message',
-        text=menu.total_text,
-        reply_markup=menu.total_keyboard(convert=True),
+    telegram_component.send_menu_notification(
+        menu_id=NewFunPayMessageUIMenuIDs.new_message,
+        menu_context=NewFunPayMessageMenuContext(
+            funpay_chat_name=event.chat_preview.username,
+            funpay_chat_id=event.chat_preview.id,
+            messages=msgs,
+        ),
+        notifications_channel_path=['funpay', 'new_message'],
     )
