@@ -1,20 +1,23 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from funpaybotengine import Router
 from funpaybotengine.types import Message
 from funpaybotengine.runner import EventsPack
+from hubplatform.expressions.manager import ExpressionsManager
 from funpaybotengine.dispatching.events import NewMessage, ChatChanged
 
 from funpayhub.app.components.telegram_component import TelegramProperties
 
+from ..expressions import FunPayMessageContext
+from ..properties.auto_response import CommandNode
 from ..extensions.telegram.new_message_ui.ui import NewFunPayMessageMenuContext
 from ..extensions.telegram.new_message_ui.menu_ids import NewFunPayMessageUIMenuIDs
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.components.funpay_component import FunPayComponent
+    from funpayhub.app.components.funpay_component import FunPayComponent, FunPayProperties
     from funpayhub.app.components.telegram_component import TelegramComponent
 
 
@@ -89,3 +92,56 @@ async def send_new_message_notification(
         ),
         notifications_channel_path=['funpay', 'new_message'],
     )
+
+
+async def command_filter(
+    event: NewMessage,
+    funpay_props: FunPayProperties,
+) -> dict[str, Any] | bool:
+    if event.message.sender_id in [0, 500]:
+        return False
+
+    if not event.message.text or event.message.text not in funpay_props.auto_response.subnodes:
+        return False
+
+    node = funpay_props.auto_response.get_command_node(event.message.text)
+
+    if event.message.from_me and not node.react_on_me.value:
+        return False
+    if not event.message.from_me and not node.react_on_others:
+        return False
+    if not node.reply.value:
+        return False
+    return {'command_node': node}
+
+
+@router.on_new_message(command_filter, name='app:funpay_component:run_command')
+async def run_command(
+    event: NewMessage,
+    command_node: CommandNode,
+    expressions_manager: ExpressionsManager,
+):
+    context = FunPayMessageContext(
+        marketplace_id='funpay',
+        initiator_id=str(event.message.sender_id),
+        initiator_username=str(event.message.sender_username),
+        message_id=str(event.message.id),
+        message_text=str(event.message.text),
+        funpay_message_obj=event.message,
+    )
+
+    result = await expressions_manager.format_string(
+        string=command_node.response_text.value,
+        context=context,
+        ignore_errors=command_node.ignore_expression_errors.value,
+    )
+
+    event['app:funpay_component:auto_response:generated_response'] = result
+
+    try:
+        event['app:funpay_component:auto_response:sent_response'] = await event.message.reply(
+            result.result_text,
+        )
+    except Exception as e:
+        event['app:funpay_component:auto_response:error'] = e
+        # todo: logging, notification

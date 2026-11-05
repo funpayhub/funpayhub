@@ -125,3 +125,8 @@ class AutoResponseProperties(Properties):
     async def add_command_node(self, command: str) -> CommandNode:
         obj = CommandNode(command)
         return await self.attach_node_with_hooks(obj)
+
+    def get_command_node(self, command: str) -> CommandNode:
+        if command not in self._subnodes or not isinstance(self._subnodes[command], CommandNode):
+            raise KeyError(f'Command {command} not found.')
+        return self._subnodes[command]
