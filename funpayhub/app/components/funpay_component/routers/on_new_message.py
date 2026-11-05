@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 router = Router(name='app:on_new_message')
 
 
-@router.on_chat_changed(name='fph:new_message_notification')
+@router.on_chat_changed(name='app:new_message_notification')
 async def send_new_message_notification(
     event: ChatChanged,
     events_pack: EventsPack,

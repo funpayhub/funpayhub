@@ -17,11 +17,11 @@ from funpaybotengine.types.pages import ProfilePage
 from hubplatform.app.app_component import HubPlatformAppComponent
 
 from funpayhub.loggers import funpay_component as logger
-from .expressions import setup_funpay_component_expressions
 
 from .session import FPBESession
 from .extensions import TELEGRAM_COMPONENT_EXTENSION
 from .properties import FunPayProperties
+from .expressions import setup_funpay_component_expressions
 from .first_response_cache import FirstResponseCache
 from .routers.on_new_message import router as on_new_message_router
 
