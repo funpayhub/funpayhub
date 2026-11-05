@@ -7,13 +7,14 @@ from contextlib import suppress
 from collections.abc import Callable, Awaitable
 
 from funpaybotengine import Bot
-from funpayhub.loggers import offers_raiser as logger
 from funpaybotengine.types import Category, RaiseOffersResponse
 from funpaybotengine.exceptions import UnauthorizedError
 from funpaybotengine.exceptions.session_exceptions import (
     FunPayServerError,
     RateLimitExceededError,
 )
+
+from funpayhub.loggers import offers_raiser as logger
 
 from funpayhub.lib.translater import _en
 

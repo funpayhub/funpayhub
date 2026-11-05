@@ -5,17 +5,18 @@ import sys
 import uuid
 import shutil
 import asyncio
-import tomllib
 import zipfile
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
 import aiohttp
+import tomllib
 from aiohttp import ClientSession
 from funpayhub.utils import IS_WINDOWS
-from funpayhub.loggers import updater as logger
 from packaging.version import Version
+
+from funpayhub.loggers import updater as logger
 
 from funpayhub.lib.translater import _en
 

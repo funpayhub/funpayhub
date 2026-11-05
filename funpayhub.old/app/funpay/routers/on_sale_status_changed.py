@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from funpaybotengine import Router
-from funpayhub.loggers import main as logger
 from funpaybotengine.dispatching import SaleStatusChangedEvent
 from funpaybotengine.types.enums import OrderStatus
 from funpaybotengine.dispatching.filters import FinalOrderStatusFilter, all_of
+
+from funpayhub.loggers import main as logger
 
 from funpayhub.lib.translater import (
     en as _en,

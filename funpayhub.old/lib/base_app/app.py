@@ -12,11 +12,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from contextlib import suppress
 
+from packaging.version import Version
+
 from funpayhub.loggers import (
     main as logger,
     plugins as plugins_logger,
 )
-from packaging.version import Version
 
 from funpayhub.lib.plugin import PluginManager
 from funpayhub.lib.exceptions import GoodsError

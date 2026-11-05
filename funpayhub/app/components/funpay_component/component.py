@@ -17,6 +17,7 @@ from funpaybotengine.types.pages import ProfilePage
 from hubplatform.app.app_component import HubPlatformAppComponent
 
 from funpayhub.loggers import funpay_component as logger
+from .expressions import setup_funpay_component_expressions
 
 from .session import FPBESession
 from .extensions import TELEGRAM_COMPONENT_EXTENSION
@@ -60,14 +61,17 @@ class FunPayComponent(HubPlatformAppComponent):
         self._router.attach_router(on_new_message_router)
 
     async def setup(self, app: HubPlatformApp) -> None:
-        logger.info(I18nString('Setting up %s component...'), self.component_name)
-        logger.info(I18nString('Setting up %s component properties...'), self.component_name)
+        logger.info(I18nString('Setting up component...'))
+        logger.info(I18nString('Setting up properties...'))
         app.properties.attach_node(self._properties)
 
-        logger.info(I18nString('Setting up %s component context...'), self.component_name)
+        logger.info(I18nString('Setting up context...'))
         self._setup_context(app.app_context)
         self._dispatcher._event_context = app.app_context
         self._dispatcher._event_context_proxy = MappingProxyType(self._dispatcher._event_context)
+
+        logger.info(I18nString('Setting up expressions...'))
+        setup_funpay_component_expressions(app.expressions_manager)
 
         logger.info(I18nString('Setting up telegram extension...'))
         app.add_component_extension('hubplatform.telegram', TELEGRAM_COMPONENT_EXTENSION)

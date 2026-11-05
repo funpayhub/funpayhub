@@ -12,8 +12,9 @@ from collections.abc import Callable, Awaitable
 
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery, TelegramObject
-from funpayhub.loggers import telegram as logger
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
+
+from funpayhub.loggers import telegram as logger
 
 from funpayhub.lib.translater import Translater
 

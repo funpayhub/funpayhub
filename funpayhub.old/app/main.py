@@ -8,11 +8,11 @@ import asyncio
 import traceback
 from typing import TYPE_CHECKING
 
-from funpayhub.loggers import main as logger
 from aiogram.utils.token import TokenValidationError
 from funpaybotengine.runner.config import RunnerConfig
 
 from funpayhub import exit_codes
+from funpayhub.loggers import main as logger
 
 from funpayhub.lib.base_app import App
 from funpayhub.lib.translater import _en, translater

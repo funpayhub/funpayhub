@@ -8,6 +8,7 @@ from collections import defaultdict
 
 from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 from aiogram.methods import SendMessage, SendDocument
+
 from funpayhub.loggers import main as logger
 
 from funpayhub.lib.exceptions import TranslatableException
