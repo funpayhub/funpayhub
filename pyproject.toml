@@ -2,7 +2,7 @@
 name = "funpayhub"
 version = "0.5.22"
 description = "FunPay bot."
-requires-python = ">=3.14"
+requires-python = ">=3.15.2"
 
 dependencies = [
     "eventry~=0.7.2",
@@ -63,7 +63,7 @@ packages = ['funpayhub']
 
 [tool.mypy]
 plugins = "pydantic.mypy"
-python_version = '3.13'
+python_version = '3.15'
 warn_redundant_casts = true
 warn_unused_ignores = true
 strict = true

@@ -10,7 +10,6 @@ from hubplatform.goods_source import global_sources_manager
 from hubplatform.logging.style import setup_logging
 from hubplatform.app.dispatching import ParameterValueChangedEvent
 from pyconfigtree.parameter.base import ParameterHookTypes
-from hubplatform.expressions.registry import global_expressions_registry
 
 from funpayhub.app.properties import FunPayHubProperties
 from funpayhub.app.components.funpay_component import FunPayComponent, FunPayProperties
@@ -46,7 +45,6 @@ async def main():
         version='0.1.0',
         properties=props,
         goods_manager=global_sources_manager(),
-        expressions_registry=global_expressions_registry(),
         translator=global_translator(),
         components=[telegram_component, funpay_component],
     )
