@@ -122,7 +122,6 @@ async def run_command(
     expressions_manager: ExpressionsManager,
 ):
     context = FunPayMessageContext(
-        marketplace_id='funpay',
         initiator_id=str(event.message.sender_id),
         initiator_username=str(event.message.sender_username),
         message_id=str(event.message.id),
@@ -145,3 +144,4 @@ async def run_command(
     except Exception as e:
         event['app:funpay_component:auto_response:error'] = e
         # todo: logging, notification
+    
