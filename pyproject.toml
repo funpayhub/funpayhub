@@ -5,7 +5,7 @@ description = "FunPay bot."
 requires-python = ">=3.14"
 
 dependencies = [
-    "eventry>=0.7.1, <0.8.0",
+    "eventry~=0.7.2",
     "funpaybotengine==0.10.0rc4",
     "hubplatform",
     "packaging~=25.0",
@@ -123,7 +123,7 @@ fphapp = ["funpayhub.app.*"]
 
 [tool.uv.sources.hubplatform]
 git = "https://github.com/funpayhub/platform"
-rev = "809e6d6a06e0e2fbb1ec2db05aaa3e232b212dc8"
+rev = "d9b38498849400f3dc770e7fe32ec04c43033c6e"
 subdirectory = "packages/hubplatform"
 
 
