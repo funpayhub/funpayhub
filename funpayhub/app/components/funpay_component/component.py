@@ -24,6 +24,7 @@ from .properties import FunPayProperties
 from .expressions import setup_funpay_component_expressions
 from .first_response_cache import FirstResponseCache
 from .routers.on_new_message import router as on_new_message_router
+from .routers.on_review import router as on_review_router
 
 
 class FunPayComponentState(Enum):
@@ -67,6 +68,7 @@ class FunPayComponent(HubPlatformAppComponent):
         self._profile: ProfilePage | None = None
 
         self._router.attach_router(on_new_message_router)
+        self._router.attach_router(on_review_router)
 
     async def setup(self, app: HubPlatformApp) -> None:
         logger.info(I18nString('Setting up component...'))
