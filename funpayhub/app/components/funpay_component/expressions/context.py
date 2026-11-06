@@ -29,7 +29,7 @@ class FunPayOrderContext(
         'связанное с заказом на FunPay. Например: новый заказ, статус заказа изменился и т.д.',
     ),
 ):
-    marketplace_id = 'funpay'
+    marketplace_id: str = 'funpay'
     funpay_order_obj: OrderPreview
 
 
@@ -45,7 +45,7 @@ class FunPayMessageContext(
         'когда вы получили новое сообщение на FunPay.',
     ),
 ):
-    marketplace_id = 'funpay'
+    marketplace_id: str = 'funpay'
     funpay_message_obj: Message
 
 
@@ -61,4 +61,4 @@ class FunPayReviewContext(
         'связанное с отзывом на FunPay. Например: новый отзыв, отзыв был изменен и т.д.',
     ),
 ):
-    marketplace_id = 'funpay'
+    marketplace_id: str = 'funpay'

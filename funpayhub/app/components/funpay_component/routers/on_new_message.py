@@ -32,7 +32,6 @@ async def send_new_message_notification(
     telegram_properties: TelegramProperties,
     funpay_component: FunPayComponent,
 ) -> None:
-    print('NEW MESSAGE')
     msgs: list[Message] = []
     appearance_props = telegram_properties.appearance.new_message_appearance
 
@@ -144,4 +143,3 @@ async def run_command(
     except Exception as e:
         event['app:funpay_component:auto_response:error'] = e
         # todo: logging, notification
-    

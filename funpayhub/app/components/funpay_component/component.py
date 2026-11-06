@@ -43,9 +43,17 @@ class FunPayComponent(HubPlatformAppComponent):
     ) -> None:
         super().__init__()
         self._properties = properties
-        self._session = FPBESession(proxy=os.environ.get('DOTHUB_FUNPAY_PROXY', None))
+        self._session = FPBESession(
+            proxy=os.environ.get(
+                'DOTHUB_FUNPAY_PROXY',
+                self._properties.bot_properties.proxy.value or None,
+            ),
+        )
         self._bot = Bot(
-            golden_key=os.environ.get('DOTHUB_FUNPAY_GOLDENKEY', ''),
+            golden_key=os.environ.get(
+                'DOTHUB_FUNPAY_GOLDENKEY',
+                self._properties.bot_properties.golden_key.value,
+            ),
             session=self._session,
         )
         self._router = Router(name='funpayhub.root')
