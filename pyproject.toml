@@ -6,7 +6,7 @@ requires-python = ">=3.15.2"
 
 dependencies = [
     "eventry~=0.7.2",
-    "funpaybotengine==0.10.0rc4",
+    "funpaybotengine==0.10.0rc5",
     "hubplatform",
     "packaging~=25.0",
 ]

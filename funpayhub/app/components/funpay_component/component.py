@@ -22,9 +22,9 @@ from .session import FPBESession
 from .extensions import TELEGRAM_COMPONENT_EXTENSION
 from .properties import FunPayProperties
 from .expressions import setup_funpay_component_expressions
+from .routers.on_review import router as on_review_router
 from .first_response_cache import FirstResponseCache
 from .routers.on_new_message import router as on_new_message_router
-from .routers.on_review import router as on_review_router
 
 
 class FunPayComponentState(Enum):
@@ -57,7 +57,7 @@ class FunPayComponent(HubPlatformAppComponent):
             ),
             session=self._session,
         )
-        self._router = Router(name='funpayhub.root')
+        self._router = Router(name='app:funpay_component:root')
         self._dispatcher = Dispatcher(self._router)
         self._state = FunPayComponentState.STOPPED
         self._first_response_cache = (

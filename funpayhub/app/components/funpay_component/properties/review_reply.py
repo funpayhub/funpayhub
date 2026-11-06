@@ -71,9 +71,9 @@ class ReviewReplyProperties(Properties):
             description=I18nString('Настройки ответа на отзыв / ответного сообщения.'),
         )
 
-        self.five_stars = self.attach_node(
+        self.review_5 = self.attach_node(
             ReviewReplyNode(
-                node_id='five_stars',
+                node_id='review_5',
                 name=I18nString('⭐⭐⭐⭐⭐'),
                 description=I18nString(
                     'Настройки ответа на отзыв / ответного сообщения на 5-зведночный отзыв.',
@@ -81,9 +81,9 @@ class ReviewReplyProperties(Properties):
             ),
         )
 
-        self.four_stars = self.attach_node(
+        self.review_4 = self.attach_node(
             ReviewReplyNode(
-                node_id='four_stars',
+                node_id='review_4',
                 name=I18nString('⭐⭐⭐⭐'),
                 description=I18nString(
                     'Настройки ответа на отзыв / ответного сообщения на 4-зведночный отзыв.',
@@ -91,9 +91,9 @@ class ReviewReplyProperties(Properties):
             ),
         )
 
-        self.three_stars = self.attach_node(
+        self.review_3 = self.attach_node(
             ReviewReplyNode(
-                node_id='three_stars',
+                node_id='review_3',
                 name=I18nString('⭐⭐⭐'),
                 description=I18nString(
                     'Настройки ответа на отзыв / ответного сообщения на 3-зведночный отзыв.',
@@ -101,9 +101,9 @@ class ReviewReplyProperties(Properties):
             ),
         )
 
-        self.two_stars = self.attach_node(
+        self.review_2 = self.attach_node(
             ReviewReplyNode(
-                node_id='two_stars',
+                node_id='review_2',
                 name=I18nString('⭐⭐'),
                 description=I18nString(
                     'Настройки ответа на отзыв / ответного сообщения на 2-зведночный отзыв.',
@@ -111,9 +111,9 @@ class ReviewReplyProperties(Properties):
             ),
         )
 
-        self.one_stars = self.attach_node(
+        self.review_1 = self.attach_node(
             ReviewReplyNode(
-                node_id='one_stars',
+                node_id='review_1',
                 name=I18nString('⭐'),
                 description=I18nString(
                     'Настройки ответа на отзыв / ответного сообщения на 1-зведночный отзыв.',
