@@ -11,10 +11,10 @@ from funpaybotengine.dispatching import ReviewEvent
 from funpaybotengine.types.pages import OrderPage
 from hubplatform.expressions.manager import ExpressionsManager
 
-from funpayhub.app.components import FunPayComponent
-from funpayhub.app.components.funpay_component import FunPayProperties
-from funpayhub.app.components.funpay_component.expressions import FunPayReviewContext
-from funpayhub.app.components.funpay_component.properties.review_reply import ReviewReplyNode
+lazy from funpayhub.app.components import FunPayComponent
+lazy from funpayhub.app.components.funpay_component import FunPayProperties
+lazy from funpayhub.app.components.funpay_component.expressions import FunPayReviewContext
+lazy from funpayhub.app.components.funpay_component.properties.review_reply import ReviewReplyNode
 
 
 r = router = Router('app:funpay_component:on_review')
