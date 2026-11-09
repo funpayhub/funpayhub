@@ -11,10 +11,15 @@ from funpaybotengine.dispatching import ReviewEvent
 from funpaybotengine.types.pages import OrderPage
 from hubplatform.expressions.manager import ExpressionsManager
 
-lazy from funpayhub.app.components import FunPayComponent
+from funpayhub.app.components.funpay_component.extensions.telegram.review_ui.ui import ReviewNotificationContext
+from funpayhub.app.components.funpay_component.extensions.telegram.menu_ids import MenuIDs as ExtensionMenuIDs
+
+lazy from funpayhub.app.components import FunPayComponent, TelegramComponent
+
 lazy from funpayhub.app.components.funpay_component import FunPayProperties
 lazy from funpayhub.app.components.funpay_component.expressions import FunPayReviewContext
 lazy from funpayhub.app.components.funpay_component.properties.review_reply import ReviewReplyNode
+
 
 
 r = router = Router('app:funpay_component:on_review')
@@ -173,3 +178,33 @@ async def reply_in_review(
 
     await funpay_component.bot.review(order_page.order_id, result_text.result_text, 0)
     future.set_result(ReviewReplyResult(review_text=result_text.result_text))
+
+
+@router.on_new_review(as_task=True)
+@router.on_review_changed(as_task=True)
+async def send_notification(
+    event: ReviewEvent,
+    telegram_component: TelegramComponent
+) -> None:
+    in_rev: Future[ReviewReplyResult] = event['app:funpay_component:review_reply:in_review:result']
+    in_chat: Future[ReviewReplyResult] = event['app:funpay_component:review_reply:in_chat:result']
+
+    order_page = await event.get_order_page()
+    in_rev_result = await in_rev
+    in_chat_result = await in_chat
+
+    telegram_component.send_menu_notification(
+        notifications_channel_path=['funpay', f'review_{order_page.review.rating}'],
+        menu_id=ExtensionMenuIDs.review.review_notification_menu,
+        menu_context=ReviewNotificationContext(
+            order_id=order_page.order_id,
+            counterparty_id=str(event.message.meta.buyer_id),
+            counterparty_username=str(event.message.meta.buyer_username),
+            rating=order_page.review.rating,
+            comment=order_page.review.text,
+            app_reply=in_rev_result.review_text,
+            app_reply_errored=not in_rev_result.review_sent,
+            app_chat_reply=in_chat_result.review_text,
+            app_chat_reply_errored=not in_chat_result.review_sent,
+        )
+    )
