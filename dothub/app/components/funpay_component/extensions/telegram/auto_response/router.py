@@ -23,27 +23,6 @@ if TYPE_CHECKING:
 r = router = Router(name='app:funpay_component:auto_response')
 
 
-@r.message(Command('test_menu'))
-async def send_menu(m: Message, telegram_ui_manager: UIManager):
-    context = ReviewNotificationContext(
-        order_id='ORDERID',
-        counterparty_id='12345',
-        counterparty_username='Compara',
-        rating=5,
-        comment='Ваще круто все лучший продавец пизда',
-        app_reply='Спасибо за отзыв!',
-        app_chat_reply=None,
-        app_reply_errored=False,
-        app_chat_reply_errored=True,
-    )
-
-    await telegram_ui_manager.open_menu(
-        menu_id='app:funpay_component:review_notification',
-        context=context,
-        environment=m,
-    )
-
-
 @r.callback_query(AddCommand.filter())
 async def send_add_auto_response_rule_menu(
     query: CallbackQuery,
