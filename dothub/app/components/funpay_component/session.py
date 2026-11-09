@@ -1,3 +1,10 @@
+"""
+Custom session for the FunPayBotEngine framework that counts requests.
+
+Wraps the base session and tracks the number of requests sent,
+e.g. for rate limiting or monitoring.
+"""
+
 from __future__ import annotations
 
 

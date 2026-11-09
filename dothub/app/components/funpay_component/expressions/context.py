@@ -1,3 +1,8 @@
+"""
+This module contains FunPay-related expression context classes.
+"""
+
+
 from __future__ import annotations
 
 
