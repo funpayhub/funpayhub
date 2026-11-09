@@ -9,7 +9,7 @@ from colorama import Back, Fore, Style
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.translater import Translater
+    from dothub.lib.translater import Translater
 
 
 COLORS = {

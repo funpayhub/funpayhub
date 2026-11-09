@@ -3,20 +3,20 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
-from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui import MenuModification
+from dothub.lib.translater import translater
+from dothub.lib.telegram.ui import MenuModification
 
-from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
-from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
+from dothub.app.telegram.ui.premade import AddRemoveButtonBaseModification
+from dothub.app.properties.auto_response import AutoResponseEntryProperties
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.telegram.ui import Menu
-    from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+    from dothub.lib.telegram.ui import Menu
+    from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from dothub.app.properties import FunPayHubProperties as FPHProps
 
 
 ru = translater.translate

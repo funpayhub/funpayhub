@@ -7,7 +7,7 @@ __all__ = [
 ]
 
 
-from funpayhub.lib.telegram.callback_data import CallbackData
+from dothub.lib.telegram.callback_data import CallbackData
 
 
 class AddCommand(CallbackData, identifier='add_command'):

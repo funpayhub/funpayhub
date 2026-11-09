@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from funpayhub.lib.properties import Properties, ListParameter
-from funpayhub.lib.translater import _
-from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
+from dothub.lib.properties import Properties, ListParameter
+from dothub.lib.translater import _
+from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
-from funpayhub.app.notification_channels import NotificationChannels
+from dothub.app.notification_channels import NotificationChannels
 
 
 class TelegramNotificationsProperties(Properties):

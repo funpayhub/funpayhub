@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING
 
 from aiogram import Router
 
-from funpayhub.lib.telegram.ui.registry import ui_registry
-from funpayhub.lib.base_app.telegram.utils import delete_message
-from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+from dothub.lib.telegram.ui.registry import ui_registry
+from dothub.lib.base_app.telegram.utils import delete_message
+from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
-from funpayhub.app.telegram.ui.builders.context import StateUIContext
+from dothub.app.telegram.ui.builders.context import StateUIContext
 
 from . import (
     states,
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     )
     from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from dothub.app.properties import FunPayHubProperties as FPHProps
 
 
 router = r = Router(name='fph:blacklist')

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _
+from dothub.lib.translater import _
 
 
 __all__ = ['TelegramProperties']
 
 
-from funpayhub.lib.properties import (
+from dothub.lib.properties import (
     Properties,
     IntParameter,
     ListParameter,
@@ -14,8 +14,8 @@ from funpayhub.lib.properties import (
     ToggleParameter,
 )
 
-from funpayhub.app.properties.flags import ParameterFlags as ParamFlags
-from funpayhub.app.properties.telegram_notifications import TelegramNotificationsProperties
+from dothub.app.properties.flags import ParameterFlags as ParamFlags
+from dothub.app.properties.telegram_notifications import TelegramNotificationsProperties
 
 from .validators import proxy_validator, entries_validator
 from ...lib.base_app.properties_flags import TelegramUIEmojiFlag

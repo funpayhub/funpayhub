@@ -6,19 +6,19 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram import Bot, Router
 
-from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.translater import translater
-from funpayhub.lib.base_app.telegram import utils
-from funpayhub.lib.plugin.installers import (
+from dothub.lib.exceptions import TranslatableException
+from dothub.lib.translater import translater
+from dothub.lib.base_app.telegram import utils
+from dothub.lib.plugin.installers import (
     HTTPSPluginInstaller,
     AiogramPluginInstaller,
     PluginInstallationError,
 )
-from funpayhub.lib.plugin.repository.types import PluginsRepository
-from funpayhub.lib.plugin.repository.loaders import URLRepositoryLoader
+from dothub.lib.plugin.repository.types import PluginsRepository
+from dothub.lib.plugin.repository.loaders import URLRepositoryLoader
 
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.builders.context import StateUIContext
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.builders.context import StateUIContext
 
 from . import (
     ui,
@@ -34,11 +34,11 @@ if TYPE_CHECKING:
     )
     from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.lib.plugin import PluginManager
-    from funpayhub.lib.telegram.ui import UIRegistry as UI
-    from funpayhub.lib.plugin.repository.manager import RepositoriesManager
+    from dothub.lib.plugin import PluginManager
+    from dothub.lib.telegram.ui import UIRegistry as UI
+    from dothub.lib.plugin.repository.manager import RepositoriesManager
 
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from dothub.app.properties import FunPayHubProperties as FPHProps
 
 
 router = r = Router(name='fph:plugins')

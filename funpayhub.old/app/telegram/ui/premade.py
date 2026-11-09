@@ -6,12 +6,12 @@ __all__ = [
     'confirmable_button',
 ]
 
-from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui import MenuContext, MenuModification
-from funpayhub.lib.telegram.ui.types import Menu, Button
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import Dummy
+from dothub.lib.translater import translater
+from dothub.lib.telegram.ui import MenuContext, MenuModification
+from dothub.lib.telegram.ui.types import Menu, Button
+from dothub.lib.base_app.telegram.app.ui.callbacks import Dummy
 
-from funpayhub.app.telegram.callbacks import Confirmation
+from dothub.app.telegram.callbacks import Confirmation
 
 
 ru = translater.translate

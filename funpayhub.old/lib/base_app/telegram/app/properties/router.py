@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
 
-from funpayhub.lib.exceptions import PropertiesError
-from funpayhub.lib.base_app.telegram.utils import delete_message
+from dothub.lib.exceptions import PropertiesError
+from dothub.lib.base_app.telegram.utils import delete_message
 
 from . import (
     states,
@@ -21,12 +21,12 @@ if TYPE_CHECKING:
     )
     from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.lib.properties import (
+    from dothub.lib.properties import (
         Properties as Props,
         ListParameter,
     )
-    from funpayhub.lib.translater import Translater as Tr
-    from funpayhub.lib.telegram.ui import UIRegistry as UI
+    from dothub.lib.translater import Translater as Tr
+    from dothub.lib.telegram.ui import UIRegistry as UI
 
 
 router = Router()

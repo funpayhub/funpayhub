@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = ['MENU_MODS', 'MENUS', 'router']
 
 
-from funpayhub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.ids import MenuIds
 
 from .ui import (
     BindToOfferMenu,

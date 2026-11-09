@@ -9,7 +9,7 @@ __all__ = [
 ]
 
 
-from funpayhub.lib.telegram.callback_data import CallbackData
+from dothub.lib.telegram.callback_data import CallbackData
 
 
 class OpenPluginInfo(CallbackData, identifier='open_plugin_info'):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.telegram.callback_data import CallbackData
+from dothub.lib.telegram.callback_data import CallbackData
 
 
 class OpenAddGreetingsToOfferMenu(CallbackData, identifier='open_add_greetings_to_offer_menu'):

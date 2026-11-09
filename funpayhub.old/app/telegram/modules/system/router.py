@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
 
-from funpayhub import exit_codes
+from dothub import exit_codes
 
-from funpayhub.lib.translater import translater
+from dothub.lib.translater import translater
 
 from . import callbacks as cbs
 
@@ -14,7 +14,7 @@ from . import callbacks as cbs
 if TYPE_CHECKING:
     from aiogram.types import CallbackQuery as Query
 
-    from funpayhub.app.main import FunPayHub as FPH
+    from dothub.app.main import FunPayHub as FPH
 
 
 router = Router(name='fph:system')

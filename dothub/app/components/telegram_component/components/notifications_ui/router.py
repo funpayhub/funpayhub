@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery as Query
 from hubplatform.telegram import Router
 from hubplatform.telegram.ui import UIManager
 
-from funpayhub.app.components.telegram_component.properties import TelegramProperties
+from dothub.app.components.telegram_component.properties import TelegramProperties
 
 from .callbacks import ToggleNotificationsChannel, BulkChangeNotificationsCategory
 

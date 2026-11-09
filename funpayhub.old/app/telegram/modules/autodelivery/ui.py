@@ -7,9 +7,9 @@ from itertools import chain
 # For Pydantic models
 from funpaybotengine.dispatching.events import NewSaleEvent
 
-from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui import (
+from dothub.lib.exceptions import TranslatableException
+from dothub.lib.translater import translater
+from dothub.lib.telegram.ui import (
     Menu,
     Button,
     MenuBuilder,
@@ -17,22 +17,22 @@ from funpayhub.lib.telegram.ui import (
     KeyboardBuilder,
     MenuModification,
 )
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
-from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext as NodeMenuCtx
-from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+from dothub.lib.base_app.telegram.app.ui.callbacks import ClearState
+from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext as NodeMenuCtx
+from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.callbacks import SendMessage
-from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.callbacks import SendMessage
+from dothub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.goods_sources import GoodsSourcesManager as GoodsManager
+    from dothub.lib.goods_sources import GoodsSourcesManager as GoodsManager
 
-    from funpayhub.app.main import FunPayHub as FPH
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from dothub.app.main import FunPayHub as FPH
+    from dothub.app.properties import FunPayHubProperties as FPHProps
 
 
 ru = translater.translate

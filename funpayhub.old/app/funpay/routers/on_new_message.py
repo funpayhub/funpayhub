@@ -5,27 +5,27 @@ from typing import TYPE_CHECKING, Any
 from funpaybotengine import Router
 from funpaybotengine.dispatching.events import RunnerEvent, NewMessageEvent, ChatChangedEvent
 
-from funpayhub.lib.telegram.ui import UIRegistry
+from dothub.lib.telegram.ui import UIRegistry
 
-from funpayhub.app.formatters import (
+from dothub.app.formatters import (
     NewMessageContext,
     GeneralFormattersCategory,
     MessageFormattersCategory,
 )
-from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.app.telegram.main import Telegram
-from funpayhub.app.funpay.filters import is_fph_command
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.builders.context import NewMessageMenuContext
+from dothub.app.properties import FunPayHubProperties
+from dothub.app.telegram.main import Telegram
+from dothub.app.funpay.filters import is_fph_command
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.builders.context import NewMessageMenuContext
 
 
 if TYPE_CHECKING:
     from funpaybotengine.types import Message
 
-    from funpayhub.lib.hub.text_formatters import FormattersRegistry
+    from dothub.lib.hub.text_formatters import FormattersRegistry
 
-    from funpayhub.app.funpay.main import FunPay
-    from funpayhub.app.properties.auto_response import AutoResponseEntryProperties
+    from dothub.app.funpay.main import FunPay
+    from dothub.app.properties.auto_response import AutoResponseEntryProperties
 
 
 on_new_message_router = r = Router(name='fph:on_new_message_router')

@@ -8,19 +8,19 @@ if TYPE_CHECKING:
     from aiogram import Router as TGRouter
     from funpaybotengine import Router as FPRouter
 
-    from funpayhub.lib.plugin import PluginManifest
-    from funpayhub.lib.properties import Properties
-    from funpayhub.lib.telegram.ui import (
+    from dothub.lib.plugin import PluginManifest
+    from dothub.lib.properties import Properties
+    from dothub.lib.telegram.ui import (
         MenuBuilder,
         ButtonBuilder,
         MenuModification,
         ButtonModification,
     )
-    from funpayhub.lib.hub.text_formatters import Formatter
-    from funpayhub.lib.telegram.commands_registry import Command
+    from dothub.lib.hub.text_formatters import Formatter
+    from dothub.lib.telegram.commands_registry import Command
 
-    from funpayhub.app.main import FunPayHub
-    from funpayhub.app.dispatching import Router as HubRouter
+    from dothub.app.main import FunPayHub
+    from dothub.app.dispatching import Router as HubRouter
 
 
 class PluginLogger(logging.Logger):

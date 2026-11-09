@@ -17,7 +17,7 @@ from ..review_ui.ui import ReviewNotificationContext
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.components.funpay_component import FunPayProperties
+    from dothub.app.components.funpay_component import FunPayProperties
 
 
 r = router = Router(name='app:funpay_component:auto_response')

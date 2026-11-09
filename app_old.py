@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.utils import set_exception_hook
+from dothub.utils import set_exception_hook
 
 
 set_exception_hook()
@@ -16,17 +16,17 @@ from pathlib import Path
 from logging.config import dictConfig
 
 import colorama
-from funpayhub.logger_conf import (
+from dothub.logger_conf import (
     HubLogMessage,
     FileLoggerFormatter,
     ConsoleLoggerFormatter,
 )
 
-from funpayhub.lib.translater import translater
+from dothub.lib.translater import translater
 
-from funpayhub.app.main import FunPayHub
-from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.app.args_parser import args
+from dothub.app.main import FunPayHub
+from dothub.app.properties import FunPayHubProperties
+from dothub.app.args_parser import args
 
 
 # ---------------------------------------------
@@ -127,7 +127,7 @@ async def main() -> None:
 
 if __name__ == '__main__':
     if args.setup_config:
-        from funpayhub.setup_config import setup_config
+        from dothub.setup_config import setup_config
 
         asyncio.run(setup_config())
         sys.exit()

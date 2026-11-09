@@ -11,14 +11,14 @@ from funpaybotengine.dispatching import ReviewEvent
 from funpaybotengine.types.pages import OrderPage
 from hubplatform.expressions.manager import ExpressionsManager
 
-from funpayhub.app.components.funpay_component.extensions.telegram.review_ui.ui import ReviewNotificationContext
-from funpayhub.app.components.funpay_component.extensions.telegram.menu_ids import MenuIDs as ExtensionMenuIDs
+from dothub.app.components.funpay_component.extensions.telegram.review_ui.ui import ReviewNotificationContext
+from dothub.app.components.funpay_component.extensions.telegram.menu_ids import MenuIDs as ExtensionMenuIDs
 
-lazy from funpayhub.app.components import FunPayComponent, TelegramComponent
+lazy from dothub.app.components import FunPayComponent, TelegramComponent
 
-lazy from funpayhub.app.components.funpay_component import FunPayProperties
-lazy from funpayhub.app.components.funpay_component.expressions import FunPayReviewContext
-lazy from funpayhub.app.components.funpay_component.properties.review_reply import ReviewReplyNode
+lazy from dothub.app.components.funpay_component import FunPayProperties
+lazy from dothub.app.components.funpay_component.expressions import FunPayReviewContext
+lazy from dothub.app.components.funpay_component.properties.review_reply import ReviewReplyNode
 
 
 

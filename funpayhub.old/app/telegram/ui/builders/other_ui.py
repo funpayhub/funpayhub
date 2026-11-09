@@ -5,15 +5,15 @@ from typing import TYPE_CHECKING
 
 from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedError
 
-from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui import Button, KeyboardBuilder
-from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
-from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+from dothub.lib.exceptions import TranslatableException
+from dothub.lib.translater import translater
+from dothub.lib.telegram.ui import Button, KeyboardBuilder
+from dothub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
+from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
+from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.callbacks import SendMessage
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.callbacks import SendMessage
 
 from .context import (
     StateUIContext,
@@ -23,8 +23,8 @@ from .context import (
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.main import FunPayHub as FPH
-    from funpayhub.app.funpay.main import FunPay
+    from dothub.app.main import FunPayHub as FPH
+    from dothub.app.funpay.main import FunPay
 
 
 ru = translater.translate

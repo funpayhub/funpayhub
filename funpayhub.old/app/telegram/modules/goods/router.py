@@ -15,13 +15,13 @@ from aiogram.types import (
 from aiogram.filters import StateFilter
 from aiogram.exceptions import TelegramBadRequest
 
-from funpayhub.lib.translater import translater
-from funpayhub.lib.goods_sources import GoodsSource, FileGoodsSource
-from funpayhub.lib.base_app.telegram import utils
+from dothub.lib.translater import translater
+from dothub.lib.goods_sources import GoodsSource, FileGoodsSource
+from dothub.lib.base_app.telegram import utils
 
-from funpayhub.app.workflow_data import get_wfd
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.builders.context import StateUIContext
+from dothub.app.workflow_data import get_wfd
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.builders.context import StateUIContext
 
 from . import (
     states,
@@ -34,8 +34,8 @@ if TYPE_CHECKING:
     from aiogram import Bot as TGBot
     from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.lib.telegram.ui import UIRegistry as UI
-    from funpayhub.lib.goods_sources import GoodsSourcesManager as GoodsManager
+    from dothub.lib.telegram.ui import UIRegistry as UI
+    from dothub.lib.goods_sources import GoodsSourcesManager as GoodsManager
 
 
 r = router = Router(name='fph:goods')

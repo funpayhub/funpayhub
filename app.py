@@ -11,9 +11,9 @@ from hubplatform.logging.style import setup_logging
 from hubplatform.app.dispatching import ParameterValueChangedEvent
 from pyconfigtree.parameter.base import ParameterHookTypes
 
-from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.app.components.funpay_component import FunPayComponent, FunPayProperties
-from funpayhub.app.components.telegram_component import TelegramComponent, TelegramProperties
+from dothub.app.properties import FunPayHubProperties
+from dothub.app.components.funpay_component import FunPayComponent, FunPayProperties
+from dothub.app.components.telegram_component import TelegramComponent, TelegramProperties
 
 
 setup_logging(global_translator())

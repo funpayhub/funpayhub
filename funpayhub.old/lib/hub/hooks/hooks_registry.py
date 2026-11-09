@@ -16,7 +16,7 @@ from collections.abc import Callable
 from typing_extensions import Any
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
-from funpayhub.lib.core import classproperty
+from dothub.lib.core import classproperty
 
 
 @dataclass

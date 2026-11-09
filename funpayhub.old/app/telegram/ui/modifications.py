@@ -3,24 +3,24 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
-from funpayhub.lib.properties import StringParameter
-from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui import Button, MenuModification
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+from dothub.lib.properties import StringParameter
+from dothub.lib.translater import translater
+from dothub.lib.telegram.ui import Button, MenuModification
+from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
-from funpayhub.app.properties.flags import FormattersQueryFlag
-from funpayhub.app.properties.review_reply import ReviewReplyPropertiesEntry
+from dothub.app.properties.flags import FormattersQueryFlag
+from dothub.app.properties.review_reply import ReviewReplyPropertiesEntry
 
 from .ids import MenuIds
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.telegram.ui import Menu
-    from funpayhub.lib.goods_sources import GoodsSourcesManager
-    from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+    from dothub.lib.telegram.ui import Menu
+    from dothub.lib.goods_sources import GoodsSourcesManager
+    from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
-    from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
+    from dothub.app.properties import FunPayHubProperties as FPHProps
+    from dothub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
 
 
 ru = translater.translate

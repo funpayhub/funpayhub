@@ -9,13 +9,13 @@ __all__ = [
 
 from typing import TYPE_CHECKING
 
-from funpayhub.lib.translater import _en
+from dothub.lib.translater import _en
 
 from .base import FunPayHubError
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.goods_sources import GoodsSource
+    from dothub.lib.goods_sources import GoodsSource
 
 
 class GoodsError(FunPayHubError): ...

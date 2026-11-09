@@ -6,8 +6,8 @@ from types import MappingProxyType
 from pyconfigtree import Properties, BoolParameter, StringParameter
 from pyconfigtree.source.toml import TOMLSource
 
-from funpayhub.lib.translater import en, ru
-from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
+from dothub.lib.translater import en, ru
+from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class AutoDeliveryEntryProperties(Properties):

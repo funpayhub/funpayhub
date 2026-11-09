@@ -11,7 +11,7 @@ __all__ = [
     'NodeButtonIds',
 ]
 
-from funpayhub.lib.properties import (
+from dothub.lib.properties import (
     Properties,
     parameter as p,
 )

@@ -16,7 +16,7 @@ from hubplatform.app.context import AppContext
 from funpaybotengine.types.pages import ProfilePage
 from hubplatform.app.app_component import HubPlatformAppComponent
 
-from funpayhub.loggers import funpay_component as logger
+from dothub.loggers import funpay_component as logger
 
 from .session import FPBESession
 from .extensions import TELEGRAM_COMPONENT_EXTENSION

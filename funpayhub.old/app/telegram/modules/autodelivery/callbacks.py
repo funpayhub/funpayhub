@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from funpayhub.lib.telegram.callback_data import CallbackData
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import Pageable
+from dothub.lib.telegram.callback_data import CallbackData
+from dothub.lib.base_app.telegram.app.ui.callbacks import Pageable
 
 
 class OpenAddAutoDeliveryRuleMenu(CallbackData, identifier='open_add_ad_rule_menu'): ...

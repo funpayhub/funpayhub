@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _en
+from dothub.lib.translater import _en
 
 
 __all__ = ['PluginManager']
@@ -18,9 +18,9 @@ from collections.abc import Callable, Awaitable
 
 from packaging.version import Version
 
-from funpayhub.loggers import plugins as logger
+from dothub.loggers import plugins as logger
 
-from funpayhub.lib.exceptions import (
+from dothub.lib.exceptions import (
     PluginInstantiationError,
 )
 

@@ -4,7 +4,7 @@ from typing import Any
 
 from funpaybotengine.dispatching.events import NewMessageEvent
 
-from funpayhub.app.properties import FunPayHubProperties
+from dothub.app.properties import FunPayHubProperties
 
 
 def is_fph_command(

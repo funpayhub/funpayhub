@@ -19,7 +19,7 @@ from .menu_ids import NewFunPayMessageUIMenuIDs
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.components import FunPayComponent
+    from dothub.app.components import FunPayComponent
 
 
 registry = UIRegistry()

@@ -9,7 +9,7 @@ from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.utils.token import TokenValidationError
 from aiogram.client.session.aiohttp import AiohttpSession
 
-from funpayhub.app.properties import FunPayHubProperties
+from dothub.app.properties import FunPayHubProperties
 
 
 BACK_COMMAND = '0'

@@ -2,25 +2,25 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from funpayhub import exit_codes
+from dothub import exit_codes
 
-from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
-from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+from dothub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
+from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
-from funpayhub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.ids import MenuIds
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.translater import Translater
+    from dothub.lib.translater import Translater
 
-    from funpayhub.app.main import FunPayHub
+    from dothub.app.main import FunPayHub
 
 
 class ControlMenuBuilder(MenuBuilder, menu_id=MenuIds.control, context_type=MenuContext):
     async def build(self, ctx: MenuContext, translater: Translater, hub: FunPayHub) -> Menu:
-        from funpayhub.app.telegram.modules.updates.callbacks import CheckForUpdates
+        from dothub.app.telegram.modules.updates.callbacks import CheckForUpdates
 
         main_keyboard = KeyboardBuilder()
         main_keyboard.add_rows(

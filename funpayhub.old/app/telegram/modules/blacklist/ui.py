@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from funpayhub.lib.telegram.ui import MenuModification
+from dothub.lib.telegram.ui import MenuModification
 
 from . import callbacks as cbs
 from ...ui.premade import confirmable_button
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.telegram.ui import Menu
-    from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+    from dothub.lib.telegram.ui import Menu
+    from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from dothub.app.properties import FunPayHubProperties as FPHProps
 
 
 class AddBlockUserButton(MenuModification, modification_id='fph:add_user_to_blocklist_btn'):
@@ -30,14 +30,14 @@ class AddBlockUserButton(MenuModification, modification_id='fph:add_user_to_bloc
 
 class AddRemoveUserButton(MenuModification, modification_id='fph:remove_user_from_blocklist_btn'):
     async def filter(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> bool:
-        from funpayhub.app.properties.blacklist import BlackListNode
+        from dothub.app.properties.blacklist import BlackListNode
 
         node = props.get_node(ctx.entry_path)
         return node.is_child(props.black_list) and isinstance(node, BlackListNode)
 
     async def modify(self, ctx: NodeMenuContext, menu: Menu, props: FPHProps) -> Menu:
         node = props.get_node(ctx.entry_path)
-        from funpayhub.app.properties.blacklist import BlackListNode
+        from dothub.app.properties.blacklist import BlackListNode
 
         if not isinstance(node, BlackListNode):
             return menu

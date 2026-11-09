@@ -5,11 +5,11 @@ from io import BytesIO
 
 from aiogram.types import Message, ReactionTypeEmoji
 
-from funpayhub.lib.base_app.telegram import utils
+from dothub.lib.base_app.telegram import utils
 
-from funpayhub.app.telegram.states import SendingFunpayMessage
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.builders.context import SendMessageMenuContext
+from dothub.app.telegram.states import SendingFunpayMessage
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.builders.context import SendMessageMenuContext
 
 from ... import (
     states,
@@ -22,8 +22,8 @@ if TYPE_CHECKING:
     from aiogram.types import CallbackQuery as Query
     from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.app.funpay.main import FunPay
-    from funpayhub.app.telegram.main import Telegram
+    from dothub.app.funpay.main import FunPay
+    from dothub.app.telegram.main import Telegram
 
 
 @router.callback_query(cbs.SendMessage.filter())

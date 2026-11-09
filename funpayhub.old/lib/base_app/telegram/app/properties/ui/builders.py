@@ -9,18 +9,18 @@ from aiogram.types import (
     InlineKeyboardButton as InlineButton,
 )
 
-from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.properties import (
+from dothub.lib.exceptions import TranslatableException
+from dothub.lib.properties import (
     Properties as Props,
     parameter as param,
 )
-from funpayhub.lib.translater import _
-from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, KeyboardBuilder
-from funpayhub.lib.base_app.telegram.app.ui import (
+from dothub.lib.translater import _
+from dothub.lib.telegram.ui import Menu, Button, MenuBuilder, ButtonBuilder, KeyboardBuilder
+from dothub.lib.base_app.telegram.app.ui import (
     callbacks as ui_cbs,
     ui_finalizers,
 )
-from funpayhub.lib.base_app.properties_flags import (
+from dothub.lib.base_app.properties_flags import (
     ParameterFlags,
     PropertiesFlags,
     TelegramUIEmojiFlag,
@@ -36,9 +36,9 @@ from .registry import NodeMenuBuilder, NodeButtonBuilder
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.properties import Node
-    from funpayhub.lib.translater import Translater as Tr
-    from funpayhub.lib.telegram.ui import UIRegistry as UI
+    from dothub.lib.properties import Node
+    from dothub.lib.translater import Translater as Tr
+    from dothub.lib.telegram.ui import UIRegistry as UI
 
 
 def _emoji(node: Node) -> str:

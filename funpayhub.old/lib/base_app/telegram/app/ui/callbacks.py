@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import Field, BaseModel
 
-from funpayhub.lib.telegram.ui.types import MenuHistoryNode
-from funpayhub.lib.telegram.callback_data import CallbackData
+from dothub.lib.telegram.ui.types import MenuHistoryNode
+from dothub.lib.telegram.callback_data import CallbackData
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.telegram.ui import MenuContext
+    from dothub.lib.telegram.ui import MenuContext
 
 
 class MenuPageable(BaseModel):

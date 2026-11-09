@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _en
+from dothub.lib.translater import _en
 
 
 __all__ = ['RepositoriesManager']
@@ -9,16 +9,16 @@ __all__ = ['RepositoriesManager']
 from copy import copy
 from pathlib import Path
 
-from funpayhub.loggers import plugins as logger
+from dothub.loggers import plugins as logger
 
-from funpayhub.lib.exceptions import (
+from dothub.lib.exceptions import (
     SaveRepositoryError,
     RemoveRepositoryError,
     TranslatableException,
     PluginRepositoryAlreadyExist,
 )
-from funpayhub.lib.plugin.repository.types import PluginsRepository
-from funpayhub.lib.plugin.repository.loaders import FileRepositoryLoader
+from dothub.lib.plugin.repository.types import PluginsRepository
+from dothub.lib.plugin.repository.loaders import FileRepositoryLoader
 
 
 class RepositoriesManager:

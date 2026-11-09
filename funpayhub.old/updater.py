@@ -13,12 +13,12 @@ from pathlib import Path
 import aiohttp
 import tomllib
 from aiohttp import ClientSession
-from funpayhub.utils import IS_WINDOWS
+from dothub.utils import IS_WINDOWS
 from packaging.version import Version
 
-from funpayhub.loggers import updater as logger
+from dothub.loggers import updater as logger
 
-from funpayhub.lib.translater import _en
+from dothub.lib.translater import _en
 
 
 REPO = 'funpayhub/funpayhub'

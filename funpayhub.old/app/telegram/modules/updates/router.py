@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING, Any
 from asyncio import Lock
 
 from aiogram import Router
-from funpayhub.updater import check_updates, install_update, download_update
+from dothub.updater import check_updates, install_update, download_update
 
-from funpayhub import exit_codes
+from dothub import exit_codes
 
-from funpayhub.lib.translater import translater
+from dothub.lib.translater import translater
 
-from funpayhub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.ids import MenuIds
 
 from . import callbacks as cbs
 from .ui import UpdateMenuContext, InstallUpdateMenuContext
@@ -19,7 +19,7 @@ from .ui import UpdateMenuContext, InstallUpdateMenuContext
 if TYPE_CHECKING:
     from aiogram.types import CallbackQuery as Query
 
-    from funpayhub.app.main import FunPayHub as FPH
+    from dothub.app.main import FunPayHub as FPH
 
 
 router = r = Router(name='fph:updates')

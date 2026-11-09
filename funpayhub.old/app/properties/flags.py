@@ -8,7 +8,7 @@ __all__ = [
 ]
 
 
-from funpayhub.lib.base_app.properties_flags import (
+from dothub.lib.base_app.properties_flags import (
     ParameterFlags as BaseParameterFlags,
     PropertiesFlags as BasePropertiesFlags,
 )

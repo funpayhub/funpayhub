@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
-from funpayhub.lib.hub.text_formatters import FormattersRegistry
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
-from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+from dothub.lib.translater import translater
+from dothub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
+from dothub.lib.hub.text_formatters import FormattersRegistry
+from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
-from funpayhub.app.utils.formatters_query_parser import parse_categories_query
+from dothub.app.utils.formatters_query_parser import parse_categories_query
 
 from ..ids import MenuIds
 

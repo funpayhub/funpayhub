@@ -17,8 +17,8 @@ from pydantic import Field, BaseModel, field_validator
 from aiogram.types import CallbackQuery
 from aiogram.filters import Filter
 
-from funpayhub.lib.telegram.ui.types import MenuHistoryNode
-from funpayhub.lib.telegram.callback_data.hashinator import HashinatorT1000
+from dothub.lib.telegram.ui.types import MenuHistoryNode
+from dothub.lib.telegram.callback_data.hashinator import HashinatorT1000
 
 
 T = TypeVar('T', bound='CallbackData')

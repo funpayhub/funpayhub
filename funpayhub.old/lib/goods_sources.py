@@ -7,7 +7,7 @@ from asyncio import Lock
 from pathlib import Path
 from collections.abc import Iterator, KeysView, Sequence, ValuesView
 
-from funpayhub.lib.exceptions import GoodsError, NotEnoughGoodsError, GoodsSourceNotFoundError
+from dothub.lib.exceptions import GoodsError, NotEnoughGoodsError, GoodsSourceNotFoundError
 
 
 class GoodsSource(ABC):

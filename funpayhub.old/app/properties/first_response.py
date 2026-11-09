@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from funpayhub.lib.properties import Properties, IntParameter, StringParameter
-from funpayhub.lib.translater import _
-from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
+from dothub.lib.properties import Properties, IntParameter, StringParameter
+from dothub.lib.translater import _
+from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
-from funpayhub.app.properties.flags import FormattersQueryFlag
+from dothub.app.properties.flags import FormattersQueryFlag
 
 
 class FirstResponseProperties(Properties):

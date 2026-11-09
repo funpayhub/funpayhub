@@ -3,15 +3,15 @@ from __future__ import annotations
 from typing import Any
 from types import MappingProxyType
 
-from funpayhub.lib.properties import (
+from dothub.lib.properties import (
     Properties,
     StringParameter,
     ToggleParameter,
 )
-from funpayhub.lib.translater import _
-from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
+from dothub.lib.translater import _
+from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
-from funpayhub.app.properties.flags import FormattersQueryFlag
+from dothub.app.properties.flags import FormattersQueryFlag
 
 
 class AutoResponseEntryProperties(Properties):

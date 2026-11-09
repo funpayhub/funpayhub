@@ -22,7 +22,7 @@ from .callbacks import AddCommand
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.components.funpay_component import FunPayProperties
+    from dothub.app.components.funpay_component import FunPayProperties
 
 registry = UIRegistry()
 

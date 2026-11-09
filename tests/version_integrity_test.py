@@ -4,7 +4,7 @@ import tomllib
 from pytest import fixture
 from packaging.version import Version
 
-from funpayhub.app.properties import FunPayHubProperties
+from dothub.app.properties import FunPayHubProperties
 
 
 @fixture

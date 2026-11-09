@@ -5,7 +5,7 @@ from dataclasses import field
 from funpaybotengine.types import Message
 from funpaybotengine.dispatching.events import ReviewEvent
 
-from funpayhub.lib.telegram.ui import MenuContext
+from dothub.lib.telegram.ui import MenuContext
 
 
 class NewMessageMenuContext(MenuContext):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _en
+from dothub.lib.translater import _en
 
 
 __all__ = ['UnpackMiddleware']
@@ -9,10 +9,10 @@ __all__ = ['UnpackMiddleware']
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery
 
-from funpayhub.loggers import telegram as logger
+from dothub.loggers import telegram as logger
 
-from funpayhub.lib.telegram.callback_data import CallbackData
-from funpayhub.lib.telegram.callback_data.hashinator import BadHashError, HashinatorT1000
+from dothub.lib.telegram.callback_data import CallbackData
+from dothub.lib.telegram.callback_data.hashinator import BadHashError, HashinatorT1000
 
 
 class UnpackMiddleware(BaseMiddleware):

@@ -2,21 +2,21 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from funpayhub.app.dispatching import Router
+from dothub.app.dispatching import Router
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.plugin import PluginManager
-    from funpayhub.lib.properties import (
+    from dothub.lib.plugin import PluginManager
+    from dothub.lib.properties import (
         IntParameter,
         ListParameter,
         ChoiceParameter,
         ToggleParameter,
     )
-    from funpayhub.lib.translater import Translater
+    from dothub.lib.translater import Translater
 
-    from funpayhub.app.funpay.main import FunPay
-    from funpayhub.app.telegram.main import Telegram
+    from dothub.app.funpay.main import FunPay
+    from dothub.app.telegram.main import Telegram
 
 
 router = r = Router(name='fph:on_parameter_change_router')

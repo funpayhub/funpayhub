@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from aiogram.types import CallbackQuery
 
-from funpayhub.lib.translater import _en
+from dothub.lib.translater import _en
 
 
 __all__ = ['UIRegistry', 'ui_registry']
@@ -14,7 +14,7 @@ from dataclasses import field, dataclass
 from aiogram.types import Message
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
-from funpayhub.loggers import telegram_ui as logger
+from dothub.loggers import telegram_ui as logger
 
 from .types import (
     Menu,

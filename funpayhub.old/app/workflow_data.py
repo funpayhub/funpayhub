@@ -11,16 +11,16 @@ from funpaybotengine import (
     Dispatcher as FPDispatcher,
 )
 
-from funpayhub.lib.base_app import WorkflowData as BaseWorkflowData
+from dothub.lib.base_app import WorkflowData as BaseWorkflowData
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.main import FunPayHub
-    from funpayhub.app.plugin import PluginManager
-    from funpayhub.app.properties import FunPayHubProperties
-    from funpayhub.app.funpay.main import FunPay
-    from funpayhub.app.telegram.main import Telegram
-    from funpayhub.app.first_response_cache import FirstResponseCache
+    from dothub.app.main import FunPayHub
+    from dothub.app.plugin import PluginManager
+    from dothub.app.properties import FunPayHubProperties
+    from dothub.app.funpay.main import FunPay
+    from dothub.app.telegram.main import Telegram
+    from dothub.app.first_response_cache import FirstResponseCache
 
 
 class WorkflowData(BaseWorkflowData):
@@ -38,12 +38,12 @@ class WorkflowData(BaseWorkflowData):
     def __init__(self) -> None:
         super().__init__()
 
-        from funpayhub.app.main import FunPayHub
-        from funpayhub.app.plugin import PluginManager
-        from funpayhub.app.properties import FunPayHubProperties
-        from funpayhub.app.funpay.main import FunPay
-        from funpayhub.app.telegram.main import Telegram
-        from funpayhub.app.first_response_cache import FirstResponseCache
+        from dothub.app.main import FunPayHub
+        from dothub.app.plugin import PluginManager
+        from dothub.app.properties import FunPayHubProperties
+        from dothub.app.funpay.main import FunPay
+        from dothub.app.telegram.main import Telegram
+        from dothub.app.first_response_cache import FirstResponseCache
 
         self.check_items.update(
             {

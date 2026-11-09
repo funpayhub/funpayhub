@@ -8,7 +8,7 @@ from funpaybotengine.runner import EventsPack
 from hubplatform.expressions.manager import ExpressionsManager
 from funpaybotengine.dispatching.events import NewMessage, ChatChanged
 
-from funpayhub.app.components.telegram_component import TelegramProperties
+from dothub.app.components.telegram_component import TelegramProperties
 
 from ..expressions import FunPayMessageContext
 from ..properties.auto_response import CommandNode
@@ -17,8 +17,8 @@ from ..extensions.telegram.new_message_ui.menu_ids import NewFunPayMessageUIMenu
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.components.funpay_component import FunPayComponent, FunPayProperties
-    from funpayhub.app.components.telegram_component import TelegramComponent
+    from dothub.app.components.funpay_component import FunPayComponent, FunPayProperties
+    from dothub.app.components.telegram_component import TelegramComponent
 
 
 router = Router(name='app:on_new_message')

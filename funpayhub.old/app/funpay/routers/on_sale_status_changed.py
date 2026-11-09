@@ -7,15 +7,15 @@ from funpaybotengine.dispatching import SaleStatusChangedEvent
 from funpaybotengine.types.enums import OrderStatus
 from funpaybotengine.dispatching.filters import FinalOrderStatusFilter, all_of
 
-from funpayhub.loggers import main as logger
+from dothub.loggers import main as logger
 
-from funpayhub.lib.translater import (
+from dothub.lib.translater import (
     en as _en,
     translater,
 )
-from funpayhub.lib.hub.text_formatters.category import InCategory
+from dothub.lib.hub.text_formatters.category import InCategory
 
-from funpayhub.app.formatters import (
+from dothub.app.formatters import (
     NewOrderContext,
     OrderFormattersCategory,
     GeneralFormattersCategory,
@@ -23,10 +23,10 @@ from funpayhub.app.formatters import (
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.hub.text_formatters import FormattersRegistry
+    from dothub.lib.hub.text_formatters import FormattersRegistry
 
-    from funpayhub.app.main import FunPayHub
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from dothub.app.main import FunPayHub
+    from dothub.app.properties import FunPayHubProperties as FPHProps
 
 
 on_sale_status_change = r = Router(name='fph:on_sale_status_changed')

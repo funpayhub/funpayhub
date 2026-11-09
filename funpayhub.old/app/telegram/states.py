@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from aiogram.types import Message
 
-from funpayhub.lib.telegram.fsm import StateFromQuery
+from dothub.lib.telegram.fsm import StateFromQuery
 
 
 @dataclass

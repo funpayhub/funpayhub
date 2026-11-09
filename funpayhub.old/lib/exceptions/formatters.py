@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from funpayhub.lib.translater import _en
+from dothub.lib.translater import _en
 
 from .base import FunPayHubError
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.hub.text_formatters import Formatter
+    from dothub.lib.hub.text_formatters import Formatter
 
 
 class FormatterError(FunPayHubError): ...

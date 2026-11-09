@@ -3,11 +3,11 @@ from __future__ import annotations
 
 __all__ = ['OnSaleConfirmation']
 
-from funpayhub.lib.properties import Properties, StringParameter, ToggleParameter
-from funpayhub.lib.translater import ru as _ru
-from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
+from dothub.lib.properties import Properties, StringParameter, ToggleParameter
+from dothub.lib.translater import ru as _ru
+from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
-from funpayhub.app.properties.flags import FormattersQueryFlag
+from dothub.app.properties.flags import FormattersQueryFlag
 
 
 class OnSaleConfirmation(Properties):

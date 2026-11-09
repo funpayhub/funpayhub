@@ -14,20 +14,20 @@ from typing import TYPE_CHECKING
 from dataclasses import asdict
 
 from pydantic import field_validator, field_serializer
-from funpayhub.updater import UpdateInfo
+from dothub.updater import UpdateInfo
 from packaging.version import Version
 
-from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, KeyboardBuilder
-from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+from dothub.lib.translater import translater
+from dothub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, KeyboardBuilder
+from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
-from funpayhub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.ids import MenuIds
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.main import FunPayHub as FPH
+    from dothub.app.main import FunPayHub as FPH
 
 
 ru = translater.translate

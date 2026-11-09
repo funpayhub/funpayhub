@@ -17,7 +17,7 @@ from packaging.specifiers import SpecifierSet
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.properties import Properties
+    from dothub.lib.properties import Properties
 
 
 class _WithDescription(BaseModel):

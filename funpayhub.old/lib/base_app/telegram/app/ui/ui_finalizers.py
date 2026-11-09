@@ -3,15 +3,15 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
-from funpayhub.lib.telegram.ui import Button, KeyboardBuilder
+from dothub.lib.telegram.ui import Button, KeyboardBuilder
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.translater import Translater as Tr
-    from funpayhub.lib.telegram.ui import Menu, MenuContext
-    from funpayhub.lib.base_app.telegram import TelegramApp
+    from dothub.lib.translater import Translater as Tr
+    from dothub.lib.telegram.ui import Menu, MenuContext
+    from dothub.lib.base_app.telegram import TelegramApp
 
 
 class StripAndNavigationFinalizer:

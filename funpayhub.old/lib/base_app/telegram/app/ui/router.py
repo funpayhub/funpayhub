@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
 
-from funpayhub.lib.base_app.telegram import utils
+from dothub.lib.base_app.telegram import utils
 
 from . import callbacks as cbs
 from .states import ChangingMenuPage
@@ -17,9 +17,9 @@ if TYPE_CHECKING:
     )
     from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.lib.translater import Translater as Tr
-    from funpayhub.lib.telegram.ui import UIRegistry as UI
-    from funpayhub.lib.telegram.callback_data import UnknownCallback
+    from dothub.lib.translater import Translater as Tr
+    from dothub.lib.telegram.ui import UIRegistry as UI
+    from dothub.lib.telegram.callback_data import UnknownCallback
 
 
 router = Router(name='app:base_ui')

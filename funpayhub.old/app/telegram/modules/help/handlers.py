@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING
 from aiogram import Router, BaseMiddleware
 from aiogram.filters import Command
 
-from funpayhub.lib.translater import translater
-from funpayhub.lib.base_app.telegram.app.properties import callbacks as props_cbs
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+from dothub.lib.translater import translater
+from dothub.lib.base_app.telegram.app.properties import callbacks as props_cbs
+from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
-from funpayhub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.ids import MenuIds
 
 
 if TYPE_CHECKING:
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
         CallbackQuery as Query,
     )
 
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from dothub.app.properties import FunPayHubProperties as FPHProps
 
 
 router = Router(name='fph:help')

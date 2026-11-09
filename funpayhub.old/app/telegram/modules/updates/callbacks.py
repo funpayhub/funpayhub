@@ -8,7 +8,7 @@ __all__ = [
 ]
 
 
-from funpayhub.lib.telegram.callback_data import CallbackData
+from dothub.lib.telegram.callback_data import CallbackData
 
 
 class CheckForUpdates(CallbackData, identifier='check_for_updates'):

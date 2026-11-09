@@ -13,12 +13,12 @@ from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 
-from funpayhub.lib.telegram import CommandsRegistry
-from funpayhub.lib.telegram.ui.registry import (
+from dothub.lib.telegram import CommandsRegistry
+from dothub.lib.telegram.ui.registry import (
     UIRegistry,
     ui_registry as global_ui_registry,
 )
-from funpayhub.lib.telegram.commands_registry import commands_registry as global_commands_registry
+from dothub.lib.telegram.commands_registry import commands_registry as global_commands_registry
 
 from .app import MENUS, BUTTONS, ROUTERS
 

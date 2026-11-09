@@ -14,19 +14,19 @@ from contextlib import suppress
 
 from packaging.version import Version
 
-from funpayhub.loggers import (
+from dothub.loggers import (
     main as logger,
     plugins as plugins_logger,
 )
 
-from funpayhub.lib.plugin import PluginManager
-from funpayhub.lib.exceptions import GoodsError
-from funpayhub.lib.translater import (
+from dothub.lib.plugin import PluginManager
+from dothub.lib.exceptions import GoodsError
+from dothub.lib.translater import (
     Translater,
     _en,
     translater as global_translater,
 )
-from funpayhub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
+from dothub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
 
 from ... import exit_codes
 from .telegram import TelegramApp
@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from eventry.asyncio.event import Event
     from eventry.asyncio.dispatcher import Dispatcher
 
-    from funpayhub.lib.properties import Node, Properties, MutableParameter
+    from dothub.lib.properties import Node, Properties, MutableParameter
 
 
 def random_part(length) -> str:

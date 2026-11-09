@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _
+from dothub.lib.translater import _
 
 
 __all__ = ['IsAuthorizedMiddleware']
@@ -13,9 +13,9 @@ from collections.abc import Callable, Awaitable
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery, TelegramObject
 
-from funpayhub.loggers import telegram as logger
+from dothub.loggers import telegram as logger
 
-from funpayhub.app.properties import FunPayHubProperties
+from dothub.app.properties import FunPayHubProperties
 
 
 messages = [

@@ -6,20 +6,20 @@ from typing import TYPE_CHECKING
 from funpaybotengine import Bot as FPBot
 from funpaybotengine.types.enums import BadgeType
 
-from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, KeyboardBuilder
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
-from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+from dothub.lib.translater import Translater
+from dothub.lib.telegram.ui.types import Menu, Button, MenuBuilder, KeyboardBuilder
+from dothub.lib.base_app.telegram.app.ui.callbacks import ClearState
+from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
-import funpayhub.app.telegram.callbacks as cbs
-from funpayhub.app.properties import FunPayHubProperties
+import dothub.app.telegram.callbacks as cbs
+from dothub.app.properties import FunPayHubProperties
 
 from ..ids import MenuIds
 from .context import NewMessageMenuContext, SendMessageMenuContext
 
 
 if TYPE_CHECKING:
-    from funpayhub.app.funpay.main import FunPay
+    from dothub.app.funpay.main import FunPay
 
 
 _prefixes_by_badge_type = {

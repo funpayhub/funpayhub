@@ -18,7 +18,7 @@ from hubplatform.telegram.ui import (
 from hubplatform.app.components.telegram.ui.callbacks import OpenMenu
 from hubplatform.app.components.telegram.ui.finalizers import StripAndNavigationFinalizer
 
-from funpayhub.app.components.telegram_component.properties import TelegramProperties
+from dothub.app.components.telegram_component.properties import TelegramProperties
 
 from .menu_ids import NotificationsUIMenuIDs
 from .callbacks import ToggleNotificationsChannel, BulkChangeNotificationsCategory

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from funpayhub.lib.properties import Parameter, Properties, ListParameter
-from funpayhub.lib.translater import _
+from dothub.lib.properties import Parameter, Properties, ListParameter
+from dothub.lib.translater import _
 
 from .blacklist import BlackList
 from .review_reply import ReviewReplyProperties

@@ -7,7 +7,7 @@ __all__ = [
     'MENU_MODS',
 ]
 
-from funpayhub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.ids import MenuIds
 
 from .ui import (
     AddOfferButtonModification,

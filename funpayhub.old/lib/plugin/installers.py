@@ -13,10 +13,10 @@ from urllib.parse import urlparse
 from aiogram import Bot
 from aiohttp import ClientSession
 
-from funpayhub.loggers import plugins as logger
+from dothub.loggers import plugins as logger
 
-from funpayhub.lib.exceptions import PluginInstallationError
-from funpayhub.lib.translater import _en
+from dothub.lib.exceptions import PluginInstallationError
+from dothub.lib.translater import _en
 
 
 class PluginInstaller[T: Any](ABC):

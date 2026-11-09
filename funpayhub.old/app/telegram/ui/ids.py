@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.base_app.telegram import (
+from dothub.lib.base_app.telegram import (
     MenuIds as BaseMenuIds,
     ButtonIds as BaseButtonIds,
 )

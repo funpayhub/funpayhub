@@ -11,31 +11,31 @@ from typing import TYPE_CHECKING
 from aiogram.utils.token import TokenValidationError
 from funpaybotengine.runner.config import RunnerConfig
 
-from funpayhub import exit_codes
-from funpayhub.loggers import main as logger
+from dothub import exit_codes
+from dothub.loggers import main as logger
 
-from funpayhub.lib.base_app import App
-from funpayhub.lib.translater import _en, translater
-from funpayhub.lib.base_app.app import AppConfig
+from dothub.lib.base_app import App
+from dothub.lib.translater import _en, translater
+from dothub.lib.base_app.app import AppConfig
 
-from funpayhub.app.plugin import PluginManager
-from funpayhub.app.routers import ROUTERS
-from funpayhub.app.properties import FunPayHubProperties
-from funpayhub.app.dispatching import (
+from dothub.app.plugin import PluginManager
+from dothub.app.routers import ROUTERS
+from dothub.app.properties import FunPayHubProperties
+from dothub.app.dispatching import (
     Dispatcher as HubDispatcher,
     NodeAttachedEvent,
     ParameterValueChangedEvent,
 )
-from funpayhub.app.funpay.main import FunPay
-from funpayhub.app.telegram.main import Telegram
-from funpayhub.app.workflow_data import get_wfd
-from funpayhub.app.dispatching.events.other_events import FunPayHubStoppedEvent
+from dothub.app.funpay.main import FunPay
+from dothub.app.telegram.main import Telegram
+from dothub.app.workflow_data import get_wfd
+from dothub.app.dispatching.events.other_events import FunPayHubStoppedEvent
 
 from .dispatching.events.properties_events import NodeDetachedEvent
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.properties import Node, MutableParameter
+    from dothub.lib.properties import Node, MutableParameter
 
     from .workflow_data import WorkflowData
 

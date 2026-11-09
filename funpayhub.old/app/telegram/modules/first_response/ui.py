@@ -13,23 +13,23 @@ import html
 from typing import TYPE_CHECKING
 from itertools import chain
 
-from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, MenuModification
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import ClearState
-from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
+from dothub.lib.translater import translater
+from dothub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, MenuModification
+from dothub.lib.base_app.telegram.app.ui.callbacks import ClearState
+from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.premade import confirmable_button
-from funpayhub.app.properties.first_response import FirstResponseToOfferNode
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.premade import confirmable_button
+from dothub.app.properties.first_response import FirstResponseToOfferNode
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+    from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
-    from funpayhub.app.main import FunPayHub as FPH
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from dothub.app.main import FunPayHub as FPH
+    from dothub.app.properties import FunPayHubProperties as FPHProps
 
 
 ru = translater.translate

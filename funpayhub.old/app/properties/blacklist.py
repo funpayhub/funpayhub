@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from funpayhub.lib.properties import Properties, ToggleParameter
-from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
+from dothub.lib.properties import Properties, ToggleParameter
+from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class BlackListNode(Properties):

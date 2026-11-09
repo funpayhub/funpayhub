@@ -53,9 +53,9 @@ from abc import ABC, abstractmethod
 
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
-from funpayhub.lib.core import classproperty
-from funpayhub.lib.translater import _en
-from funpayhub.lib.exceptions.formatters import FormatterError, FormatterContextMismatch
+from dothub.lib.core import classproperty
+from dothub.lib.translater import _en
+from dothub.lib.exceptions.formatters import FormatterError, FormatterContextMismatch
 
 from .parser import TextWithFormattersInvocations, extract_calls
 from .category import InCategory, CategoriesQuery, FormatterCategory

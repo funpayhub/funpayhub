@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _en
+from dothub.lib.translater import _en
 
 
 __all__ = [
@@ -14,9 +14,9 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery, TelegramObject
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 
-from funpayhub.loggers import telegram as logger
+from dothub.loggers import telegram as logger
 
-from funpayhub.lib.translater import Translater
+from dothub.lib.translater import Translater
 
 
 T = TypeVar('T')
@@ -31,7 +31,7 @@ class OopsMiddleware(BaseMiddleware):
     ) -> Any:
         translater: Translater = data['translater']
 
-        from funpayhub.lib.exceptions import TranslatableException
+        from dothub.lib.exceptions import TranslatableException
 
         try:
             return await handler(event, data)

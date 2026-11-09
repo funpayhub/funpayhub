@@ -21,27 +21,27 @@ from funpaybotengine.exceptions import (
 from funpaybotengine.types.pages import ProfilePage
 from funpaybotengine.runner.config import RunnerConfig
 
-from funpayhub.loggers import main as logger
+from dothub.loggers import main as logger
 
-from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.translater import _en
-from funpayhub.lib.hub.text_formatters import Image, FormattersRegistry
+from dothub.lib.exceptions import TranslatableException
+from dothub.lib.translater import _en
+from dothub.lib.hub.text_formatters import Image, FormattersRegistry
 
-from funpayhub.app.funpay import middlewares as mdwr
-from funpayhub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
-from funpayhub.app.dispatching import FunPayStartEvent, OffersRaisedEvent
-from funpayhub.app.funpay.routers import ALL_ROUTERS
-from funpayhub.app.first_response_cache import FirstResponseCache
-from funpayhub.app.funpay.offers_raiser import OffersRaiser
-from funpayhub.app.utils.get_profile_categories import get_profile_raisable_categories
-from funpayhub.app.dispatching.events.other_events import FunPayProfileUpdated
+from dothub.app.funpay import middlewares as mdwr
+from dothub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
+from dothub.app.dispatching import FunPayStartEvent, OffersRaisedEvent
+from dothub.app.funpay.routers import ALL_ROUTERS
+from dothub.app.first_response_cache import FirstResponseCache
+from dothub.app.funpay.offers_raiser import OffersRaiser
+from dothub.app.utils.get_profile_categories import get_profile_raisable_categories
+from dothub.app.dispatching.events.other_events import FunPayProfileUpdated
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.hub.text_formatters import MessagesStack
+    from dothub.lib.hub.text_formatters import MessagesStack
 
-    from funpayhub.app.main import FunPayHub
-    from funpayhub.app.workflow_data import WorkflowData
+    from dothub.app.main import FunPayHub
+    from dothub.app.workflow_data import WorkflowData
 
 
 P = ParamSpec('P')

@@ -8,8 +8,8 @@ from pathlib import Path
 from aiohttp import ClientSession
 from pydantic import ValidationError
 
-from funpayhub.lib.exceptions import PluginRepositoryLoadingError
-from funpayhub.lib.translater import _en
+from dothub.lib.exceptions import PluginRepositoryLoadingError
+from dothub.lib.translater import _en
 
 from .types import PluginsRepository
 

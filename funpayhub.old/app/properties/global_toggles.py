@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from funpayhub.lib.properties import Properties, ToggleParameter
-from funpayhub.lib.translater import _
-from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
+from dothub.lib.properties import Properties, ToggleParameter
+from dothub.lib.translater import _
+from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class TogglesProperties(Properties):

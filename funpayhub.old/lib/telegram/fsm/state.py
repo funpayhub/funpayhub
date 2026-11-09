@@ -14,15 +14,15 @@ from dataclasses import dataclass
 
 from aiogram.filters import StateFilter as AiogramStateFilter
 
-from funpayhub.lib.core import classproperty
-from funpayhub.lib.telegram.ui.types import MenuHistoryNode
+from dothub.lib.core import classproperty
+from dothub.lib.telegram.ui.types import MenuHistoryNode
 
 
 if TYPE_CHECKING:
     from aiogram.types import Message, CallbackQuery
     from aiogram.fsm.context import FSMContext
 
-    from funpayhub.lib.telegram.callback_data import UnknownCallback
+    from dothub.lib.telegram.callback_data import UnknownCallback
 
 _STATES = set()
 

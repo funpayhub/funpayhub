@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING
 
 from aiogram import Bot, Dispatcher
 
-from funpayhub.lib.plugin import PluginManager
-from funpayhub.lib.properties import Properties
-from funpayhub.lib.translater import Translater
-from funpayhub.lib.telegram.ui import UIRegistry
-from funpayhub.lib.goods_sources import GoodsSourcesManager
-from funpayhub.lib.workflow_data import WorkflowData as BaseWorkflowData
-from funpayhub.lib.hub.text_formatters import FormattersRegistry
+from dothub.lib.plugin import PluginManager
+from dothub.lib.properties import Properties
+from dothub.lib.translater import Translater
+from dothub.lib.telegram.ui import UIRegistry
+from dothub.lib.goods_sources import GoodsSourcesManager
+from dothub.lib.workflow_data import WorkflowData as BaseWorkflowData
+from dothub.lib.hub.text_formatters import FormattersRegistry
 
 from .telegram import TelegramApp
 from ..plugin.repository.manager import RepositoriesManager
@@ -36,7 +36,7 @@ class WorkflowData(BaseWorkflowData):
 
     def __init__(self) -> None:
         super().__init__()
-        from funpayhub.lib.base_app import App
+        from dothub.lib.base_app import App
 
         self.check_items.update(
             {

@@ -15,7 +15,7 @@ __all__ = [
 
 from pathlib import Path
 
-from funpayhub.lib.translater import _en
+from dothub.lib.translater import _en
 
 from .base import FunPayHubError
 

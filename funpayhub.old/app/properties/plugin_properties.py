@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _
+from dothub.lib.translater import _
 
 
 __all__ = [
@@ -10,8 +10,8 @@ __all__ = [
 
 from typing import TypeVar
 
-from funpayhub.lib.properties import Properties, ListParameter
-from funpayhub.lib.base_app.properties_flags import TelegramUIEmojiFlag
+from dothub.lib.properties import Properties, ListParameter
+from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 T = TypeVar('T', bound=Properties)

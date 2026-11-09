@@ -17,21 +17,21 @@ from funpaybotengine.types.enums import MessageType
 from funpaybotengine.dispatching.events import NewMessageEvent, ChatChangedEvent
 from funpaybotengine.types.requests.runner import CPURequestObject
 
-from funpayhub.loggers import greetings_logger as logger
+from dothub.loggers import greetings_logger as logger
 
-from funpayhub.lib.translater import (
+from dothub.lib.translater import (
     en as _en,
     translater,
 )
-from funpayhub.lib.hub.text_formatters import FormattersRegistry
-from funpayhub.lib.hub.text_formatters.category import InCategory
+from dothub.lib.hub.text_formatters import FormattersRegistry
+from dothub.lib.hub.text_formatters.category import InCategory
 
-from funpayhub.app.formatters import (
+from dothub.app.formatters import (
     NewMessageContext,
     GeneralFormattersCategory,
     MessageFormattersCategory,
 )
-from funpayhub.app.properties import FunPayHubProperties
+from dothub.app.properties import FunPayHubProperties
 
 
 if TYPE_CHECKING:
@@ -39,9 +39,9 @@ if TYPE_CHECKING:
     from funpaybotengine.runner import EventsStack
     from funpaybotengine.types.updates import RunnerResponseObject, CurrentlyViewingOfferInfo
 
-    from funpayhub.app.funpay.main import FunPay
-    from funpayhub.app.telegram.main import Telegram
-    from funpayhub.app.first_response_cache import FirstResponseCache
+    from dothub.app.funpay.main import FunPay
+    from dothub.app.telegram.main import Telegram
+    from dothub.app.first_response_cache import FirstResponseCache
 
 
 router = Router(name='fph:on_first_message')

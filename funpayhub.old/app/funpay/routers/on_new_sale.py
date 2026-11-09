@@ -7,30 +7,30 @@ from contextlib import suppress
 from funpaybotengine import Router
 from funpaybotengine.dispatching.filters import all_of
 
-from funpayhub.loggers import main as logger
+from dothub.loggers import main as logger
 
-from funpayhub.lib.exceptions import TranslatableException
-from funpayhub.lib.translater import _
+from dothub.lib.exceptions import TranslatableException
+from dothub.lib.translater import _
 
-from funpayhub.app.formatters import GoodsFormatter, NewOrderContext
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.notification_channels import NotificationChannels
-from funpayhub.app.telegram.modules.autodelivery.ui import NewSaleMenuContext
+from dothub.app.formatters import GoodsFormatter, NewOrderContext
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.notification_channels import NotificationChannels
+from dothub.app.telegram.modules.autodelivery.ui import NewSaleMenuContext
 
 
 if TYPE_CHECKING:
     from funpaybotengine.types import OrderPreview
     from funpaybotengine.dispatching.events import NewSaleEvent
 
-    from funpayhub.lib.translater import Translater
-    from funpayhub.lib.telegram.ui import UIRegistry
-    from funpayhub.lib.goods_sources import GoodsSourcesManager
-    from funpayhub.lib.hub.text_formatters import FormattersRegistry
+    from dothub.lib.translater import Translater
+    from dothub.lib.telegram.ui import UIRegistry
+    from dothub.lib.goods_sources import GoodsSourcesManager
+    from dothub.lib.hub.text_formatters import FormattersRegistry
 
-    from funpayhub.app.main import FunPayHub
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
-    from funpayhub.app.telegram.main import Telegram
-    from funpayhub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
+    from dothub.app.main import FunPayHub
+    from dothub.app.properties import FunPayHubProperties as FPHProps
+    from dothub.app.telegram.main import Telegram
+    from dothub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
 
 
 router = Router(name='fph:on_new_sale')

@@ -8,24 +8,24 @@ from aiogram.types import Message
 from funpaybotengine.types import Category
 from eventry.asyncio.filter import all_of
 
-from funpayhub.loggers import main as logger
+from dothub.loggers import main as logger
 
-from funpayhub.lib.translater import en as _en
-from funpayhub.lib.telegram.ui.types import MenuContext
-from funpayhub.lib.plugin.repository.loaders import URLRepositoryLoader
+from dothub.lib.translater import en as _en
+from dothub.lib.telegram.ui.types import MenuContext
+from dothub.lib.plugin.repository.loaders import URLRepositoryLoader
 
-from funpayhub.app.dispatching import Router
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.notification_channels import NotificationChannels
-from funpayhub.app.telegram.ui.builders.context import FunPayStartNotificationMenuContext
+from dothub.app.dispatching import Router
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.notification_channels import NotificationChannels
+from dothub.app.telegram.ui.builders.context import FunPayStartNotificationMenuContext
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.plugin.repository.manager import RepositoriesManager
+    from dothub.lib.plugin.repository.manager import RepositoriesManager
 
-    from funpayhub.app.main import FunPayHub
-    from funpayhub.app.funpay.main import FunPay
-    from funpayhub.app.telegram.main import Telegram
+    from dothub.app.main import FunPayHub
+    from dothub.app.funpay.main import FunPay
+    from dothub.app.telegram.main import Telegram
 
 router = Router()
 

@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
 
-from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui import MenuContext
-from funpayhub.lib.base_app.telegram import utils
-from funpayhub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
+from dothub.lib.translater import translater
+from dothub.lib.telegram.ui import MenuContext
+from dothub.lib.base_app.telegram import utils
+from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.first_response_cache import FirstResponseCache
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.first_response_cache import FirstResponseCache
 
 from . import (
     states,
@@ -25,9 +25,9 @@ if TYPE_CHECKING:
     )
     from aiogram.fsm.context import FSMContext as FSM
 
-    from funpayhub.lib.telegram.ui import UIRegistry as UI
+    from dothub.lib.telegram.ui import UIRegistry as UI
 
-    from funpayhub.app.properties import FunPayHubProperties as FPHProps
+    from dothub.app.properties import FunPayHubProperties as FPHProps
 
 
 router = Router(name='fph:first_response')

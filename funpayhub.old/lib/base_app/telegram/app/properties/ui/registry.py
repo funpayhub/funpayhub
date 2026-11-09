@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.translater import _en
+from dothub.lib.translater import _en
 
 
 __all__ = [
@@ -12,9 +12,9 @@ __all__ = [
 
 from typing import TYPE_CHECKING
 
-from funpayhub.loggers import telegram_ui as logger
+from dothub.loggers import telegram_ui as logger
 
-from funpayhub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
+from dothub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
 
 from .context import (
     NodeMenuContext as MenuCtx,
@@ -23,9 +23,9 @@ from .context import (
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.properties import Properties as Props
-    from funpayhub.lib.telegram.ui import UIRegistry as UI
-    from funpayhub.lib.properties.base import Node
+    from dothub.lib.properties import Properties as Props
+    from dothub.lib.telegram.ui import UIRegistry as UI
+    from dothub.lib.properties.base import Node
 
 
 class _NodesUIRegistry:

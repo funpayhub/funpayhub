@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from funpayhub.utils import set_exception_hook
+from dothub.utils import set_exception_hook
 
 
 set_exception_hook()
@@ -23,12 +23,12 @@ from argparse import Namespace
 from logging.config import dictConfig
 
 import colorama
-from funpayhub.updater import apply_update
-from funpayhub.logger_conf import HubLogMessage, FileLoggerFormatter, ConsoleLoggerFormatter
+from dothub.updater import apply_update
+from dothub.logger_conf import HubLogMessage, FileLoggerFormatter, ConsoleLoggerFormatter
 
-from funpayhub import exit_codes
+from dothub import exit_codes
 
-from funpayhub.app.args_parser import args
+from dothub.app.args_parser import args
 
 
 colorama.just_fix_windows_console()

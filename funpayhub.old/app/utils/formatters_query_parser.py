@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from funpayhub.lib.hub.text_formatters.category import CategoriesQuery
+from dothub.lib.hub.text_formatters.category import CategoriesQuery
 
 
 __all__ = ['parse_categories_query']

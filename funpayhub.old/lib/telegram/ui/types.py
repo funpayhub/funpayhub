@@ -15,12 +15,12 @@ from aiogram.types import (
 )
 from eventry.asyncio.callable_wrappers import CallableWrapper
 
-from funpayhub.lib.core import classproperty
+from dothub.lib.core import classproperty
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.telegram.ui import UIRegistry
-    from funpayhub.lib.telegram.callback_data import UnknownCallback
+    from dothub.lib.telegram.ui import UIRegistry
+    from dothub.lib.telegram.callback_data import UnknownCallback
 
 
 @dataclass
@@ -325,7 +325,7 @@ class MenuContext(BaseModel):
 
     async def build_menu(self, ui_registry: UIRegistry | None = None) -> Menu:
         if ui_registry is None:
-            from funpayhub.lib.telegram.ui.registry import ui_registry
+            from dothub.lib.telegram.ui.registry import ui_registry
 
         return await ui_registry.build_menu(self)
 

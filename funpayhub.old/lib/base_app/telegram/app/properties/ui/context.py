@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from funpayhub.lib.telegram.ui import MenuContext, ButtonContext
+from dothub.lib.telegram.ui import MenuContext, ButtonContext
 
 
 class NodeMenuContext(MenuContext):

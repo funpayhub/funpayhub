@@ -3,22 +3,22 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
-from funpayhub.lib.translater import translater
-from funpayhub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
-from funpayhub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
-from funpayhub.lib.base_app.telegram.app.ui.ui_finalizers import (
+from dothub.lib.translater import translater
+from dothub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
+from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+from dothub.lib.base_app.telegram.app.ui.ui_finalizers import (
     StripAndNavigationFinalizer,
     build_view_navigation_btns,
 )
 
-from funpayhub.app.telegram.ui.ids import MenuIds
-from funpayhub.app.telegram.ui.premade import AddRemoveButtonBaseModification
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from funpayhub.lib.goods_sources import GoodsSource, GoodsSourcesManager
+    from dothub.lib.goods_sources import GoodsSource, GoodsSourcesManager
 
 
 ru = translater.translate

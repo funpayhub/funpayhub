@@ -8,7 +8,7 @@ __all__ = [
 
 from typing import Any
 
-from funpayhub.lib.translater import formatter
+from dothub.lib.translater import formatter
 
 
 class TranslatableException(Exception):
