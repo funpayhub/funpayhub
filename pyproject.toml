@@ -123,7 +123,7 @@ fphapp = ["funpayhub.app.*"]
 
 [tool.uv.sources.hubplatform]
 git = "https://github.com/funpayhub/platform"
-rev = "6fe788359d67c0fff06d4e85cd441bf308123ffd"
+rev = "929f5eaa09f92c99021ce94d05c8c119ce838f25"
 subdirectory = "packages/hubplatform"
 
 
