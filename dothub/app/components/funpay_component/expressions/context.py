@@ -1,7 +1,4 @@
-"""
-This module contains FunPay-related expression context classes.
-"""
-
+"""Context classes for FunPay-related expressions."""
 
 from __future__ import annotations
 
