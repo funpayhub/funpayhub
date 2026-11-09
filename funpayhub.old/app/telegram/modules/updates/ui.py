@@ -14,8 +14,9 @@ from typing import TYPE_CHECKING
 from dataclasses import asdict
 
 from pydantic import field_validator, field_serializer
-from funpayhub.updater import UpdateInfo
 from packaging.version import Version
+
+from funpayhub.updater import UpdateInfo
 
 from funpayhub.lib.translater import translater
 from funpayhub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, KeyboardBuilder

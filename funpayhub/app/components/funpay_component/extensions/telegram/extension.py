@@ -10,6 +10,7 @@ from funpayhub.app.components.funpay_component.properties.telegram_notifications
     FunPayNotificationsCategory,
 )
 
+from .review_ui.ui import registry as review_ui_registry
 from .auto_delivery.ui import registry as auto_delivery_ui_registry
 from .auto_response.ui import registry as commands_ui_registry
 from .new_message_ui.ui import registry as new_message_ui_registry
@@ -27,6 +28,7 @@ EXTENSION = TelegramComponentExtension(
         auto_delivery_ui_registry,
         new_message_ui_registry,
         commands_ui_registry,
+        review_ui_registry,
     ],
     routers=[
         auto_delivery_router,
