@@ -13,9 +13,9 @@ from pathlib import Path
 import aiohttp
 import tomllib
 from aiohttp import ClientSession
+from funpayhub.utils import IS_WINDOWS
 from packaging.version import Version
 
-from funpayhub.utils import IS_WINDOWS
 from funpayhub.loggers import updater as logger
 
 from funpayhub.lib.translater import _en

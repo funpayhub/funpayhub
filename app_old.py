@@ -16,7 +16,6 @@ from pathlib import Path
 from logging.config import dictConfig
 
 import colorama
-
 from funpayhub.logger_conf import (
     HubLogMessage,
     FileLoggerFormatter,

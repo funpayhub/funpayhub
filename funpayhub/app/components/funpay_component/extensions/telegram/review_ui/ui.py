@@ -2,14 +2,17 @@ from __future__ import annotations
 
 from html import escape
 
-from hubplatform.i18n import I18nString, I18nMultiString
+from hubplatform.i18n import i, im
 from hubplatform.telegram.ui import (
+    Button,
     MenuSpec,
     UIRegistry,
     MenuContext,
     MenuBuildContext,
     MenuBuildingSpec,
+    KeyboardBlockSpec,
 )
+from hubplatform.app.components.telegram.ui.callbacks import Dummy
 from hubplatform.app.components.telegram.ui.finalizers import StripAndNavigationFinalizer
 
 from ..menu_ids import MenuIDs as ExtensionMenuIDs
@@ -34,71 +37,109 @@ registry = UIRegistry()
     menu_id=ExtensionMenuIDs.review.review_notification_menu,
     context_type=ReviewNotificationContext,
 )
-async def review_notification_builder(
-    ctx: MenuBuildContext[ReviewNotificationContext],
-) -> MenuBuildingSpec:
-    menu = MenuSpec()
+class ReviewNotificationBuilder:
+    async def __call__(
+        self,
+        ctx: MenuBuildContext[ReviewNotificationContext],
+    ) -> MenuBuildingSpec:
+        menu = MenuSpec()
 
-    menu.header_text = I18nMultiString(
-        '<p><b>',
-        I18nString('Вы получили'),
-        f' {"⭐️" * ctx.context.rating} ',
-        I18nString('от'),
-        f' <b><a href="https://funpay.com/users/{ctx.context.counterparty_id}">{ctx.context.counterparty_username}</a></b> ',
-        I18nString('за заказ'),
-        f' <b><a href="https://funpay.com/orders/{ctx.context.order_id}">#{ctx.context.order_id}</a></b>!',
-        '</b></p>',
-    )
+        menu.header_text = (
+            '<h3>'
+            + i(
+                key='app:funpay_component:telegram_extension:review_ui:notification_text',
+                fallback=f'{"⭐️" * ctx.context.rating} за заказ '
+                f' <b><a href="https://funpay.com/orders/{ctx.context.order_id}">'
+                f'#{ctx.context.order_id}</a></b>!',
+                kwargs={
+                    'stars': '⭐️' * ctx.context.rating,
+                    'order': f'<b><a href="https://funpay.com/orders/{ctx.context.order_id}">'
+                    f'#{ctx.context.order_id}</a></b>',
+                },
+            )
+            + '</h3>'
+        )
 
-    comment = I18nMultiString(f'<blockquote>{escape(ctx.context.comment)}</blockquote>')
+        comment = (
+            f'<aside>{escape(ctx.context.comment)}'
+            f'<cite><a href="https://funpay.com/users/{ctx.context.counterparty_id}">'
+            f'{ctx.context.counterparty_username}</a></cite>'
+            f'</aside>'
+        )
 
-    details = []
-    if ctx.context.app_reply_errored:
-        details.append(
-            I18nMultiString(
-                '<p><b>❌ Произошла ошибка при ответе на отзыв. Подробнее в логах.',
-                '</b></p>',
+        tables = []
+
+        if ctx.context.app_reply_errored or ctx.context.app_reply is not None:
+            content = (
+                i('❌ Произошла ошибка при ответе на отзыв.')
+                if ctx.context.app_reply_errored
+                else escape(ctx.context.app_reply)
+            )
+            tables.append(
+                t'<table bordered>'
+                t'<tr><th align="left" valign="top">{i("Ответ на отзыв")}</th></tr>'
+                t'<tr><td align="left" valign="top">{content}</td></tr>'
+                t'</table>',
+            )
+
+        if ctx.context.app_chat_reply_errored or ctx.context.app_chat_reply is not None:
+            content = (
+                i('❌ Произошла ошибка при ответе в чате.')
+                if ctx.context.app_chat_reply_errored
+                else escape(ctx.context.app_chat_reply)
+            )
+            tables.append(
+                t'<table bordered>'
+                t'<tr><th align="left" valign="top">{i("Ответ в чате")}</th></tr>'
+                t'<tr><td align="left" valign="top">{content}</td></tr>'
+                t'</table>',
+            )
+
+        details_html = ''
+        if tables:
+            details_html = im(
+                '<hr/>',
+                '<details>',
+                '<summary>',
+                i('🤖 Авто-ответы'),
+                '</summary>',
+                *tables,
+                '</details>',
+            )
+
+        menu.body_text = comment + details_html
+
+        menu.main_keyboard.append(
+            KeyboardBlockSpec.prerendered_block(
+                block_id='app:funpay_component:telegram_extension:review_ui:first_block',
+                block=[
+                    Button(
+                        button_id='reply',
+                        text=i('💬 Ответить на отзыв'),
+                        callback_data=Dummy(),
+                    ),
+                    Button(
+                        button_id='reply',
+                        text=i('💬 Написать в чат'),
+                        callback_data=Dummy(),
+                    ),
+                ],
+            ),
+        )
+        menu.main_keyboard.append(
+            KeyboardBlockSpec.url_button(
+                block_id='app:funpay_component:telegram_extension:review_ui:open_order',
+                text='🌐 Открыть заказ',
+                url=f'https://funpay.com/orders/{ctx.context.order_id}/',
             ),
         )
 
-    if ctx.context.app_chat_reply_errored:
-        details.append(
-            I18nMultiString(
-                '<p><b>❌ Произошла ошибка при ответе в чате. Подробнее в логах.',
-                '</b></p>',
+        menu.main_keyboard.append(
+            KeyboardBlockSpec.callback_button(
+                block_id='refund',
+                text='💸 Вернуть средства',
+                callback_data=Dummy(),
+                style='danger',
             ),
         )
-
-    if ctx.context.app_reply is not None:
-        details.append(
-            I18nMultiString(
-                '<p><b>',
-                I18nString('Ответ на отзыв:'),
-                '</b></p>',
-                f'<blockquote>{escape(ctx.context.app_reply)}</blockquote>',
-            ),
-        )
-    if ctx.context.app_chat_reply is not None:
-        details.append(
-            I18nMultiString(
-                '<p><b>',
-                I18nString('Ответ в чате:'),
-                '</b></p>',
-                f'<blockquote>{escape(ctx.context.app_chat_reply)}</blockquote>',
-            ),
-        )
-
-    details_html = ''
-    if details:
-        details_html = I18nMultiString(
-            '<hr/>',
-            '<details>',
-            '<summary>',
-            I18nString('Авто-ответы'),
-            '</summary>',
-            *details,
-            '</details>',
-        )
-
-    menu.body_text = comment + details_html
-    return MenuBuildingSpec(menu=menu, finalizer=StripAndNavigationFinalizer())
+        return MenuBuildingSpec(menu=menu, finalizer=StripAndNavigationFinalizer())

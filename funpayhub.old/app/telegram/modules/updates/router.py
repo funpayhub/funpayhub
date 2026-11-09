@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, Any
 from asyncio import Lock
 
 from aiogram import Router
+from funpayhub.updater import check_updates, install_update, download_update
 
 from funpayhub import exit_codes
-from funpayhub.updater import check_updates, install_update, download_update
 
 from funpayhub.lib.translater import translater
 
