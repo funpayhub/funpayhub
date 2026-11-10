@@ -5,16 +5,17 @@ from aiogram.fsm.context import FSMContext
 from hubplatform.telegram import Router
 from hubplatform.telegram.ui import UIManager, MenuContext
 
-from dothub.app.components.funpay_component.extensions.telegram.review_ui.callbacks import (
-    AskRefund,
-    ReplyInChat,
-    ReplyInReview,
-)
 lazy from dothub.app.components import FunPayComponent
 
 from .ui import RefundMenuContext
 from .states import EnteringReviewReply, EnteringReviewChatReply
 from ..menu_ids import MenuIDs as ExtensionMenuIDs
+from .callbacks import (
+    Refund,
+    AskRefund,
+    ReplyInChat,
+    ReplyInReview,
+)
 
 
 router = Router(name='app:funpay_component:telegram_extension:review_ui')
@@ -32,6 +33,23 @@ async def ask_refund(
         environment=query,
     )
     await query.answer()
+
+
+@router.callback_query(Refund.filter())
+async def refund(
+    query: CallbackQuery,
+    telegram_ui_manager: UIManager,
+    cbd: Refund,
+    funpay_component: FunPayComponent,
+) -> None:
+    try:
+        await funpay_component.bot.refund(cbd.order_id)
+    except Exception:
+        # todo: log
+        await query.answer(
+            f'Произошла ошибка при возврате средств по заказу #{cbd.order_id}. Подробнее в логах.',
+        )
+    await telegram_ui_manager.close_session(cbd.session_id, trigger=query)
 
 
 @router.callback_query(ReplyInReview.filter())

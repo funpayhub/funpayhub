@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from hubplatform.telegram.ui import SessionCallbackData
 from hubplatform.telegram.callback_data import CallbackData
 
 
@@ -7,7 +8,7 @@ class AskRefund(CallbackData, identifier='app.fp.ask_refund'):
     order_id: str
 
 
-class Refund(CallbackData, identifier='app.fp.refund'):
+class Refund(SessionCallbackData, identifier='app.fp.refund'):
     order_id: str
 
 
