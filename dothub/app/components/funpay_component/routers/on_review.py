@@ -190,18 +190,23 @@ async def send_notification(
     in_chat: Future[ReviewReplyResult] = event['app:funpay_component:review_reply:in_chat:result']
 
     order_page = await event.get_order_page()
-    in_rev_result = await in_rev
-    in_chat_result = await in_chat
+    try:
+        in_rev_result = await in_rev
+    except Exception:
+        in_rev_result = ReviewReplyResult(review_sent=False)
+
+    try:
+        in_chat_result = await in_chat
+    except Exception:
+        in_chat_result = ReviewReplyResult(review_sent=False)
 
     telegram_component.send_menu_notification(
         notifications_channel_path=['funpay', f'review_{order_page.review.rating}'],
         menu_id=ExtensionMenuIDs.review.review_notification_menu,
         menu_context=ReviewNotificationContext(
-            order_id=order_page.order_id,
-            counterparty_id=str(event.message.meta.buyer_id),
-            counterparty_username=str(event.message.meta.buyer_username),
-            rating=order_page.review.rating,
-            comment=order_page.review.text,
+            order_page=order_page,
+            buyer_id=event.message.meta.buyer_id or 0,
+            buyer_username=event.message.meta.buyer_username or '',
             app_reply=in_rev_result.review_text,
             app_reply_errored=not in_rev_result.review_sent,
             app_chat_reply=in_chat_result.review_text,

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from html import escape
 
+from funpaybotengine.types.pages import OrderPage
 from hubplatform.i18n import i, im
 from hubplatform.telegram.ui import (
     Button,
@@ -19,11 +20,9 @@ from ..menu_ids import MenuIDs as ExtensionMenuIDs
 
 
 class ReviewNotificationContext(MenuContext):
-    order_id: str
-    counterparty_id: str
-    counterparty_username: str
-    rating: int
-    comment: str
+    order_page: OrderPage
+    buyer_id: int
+    buyer_username: str
     app_reply: str | None
     app_reply_errored: bool
     app_chat_reply: str | None
@@ -44,26 +43,35 @@ class ReviewNotificationBuilder:
     ) -> MenuBuildingSpec:
         menu = MenuSpec()
 
+        if not ctx.context.order_page.review or not ctx.context.order_page.review.rating:
+            raise Exception
+
+        rating = ctx.context.order_page.review.rating
+        comment = ctx.context.order_page.review.text
+        order_id = ctx.context.order_page.order_id
+        order_name = str(ctx.context.order_page.short_description)
+
+
         menu.header_text = (
             '<h3>'
             + i(
                 key='app:funpay_component:telegram_extension:review_ui:notification_text',
-                fallback=f'{"⭐️" * ctx.context.rating} за заказ '
-                f' <b><a href="https://funpay.com/orders/{ctx.context.order_id}">'
-                f'#{ctx.context.order_id}</a></b>!',
+                fallback=f'{"⭐️" * rating} за заказ '
+                f' <b><a href="https://funpay.com/orders/{order_id}">'
+                f'#{order_id} <h3><i>{escape(order_name)}</i></h3></a></b>',
                 kwargs={
-                    'stars': '⭐️' * ctx.context.rating,
-                    'order': f'<b><a href="https://funpay.com/orders/{ctx.context.order_id}">'
-                    f'#{ctx.context.order_id}</a></b>',
+                    'stars': '⭐️' * rating,
+                    'order': f'<b><a href="https://funpay.com/orders/{order_id}">'
+                    f'#{order_id}</a></b>',
                 },
             )
             + '</h3>'
         )
 
         comment = (
-            f'<aside>{escape(ctx.context.comment)}'
-            f'<cite><a href="https://funpay.com/users/{ctx.context.counterparty_id}">'
-            f'{ctx.context.counterparty_username}</a></cite>'
+            f'<aside>{escape(comment or '')}'
+            f'<cite><a href="https://funpay.com/users/{ctx.context.buyer_id}">'
+            f'{ctx.context.buyer_username}</a></cite>'
             f'</aside>'
         )
 
@@ -71,26 +79,26 @@ class ReviewNotificationBuilder:
 
         if ctx.context.app_reply_errored or ctx.context.app_reply is not None:
             content = (
-                i('❌ Произошла ошибка при ответе на отзыв.')
+                i('<b><u>❌ Произошла ошибка при ответе на отзыв.</u></b>')
                 if ctx.context.app_reply_errored
-                else escape(ctx.context.app_reply)
+                else escape(ctx.context.app_reply or '')
             )
             tables.append(
                 t'<table bordered>'
-                t'<tr><th align="left" valign="top">{i("Ответ на отзыв")}</th></tr>'
+                t'<tr><th align="left" valign="top">{i("⭐️ Ответ на отзыв")}</th></tr>'
                 t'<tr><td align="left" valign="top">{content}</td></tr>'
                 t'</table>',
             )
 
         if ctx.context.app_chat_reply_errored or ctx.context.app_chat_reply is not None:
             content = (
-                i('❌ Произошла ошибка при ответе в чате.')
+                i('<b><u>❌ Произошла ошибка при ответе в чате.</u></b>')
                 if ctx.context.app_chat_reply_errored
-                else escape(ctx.context.app_chat_reply)
+                else escape(ctx.context.app_chat_reply or '')
             )
             tables.append(
                 t'<table bordered>'
-                t'<tr><th align="left" valign="top">{i("Ответ в чате")}</th></tr>'
+                t'<tr><th align="left" valign="top">{i("💬 Ответ в чате")}</th></tr>'
                 t'<tr><td align="left" valign="top">{content}</td></tr>'
                 t'</table>',
             )
@@ -130,7 +138,7 @@ class ReviewNotificationBuilder:
             KeyboardBlockSpec.url_button(
                 block_id='app:funpay_component:telegram_extension:review_ui:open_order',
                 text='🌐 Открыть заказ',
-                url=f'https://funpay.com/orders/{ctx.context.order_id}/',
+                url=f'https://funpay.com/orders/{order_id}/',
             ),
         )
 
