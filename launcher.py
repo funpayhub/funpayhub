@@ -25,10 +25,9 @@ from logging.config import dictConfig
 import colorama
 from dothub.updater import apply_update
 from dothub.logger_conf import HubLogMessage, FileLoggerFormatter, ConsoleLoggerFormatter
+from dothub.app.args_parser import args
 
 from dothub import exit_codes
-
-from dothub.app.args_parser import args
 
 
 colorama.just_fix_windows_console()

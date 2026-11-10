@@ -13,9 +13,8 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
 )
-from eventry.asyncio.callable_wrappers import CallableWrapper
-
 from dothub.lib.core import classproperty
+from eventry.asyncio.callable_wrappers import CallableWrapper
 
 
 if TYPE_CHECKING:

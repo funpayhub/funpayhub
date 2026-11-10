@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import Field, BaseModel
-
 from dothub.lib.telegram.ui.types import MenuHistoryNode
 from dothub.lib.telegram.callback_data import CallbackData
 

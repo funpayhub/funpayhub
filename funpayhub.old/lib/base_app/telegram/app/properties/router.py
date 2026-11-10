@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
-
 from dothub.lib.exceptions import PropertiesError
 from dothub.lib.base_app.telegram.utils import delete_message
 
@@ -20,7 +19,6 @@ if TYPE_CHECKING:
         CallbackQuery as Query,
     )
     from aiogram.fsm.context import FSMContext as FSM
-
     from dothub.lib.properties import (
         Properties as Props,
         ListParameter,

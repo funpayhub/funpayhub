@@ -3,15 +3,14 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
+import dothub.app.telegram.callbacks as cbs
 from funpaybotengine import Bot as FPBot
-from funpaybotengine.types.enums import BadgeType
-
 from dothub.lib.translater import Translater
+from funpaybotengine.types.enums import BadgeType
 from dothub.lib.telegram.ui.types import Menu, Button, MenuBuilder, KeyboardBuilder
 from dothub.lib.base_app.telegram.app.ui.callbacks import ClearState
 from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
-import dothub.app.telegram.callbacks as cbs
 from dothub.app.properties import FunPayHubProperties
 
 from ..ids import MenuIds

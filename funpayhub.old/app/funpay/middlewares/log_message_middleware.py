@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+from dothub.lib.translater import Translater
 from funpaybotengine.types import Message
 
 from dothub.loggers import main as logger
-
-from dothub.lib.translater import Translater
 
 
 async def log_new_message_middleware(

@@ -17,12 +17,11 @@ from pathlib import Path
 from collections.abc import Callable, Awaitable
 
 from packaging.version import Version
-
-from dothub.loggers import plugins as logger
-
 from dothub.lib.exceptions import (
     PluginInstantiationError,
 )
+
+from dothub.loggers import plugins as logger
 
 from .types import LoadedPlugin, PluginManifest
 from .installers import PluginInstaller

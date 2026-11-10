@@ -5,32 +5,29 @@ from typing import TYPE_CHECKING, Any
 from contextlib import suppress
 
 from funpaybotengine import Router
-from funpaybotengine.dispatching.filters import all_of
-
-from dothub.loggers import main as logger
-
+from dothub.app.formatters import GoodsFormatter, NewOrderContext
 from dothub.lib.exceptions import TranslatableException
 from dothub.lib.translater import _
-
-from dothub.app.formatters import GoodsFormatter, NewOrderContext
 from dothub.app.telegram.ui.ids import MenuIds
-from dothub.app.notification_channels import NotificationChannels
+from funpaybotengine.dispatching.filters import all_of
 from dothub.app.telegram.modules.autodelivery.ui import NewSaleMenuContext
+
+from dothub.loggers import main as logger
+from dothub.app.notification_channels import NotificationChannels
 
 
 if TYPE_CHECKING:
-    from funpaybotengine.types import OrderPreview
-    from funpaybotengine.dispatching.events import NewSaleEvent
-
+    from dothub.app.main import FunPayHub
     from dothub.lib.translater import Translater
+    from funpaybotengine.types import OrderPreview
     from dothub.lib.telegram.ui import UIRegistry
+    from dothub.app.telegram.main import Telegram
     from dothub.lib.goods_sources import GoodsSourcesManager
     from dothub.lib.hub.text_formatters import FormattersRegistry
-
-    from dothub.app.main import FunPayHub
-    from dothub.app.properties import FunPayHubProperties as FPHProps
-    from dothub.app.telegram.main import Telegram
+    from funpaybotengine.dispatching.events import NewSaleEvent
     from dothub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
+
+    from dothub.app.properties import FunPayHubProperties as FPHProps
 
 
 router = Router(name='fph:on_new_sale')

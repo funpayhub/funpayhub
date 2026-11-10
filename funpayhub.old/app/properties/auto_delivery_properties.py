@@ -4,9 +4,8 @@ from typing import TYPE_CHECKING, Any
 from types import MappingProxyType
 
 from pyconfigtree import Properties, BoolParameter, StringParameter
-from pyconfigtree.source.toml import TOMLSource
-
 from dothub.lib.translater import en, ru
+from pyconfigtree.source.toml import TOMLSource
 from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 

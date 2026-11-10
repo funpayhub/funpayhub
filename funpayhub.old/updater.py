@@ -5,20 +5,19 @@ import sys
 import uuid
 import shutil
 import asyncio
+import tomllib
 import zipfile
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
 import aiohttp
-import tomllib
 from aiohttp import ClientSession
 from dothub.utils import IS_WINDOWS
 from packaging.version import Version
+from dothub.lib.translater import _en
 
 from dothub.loggers import updater as logger
-
-from dothub.lib.translater import _en
 
 
 REPO = 'funpayhub/funpayhub'

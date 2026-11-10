@@ -8,11 +8,10 @@ __all__ = ['UnpackMiddleware']
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery
-
-from dothub.loggers import telegram as logger
-
 from dothub.lib.telegram.callback_data import CallbackData
 from dothub.lib.telegram.callback_data.hashinator import BadHashError, HashinatorT1000
+
+from dothub.loggers import telegram as logger
 
 
 class UnpackMiddleware(BaseMiddleware):

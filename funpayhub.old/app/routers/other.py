@@ -5,27 +5,24 @@ from typing import TYPE_CHECKING
 from html import escape
 
 from aiogram.types import Message
-from funpaybotengine.types import Category
-from eventry.asyncio.filter import all_of
-
-from dothub.loggers import main as logger
-
 from dothub.lib.translater import en as _en
+from funpaybotengine.types import Category
+from dothub.app.dispatching import Router
+from eventry.asyncio.filter import all_of
+from dothub.app.telegram.ui.ids import MenuIds
 from dothub.lib.telegram.ui.types import MenuContext
 from dothub.lib.plugin.repository.loaders import URLRepositoryLoader
-
-from dothub.app.dispatching import Router
-from dothub.app.telegram.ui.ids import MenuIds
-from dothub.app.notification_channels import NotificationChannels
 from dothub.app.telegram.ui.builders.context import FunPayStartNotificationMenuContext
+
+from dothub.loggers import main as logger
+from dothub.app.notification_channels import NotificationChannels
 
 
 if TYPE_CHECKING:
-    from dothub.lib.plugin.repository.manager import RepositoriesManager
-
     from dothub.app.main import FunPayHub
     from dothub.app.funpay.main import FunPay
     from dothub.app.telegram.main import Telegram
+    from dothub.lib.plugin.repository.manager import RepositoriesManager
 
 router = Router()
 

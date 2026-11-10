@@ -12,14 +12,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from contextlib import suppress
 
-from packaging.version import Version
-
-from dothub.loggers import (
-    main as logger,
-    plugins as plugins_logger,
-)
-
 from dothub.lib.plugin import PluginManager
+from packaging.version import Version
 from dothub.lib.exceptions import GoodsError
 from dothub.lib.translater import (
     Translater,
@@ -27,6 +21,11 @@ from dothub.lib.translater import (
     translater as global_translater,
 )
 from dothub.lib.goods_sources import FileGoodsSource, GoodsSourcesManager
+
+from dothub.loggers import (
+    main as logger,
+    plugins as plugins_logger,
+)
 
 from ... import exit_codes
 from .telegram import TelegramApp
@@ -37,10 +36,9 @@ from ..plugin.repository.manager import RepositoriesManager
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from dothub.lib.properties import Node, Properties, MutableParameter
     from eventry.asyncio.event import Event
     from eventry.asyncio.dispatcher import Dispatcher
-
-    from dothub.lib.properties import Node, Properties, MutableParameter
 
 
 def random_part(length) -> str:

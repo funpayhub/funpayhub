@@ -15,6 +15,11 @@ class AutoResponseMenuIDs:
 
 class ReviewMenuIDs:
     review_notification_menu = 'app:funpay_component:review_notification'
+    refund_menu = 'app:funpay_component:telegram_extension:review:refund'
+    enter_review_reply = 'app:funpay_component:telegram_extension:review:enter_review_reply'
+    enter_review_chat_reply = (
+        'app:funpay_component:telegram_extension:review:enter_review_chat_reply'
+    )
 
 
 class MenuIDs:

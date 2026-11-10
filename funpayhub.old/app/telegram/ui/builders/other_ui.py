@@ -3,17 +3,15 @@ from __future__ import annotations
 import html
 from typing import TYPE_CHECKING
 
-from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedError
-
 from dothub.lib.exceptions import TranslatableException
 from dothub.lib.translater import translater
 from dothub.lib.telegram.ui import Button, KeyboardBuilder
+from dothub.app.telegram.ui.ids import MenuIds
+from funpaybotengine.exceptions import UnauthorizedError, BotUnauthenticatedError
 from dothub.lib.telegram.ui.types import Menu, MenuBuilder, MenuContext
+from dothub.app.telegram.callbacks import SendMessage
 from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu, ClearState
 from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
-
-from dothub.app.telegram.ui.ids import MenuIds
-from dothub.app.telegram.callbacks import SendMessage
 
 from .context import (
     StateUIContext,

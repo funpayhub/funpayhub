@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from aiogram.types import Message, CallbackQuery
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from hubplatform.telegram import Router
 from hubplatform.telegram.ui import UIManager, MenuContext
@@ -13,7 +12,6 @@ from hubplatform.app.components.telegram.properties.builders import NodeMenuCont
 from .states import AddingAutoResponseRule
 from ..menu_ids import MenuIDs as ExtensionMenuIDs
 from .callbacks import AddCommand
-from ..review_ui.ui import ReviewNotificationContext
 
 
 if TYPE_CHECKING:

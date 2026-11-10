@@ -2,12 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import dothub.app.telegram.callbacks as cbs
 from aiogram.filters import Command, CommandStart
-
 from dothub.lib.telegram.ui import MenuContext
 from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
-
-import dothub.app.telegram.callbacks as cbs
 
 from .router import router as r
 from ...ui.ids import MenuIds
@@ -15,7 +13,6 @@ from ...ui.ids import MenuIds
 
 if TYPE_CHECKING:
     from aiogram.types import Message, CallbackQuery
-
     from dothub.lib.properties import ListParameter
     from dothub.lib.telegram.ui.registry import UIRegistry
 

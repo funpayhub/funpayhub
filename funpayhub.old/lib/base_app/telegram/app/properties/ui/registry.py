@@ -12,9 +12,9 @@ __all__ = [
 
 from typing import TYPE_CHECKING
 
-from dothub.loggers import telegram_ui as logger
-
 from dothub.lib.telegram.ui.types import Menu, Button, MenuBuilder, ButtonBuilder
+
+from dothub.loggers import telegram_ui as logger
 
 from .context import (
     NodeMenuContext as MenuCtx,

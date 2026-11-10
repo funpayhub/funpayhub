@@ -13,7 +13,6 @@ from dothub.lib.properties import (
     StringParameter,
     ToggleParameter,
 )
-
 from dothub.app.properties.flags import ParameterFlags as ParamFlags
 from dothub.app.properties.telegram_notifications import TelegramNotificationsProperties
 

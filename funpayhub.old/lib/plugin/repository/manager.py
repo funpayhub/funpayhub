@@ -9,8 +9,6 @@ __all__ = ['RepositoriesManager']
 from copy import copy
 from pathlib import Path
 
-from dothub.loggers import plugins as logger
-
 from dothub.lib.exceptions import (
     SaveRepositoryError,
     RemoveRepositoryError,
@@ -19,6 +17,8 @@ from dothub.lib.exceptions import (
 )
 from dothub.lib.plugin.repository.types import PluginsRepository
 from dothub.lib.plugin.repository.loaders import FileRepositoryLoader
+
+from dothub.loggers import plugins as logger
 
 
 class RepositoriesManager:

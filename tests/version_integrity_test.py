@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import tomllib
+
 from pytest import fixture
 from packaging.version import Version
 

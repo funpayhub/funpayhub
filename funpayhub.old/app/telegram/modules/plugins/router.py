@@ -5,9 +5,9 @@ import shutil
 from typing import TYPE_CHECKING, Any
 
 from aiogram import Bot, Router
-
 from dothub.lib.exceptions import TranslatableException
 from dothub.lib.translater import translater
+from dothub.app.telegram.ui.ids import MenuIds
 from dothub.lib.base_app.telegram import utils
 from dothub.lib.plugin.installers import (
     HTTPSPluginInstaller,
@@ -16,8 +16,6 @@ from dothub.lib.plugin.installers import (
 )
 from dothub.lib.plugin.repository.types import PluginsRepository
 from dothub.lib.plugin.repository.loaders import URLRepositoryLoader
-
-from dothub.app.telegram.ui.ids import MenuIds
 from dothub.app.telegram.ui.builders.context import StateUIContext
 
 from . import (
@@ -32,9 +30,8 @@ if TYPE_CHECKING:
         Message,
         CallbackQuery as Query,
     )
-    from aiogram.fsm.context import FSMContext as FSM
-
     from dothub.lib.plugin import PluginManager
+    from aiogram.fsm.context import FSMContext as FSM
     from dothub.lib.telegram.ui import UIRegistry as UI
     from dothub.lib.plugin.repository.manager import RepositoriesManager
 

@@ -11,15 +11,16 @@ from funpaybotengine.dispatching import ReviewEvent
 from funpaybotengine.types.pages import OrderPage
 from hubplatform.expressions.manager import ExpressionsManager
 
-from dothub.app.components.funpay_component.extensions.telegram.review_ui.ui import ReviewNotificationContext
-from dothub.app.components.funpay_component.extensions.telegram.menu_ids import MenuIDs as ExtensionMenuIDs
-
+from dothub.app.components.funpay_component.extensions.telegram.menu_ids import (
+    MenuIDs as ExtensionMenuIDs,
+)
+from dothub.app.components.funpay_component.extensions.telegram.review_ui.ui import (
+    ReviewNotificationContext,
+)
 lazy from dothub.app.components import FunPayComponent, TelegramComponent
-
 lazy from dothub.app.components.funpay_component import FunPayProperties
 lazy from dothub.app.components.funpay_component.expressions import FunPayReviewContext
 lazy from dothub.app.components.funpay_component.properties.review_reply import ReviewReplyNode
-
 
 
 r = router = Router('app:funpay_component:on_review')
@@ -184,7 +185,7 @@ async def reply_in_review(
 @router.on_review_changed(as_task=True)
 async def send_notification(
     event: ReviewEvent,
-    telegram_component: TelegramComponent
+    telegram_component: TelegramComponent,
 ) -> None:
     in_rev: Future[ReviewReplyResult] = event['app:funpay_component:review_reply:in_review:result']
     in_chat: Future[ReviewReplyResult] = event['app:funpay_component:review_reply:in_chat:result']
@@ -211,5 +212,5 @@ async def send_notification(
             app_reply_errored=not in_rev_result.review_sent,
             app_chat_reply=in_chat_result.review_text,
             app_chat_reply_errored=not in_chat_result.review_sent,
-        )
+        ),
     )

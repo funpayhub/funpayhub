@@ -8,7 +8,6 @@ from dothub.lib.telegram.fsm import StateFromQuery
 
 if TYPE_CHECKING:
     from aiogram.types import Message
-
     from dothub.lib.properties import ListParameter, MutableParameter
 
 

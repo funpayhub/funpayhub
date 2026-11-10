@@ -9,9 +9,8 @@ __all__ = [
 from dothub.lib.translater import translater
 from dothub.lib.telegram.ui import MenuContext, MenuModification
 from dothub.lib.telegram.ui.types import Menu, Button
-from dothub.lib.base_app.telegram.app.ui.callbacks import Dummy
-
 from dothub.app.telegram.callbacks import Confirmation
+from dothub.lib.base_app.telegram.app.ui.callbacks import Dummy
 
 
 ru = translater.translate

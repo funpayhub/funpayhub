@@ -25,20 +25,19 @@ from dothub.lib.telegram.ui import (
     MenuContext,
     KeyboardBuilder,
 )
-from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
-from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
-
 from dothub.app.telegram.ui.ids import MenuIds
 from dothub.app.telegram.ui.premade import confirmable_button
+from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
+from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
+    from dothub.app.main import FunPayHub
     from dothub.lib.plugin import PluginManager
     from dothub.lib.plugin.repository.manager import RepositoriesManager
 
-    from dothub.app.main import FunPayHub
     from dothub.app.properties import FunPayHubProperties as FPHProps
 
 

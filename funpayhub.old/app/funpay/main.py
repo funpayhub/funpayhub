@@ -8,9 +8,15 @@ from collections import Counter
 from collections.abc import Callable, Awaitable
 
 from funpaybotengine import Bot, Dispatcher
+from dothub.app.funpay import middlewares as mdwr
+from dothub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
+from dothub.lib.exceptions import TranslatableException
+from dothub.lib.translater import _en
 from funpaybotengine.types import Message, Category
+from dothub.app.dispatching import FunPayStartEvent, OffersRaisedEvent
 from funpaybotengine.client import Response, AioHttpSession
 from funpaybotengine.methods import FunPayMethod, MethodReturnType
+from dothub.app.funpay.routers import ALL_ROUTERS
 from funpaybotengine.exceptions import (
     FunPayServerError,
     UnauthorizedError,
@@ -20,28 +26,19 @@ from funpaybotengine.exceptions import (
 )
 from funpaybotengine.types.pages import ProfilePage
 from funpaybotengine.runner.config import RunnerConfig
-
-from dothub.loggers import main as logger
-
-from dothub.lib.exceptions import TranslatableException
-from dothub.lib.translater import _en
 from dothub.lib.hub.text_formatters import Image, FormattersRegistry
-
-from dothub.app.funpay import middlewares as mdwr
-from dothub.app.formatters import CATEGORIES_LIST, FORMATTERS_LIST
-from dothub.app.dispatching import FunPayStartEvent, OffersRaisedEvent
-from dothub.app.funpay.routers import ALL_ROUTERS
 from dothub.app.first_response_cache import FirstResponseCache
 from dothub.app.funpay.offers_raiser import OffersRaiser
 from dothub.app.utils.get_profile_categories import get_profile_raisable_categories
 from dothub.app.dispatching.events.other_events import FunPayProfileUpdated
 
+from dothub.loggers import main as logger
+
 
 if TYPE_CHECKING:
-    from dothub.lib.hub.text_formatters import MessagesStack
-
     from dothub.app.main import FunPayHub
     from dothub.app.workflow_data import WorkflowData
+    from dothub.lib.hub.text_formatters import MessagesStack
 
 
 P = ParamSpec('P')

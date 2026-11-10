@@ -5,14 +5,13 @@ from typing import TYPE_CHECKING
 
 from dothub.lib.translater import translater
 from dothub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
+from dothub.app.telegram.ui.ids import MenuIds
+from dothub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 from dothub.lib.base_app.telegram.app.ui.ui_finalizers import (
     StripAndNavigationFinalizer,
     build_view_navigation_btns,
 )
-
-from dothub.app.telegram.ui.ids import MenuIds
-from dothub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 
 from . import callbacks as cbs
 

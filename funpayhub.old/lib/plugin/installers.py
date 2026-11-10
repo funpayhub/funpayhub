@@ -12,11 +12,10 @@ from urllib.parse import urlparse
 
 from aiogram import Bot
 from aiohttp import ClientSession
-
-from dothub.loggers import plugins as logger
-
 from dothub.lib.exceptions import PluginInstallationError
 from dothub.lib.translater import _en
+
+from dothub.loggers import plugins as logger
 
 
 class PluginInstaller[T: Any](ABC):

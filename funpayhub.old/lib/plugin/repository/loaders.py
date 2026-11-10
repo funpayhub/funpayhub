@@ -7,7 +7,6 @@ from pathlib import Path
 
 from aiohttp import ClientSession
 from pydantic import ValidationError
-
 from dothub.lib.exceptions import PluginRepositoryLoadingError
 from dothub.lib.translater import _en
 

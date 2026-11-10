@@ -33,7 +33,7 @@ tests = [
 ]
 dev = [
     "mypy>=1.17.0",
-    "ruff",
+    "ruff~=0.17",
 ]
 docs = [
     "pydata-sphinx-theme>=0.16.1",

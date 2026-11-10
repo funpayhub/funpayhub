@@ -7,6 +7,7 @@ from contextlib import suppress
 from collections.abc import Callable, Awaitable
 
 from funpaybotengine import Bot
+from dothub.lib.translater import _en
 from funpaybotengine.types import Category, RaiseOffersResponse
 from funpaybotengine.exceptions import UnauthorizedError
 from funpaybotengine.exceptions.session_exceptions import (
@@ -15,8 +16,6 @@ from funpaybotengine.exceptions.session_exceptions import (
 )
 
 from dothub.loggers import offers_raiser as logger
-
-from dothub.lib.translater import _en
 
 
 type RaiseCallback = Callable[[Category], Awaitable[Any]]

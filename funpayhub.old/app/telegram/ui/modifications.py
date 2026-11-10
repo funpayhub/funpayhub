@@ -6,10 +6,9 @@ from typing import TYPE_CHECKING
 from dothub.lib.properties import StringParameter
 from dothub.lib.translater import translater
 from dothub.lib.telegram.ui import Button, MenuModification
-from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
-
 from dothub.app.properties.flags import FormattersQueryFlag
 from dothub.app.properties.review_reply import ReviewReplyPropertiesEntry
+from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
 
 from .ids import MenuIds
 
@@ -17,10 +16,10 @@ from .ids import MenuIds
 if TYPE_CHECKING:
     from dothub.lib.telegram.ui import Menu
     from dothub.lib.goods_sources import GoodsSourcesManager
+    from dothub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
     from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
     from dothub.app.properties import FunPayHubProperties as FPHProps
-    from dothub.app.properties.auto_delivery_properties import AutoDeliveryEntryProperties
 
 
 ru = translater.translate

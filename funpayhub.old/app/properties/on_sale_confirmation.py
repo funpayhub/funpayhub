@@ -5,9 +5,8 @@ __all__ = ['OnSaleConfirmation']
 
 from dothub.lib.properties import Properties, StringParameter, ToggleParameter
 from dothub.lib.translater import ru as _ru
-from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
-
 from dothub.app.properties.flags import FormattersQueryFlag
+from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class OnSaleConfirmation(Properties):

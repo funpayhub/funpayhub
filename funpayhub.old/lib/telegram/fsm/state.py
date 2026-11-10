@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Any, Self, Literal, overload
 from dataclasses import dataclass
 
 from aiogram.filters import StateFilter as AiogramStateFilter
-
 from dothub.lib.core import classproperty
 from dothub.lib.telegram.ui.types import MenuHistoryNode
 
@@ -21,7 +20,6 @@ from dothub.lib.telegram.ui.types import MenuHistoryNode
 if TYPE_CHECKING:
     from aiogram.types import Message, CallbackQuery
     from aiogram.fsm.context import FSMContext
-
     from dothub.lib.telegram.callback_data import UnknownCallback
 
 _STATES = set()

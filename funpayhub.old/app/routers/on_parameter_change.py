@@ -14,7 +14,6 @@ if TYPE_CHECKING:
         ToggleParameter,
     )
     from dothub.lib.translater import Translater
-
     from dothub.app.funpay.main import FunPay
     from dothub.app.telegram.main import Telegram
 

@@ -3,17 +3,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
+from dothub.lib.translater import translater
 
 from dothub import exit_codes
-
-from dothub.lib.translater import translater
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
     from aiogram.types import CallbackQuery as Query
-
     from dothub.app.main import FunPayHub as FPH
 
 

@@ -6,9 +6,8 @@ from dothub.lib.translater import _
 __all__ = ['GeneralProperties']
 
 from dothub.lib.properties import Properties, FloatParameter, ChoiceParameter, StringParameter
-from dothub.lib.properties.parameter.choice_parameter import Choice
-
 from dothub.app.properties.flags import ParameterFlags
+from dothub.lib.properties.parameter.choice_parameter import Choice
 
 from .validators import proxy_validator
 from ...lib.base_app.properties_flags import TelegramUIEmojiFlag

@@ -9,11 +9,10 @@ from dataclasses import dataclass
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
+from dothub.lib.telegram import CommandsRegistry
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
-
-from dothub.lib.telegram import CommandsRegistry
 from dothub.lib.telegram.ui.registry import (
     UIRegistry,
     ui_registry as global_ui_registry,

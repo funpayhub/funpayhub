@@ -8,7 +8,6 @@ from aiogram.types import (
     CopyTextButton,
     InlineKeyboardButton as InlineButton,
 )
-
 from dothub.lib.exceptions import TranslatableException
 from dothub.lib.properties import (
     Properties as Props,

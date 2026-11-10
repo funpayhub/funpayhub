@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from yarl import URL
-
 from dothub.lib.exceptions import ValidationError
 
 

@@ -14,7 +14,6 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery, TelegramObject
 
 from dothub.loggers import telegram as logger
-
 from dothub.app.properties import FunPayHubProperties
 
 

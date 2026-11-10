@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import dothub.app.telegram.callbacks as cbs
 from dothub.lib.properties import ListParameter
 from dothub.lib.translater import translater
 from dothub.lib.telegram.ui import MenuContext, KeyboardBuilder
 from dothub.lib.telegram.ui.types import Menu, Button, MenuBuilder
 from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
-import dothub.app.telegram.callbacks as cbs
 from dothub.app.properties import FunPayHubProperties
 
 from ..ids import MenuIds

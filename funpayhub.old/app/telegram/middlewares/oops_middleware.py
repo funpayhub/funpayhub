@@ -13,10 +13,9 @@ from collections.abc import Callable, Awaitable
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery, TelegramObject
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
+from dothub.lib.translater import Translater
 
 from dothub.loggers import telegram as logger
-
-from dothub.lib.translater import Translater
 
 
 T = TypeVar('T')

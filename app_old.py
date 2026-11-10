@@ -16,17 +16,16 @@ from pathlib import Path
 from logging.config import dictConfig
 
 import colorama
+from dothub.app.main import FunPayHub
 from dothub.logger_conf import (
     HubLogMessage,
     FileLoggerFormatter,
     ConsoleLoggerFormatter,
 )
-
 from dothub.lib.translater import translater
-
-from dothub.app.main import FunPayHub
-from dothub.app.properties import FunPayHubProperties
 from dothub.app.args_parser import args
+
+from dothub.app.properties import FunPayHubProperties
 
 
 # ---------------------------------------------

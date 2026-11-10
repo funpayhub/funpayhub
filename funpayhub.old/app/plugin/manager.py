@@ -10,12 +10,10 @@ from aiogram import (
     BaseMiddleware,
 )
 from funpaybotengine import Router as FPBERouter
-from packaging.version import Version
-from eventry.asyncio.middleware_manager import MiddlewareManagerTypes
-
 from dothub.lib.plugin import PluginManager as BasePluginManager
-
+from packaging.version import Version
 from dothub.app.dispatching import Router as HubRouter
+from eventry.asyncio.middleware_manager import MiddlewareManagerTypes
 
 from .plugin import Plugin
 
@@ -23,11 +21,9 @@ from .plugin import Plugin
 if TYPE_CHECKING:
     from collections.abc import Callable, Awaitable
 
-    from eventry.asyncio.router import Router as EventryRouter
-
-    from dothub.lib.plugin import LoadedPlugin, PluginManifest
-
     from dothub.app.main import FunPayHub
+    from dothub.lib.plugin import LoadedPlugin, PluginManifest
+    from eventry.asyncio.router import Router as EventryRouter
 
 
 class PassPluginAiogramMiddleware(BaseMiddleware):

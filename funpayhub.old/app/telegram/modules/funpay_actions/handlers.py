@@ -4,11 +4,9 @@ from typing import TYPE_CHECKING, Any
 from io import BytesIO
 
 from aiogram.types import Message, ReactionTypeEmoji
-
-from dothub.lib.base_app.telegram import utils
-
 from dothub.app.telegram.states import SendingFunpayMessage
 from dothub.app.telegram.ui.ids import MenuIds
+from dothub.lib.base_app.telegram import utils
 from dothub.app.telegram.ui.builders.context import SendMessageMenuContext
 
 from ... import (
@@ -21,7 +19,6 @@ from .router import router
 if TYPE_CHECKING:
     from aiogram.types import CallbackQuery as Query
     from aiogram.fsm.context import FSMContext as FSM
-
     from dothub.app.funpay.main import FunPay
     from dothub.app.telegram.main import Telegram
 

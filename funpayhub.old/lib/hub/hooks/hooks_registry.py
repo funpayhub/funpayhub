@@ -13,10 +13,9 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 
+from dothub.lib.core import classproperty
 from typing_extensions import Any
 from eventry.asyncio.callable_wrappers import CallableWrapper
-
-from dothub.lib.core import classproperty
 
 
 @dataclass

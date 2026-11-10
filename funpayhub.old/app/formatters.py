@@ -22,10 +22,9 @@ import datetime
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
-from funpaybotengine.dispatching.events import OrderEvent, ReviewEvent, NewMessageEvent
-
 from dothub.lib.translater import _
 from dothub.lib.hub.text_formatters import Image, Formatter
+from funpaybotengine.dispatching.events import OrderEvent, ReviewEvent, NewMessageEvent
 from dothub.lib.hub.text_formatters.category import FormatterCategory
 
 

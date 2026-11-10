@@ -8,39 +8,36 @@ from collections import defaultdict
 from collections.abc import Generator
 
 from funpaybotengine import Router
+from dothub.app.formatters import (
+    NewMessageContext,
+    GeneralFormattersCategory,
+    MessageFormattersCategory,
+)
+from dothub.lib.translater import (
+    en as _en,
+    translater,
+)
 from funpaybotengine.exceptions import (
     UnauthorizedError,
     BotUnauthenticatedError,
     UnexpectedHTTPStatusError,
 )
 from funpaybotengine.types.enums import MessageType
+from dothub.lib.hub.text_formatters import FormattersRegistry
 from funpaybotengine.dispatching.events import NewMessageEvent, ChatChangedEvent
 from funpaybotengine.types.requests.runner import CPURequestObject
-
-from dothub.loggers import greetings_logger as logger
-
-from dothub.lib.translater import (
-    en as _en,
-    translater,
-)
-from dothub.lib.hub.text_formatters import FormattersRegistry
 from dothub.lib.hub.text_formatters.category import InCategory
 
-from dothub.app.formatters import (
-    NewMessageContext,
-    GeneralFormattersCategory,
-    MessageFormattersCategory,
-)
+from dothub.loggers import greetings_logger as logger
 from dothub.app.properties import FunPayHubProperties
 
 
 if TYPE_CHECKING:
     from funpaybotengine import Bot as FPBot
-    from funpaybotengine.runner import EventsStack
-    from funpaybotengine.types.updates import RunnerResponseObject, CurrentlyViewingOfferInfo
-
     from dothub.app.funpay.main import FunPay
+    from funpaybotengine.runner import EventsStack
     from dothub.app.telegram.main import Telegram
+    from funpaybotengine.types.updates import RunnerResponseObject, CurrentlyViewingOfferInfo
     from dothub.app.first_response_cache import FirstResponseCache
 
 

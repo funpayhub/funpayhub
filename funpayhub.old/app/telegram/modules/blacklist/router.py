@@ -3,12 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from aiogram import Router
-
 from dothub.lib.telegram.ui.registry import ui_registry
 from dothub.lib.base_app.telegram.utils import delete_message
-from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
-
 from dothub.app.telegram.ui.builders.context import StateUIContext
+from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
 from . import (
     states,

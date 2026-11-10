@@ -3,29 +3,27 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from funpaybotengine import Router
-from funpaybotengine.dispatching import SaleStatusChangedEvent
-from funpaybotengine.types.enums import OrderStatus
-from funpaybotengine.dispatching.filters import FinalOrderStatusFilter, all_of
-
-from dothub.loggers import main as logger
-
-from dothub.lib.translater import (
-    en as _en,
-    translater,
-)
-from dothub.lib.hub.text_formatters.category import InCategory
-
 from dothub.app.formatters import (
     NewOrderContext,
     OrderFormattersCategory,
     GeneralFormattersCategory,
 )
+from dothub.lib.translater import (
+    en as _en,
+    translater,
+)
+from funpaybotengine.dispatching import SaleStatusChangedEvent
+from funpaybotengine.types.enums import OrderStatus
+from funpaybotengine.dispatching.filters import FinalOrderStatusFilter, all_of
+from dothub.lib.hub.text_formatters.category import InCategory
+
+from dothub.loggers import main as logger
 
 
 if TYPE_CHECKING:
+    from dothub.app.main import FunPayHub
     from dothub.lib.hub.text_formatters import FormattersRegistry
 
-    from dothub.app.main import FunPayHub
     from dothub.app.properties import FunPayHubProperties as FPHProps
 
 

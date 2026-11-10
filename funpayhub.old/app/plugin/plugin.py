@@ -6,10 +6,11 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aiogram import Router as TGRouter
+    from dothub.app.main import FunPayHub
     from funpaybotengine import Router as FPRouter
-
     from dothub.lib.plugin import PluginManifest
     from dothub.lib.properties import Properties
+    from dothub.app.dispatching import Router as HubRouter
     from dothub.lib.telegram.ui import (
         MenuBuilder,
         ButtonBuilder,
@@ -18,9 +19,6 @@ if TYPE_CHECKING:
     )
     from dothub.lib.hub.text_formatters import Formatter
     from dothub.lib.telegram.commands_registry import Command
-
-    from dothub.app.main import FunPayHub
-    from dothub.app.dispatching import Router as HubRouter
 
 
 class PluginLogger(logging.Logger):

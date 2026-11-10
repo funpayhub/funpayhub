@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from dothub.lib.translater import translater
 from dothub.lib.telegram.ui import MenuModification
-
 from dothub.app.telegram.ui.premade import AddRemoveButtonBaseModification
 from dothub.app.properties.auto_response import AutoResponseEntryProperties
 

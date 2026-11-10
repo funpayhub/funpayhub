@@ -4,12 +4,10 @@ from typing import TYPE_CHECKING
 
 from aiogram import Router, BaseMiddleware
 from aiogram.filters import Command
-
 from dothub.lib.translater import translater
+from dothub.app.telegram.ui.ids import MenuIds
 from dothub.lib.base_app.telegram.app.properties import callbacks as props_cbs
 from dothub.lib.base_app.telegram.app.ui.callbacks import OpenMenu
-
-from dothub.app.telegram.ui.ids import MenuIds
 
 
 if TYPE_CHECKING:

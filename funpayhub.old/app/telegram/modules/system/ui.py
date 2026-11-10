@@ -2,20 +2,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from dothub import exit_codes
-
 from dothub.lib.telegram.ui import Menu, Button, MenuBuilder, MenuContext, KeyboardBuilder
+from dothub.app.telegram.ui.ids import MenuIds
 from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
-from dothub.app.telegram.ui.ids import MenuIds
+from dothub import exit_codes
 
 from . import callbacks as cbs
 
 
 if TYPE_CHECKING:
-    from dothub.lib.translater import Translater
-
     from dothub.app.main import FunPayHub
+    from dothub.lib.translater import Translater
 
 
 class ControlMenuBuilder(MenuBuilder, menu_id=MenuIds.control, context_type=MenuContext):

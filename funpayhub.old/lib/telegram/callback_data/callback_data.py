@@ -16,7 +16,6 @@ from copy import copy
 from pydantic import Field, BaseModel, field_validator
 from aiogram.types import CallbackQuery
 from aiogram.filters import Filter
-
 from dothub.lib.telegram.ui.types import MenuHistoryNode
 from dothub.lib.telegram.callback_data.hashinator import HashinatorT1000
 

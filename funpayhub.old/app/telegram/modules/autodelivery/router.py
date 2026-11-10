@@ -4,14 +4,12 @@ from typing import TYPE_CHECKING
 from pathlib import Path
 
 from aiogram import Router
-
 from dothub.lib.translater import translater
 from dothub.lib.telegram.ui import MenuContext
 from dothub.lib.goods_sources import FileGoodsSource
+from dothub.app.telegram.ui.ids import MenuIds
 from dothub.lib.base_app.telegram import utils
 from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
-
-from dothub.app.telegram.ui.ids import MenuIds
 
 from . import (
     states,
@@ -25,7 +23,6 @@ if TYPE_CHECKING:
         CallbackQuery as Query,
     )
     from aiogram.fsm.context import FSMContext as FSM
-
     from dothub.lib.telegram.ui import UIRegistry as UI
     from dothub.lib.goods_sources import GoodsSourcesManager as GoodsManager
 

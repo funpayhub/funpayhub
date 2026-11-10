@@ -8,14 +8,9 @@ from collections import defaultdict
 
 from aiogram.types import Message, BotCommand, InlineKeyboardMarkup
 from aiogram.methods import SendMessage, SendDocument
-
-from dothub.loggers import main as logger
-
 from dothub.lib.exceptions import TranslatableException
 from dothub.lib.properties import ListParameter
 from dothub.lib.translater import _
-from dothub.lib.base_app.telegram.main import TelegramApp
-
 from dothub.app.telegram.ui import default as default_ui
 from dothub.app.telegram.modules import MENUS, BUTTONS, ROUTERS, MENU_MODS, BUTTON_MODS
 from dothub.app.dispatching.events import TelegramStartEvent
@@ -24,6 +19,9 @@ from dothub.app.telegram.middlewares import (
     UnpackMiddleware,
     IsAuthorizedMiddleware,
 )
+from dothub.lib.base_app.telegram.main import TelegramApp
+
+from dothub.loggers import main as logger
 from dothub.app.notification_channels import NotificationChannels
 
 

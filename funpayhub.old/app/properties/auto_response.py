@@ -9,9 +9,8 @@ from dothub.lib.properties import (
     ToggleParameter,
 )
 from dothub.lib.translater import _
-from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
-
 from dothub.app.properties.flags import FormattersQueryFlag
+from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class AutoResponseEntryProperties(Properties):

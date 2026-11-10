@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
-
 from dothub.lib.base_app.telegram import utils
 
 from . import callbacks as cbs
@@ -16,7 +15,6 @@ if TYPE_CHECKING:
         CallbackQuery as Query,
     )
     from aiogram.fsm.context import FSMContext as FSM
-
     from dothub.lib.translater import Translater as Tr
     from dothub.lib.telegram.ui import UIRegistry as UI
     from dothub.lib.telegram.callback_data import UnknownCallback

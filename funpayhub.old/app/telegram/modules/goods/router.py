@@ -14,13 +14,11 @@ from aiogram.types import (
 )
 from aiogram.filters import StateFilter
 from aiogram.exceptions import TelegramBadRequest
-
 from dothub.lib.translater import translater
-from dothub.lib.goods_sources import GoodsSource, FileGoodsSource
-from dothub.lib.base_app.telegram import utils
-
 from dothub.app.workflow_data import get_wfd
+from dothub.lib.goods_sources import GoodsSource, FileGoodsSource
 from dothub.app.telegram.ui.ids import MenuIds
+from dothub.lib.base_app.telegram import utils
 from dothub.app.telegram.ui.builders.context import StateUIContext
 
 from . import (
@@ -33,7 +31,6 @@ from .ui import GoodsInfoMenuContext
 if TYPE_CHECKING:
     from aiogram import Bot as TGBot
     from aiogram.fsm.context import FSMContext as FSM
-
     from dothub.lib.telegram.ui import UIRegistry as UI
     from dothub.lib.goods_sources import GoodsSourcesManager as GoodsManager
 

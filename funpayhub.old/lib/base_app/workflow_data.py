@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from aiogram import Bot, Dispatcher
-
 from dothub.lib.plugin import PluginManager
 from dothub.lib.properties import Properties
 from dothub.lib.translater import Translater

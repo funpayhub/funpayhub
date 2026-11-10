@@ -4,13 +4,11 @@ from typing import TYPE_CHECKING, Any
 
 from aiogram import Router
 from aiogram.filters import StateFilter
-
 from dothub.lib.translater import translater
-from dothub.lib.base_app.telegram import utils
-from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
-
 from dothub.app.telegram.ui.ids import MenuIds
+from dothub.lib.base_app.telegram import utils
 from dothub.app.telegram.ui.builders.context import StateUIContext
+from dothub.lib.base_app.telegram.app.properties.ui import NodeMenuContext
 
 from . import (
     states,
@@ -24,7 +22,6 @@ if TYPE_CHECKING:
         CallbackQuery as Query,
     )
     from aiogram.fsm.context import FSMContext as FSM
-
     from dothub.lib.telegram.ui import UIRegistry as UI
 
     from dothub.app.properties import FunPayHubProperties as FPHProps

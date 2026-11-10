@@ -16,12 +16,10 @@ from dataclasses import asdict
 from pydantic import field_validator, field_serializer
 from dothub.updater import UpdateInfo
 from packaging.version import Version
-
 from dothub.lib.translater import translater
 from dothub.lib.telegram.ui import Menu, MenuBuilder, MenuContext, KeyboardBuilder
-from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
-
 from dothub.app.telegram.ui.ids import MenuIds
+from dothub.lib.base_app.telegram.app.ui.ui_finalizers import StripAndNavigationFinalizer
 
 from . import callbacks as cbs
 

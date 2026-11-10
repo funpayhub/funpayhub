@@ -6,31 +6,28 @@ from contextlib import suppress
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.exceptions import AiogramError
-
-from dothub import exit_codes
-from dothub.loggers import main as logger
-
-from dothub.lib.translater import _en
-from dothub.lib.base_app.telegram.utils import delete_message
-
 from dothub.app.telegram import (
     states,
     callbacks as cbs,
 )
 from dothub.app.formatters import FormattersContext
+from dothub.lib.translater import _en
+from dothub.lib.base_app.telegram.utils import delete_message
+
+from dothub import exit_codes
+from dothub.loggers import main as logger
 
 
 if TYPE_CHECKING:
     from aiogram.types import Message, CallbackQuery
+    from dothub.app.main import FunPayHub
     from aiogram.fsm.context import FSMContext
-
     from dothub.lib.translater import Translater
+    from dothub.app.funpay.main import FunPay
     from dothub.lib.telegram.ui import UIRegistry as UI
     from dothub.lib.hub.text_formatters import FormattersRegistry
 
-    from dothub.app.main import FunPayHub
     from dothub.app.properties import FunPayHubProperties as FPHProps
-    from dothub.app.funpay.main import FunPay
 
 
 router = r = Router(name='fph:other')

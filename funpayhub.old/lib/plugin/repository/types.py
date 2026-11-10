@@ -6,7 +6,6 @@ from pathlib import Path
 from pydantic import BaseModel, field_validator, field_serializer
 from packaging.version import Version
 from packaging.specifiers import SpecifierSet
-
 from dothub.lib.plugin.types import PluginAuthor, _WithDescription
 
 

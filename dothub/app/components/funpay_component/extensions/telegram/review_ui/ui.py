@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from typing import Any
 from html import escape
 
-from funpaybotengine.types.pages import OrderPage
 from hubplatform.i18n import i, im
 from hubplatform.telegram.ui import (
     Button,
@@ -13,10 +13,12 @@ from hubplatform.telegram.ui import (
     MenuBuildingSpec,
     KeyboardBlockSpec,
 )
-from hubplatform.app.components.telegram.ui.callbacks import Dummy
+from funpaybotengine.types.pages import OrderPage
+from hubplatform.app.components.telegram.ui.widgets import cancel_button, confirmable_button
 from hubplatform.app.components.telegram.ui.finalizers import StripAndNavigationFinalizer
 
 from ..menu_ids import MenuIDs as ExtensionMenuIDs
+from .callbacks import Refund, AskRefund, ReplyInChat, ReplyInReview
 
 
 class ReviewNotificationContext(MenuContext):
@@ -27,6 +29,10 @@ class ReviewNotificationContext(MenuContext):
     app_reply_errored: bool
     app_chat_reply: str | None
     app_chat_reply_errored: bool
+
+
+class RefundMenuContext(MenuContext):
+    order_id: str
 
 
 registry = UIRegistry()
@@ -50,7 +56,7 @@ class ReviewNotificationBuilder:
         comment = ctx.context.order_page.review.text
         order_id = ctx.context.order_page.order_id
         order_name = str(ctx.context.order_page.short_description)
-
+        chat_id = ctx.context.order_page.chat.id
 
         menu.header_text = (
             '<h3>'
@@ -69,7 +75,7 @@ class ReviewNotificationBuilder:
         )
 
         comment = (
-            f'<aside>{escape(comment or '')}'
+            f'<aside>{escape(comment or "")}'
             f'<cite><a href="https://funpay.com/users/{ctx.context.buyer_id}">'
             f'{ctx.context.buyer_username}</a></cite>'
             f'</aside>'
@@ -124,12 +130,12 @@ class ReviewNotificationBuilder:
                     Button(
                         button_id='reply',
                         text=i('💬 Ответить на отзыв'),
-                        callback_data=Dummy(),
+                        callback_data=ReplyInReview(order_id=order_id),
                     ),
                     Button(
                         button_id='reply',
                         text=i('💬 Написать в чат'),
-                        callback_data=Dummy(),
+                        callback_data=ReplyInChat(chat_id=chat_id),
                     ),
                 ],
             ),
@@ -146,8 +152,54 @@ class ReviewNotificationBuilder:
             KeyboardBlockSpec.callback_button(
                 block_id='refund',
                 text='💸 Вернуть средства',
-                callback_data=Dummy(),
+                callback_data=AskRefund(order_id=order_id),
                 style='danger',
             ),
         )
         return MenuBuildingSpec(menu=menu, finalizer=StripAndNavigationFinalizer())
+
+
+@registry.add_menu_builder(
+    menu_id=ExtensionMenuIDs.review.refund_menu,
+    context_type=RefundMenuContext,
+)
+class RefundMenuBuilder:
+    async def __call__(self, ctx: MenuBuildContext[RefundMenuContext]) -> MenuBuildingSpec:
+        menu = MenuSpec()
+
+        menu.header_text = f'<h3>‼️ Возврат средств по заказу #{ctx.context.order_id} ‼️</h3>'
+
+        menu.main_keyboard.append(
+            KeyboardBlockSpec.prerendered_block(
+                block_id='app:funpay_component:review_ui:refund',
+                block=confirmable_button(
+                    id='refund',
+                    ctx=ctx.context,
+                    text='Вернуть',
+                    style='danger',
+                    cancel_buttons=5,
+                    callback_data=Refund(order_id=ctx.context.order_id),
+                ),
+            ),
+        )
+
+        menu.footer_keyboard.append(
+            KeyboardBlockSpec.prerendered_block(block_id='cancel', block=cancel_button()),
+        )
+
+        return MenuBuildingSpec(menu=menu, finalizer=StripAndNavigationFinalizer())
+
+
+@registry.add_menu_builder(menu_id=ExtensionMenuIDs.review.enter_review_reply)
+@registry.add_menu_builder(menu_id=ExtensionMenuIDs.review.enter_review_chat_reply)
+async def build_menu(_: Any) -> MenuBuildingSpec:
+    menu = MenuSpec()
+
+    menu.header_text = '<h3>💬 Введите текст ответа.<h3>'
+    menu.footer_keyboard.append(
+        KeyboardBlockSpec.prerendered_block(
+            block_id='cancel',
+            block=cancel_button(),
+        ),
+    )
+    return MenuBuildingSpec(menu=menu, finalizer=StripAndNavigationFinalizer())

@@ -4,34 +4,32 @@ from typing import TYPE_CHECKING
 from html import escape
 
 from funpaybotengine import Router
-from eventry.asyncio.filter import all_of
-from funpaybotengine.dispatching import ReviewEvent
-
-from dothub.loggers import main as logger
-
-from dothub.lib.exceptions import TranslatableException
-from dothub.lib.translater import _en
-from dothub.lib.telegram.ui import UIRegistry
-from dothub.lib.hub.text_formatters.category import InCategory
-
 from dothub.app.formatters import (
     NewReviewContext,
     ReviewFormattersCategory,
     GeneralFormattersCategory,
 )
+from dothub.lib.exceptions import TranslatableException
+from dothub.lib.translater import _en
+from dothub.lib.telegram.ui import UIRegistry
+from eventry.asyncio.filter import all_of
 from dothub.app.telegram.ui.ids import MenuIds
-from dothub.app.notification_channels import NotificationChannels
+from funpaybotengine.dispatching import ReviewEvent
 from dothub.app.telegram.ui.builders.context import NewReviewNotificationMenuContext
+from dothub.lib.hub.text_formatters.category import InCategory
+
+from dothub.loggers import main as logger
+from dothub.app.notification_channels import NotificationChannels
 
 
 if TYPE_CHECKING:
     from dothub.lib.translater import Translater as Tr
-    from dothub.lib.hub.text_formatters import FormattersRegistry
-
-    from dothub.app.properties import FunPayHubProperties as FPHProps
     from dothub.app.funpay.main import FunPay
     from dothub.app.telegram.main import Telegram
+    from dothub.lib.hub.text_formatters import FormattersRegistry
     from dothub.app.properties.review_reply import ReviewReplyPropertiesEntry
+
+    from dothub.app.properties import FunPayHubProperties as FPHProps
 
 
 review_reply_router = r = Router(name='fph:on_review')

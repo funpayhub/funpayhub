@@ -13,6 +13,7 @@ from dothub.app.components.funpay_component.properties.telegram_notifications im
 from .review_ui.ui import registry as review_ui_registry
 from .auto_delivery.ui import registry as auto_delivery_ui_registry
 from .auto_response.ui import registry as commands_ui_registry
+from .review_ui.router import router as review_ui_router
 from .new_message_ui.ui import registry as new_message_ui_registry
 from .auto_delivery.router import router as auto_delivery_router
 from .auto_response.router import router as commands_router
@@ -33,6 +34,7 @@ EXTENSION = TelegramComponentExtension(
     routers=[
         auto_delivery_router,
         commands_router,
+        review_ui_router,
     ],
     setup_call=_setup_call,
 )

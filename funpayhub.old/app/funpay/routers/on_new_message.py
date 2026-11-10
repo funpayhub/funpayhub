@@ -3,28 +3,25 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from funpaybotengine import Router
-from funpaybotengine.dispatching.events import RunnerEvent, NewMessageEvent, ChatChangedEvent
-
-from dothub.lib.telegram.ui import UIRegistry
-
 from dothub.app.formatters import (
     NewMessageContext,
     GeneralFormattersCategory,
     MessageFormattersCategory,
 )
-from dothub.app.properties import FunPayHubProperties
+from dothub.lib.telegram.ui import UIRegistry
 from dothub.app.telegram.main import Telegram
 from dothub.app.funpay.filters import is_fph_command
 from dothub.app.telegram.ui.ids import MenuIds
+from funpaybotengine.dispatching.events import RunnerEvent, NewMessageEvent, ChatChangedEvent
 from dothub.app.telegram.ui.builders.context import NewMessageMenuContext
+
+from dothub.app.properties import FunPayHubProperties
 
 
 if TYPE_CHECKING:
     from funpaybotengine.types import Message
-
-    from dothub.lib.hub.text_formatters import FormattersRegistry
-
     from dothub.app.funpay.main import FunPay
+    from dothub.lib.hub.text_formatters import FormattersRegistry
     from dothub.app.properties.auto_response import AutoResponseEntryProperties
 
 

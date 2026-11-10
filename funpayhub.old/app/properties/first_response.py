@@ -4,9 +4,8 @@ from typing import Any
 
 from dothub.lib.properties import Properties, IntParameter, StringParameter
 from dothub.lib.translater import _
-from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
-
 from dothub.app.properties.flags import FormattersQueryFlag
+from dothub.lib.base_app.properties_flags import TelegramUIEmojiFlag
 
 
 class FirstResponseProperties(Properties):

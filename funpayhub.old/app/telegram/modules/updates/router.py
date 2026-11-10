@@ -5,12 +5,10 @@ from asyncio import Lock
 
 from aiogram import Router
 from dothub.updater import check_updates, install_update, download_update
+from dothub.lib.translater import translater
+from dothub.app.telegram.ui.ids import MenuIds
 
 from dothub import exit_codes
-
-from dothub.lib.translater import translater
-
-from dothub.app.telegram.ui.ids import MenuIds
 
 from . import callbacks as cbs
 from .ui import UpdateMenuContext, InstallUpdateMenuContext
@@ -18,7 +16,6 @@ from .ui import UpdateMenuContext, InstallUpdateMenuContext
 
 if TYPE_CHECKING:
     from aiogram.types import CallbackQuery as Query
-
     from dothub.app.main import FunPayHub as FPH
 
 

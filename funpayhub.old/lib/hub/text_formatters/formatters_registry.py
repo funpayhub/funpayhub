@@ -51,11 +51,10 @@ from typing import TYPE_CHECKING, Any, Type
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
-from eventry.asyncio.callable_wrappers import CallableWrapper
-
 from dothub.lib.core import classproperty
 from dothub.lib.translater import _en
 from dothub.lib.exceptions.formatters import FormatterError, FormatterContextMismatch
+from eventry.asyncio.callable_wrappers import CallableWrapper
 
 from .parser import TextWithFormattersInvocations, extract_calls
 from .category import InCategory, CategoriesQuery, FormatterCategory

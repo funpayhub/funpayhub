@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from aiogram.types import CallbackQuery
-
 from dothub.lib.translater import _en
 
 
