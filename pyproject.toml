@@ -1,5 +1,5 @@
 [project]
-name = "funpayhub"
+name = "dothub"
 version = "0.5.22"
 description = "FunPay bot."
 requires-python = ">=3.15.2"
@@ -17,16 +17,6 @@ authors = [
 
 maintainers = [
     {name = "Qvvonk", email="qvvonk@gmail.com"}
-]
-
-classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
-    "Programming Language :: Python :: 3.15",
 ]
 
 
@@ -55,10 +45,6 @@ docs = [
 [build-system]
 requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
-
-
-[tool.setuptools]
-packages = ['funpayhub']
 
 
 [tool.mypy]
@@ -123,8 +109,12 @@ fphapp = ["funpayhub.app.*"]
 
 [tool.uv.sources.hubplatform]
 git = "https://github.com/funpayhub/platform"
-rev = "c3d5eaf84d2d45a5dec531bf8eb53a3d67cd8823"
+rev = "efcc8eed0621cae415d74b78ce8ed5cd943c6346"
 subdirectory = "packages/hubplatform"
+
+
+[tool.uv]
+package = false
 
 
 [tool.ruff.lint.isort]
