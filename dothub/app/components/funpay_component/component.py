@@ -63,7 +63,7 @@ class FunPayComponent(HubPlatformAppComponent):
         self._first_response_cache = (
             first_response_cache
             if first_response_cache is not None
-            else FirstResponseCache('storage/first_response_cache.json')
+            else FirstResponseCache('storage/funpay_component/first_response_cache.db')
         )
         self._profile: ProfilePage | None = None
 
@@ -74,6 +74,9 @@ class FunPayComponent(HubPlatformAppComponent):
         logger.info(I18nString('Setting up component...'))
         logger.info(I18nString('Setting up properties...'))
         app.properties.attach_node(self._properties)
+
+        logger.info(I18nString('Loading first response cache...'))
+        await self._first_response_cache.load()
 
         logger.info(I18nString('Setting up context...'))
         self._setup_context(app.app_context)

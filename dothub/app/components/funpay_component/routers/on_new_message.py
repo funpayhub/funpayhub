@@ -3,11 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from funpaybotengine import Router
-from funpaybotengine.types import Message
+from funpaybotengine.types import Message, CurrentlyViewingOfferInfo
 from funpaybotengine.runner import EventsPack
+from funpaybotengine.types.enums import MessageType
 from hubplatform.expressions.manager import ExpressionsManager
 from funpaybotengine.dispatching.events import NewMessage, ChatChanged
 
+from dothub.loggers import funpay_component as logger
 from dothub.app.components.telegram_component import TelegramProperties
 
 from ..expressions import FunPayMessageContext
@@ -19,6 +21,8 @@ from ..extensions.telegram.new_message_ui.menu_ids import NewFunPayMessageUIMenu
 if TYPE_CHECKING:
     from dothub.app.components.funpay_component import FunPayComponent, FunPayProperties
     from dothub.app.components.telegram_component import TelegramComponent
+
+    from ..first_response_cache import FirstResponseCache
 
 
 router = Router(name='app:on_new_message')
@@ -120,17 +124,15 @@ async def run_command(
     command_node: CommandNode,
     expressions_manager: ExpressionsManager,
 ):
-    context = FunPayMessageContext(
-        initiator_id=str(event.message.sender_id),
-        initiator_username=str(event.message.sender_username),
-        message_id=str(event.message.id),
-        message_text=str(event.message.text),
-        funpay_message_obj=event.message,
-    )
-
     result = await expressions_manager.format_string(
         string=command_node.response_text.value,
-        context=context,
+        context=FunPayMessageContext(
+            initiator_id=str(event.message.sender_id),
+            initiator_username=str(event.message.sender_username),
+            message_id=str(event.message.id),
+            message_text=str(event.message.text),
+            funpay_message_obj=event.message,
+        ),
         ignore_errors=command_node.ignore_expression_errors.value,
     )
 
@@ -143,3 +145,88 @@ async def run_command(
     except Exception as e:
         event['app:funpay_component:auto_response:error'] = e
         # todo: logging, notification
+
+
+SYSTEM_SENDER_IDS = (0, 500)
+
+
+@router.on_new_message(name='app:funpay_component:first_response')
+async def send_first_response(
+    event: NewMessage,
+    events_pack: EventsPack,
+    funpay_props: FunPayProperties,
+    funpay_component: FunPayComponent,
+    first_response_cache: FirstResponseCache,
+    expressions_manager: ExpressionsManager,
+) -> None:
+    message = event.message
+    chat_id = message.chat_id
+    sender_id = message.sender_id
+    props = funpay_props.first_response
+
+    if not isinstance(chat_id, int):
+        return
+    if not props.text.value and not props.has_offer_specific:
+        return
+
+    # A chat with a new order gets no greeting: it is just marked as not new.
+    has_new_order = any(
+        isinstance(i, NewMessage)
+        and i.message.chat_id == chat_id
+        and i.message.meta.type is MessageType.NEW_ORDER
+        for i in events_pack.events
+    )
+    from_interlocutor = (
+        not message.from_me and sender_id is not None and sender_id not in SYSTEM_SENDER_IDS
+    )
+    if not has_new_order and not from_interlocutor:
+        return
+
+    if not await first_response_cache.is_new(chat_id, max_age=props.timeout.value):
+        return
+
+    if has_new_order:
+        await first_response_cache.update(chat_id)
+        return
+
+    text = props.text.value
+    if props.has_offer_specific and sender_id is not None:
+        offer_id = await _get_viewing_offer_id(funpay_component, sender_id)
+        offer_props = props.get_offer(offer_id) if offer_id is not None else None
+        if offer_props is not None:
+            text = offer_props.text.value
+
+    if not text:
+        return
+
+    try:
+        result = await expressions_manager.format_string(
+            string=text,
+            context=FunPayMessageContext(
+                initiator_id=str(message.sender_id),
+                initiator_username=str(message.sender_username),
+                message_id=str(message.id),
+                message_text=str(message.text),
+                funpay_message_obj=message,
+            ),
+        )
+        sent = await message.reply(result.result_text)
+    except Exception:
+        logger.error('Failed to send first response to chat %s.', chat_id, exc_info=True)
+        return
+
+    await funpay_component.mark_message_as_automatic(sent.id)
+    await first_response_cache.update(chat_id)
+
+
+async def _get_viewing_offer_id(
+    funpay_component: FunPayComponent,
+    user_id: int,
+) -> int | str | None:
+    """Returns the ID of the offer the user is currently viewing, or ``None``."""
+    try:
+        offer = await funpay_component.bot.get_currently_viewing_offer(user_id=user_id)
+    except Exception:
+        logger.error('Failed to get currently viewing offer of user %s.', user_id, exc_info=True)
+        return None
+    return offer.id if isinstance(offer, CurrentlyViewingOfferInfo) else None

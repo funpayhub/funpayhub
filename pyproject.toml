@@ -5,6 +5,7 @@ description = "FunPay bot."
 requires-python = ">=3.15.2"
 
 dependencies = [
+    "aiosqlite~=0.22.1",
     "eventry~=0.7.2",
     "funpaybotengine==0.10.0rc5",
     "hubplatform",

@@ -22,7 +22,14 @@ class ReviewMenuIDs:
     )
 
 
+class FirstResponseCacheMenuIDs:
+    chats_list = 'app:funpay_component:telegram_extension:first_response_cache:chats_list'
+    chat = 'app:funpay_component:telegram_extension:first_response_cache:chat'
+    chat_input = 'app:funpay_component:telegram_extension:first_response_cache:chat_input'
+
+
 class MenuIDs:
     auto_delivery = AutoDeliveryMenuIDs
     auto_response = AutoResponseMenuIDs
     review = ReviewMenuIDs
+    first_response_cache = FirstResponseCacheMenuIDs
