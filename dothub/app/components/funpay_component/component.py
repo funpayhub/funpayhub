@@ -34,6 +34,10 @@ from .offers_raiser import OffersRaiser
 from .routers.on_review import router as on_review_router
 from .first_response_cache import FirstResponseCache
 from .routers.on_new_message import router as on_new_message_router
+from .component_routers.offers_raiser import (
+    router as offers_raiser_router,
+    on_auto_raise_toggled,
+)
 
 
 class FunPayComponentState(Enum):
@@ -81,6 +85,7 @@ class FunPayComponent(HubPlatformAppComponent):
 
         self._router.attach_router(on_new_message_router)
         self._router.attach_router(on_review_router)
+        self._component_router.attach_router(offers_raiser_router)
 
     async def setup(self, app: HubPlatformApp) -> None:
         logger.info(I18nString('Setting up component...'))

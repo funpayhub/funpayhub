@@ -28,8 +28,13 @@ class FirstResponseCacheMenuIDs:
     chat_input = 'app:funpay_component:telegram_extension:first_response_cache:chat_input'
 
 
+class OffersRaiserMenuIDs:
+    main = 'app:funpay_component:telegram_extension:offers_raiser:main'
+
+
 class MenuIDs:
     auto_delivery = AutoDeliveryMenuIDs
     auto_response = AutoResponseMenuIDs
     review = ReviewMenuIDs
     first_response_cache = FirstResponseCacheMenuIDs
+    offers_raiser = OffersRaiserMenuIDs
