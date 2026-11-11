@@ -19,6 +19,7 @@ from hubplatform.app.components.telegram.ui.finalizers import StripAndNavigation
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 from hubplatform.app.components.telegram.expressions.builders import ExpressionsListMenuContext
 
+from ..components_ui import ComponentsUIMenuIDs
 from ..notifications_ui.ui import NotificationsMenuContext
 from ..notifications_ui.menu_ids import NotificationsUIMenuIDs
 
@@ -111,6 +112,17 @@ async def build_main_menu(
             callback_data=OpenMenu(
                 menu_id=PlatformMenuIDs.properties.properties_menu,
                 context=NodeMenuContext(node_path=[]).dump(),
+            ),
+        ),
+    )
+
+    menu.main_keyboard.append(
+        KeyboardBlockSpec.callback_button(
+            block_id='app:open_components',
+            text=I18nString('🔌 Интеграции'),
+            callback_data=OpenMenu(
+                menu_id=ComponentsUIMenuIDs.components_menu,
+                context=MenuContext().dump(),
             ),
         ),
     )

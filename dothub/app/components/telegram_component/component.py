@@ -15,6 +15,7 @@ from hubplatform.app.components.telegram import TelegramComponent as BaseTelegra
 from .properties import TelegramProperties
 from .components.commands import router as commands_router
 from .components.main_menu_ui import registry as main_menu_ui_registry
+from .components.components_ui import registry as components_ui_registry
 from .components.notifications_ui import (
     router as notifications_ui_router,
     registry as notifications_ui_registry,
@@ -33,6 +34,7 @@ class TelegramComponent(BaseTelegramComponent):
         self.ui_registry.merge_from(
             notifications_ui_registry,
             main_menu_ui_registry,
+            components_ui_registry,
         )
 
     @property
