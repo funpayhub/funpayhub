@@ -85,7 +85,7 @@ async def build_main_menu(
 ) -> MenuBuildingSpec:
     menu = MenuSpec()
     menu.header_text = (
-        f'<table compact><tr><th><b>💠 {APP_NAME} {app.version}</b></th></tr></table>'
+        f'<table compact><tr><td align="center"><b>💠 {APP_NAME} {app.version}</b></td></tr></table>'
     )
 
     body = ''
