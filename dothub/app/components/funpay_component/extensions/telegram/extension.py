@@ -12,10 +12,12 @@ from dothub.app.components.funpay_component.properties.telegram_notifications im
 )
 
 from .review_ui.ui import registry as review_ui_registry
+from .component_ui.ui import registry as component_ui_registry
 from .auto_delivery.ui import registry as auto_delivery_ui_registry
 from .auto_response.ui import registry as commands_ui_registry
 from .review_ui.router import router as review_ui_router
 from .new_message_ui.ui import registry as new_message_ui_registry
+from .component_ui.router import router as component_ui_router
 from .offers_raiser_ui.ui import registry as offers_raiser_ui_registry
 from .auto_delivery.router import router as auto_delivery_router
 from .auto_response.router import router as commands_router
@@ -37,8 +39,13 @@ EXTENSION = TelegramComponentExtension(
         review_ui_registry,
         first_response_cache_ui_registry,
         offers_raiser_ui_registry,
+        component_ui_registry,
     ],
     commands=[
+        Command(
+            command='funpay_component',
+            description='FunPay компонент',
+        ),
         Command(
             command='first_response_cache',
             description='Кэш приветствий',
@@ -54,6 +61,7 @@ EXTENSION = TelegramComponentExtension(
         review_ui_router,
         first_response_cache_router,
         offers_raiser_router,
+        component_ui_router,
     ],
     setup_call=_setup_call,
 )

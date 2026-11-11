@@ -32,7 +32,12 @@ class OffersRaiserMenuIDs:
     main = 'app:funpay_component:telegram_extension:offers_raiser:main'
 
 
+class ComponentMenuIDs:
+    main = 'app:funpay_component:telegram_extension:component:main'
+
+
 class MenuIDs:
+    component = ComponentMenuIDs
     auto_delivery = AutoDeliveryMenuIDs
     auto_response = AutoResponseMenuIDs
     review = ReviewMenuIDs
