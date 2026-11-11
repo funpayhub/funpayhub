@@ -23,4 +23,11 @@ async def build_components_menu(ctx: MenuBuildContext[MenuContext]) -> MenuBuild
     Empty by default: each component adds its own button with a menu modification
     (``UIRegistry.add_menu_modification(ComponentsUIMenuIDs.components_menu, ...)``).
     """
-    return MenuBuildingSpec(menu=MenuSpec(), finalizer=StripAndNavigationFinalizer())
+    menu = MenuSpec()
+    menu.header_text = '<h2>🔌 Интеграции</h2>'
+    menu.body_text = (
+        '<p>Интеграции подключают <b>.hub</b> к торговым площадкам, '
+        'социальным сетям и другим сервисам.</p>'
+        '<p><i>Выберите интеграцию, чтобы посмотреть её состояние и настроить.</i></p>'
+    )
+    return MenuBuildingSpec(menu=menu, finalizer=StripAndNavigationFinalizer())

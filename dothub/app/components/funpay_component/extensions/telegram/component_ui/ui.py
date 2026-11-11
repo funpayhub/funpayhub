@@ -10,6 +10,7 @@ from hubplatform.telegram.ui import (
     MenuBuildContext,
     MenuBuildingSpec,
     KeyboardBlockSpec,
+    MenuBuildingState,
 )
 from hubplatform.app.components.telegram.menu_ids import MenuIDs as PlatformMenuIDs
 from hubplatform.app.components.telegram.ui.callbacks import OpenMenu
@@ -17,6 +18,9 @@ from hubplatform.app.components.telegram.ui.finalizers import StripAndNavigation
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 
 from dothub.loggers import funpay_component as logger
+from dothub.app.components.telegram_component.components.components_ui import (
+    ComponentsUIMenuIDs,
+)
 lazy from dothub.app.components.funpay_component.component import FunPayComponentState
 
 from ..menu_ids import MenuIDs as ExtensionMenuIDs
@@ -141,3 +145,24 @@ async def funpay_component_menu(
         )
 
     return MenuBuildingSpec(menu=menu, finalizer=StripAndNavigationFinalizer())
+
+
+@registry.add_menu_modification(
+    menu_id=ComponentsUIMenuIDs.components_menu,
+    modification_id='app:funpay_component:add_to_components_menu',
+)
+async def add_to_components_menu(
+    ctx: MenuBuildContext[MenuContext],
+    state: MenuBuildingState,
+) -> MenuBuildingState:
+    state.menu.main_keyboard.append(
+        KeyboardBlockSpec.callback_button(
+            block_id='app:funpay_component:open_component_menu',
+            text='🔷 FunPay',
+            callback_data=OpenMenu(
+                menu_id=ExtensionMenuIDs.component.main,
+                context=MenuContext().dump(),
+            ),
+        ),
+    )
+    return state
