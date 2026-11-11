@@ -5,7 +5,7 @@ __all__ = [
     'FunPayProperties',
 ]
 
-from pyconfigtree import Properties
+from pyconfigtree import Properties, BoolParameter
 from hubplatform.i18n import I18nString
 from pyconfigtree.source.toml import TOMLSource
 
@@ -39,3 +39,15 @@ class FunPayProperties(Properties):
         self.auto_delivery = self.attach_node(AutoDeliveryProperties())
         self.on_sale_confirmation = self.attach_node(OnSaleConfirmation())
         self.review_reply = self.attach_node(ReviewReplyProperties())
+
+        self.auto_raise = self.attach_node(
+            BoolParameter(
+                node_id='auto_raise',
+                name=I18nString('Автоподнятие лотов'),
+                description=I18nString(
+                    'Автоматически поднимать лоты профиля, как только это становится возможным.',
+                ),
+                default_value=False,
+                metadata={'emoji': '🔺'},
+            ),
+        )
