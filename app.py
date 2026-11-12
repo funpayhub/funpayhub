@@ -5,6 +5,7 @@ from typing import Any
 from pyconfigtree import MutableParameter
 from hubplatform.app import HubPlatformApp
 from hubplatform.i18n import global_translator
+from hubplatform.updates import GitHubVersionsManager
 from hubplatform.goods_source import global_sources_manager
 from hubplatform.logging.style import setup_logging
 from hubplatform.app.dispatching import ParameterValueChangedEvent
@@ -16,6 +17,10 @@ from dothub.app.components.telegram_component import TelegramComponent, Telegram
 
 
 setup_logging(global_translator())
+
+_app: HubPlatformApp | None = None
+
+REPO_URL = 'https://github.com/funpayhub/funpayhub'
 
 
 async def main():
@@ -44,8 +49,10 @@ async def main():
 
     app.properties._hooks[ParameterHookTypes.PARAMETER_VALUE_CHANGED] = tmp
 
-    await app.setup()
-    await app.run()
+    async with GitHubVersionsManager(REPO_URL) as versions_manager:
+        app.app_context.provide('App', 'versions_manager', versions_manager)
+        await app.setup()
+        await app.run()
 
 
 if __name__ == '__main__':
