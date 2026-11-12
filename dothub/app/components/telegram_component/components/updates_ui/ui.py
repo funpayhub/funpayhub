@@ -34,11 +34,11 @@ MAX_SKIPPED_VERSIONS = 10
 type UpdateStatus = Literal['available', 'installing', 'installed', 'install_failed', 'restarting']
 
 STAGE_NAMES = {
-    InstallStage.FETCHING_MANIFEST: 'получение информации о версии',
-    InstallStage.DOWNLOADING_RUNTIME: 'загрузка окружения Python',
-    InstallStage.INSTALLING_RUNTIME: 'установка окружения Python',
-    InstallStage.DOWNLOADING_APP: 'загрузка',
-    InstallStage.INSTALLING_APP: 'установка',
+    InstallStage.DOWNLOADING: 'загрузка',
+    InstallStage.VERIFYING: 'проверка архива',
+    InstallStage.EXTRACTING: 'распаковка',
+    InstallStage.INSTALLING_DEPENDENCIES: 'установка зависимостей',
+    InstallStage.CHECKING: 'проверка версии',
 }
 
 

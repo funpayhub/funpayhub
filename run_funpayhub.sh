@@ -39,7 +39,7 @@ for arg in "$@"; do
     shift
 done
 
-[ -z "$PYTHON_BIN" ] && PYTHON_BIN="launcher/python/bin/python3"
+[ -z "$PYTHON_BIN" ] && PYTHON_BIN=".venv/bin/python"
 
 if [ ! -x "$PYTHON_BIN" ]; then
     printf "${C_RED}(x_x) Не удалось запустить приложение.${C_RESET}\n"
@@ -48,8 +48,8 @@ if [ ! -x "$PYTHON_BIN" ]; then
     exit 1
 fi
 
-if [ -f "releases/state.json" ] && [ -f "launcher/launcher.py" ]; then
-    exec "$PYTHON_BIN" launcher/launcher.py
+if [ -f "releases/state.json" ] && [ -f "launcher.py" ]; then
+    exec "$PYTHON_BIN" launcher.py "$@"
 fi
 
 echo ""
@@ -91,4 +91,4 @@ printf "${C_GREEN}°˖✧◝(⁰▿⁰)◜✧˖°${C_RESET} Токен прин�
 printf "${C_CYAN}(⌐■_■)${C_RESET} Запускаю FunPay Hub.\n"
 printf ""
 
-exec "$PYTHON_BIN" launcher/launcher.py --install latest --t "$TG_TOKEN"
+exec "$PYTHON_BIN" bootstrap.py --t "$TG_TOKEN"
