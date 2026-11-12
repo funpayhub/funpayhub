@@ -108,12 +108,6 @@ select = [
 fphlib = ["funpayhub.lib.*"]
 fphapp = ["funpayhub.app.*"]
 
-[tool.hubplatform.release]
-# Read by the launcher and the release installer (see hubplatform.updates.releases).
-entrypoint = "app.py"
-launcher-protocol = 1
-
-
 [tool.uv.sources.hubplatform]
 git = "https://github.com/funpayhub/platform"
 rev = "75ec04da0c9495b20c332e2091e7ef5c517db51b"

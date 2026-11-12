@@ -15,7 +15,6 @@ build/
 dist/
 *.egg-info/
 
-uv.lock
 *.uv*
 
 *.log
@@ -23,7 +22,13 @@ uv.lock
 
 /plugins/
 
+# working dir of the launcher (when run from the repo) and release builds
+/launcher/
 /releases/
+/runtimes/
+/envs/
 /backups/
 /logs/
+/build/
+/dist/
 launcher.py.old

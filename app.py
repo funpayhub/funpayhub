@@ -26,9 +26,6 @@ setup_logging(global_translator())
 _app: HubPlatformApp | None = None
 
 REPO_URL = 'https://github.com/funpayhub/funpayhub'
-RELEASE_ASSET_NAME = 'funpayhub.zip'
-"""Release asset with the release archive (verified by its SHA-256 digest).
-Releases without it are installed from the GitHub source archive."""
 
 
 def read_version() -> str:
@@ -38,7 +35,7 @@ def read_version() -> str:
 
 def notify_update_result(installer: ReleaseInstaller, telegram: TelegramComponent) -> None:
     try:
-        result = installer.releases.pop_result()
+        result = installer.installation.pop_result()
     except Exception:
         logger.error('Unable to read update result.', exc_info=True)
         return
@@ -90,7 +87,7 @@ async def main() -> int:
 
     app.properties._hooks[ParameterHookTypes.PARAMETER_VALUE_CHANGED] = tmp
 
-    async with GitHubVersionsManager(REPO_URL, RELEASE_ASSET_NAME) as versions_manager:
+    async with GitHubVersionsManager(REPO_URL) as versions_manager:
         # None if the app was started without the launcher: updates are unavailable.
         installer = ReleaseInstaller.from_launcher(versions_manager)
         app.app_context.provide('App', 'versions_manager', versions_manager)

@@ -1,0 +1,183 @@
+# Builds and publishes a release when a vX.Y.Z tag is pushed (see release.toml, tools/build_release.py).
+#
+#   prepare  -> runtime (only if this runtime id is not published yet; one job per platform)
+#            -> app
+#            -> smoke (unpacks runtime + app on every OS and imports the app)
+#            -> publish (runtime release `runtime-<id>` if new, then release vX.Y.Z with
+#               the app zip and manifest.json)
+#
+# Nothing is published unless every platform passed the smoke test.
+
+name: Release
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  BUILD: uv run --no-project --python 3.13 python tools/build_release.py
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      runtime-id: ${{ steps.runtime.outputs.id }}
+      runtime-exists: ${{ steps.runtime.outputs.exists }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+
+      - id: version
+        name: Check pyproject version matches the tag
+        run: |
+          version=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::pyproject.toml version $version does not match tag $GITHUB_REF_NAME"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - id: runtime
+        name: Runtime id
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          id=$($BUILD runtime-id)
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          if gh release view "runtime-$id" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "Runtime $id is already published."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Runtime $id will be built."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  runtime:
+    needs: prepare
+    if: needs.prepare.outputs.runtime-exists == 'false'
+    strategy:
+      matrix:
+        include:
+          - platform: x86_64-pc-windows-msvc
+            os: windows-latest
+            container: ''
+          # manylinux containers: compiled packages work with glibc 2.28+ (see release.toml).
+          - platform: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            container: quay.io/pypa/manylinux_2_28_x86_64
+          - platform: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+            container: quay.io/pypa/manylinux_2_28_aarch64
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      # Some packages have no wheels for the runtime Python yet and are compiled (some in Rust).
+      - uses: dtolnay/rust-toolchain@stable
+      - run: $BUILD runtime --out dist --work build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: runtime-${{ matrix.platform }}
+          path: dist/
+          if-no-files-found: error
+
+  app:
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: $BUILD app --out dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app
+          path: dist/
+          if-no-files-found: error
+
+  smoke:
+    needs: [prepare, runtime, app]
+    if: >-
+      !cancelled() && needs.app.result == 'success'
+      && (needs.runtime.result == 'success' || needs.runtime.result == 'skipped')
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Download published runtime
+        if: needs.prepare.outputs.runtime-exists == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release download "runtime-${{ needs.prepare.outputs.runtime-id }}"
+          --repo "$GITHUB_REPOSITORY" --dir dist --pattern 'runtime-*'
+      - run: >-
+          $BUILD smoke
+          --runtime-json dist/runtime-${{ needs.prepare.outputs.runtime-id }}-*.json
+          --app-zip dist/*-${{ needs.prepare.outputs.version }}.zip
+
+  publish:
+    needs: [prepare, runtime, app, smoke]
+    if: >-
+      !cancelled() && needs.smoke.result == 'success'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RUNTIME_ID: ${{ needs.prepare.outputs.runtime-id }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      # Runtimes are separate prereleases, so they are never "latest" and are shared
+      # by all app releases with the same runtime id.
+      - name: Publish runtime
+        if: needs.prepare.outputs.runtime-exists == 'false'
+        run: >-
+          gh release create "runtime-$RUNTIME_ID" dist/runtime-"$RUNTIME_ID"-*
+          --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA"
+          --prerelease --latest=false
+          --title "Runtime $RUNTIME_ID"
+          --notes "Python runtime for FunPay Hub releases. Installed automatically, do not download manually."
+
+      - name: Download published runtime info
+        if: needs.prepare.outputs.runtime-exists == 'true'
+        run: >-
+          gh release download "runtime-$RUNTIME_ID"
+          --repo "$GITHUB_REPOSITORY" --dir dist --pattern 'runtime-*.json'
+
+      - name: Manifest
+        run: >-
+          $BUILD manifest
+          --runtime-json dist/runtime-"$RUNTIME_ID"-*.json
+          --app-zip dist/*-"$VERSION".zip
+          --runtime-base-url "https://github.com/$GITHUB_REPOSITORY/releases/download/runtime-$RUNTIME_ID"
+          --app-base-url "https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME"
+          --out dist/manifest.json
+
+      - name: Publish release
+        run: >-
+          gh release create "$GITHUB_REF_NAME" dist/*-"$VERSION".zip dist/manifest.json
+          --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes --title "$GITHUB_REF_NAME"
