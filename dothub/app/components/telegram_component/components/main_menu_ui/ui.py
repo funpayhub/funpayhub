@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from hubplatform.i18n import I18nString
 from hubplatform.telegram.ui import (
+    Button,
     MenuSpec,
     UIRegistry,
     MenuContext,
@@ -19,6 +20,7 @@ from hubplatform.app.components.telegram.ui.finalizers import StripAndNavigation
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 from hubplatform.app.components.telegram.expressions.builders import ExpressionsListMenuContext
 
+from ..updates_ui import CheckForUpdates
 from ..components_ui import ComponentsUIMenuIDs
 from ..notifications_ui.ui import NotificationsMenuContext
 from ..notifications_ui.menu_ids import NotificationsUIMenuIDs
@@ -27,6 +29,7 @@ from ..notifications_ui.menu_ids import NotificationsUIMenuIDs
 if TYPE_CHECKING:
     from aiogram import Bot
     from hubplatform.app import HubPlatformApp
+    from hubplatform.telegram.callback_data.hash import HashService
 
 
 APP_NAME = '.hub'
@@ -83,10 +86,19 @@ async def build_main_menu(
     ctx: MenuBuildContext[MenuContext],
     app: HubPlatformApp,
     telegram_bot: Bot,
+    hash_service: HashService,
 ) -> MenuBuildingSpec:
     menu = MenuSpec()
+    check_for_updates_button = Button(
+        button_id='check_for_updates',
+        text='🔄 Проверить обновления',
+        callback_data=CheckForUpdates(),
+    )
     menu.header_text = (
-        f'<table compact><tr><td align="center"><b>💠 {APP_NAME} {app.version}</b></td></tr></table>'
+        '<table compact>'
+        f'<tr><td align="center"><b>💠 {APP_NAME} {app.version}</b></td></tr>'
+        f'<tr><td align="center">{check_for_updates_button.to_html(hash_service)}</td></tr>'
+        '</table>'
     )
 
     body = ''
