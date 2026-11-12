@@ -215,7 +215,7 @@ requires-dist = [
     { name = "aiosqlite", specifier = "~=0.22.1" },
     { name = "eventry", specifier = "~=0.7.2" },
     { name = "funpaybotengine", specifier = "==0.10.0rc5" },
-    { name = "hubplatform", git = "https://github.com/funpayhub/platform?subdirectory=packages%2Fhubplatform&rev=b20f012a09c9de871c6b88fd748bc8b386094781" },
+    { name = "hubplatform", git = "https://github.com/funpayhub/platform?subdirectory=packages%2Fhubplatform&rev=75ec04da0c9495b20c332e2091e7ef5c517db51b" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.17.0" },
     { name = "packaging", specifier = "~=25.0" },
     { name = "pydata-sphinx-theme", marker = "extra == 'docs'", specifier = ">=0.16.1" },
@@ -306,7 +306,7 @@ wheels = [
 [[package]]
 name = "hubplatform"
 version = "0.1.0"
-source = { git = "https://github.com/funpayhub/platform?subdirectory=packages%2Fhubplatform&rev=b20f012a09c9de871c6b88fd748bc8b386094781#b20f012a09c9de871c6b88fd748bc8b386094781" }
+source = { git = "https://github.com/funpayhub/platform?subdirectory=packages%2Fhubplatform&rev=75ec04da0c9495b20c332e2091e7ef5c517db51b#75ec04da0c9495b20c332e2091e7ef5c517db51b" }
 dependencies = [
     { name = "aiogram" },
     { name = "aiohttp" },
