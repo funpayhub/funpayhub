@@ -48,8 +48,8 @@ if [ ! -x "$PYTHON_BIN" ]; then
     exit 1
 fi
 
-if [ -f "releases/current/launcher.py" ]; then
-    exec "$PYTHON_BIN" releases/current/launcher.py
+if [ -f "releases/state.json" ] && [ -f "launcher.py" ]; then
+    exec "$PYTHON_BIN" launcher.py "$@"
 fi
 
 echo ""

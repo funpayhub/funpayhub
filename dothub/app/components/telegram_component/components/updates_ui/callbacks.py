@@ -8,5 +8,9 @@ class CheckForUpdates(CallbackData, identifier='app.updates.check'):
     pass
 
 
-class DownloadUpdate(SessionCallbackData, identifier='app.updates.download'):
+class InstallUpdate(SessionCallbackData, identifier='app.updates.install'):
+    version: str
+
+
+class ApplyUpdate(SessionCallbackData, identifier='app.updates.apply'):
     version: str

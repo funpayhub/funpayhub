@@ -1,15 +1,9 @@
 from __future__ import annotations
 
 
-__all__ = ['UPDATES_DIR', 'release_url', 'releases_url']
-
-from pathlib import Path
+__all__ = ['release_url', 'releases_url']
 
 from packaging.version import Version
-
-
-UPDATES_DIR = Path('storage/updates')
-"""Directory downloaded updates are saved to."""
 
 
 def releases_url(repo_url: str) -> str:

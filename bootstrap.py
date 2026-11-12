@@ -1,207 +1,144 @@
+"""First installation of FunPay Hub.
+
+Installs the sources this file is located in as the first release and starts the launcher:
+
+1. copies the sources into ``releases/<version>``;
+2. creates ``releases/<version>/.venv`` with ``uv sync``;
+3. writes the ``.installed`` marker and ``releases/state.json``;
+4. copies ``launcher.py`` into the working directory (if the sources are elsewhere);
+5. runs the launcher with the given arguments.
+
+Later releases are installed by the app itself. If a release is already installed,
+only starts the launcher.
+
+Usage: ``python bootstrap.py [launcher args...]`` from the working directory.
+Requires ``uv`` (``$HUBPLATFORM_UV_BIN`` or ``PATH``).
+"""
+
 from __future__ import annotations
 
 import os
 import sys
-
-
-IS_WINDOWS = os.name == 'nt'
-
-
-def exception_hook(exc_type, exc, tb) -> None:
-    sys.__excepthook__(exc_type, exc, tb)
-    if IS_WINDOWS:
-        try:
-            input('\nPress Enter to exit...')
-        except EOFError:
-            pass
-
-
-sys.excepthook = exception_hook
-
-
-import uuid
 import shutil
-import logging
+import secrets
+import tomllib
 import subprocess
 from pathlib import Path
-from logging.config import dictConfig
+from datetime import UTC, datetime
 
-
-# ---------------------------------------------
-# |               Logging setup               |
-# ---------------------------------------------
-os.makedirs('logs', exist_ok=True)
-
-dictConfig(
-    config={
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'file_formatter': {
-                'fmt': '%(created).3f %(name)s %(taskName)s %(filename)s[%(lineno)d][%(levelno)s] '
-                '%(message)s',
-            },
-            'console_formatter': {
-                'fmt': '[%(asctime)s] [%(levelname)s:9] %(message)s',
-                'datefmt': '%H:%M:%S',
-            },
-        },
-        'handlers': {
-            'console': {
-                'formatter': 'console_formatter',
-                'level': logging.DEBUG,
-                'class': 'logging.StreamHandler',
-                'stream': sys.stdout,
-            },
-            'file': {
-                'class': 'logging.FileHandler',
-                'filename': os.path.join('logs', 'bootstrap.log'),
-                'encoding': 'utf-8',
-                'mode': 'w',
-                'formatter': 'file_formatter',
-                'level': logging.DEBUG,
-            },
-        },
-        'loggers': {None: {'level': logging.DEBUG, 'handlers': ['console', 'file']}},
-    },
+import launcher
+from launcher import (
+    SCHEMA,
+    VENV_DIR,
+    MARKER_FILE,
+    TEMP_PREFIX,
+    State,
+    logger,
+    setup_logging,
+    write_json_atomic,
+    replace_with_retry,
 )
 
-logger = logging.getLogger()
+
+SOURCE_DIR = Path(__file__).resolve().parent
+
+EXCLUDE = shutil.ignore_patterns(
+    # VCS / tooling
+    '.git',
+    '.github',
+    '.idea',
+    '.vscode',
+    '.agents',
+    '.mypy_cache',
+    '.ruff_cache',
+    '.pytest_cache',
+    '__pycache__',
+    '*.log',
+    # environments and working dir data (if the sources are the working dir)
+    '.venv',
+    'venv',
+    'env',
+    'releases',
+    'backups',
+    'storage',
+    'config',
+    'logs',
+    'plugins',
+)
 
 
-# ---------------------------------------------
-# |                  Consts                   |
-# ---------------------------------------------
-UNIQUE = uuid.uuid4().hex
-RELEASES_PATH = Path('releases').absolute()
-TEMP_BOOTSTRAP_PATH = RELEASES_PATH / UNIQUE
-BOOTSTRAP_PATH = RELEASES_PATH / 'bootstrap'
-LAUNCHER_PATH = BOOTSTRAP_PATH / 'launcher.py'
-CURRENT_RELEASE_PATH = RELEASES_PATH / 'current'
-LOCALES_PATH = CURRENT_RELEASE_PATH / 'locales'
+def find_uv() -> str:
+    uv = os.environ.get('HUBPLATFORM_UV_BIN') or shutil.which('uv')
+    if uv is None:
+        raise FileNotFoundError('uv is not installed: https://docs.astral.sh/uv/')
+    return uv
 
 
-TO_MOVE = {
-    'funpayhub': True,
-    'locales': True,
-    'app.py': False,
-    'launcher.py': False,
-    'pyproject.toml': False,
-}
+def install(releases_dir: Path) -> None:
+    with (SOURCE_DIR / 'pyproject.toml').open('rb') as f:
+        version = str(tomllib.load(f)['project']['version'])
 
-
-def exit(code: int) -> None:
-    if IS_WINDOWS and sys.stdin.isatty():
+    target = releases_dir / version
+    if (target / MARKER_FILE).is_file():
+        logger.info('Release %s is already installed.', version)
+    else:
+        logger.info('Installing release %s into %s.', version, target)
+        releases_dir.mkdir(parents=True, exist_ok=True)
+        temp = releases_dir / f'{TEMP_PREFIX}{version}-{secrets.token_hex(8)}'
         try:
-            input('\nPress Enter to exit...')
-        except EOFError:
-            pass
-    sys.exit(code)
+            shutil.copytree(SOURCE_DIR, temp, ignore=EXCLUDE)
+            if target.exists():
+                shutil.rmtree(target)
+            replace_with_retry(temp, target)
+        finally:
+            shutil.rmtree(temp, ignore_errors=True)
+
+        lock_args = ['--frozen'] if (target / 'uv.lock').is_file() else []
+        env = os.environ | {'UV_PROJECT_ENVIRONMENT': str(target / VENV_DIR)}
+        env.pop('VIRTUAL_ENV', None)
+        subprocess.run(
+            [find_uv(), 'sync', '--no-dev', *lock_args],
+            cwd=target,
+            env=env,
+            check=True,
+        )
+
+        write_json_atomic(
+            target / MARKER_FILE,
+            {
+                'schema': SCHEMA,
+                'version': version,
+                'sha256': None,
+                'installed_at': datetime.now(UTC).isoformat(),
+            },
+        )
+
+    state_file = releases_dir / launcher.STATE_FILE
+    if not state_file.exists():
+        write_json_atomic(state_file, State(current=version).to_json())
+    logger.info('Release %s installed.', version)
 
 
-def self_check():
-    for name, is_dir in TO_MOVE.items():
-        if not os.path.exists(name):
-            logger.critical(f'Cannot find {name!r}. Abort.')
-            exit(1)
-        if os.path.isdir(name) != is_dir:
-            logger.critical(
-                f'{name!r} must be a file. Abort.'
-                if not is_dir
-                else f'{name!r} must be a directory.',
-            )
-            exit(1)
+def main() -> int:
+    workdir = Path(os.environ.get('HUBPLATFORM_WORKDIR') or os.getcwd()).resolve()
+    releases_dir = Path(os.environ.get('HUBPLATFORM_RELEASES_DIR') or workdir / 'releases')
 
-
-def move_to_releases():
-    logger.info(f'Preparing temporary release directory: {TEMP_BOOTSTRAP_PATH}')
-
-    if TEMP_BOOTSTRAP_PATH.exists():
-        logger.critical(f'Temporary path {TEMP_BOOTSTRAP_PATH} already exists. Abort.')
-        exit(1)
-
+    os.chdir(workdir)
+    setup_logging(workdir / 'logs')
     try:
-        TEMP_BOOTSTRAP_PATH.mkdir(parents=True)
+        install(releases_dir.resolve())
     except Exception:
-        logger.critical(f'Cannot create temporary directory {TEMP_BOOTSTRAP_PATH}', exc_info=True)
-        exit(1)
+        logger.critical('Installation failed.', exc_info=True)
+        return 1
 
-    for name, is_dir in TO_MOVE.items():
-        src = Path(name)
-        dst = TEMP_BOOTSTRAP_PATH / name
+    installed_launcher = workdir / 'launcher.py'
+    if installed_launcher.resolve() != Path(launcher.__file__).resolve():
+        shutil.copy2(launcher.__file__, installed_launcher)
 
-        try:
-            if is_dir:
-                shutil.copytree(src, dst)
-            else:
-                shutil.copy2(src, dst)
-        except Exception:
-            logger.critical(f'Failed to copy {name} to temporary release.', exc_info=True)
-            shutil.rmtree(TEMP_BOOTSTRAP_PATH, ignore_errors=True)
-            exit(1)
-
-    backup = None
-    if BOOTSTRAP_PATH.exists():
-        backup = BOOTSTRAP_PATH.with_name('bootstrap_old')
-        logger.info('Backup current bootstrap before replacement.')
-        try:
-            if backup.exists():
-                shutil.rmtree(backup, ignore_errors=True)
-            os.replace(str(BOOTSTRAP_PATH), str(backup))
-        except Exception:
-            logger.critical('Failed to backup existing bootstrap.', exc_info=True)
-            shutil.rmtree(TEMP_BOOTSTRAP_PATH, ignore_errors=True)
-            exit(1)
-
-    try:
-        os.replace(str(TEMP_BOOTSTRAP_PATH), str(BOOTSTRAP_PATH))
-        logger.info('Bootstrap successfully updated.')
-    except Exception:
-        logger.critical('Failed to replace bootstrap with new release.', exc_info=True)
-        if BOOTSTRAP_PATH.exists():
-            shutil.rmtree(BOOTSTRAP_PATH, ignore_errors=True)
-        if backup is not None and backup.exists():
-            os.replace(str(backup), str(BOOTSTRAP_PATH))
-        exit(1)
-
-    if backup is not None and backup.exists():
-        shutil.rmtree(backup, ignore_errors=True)
-
-    return BOOTSTRAP_PATH
-
-
-def update_current_link():
-    temp_link = CURRENT_RELEASE_PATH.with_name('current_tmp')
-
-    if temp_link.exists() or temp_link.is_symlink():
-        temp_link.unlink(missing_ok=True)
-
-    try:
-        if IS_WINDOWS:
-            subprocess.run(
-                ['cmd', '/c', 'mklink', '/J', str(temp_link), str(BOOTSTRAP_PATH)],
-                check=True,
-                shell=True,
-            )
-        else:
-            os.symlink(BOOTSTRAP_PATH, temp_link)
-    except Exception:
-        logger.critical('Failed to create temporary current link.', exc_info=True)
-        exit(1)
-
-    try:
-        if CURRENT_RELEASE_PATH.exists() or CURRENT_RELEASE_PATH.is_symlink():
-            CURRENT_RELEASE_PATH.unlink()
-        os.replace(temp_link, CURRENT_RELEASE_PATH)
-        logger.info('Current link successfully updated.')
-    except Exception:
-        logger.critical('Failed to replace current link.', exc_info=True)
-        exit(1)
+    # `launcher.main` sets up logging again.
+    logger.handlers.clear()
+    return launcher.main(sys.argv[1:])
 
 
 if __name__ == '__main__':
-    self_check()
-    move_to_releases()
-    update_current_link()
-    logger.info('FunPay Hub successfully installed!')
-    exit(0)
+    sys.exit(main())
