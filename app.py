@@ -9,7 +9,8 @@ from pathlib import Path
 from pyconfigtree import MutableParameter
 from hubplatform.app import HubPlatformApp
 from hubplatform.i18n import global_translator
-from hubplatform.updates import UpdateResult, ReleaseInstaller, GitHubVersionsManager
+from hubplatform.runtime import LauncherEnvironment
+from hubplatform.updates import Releases, UpdateResult, ReleaseInstaller, GitHubVersionsManager
 from hubplatform.goods_source import global_sources_manager
 from hubplatform.logging.style import setup_logging
 from hubplatform.app.dispatching import ParameterValueChangedEvent
@@ -23,12 +24,7 @@ from dothub.app.components.telegram_component import TelegramComponent, Telegram
 
 setup_logging(global_translator())
 
-_app: HubPlatformApp | None = None
-
 REPO_URL = 'https://github.com/funpayhub/funpayhub'
-RELEASE_ASSET_NAME = 'funpayhub.zip'
-"""Release asset with the release archive (verified by its SHA-256 digest).
-Releases without it are installed from the GitHub source archive."""
 
 
 def read_version() -> str:
@@ -90,9 +86,14 @@ async def main() -> int:
 
     app.properties._hooks[ParameterHookTypes.PARAMETER_VALUE_CHANGED] = tmp
 
-    async with GitHubVersionsManager(REPO_URL, RELEASE_ASSET_NAME) as versions_manager:
+    async with GitHubVersionsManager(REPO_URL) as versions_manager:
         # None if the app was started without the launcher: updates are unavailable.
-        installer = ReleaseInstaller.from_launcher(versions_manager)
+        env = LauncherEnvironment()
+        installer = ReleaseInstaller(
+            versions_manager=versions_manager,
+            releases=Releases(path=env.releases_dir),
+            launcher_protocol=env.protocol,
+        )
         app.app_context.provide('App', 'versions_manager', versions_manager)
         app.app_context.provide('App', 'release_installer', installer)
         await app.setup()
