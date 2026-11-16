@@ -34,7 +34,7 @@ def read_version() -> str:
 
 def notify_update_result(installer: ReleaseInstaller, telegram: TelegramComponent) -> None:
     try:
-        result = installer.releases.pop_result()
+        result = installer.releases.pop_update_result()
     except Exception:
         logger.error('Unable to read update result.', exc_info=True)
         return

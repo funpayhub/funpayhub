@@ -1,20 +1,3 @@
-"""FunPay Hub launcher.
-
-Runs the current release, restarts it and switches releases. Uses only the standard library:
-it runs with any Python >= 3.12 and does not depend on the app or its virtual environment.
-
-The launcher is installed into the working directory once and is not updated together with
-the app. It talks to the app only through the launcher protocol (exit codes, environment
-variables and files in ``releases/``), described in ``hubplatform.runtime`` and
-``hubplatform.updates.releases``. Changes must stay compatible with installed launchers and
-apps, or bump ``LAUNCHER_PROTOCOL``.
-
-A newer launcher shipped with a release replaces this file after the release confirmed it
-starts; it takes effect on the next launcher start.
-
-Usage: ``python launcher.py [--safe] [app args...]`` from the working directory.
-"""
-
 from __future__ import annotations
 
 import os
@@ -58,9 +41,9 @@ STOP_TIMEOUT = 60
 DEFAULT_SNAPSHOT_DIRS = ('storage', 'config')
 """Working dir subdirectories saved before switching releases and restored on rollback."""
 
-STATE_FILE = 'state.json'
-STAGED_FILE = 'staged.json'
-RESULT_FILE = 'result.json'
+LAUNCHER_STATE_FILE = '.launcher_state'
+UPDATE_INFO_FILE = '.update_info'
+UPDATE_RESULT_FILE = '.update_result'
 HEALTH_FILE = '.health'
 MARKER_FILE = '.installed'
 VENV_DIR = '.venv'
@@ -71,9 +54,6 @@ IS_WINDOWS = os.name == 'nt'
 logger = logging.getLogger('launcher')
 
 
-# ---------------------------------------------
-# |                   Files                   |
-# ---------------------------------------------
 def read_json(path: Path) -> Any:
     try:
         return json.loads(path.read_text(encoding='utf-8'))
@@ -82,7 +62,6 @@ def read_json(path: Path) -> Any:
 
 
 def replace_with_retry(src: Path, dst: Path, attempts: int = 10) -> None:
-    """``os.replace`` that tolerates short-living locks of antivirus / indexers on Windows."""
     for attempt in range(attempts):
         try:
             os.replace(src, dst)
@@ -107,11 +86,11 @@ def venv_python(venv: Path) -> Path:
 
 
 def release_entrypoint(release_dir: Path) -> str:
-    """``tool.hubplatform.release.entrypoint`` from the release ``pyproject.toml``."""
     with (release_dir / 'pyproject.toml').open('rb') as f:
         data = tomllib.load(f)
-    release = data.get('tool', {}).get('hubplatform', {}).get('release', {})
-    return str(release.get('entrypoint', 'app.py'))
+    return str(
+        data.get('tool', {}).get('hubplatform', {}).get('release', {}).get('entryporint', 'app.py')
+    )
 
 
 def remove_tree(path: Path) -> None:
@@ -122,30 +101,15 @@ def remove_tree(path: Path) -> None:
 
 
 @dataclass
-class State:
+class LauncherState:
+    schema: int = field(init=False, default=SCHEMA)
     current: str
     previous: str | None = None
     pending: bool = False
     attempts: int = 0
     failed: list[str] = field(default_factory=list)
 
-    @classmethod
-    def from_json(cls, data: Any) -> State:
-        return cls(
-            current=str(data['current']),
-            previous=data.get('previous') or None,
-            pending=bool(data.get('pending', False)),
-            attempts=int(data.get('attempts', 0)),
-            failed=[str(i) for i in data.get('failed', [])],
-        )
 
-    def to_json(self) -> dict[str, Any]:
-        return {'schema': SCHEMA, **asdict(self)}
-
-
-# ---------------------------------------------
-# |                 Launcher                  |
-# ---------------------------------------------
 class Launcher:
     def __init__(
         self,
@@ -162,7 +126,6 @@ class Launcher:
         self.safe = safe
         self.snapshot_dirs = snapshot_dirs
 
-    # ---------- paths / files ----------
     def release_dir(self, version: str) -> Path:
         return self.releases_dir / version
 
@@ -173,14 +136,14 @@ class Launcher:
     def health_file(self) -> Path:
         return self.releases_dir / HEALTH_FILE
 
-    def read_state(self) -> State | None:
-        data = read_json(self.releases_dir / STATE_FILE)
-        return State.from_json(data) if data is not None else None
+    def read_state(self) -> LauncherState | None:
+        data = read_json(self.releases_dir / LAUNCHER_STATE_FILE)
+        return None if data is None else LauncherState(**data)
 
-    def write_state(self, state: State) -> None:
-        write_json_atomic(self.releases_dir / STATE_FILE, state.to_json())
+    def write_state(self, state: LauncherState) -> None:
+        write_json_atomic(self.releases_dir / LAUNCHER_STATE_FILE, asdict(state))
 
-    def write_result(
+    def write_update_result(
         self,
         status: str,
         version: str,
@@ -188,7 +151,7 @@ class Launcher:
         message: str | None = None,
     ) -> None:
         write_json_atomic(
-            self.releases_dir / RESULT_FILE,
+            self.releases_dir / UPDATE_RESULT_FILE,
             {
                 'schema': SCHEMA,
                 'status': status,
@@ -201,7 +164,7 @@ class Launcher:
     # ---------- main loop ----------
     def run(self) -> int:
         while True:
-            self.apply_staged()
+            self.apply_update()
 
             state = self.read_state()
             if state is None:
@@ -250,12 +213,7 @@ class Launcher:
                 logger.error('App exited with code %d.', code)
                 return code
 
-    def start(self, state: State) -> tuple[int | None, bool]:
-        """Run the current release until it exits.
-
-        :return: exit code (``None`` if it did not start in time and was killed)
-            and whether it confirmed it started (only checked for pending releases).
-        """
+    def start(self, state: LauncherState) -> tuple[int | None, bool]:
         release_dir = self.release_dir(state.current)
         python = venv_python(release_dir / VENV_DIR)
         entrypoint = release_dir / release_entrypoint(release_dir)
@@ -326,14 +284,9 @@ class Launcher:
 
     @staticmethod
     def stop(process: subprocess.Popen[bytes]) -> int:
-        """Stop the app. On Ctrl+C the app received it too, so first just wait for it."""
-        # A second Ctrl+C or a timeout terminates the app.
-        # (No `except (A, B)`: the formatter would drop the parentheses, Python < 3.14 fails.)
         try:
             return process.wait(timeout=STOP_TIMEOUT)
-        except subprocess.TimeoutExpired:
-            pass
-        except KeyboardInterrupt:
+        except (subprocess.TimeoutExpired, KeyboardInterrupt):
             pass
         process.terminate()
         try:
@@ -342,20 +295,18 @@ class Launcher:
             process.kill()
             return process.wait()
 
-    # ---------- switching releases ----------
-    def apply_staged(self) -> None:
-        """Switch to the release the app staged before exiting with ``UPDATE``."""
-        staged_file = self.releases_dir / STAGED_FILE
+    def apply_update(self) -> None:
+        update_info_file = self.releases_dir / UPDATE_INFO_FILE
         try:
-            data = read_json(staged_file)
+            update_info = read_json(update_info_file)
         except ValueError:
-            logger.error('Invalid %s, ignoring it.', staged_file, exc_info=True)
-            staged_file.unlink(missing_ok=True)
+            logger.error('Invalid %s, ignoring it.', update_info_file, exc_info=True)
+            update_info_file.unlink(missing_ok=True)
             return
-        if data is None:
+        if update_info is None:
             return
 
-        version = str(data.get('version', ''))
+        version = str(update_info.get('version', ''))
         state = self.read_state()
         previous = state.current if state is not None else None
         try:
@@ -368,25 +319,25 @@ class Launcher:
                 return
 
             logger.info('Switching from release %s to %s.', state.current, version)
-            self.snapshot(state.current)
+            self.snapshot_user_data(state.current)
             self.write_state(
-                State(
+                LauncherState(
                     current=version,
                     previous=state.current,
                     pending=True,
                     failed=[i for i in state.failed if i != version],
                 ),
             )
-            self.write_result('updated', version, previous)
+            self.write_update_result('updated', version, previous)
         except Exception as e:
             logger.error('Unable to switch to release %r.', version, exc_info=True)
-            self.write_result('failed', version, previous, str(e))
+            self.write_update_result('failed', version, previous, str(e))
         finally:
-            staged_file.unlink(missing_ok=True)
+            update_info_file.unlink(missing_ok=True)
 
         self.remove_old_releases()
 
-    def confirm(self, state: State) -> None:
+    def confirm(self, state: LauncherState) -> None:
         logger.info('Release %s started successfully.', state.current)
         state.pending = False
         state.attempts = 0
@@ -396,7 +347,7 @@ class Launcher:
         except Exception:
             logger.error('Unable to update the launcher.', exc_info=True)
 
-    def rollback(self, state: State) -> bool:
+    def rollback(self, state: LauncherState) -> bool:
         failed, previous = state.current, state.previous
         if previous is None or not self.is_installed(previous):
             logger.critical(
@@ -407,27 +358,21 @@ class Launcher:
 
         logger.warning('Rolling back from release %s to %s.', failed, previous)
         try:
-            self.restore(previous, failed)
+            self.restore_user_data(previous, failed)
         except Exception:
             logger.critical('Unable to restore app data.', exc_info=True)
             return False
 
         self.write_state(
-            State(
+            LauncherState(
                 current=previous,
                 failed=[*(i for i in state.failed if i != failed), failed],
             ),
         )
-        self.write_result(
-            'rolled_back',
-            failed,
-            previous,
-            f'Release {failed} failed to start {state.attempts} times.',
-        )
+        self.write_update_result('rolled_back', failed, previous, f'Release {failed} failed to start {state.attempts} times.')
         return True
 
     def remove_old_releases(self) -> None:
-        """Remove installed releases except the current and the previous ones."""
         state = self.read_state()
         if state is None:
             return
@@ -441,8 +386,7 @@ class Launcher:
             except OSError:
                 logger.warning('Unable to remove %s.', i, exc_info=True)
 
-    # ---------- app data ----------
-    def snapshot(self, version: str) -> None:
+    def snapshot_user_data(self, version: str) -> None:
         """Copy app data to ``backups/<version>``, replacing older backups."""
         self.backups_dir.mkdir(parents=True, exist_ok=True)
         temp = self.backups_dir / f'{TEMP_PREFIX}{secrets.token_hex(8)}'
@@ -461,11 +405,7 @@ class Launcher:
                 shutil.rmtree(temp, ignore_errors=True)
         logger.info('App data saved to %s.', self.backups_dir / version)
 
-    def restore(self, version: str, failed: str) -> None:
-        """Restore app data saved before switching from ``version``.
-
-        Data of the ``failed`` release is moved to ``backups/<failed>.failed``.
-        """
+    def restore_user_data(self, version: str, failed: str) -> None:
         backup = self.backups_dir / version
         if not backup.is_dir():
             logger.warning('No app data backup for release %s, keeping current data.', version)
@@ -482,9 +422,7 @@ class Launcher:
                 shutil.copytree(backup / name, current, symlinks=True)
         logger.info('App data restored from %s.', backup)
 
-    # ---------- self update ----------
     def update_self(self, release_dir: Path) -> None:
-        """Replace this file with a newer launcher shipped with the release."""
         source = release_dir / 'launcher.py'
         target = Path(__file__).resolve()
         if not source.is_file() or self.releases_dir in target.parents:
@@ -512,9 +450,6 @@ class Launcher:
         )
 
 
-# ---------------------------------------------
-# |                   Entry                   |
-# ---------------------------------------------
 def setup_logging(logs_dir: Path) -> None:
     logs_dir.mkdir(parents=True, exist_ok=True)
     console = logging.StreamHandler(sys.stdout)

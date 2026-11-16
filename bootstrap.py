@@ -23,6 +23,7 @@ import shutil
 import secrets
 import tomllib
 import subprocess
+from dataclasses import asdict
 from pathlib import Path
 from datetime import UTC, datetime
 
@@ -32,7 +33,7 @@ from launcher import (
     VENV_DIR,
     MARKER_FILE,
     TEMP_PREFIX,
-    State,
+    LauncherState,
     logger,
     setup_logging,
     write_json_atomic,
@@ -113,9 +114,9 @@ def install(releases_dir: Path) -> None:
             },
         )
 
-    state_file = releases_dir / launcher.STATE_FILE
+    state_file = releases_dir / launcher.LAUNCHER_STATE_FILE
     if not state_file.exists():
-        write_json_atomic(state_file, State(current=version).to_json())
+        write_json_atomic(state_file, asdict(LauncherState(current=version)))
     logger.info('Release %s installed.', version)
 
 

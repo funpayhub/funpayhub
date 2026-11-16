@@ -1,6 +1,6 @@
 [project]
 name = "dothub"
-version = "0.6.0"
+version = "0.5.22"
 description = "FunPay bot."
 requires-python = ">=3.15.2"
 
@@ -116,7 +116,7 @@ launcher-protocol = 1
 
 [tool.uv.sources.hubplatform]
 git = "https://github.com/funpayhub/platform"
-rev = "ce3b44c19fcebe2c675cff880b3ff9b83f310f30"
+rev = "ac1571e48ec77240413125dd303fe4cffa3fc7ca"
 subdirectory = "packages/hubplatform"
 
 
