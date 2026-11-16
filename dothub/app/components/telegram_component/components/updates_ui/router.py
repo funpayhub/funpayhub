@@ -8,6 +8,7 @@ from hubplatform.runtime import ExitCodes
 from hubplatform.telegram import Router
 from hubplatform.updates.exceptions import VersionManagerError
 from hubplatform.telegram.ui.session import MenuFrame
+from packaging.version import Version
 
 from dothub.loggers import telegram_component as logger
 
@@ -113,7 +114,7 @@ async def apply_update(
         return
 
     try:
-        release_installer.stage(cbd.version)
+        release_installer.releases.mark_to_update(Version(cbd.version))
     except Exception:
         logger.error('Unable to stage update %s.', cbd.version, exc_info=True)
         await q.answer('❌ Обновление не установлено, установите его заново', show_alert=True)
