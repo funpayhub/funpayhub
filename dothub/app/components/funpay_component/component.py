@@ -154,7 +154,7 @@ class FunPayComponent(HubPlatformAppComponent):
         ctx.provide(name, 'funpay_component_dispatcher', self._component_dispatcher)
         ctx.provide(name, 'offers_raiser', self._offers_raiser)
 
-    async def run(self) -> None:
+    async def _run(self) -> None:
         if self._state is not FunPayComponentState.READY:
             logger.warning(I18nString('Cannot start FunPay component: not ready.'))
             return
@@ -166,6 +166,12 @@ class FunPayComponent(HubPlatformAppComponent):
         finally:
             await self.propagate_event(ComponentStopEvent())
             self._state = FunPayComponentState.READY
+
+    async def run(self) -> None:
+        try:
+            await self._run()
+        finally:
+            await self._first_response_cache.close()
 
     def stop(self) -> None:
         self._bot._stop_event.set()
