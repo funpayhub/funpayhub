@@ -89,7 +89,10 @@ def release_entrypoint(release_dir: Path) -> str:
     with (release_dir / 'pyproject.toml').open('rb') as f:
         data = tomllib.load(f)
     return str(
-        data.get('tool', {}).get('hubplatform', {}).get('release', {}).get('entryporint', 'app.py')
+        data.get('tool', {})
+        .get('hubplatform', {})
+        .get('release', {})
+        .get('entryporint', 'app.py'),
     )
 
 
@@ -100,9 +103,9 @@ def remove_tree(path: Path) -> None:
         shutil.rmtree(path)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class LauncherState:
-    schema: int = field(init=False, default=SCHEMA)
+    schema: int = field(default=SCHEMA)
     current: str
     previous: str | None = None
     pending: bool = False
@@ -286,7 +289,7 @@ class Launcher:
     def stop(process: subprocess.Popen[bytes]) -> int:
         try:
             return process.wait(timeout=STOP_TIMEOUT)
-        except (subprocess.TimeoutExpired, KeyboardInterrupt):
+        except subprocess.TimeoutExpired, KeyboardInterrupt:
             pass
         process.terminate()
         try:
@@ -369,7 +372,12 @@ class Launcher:
                 failed=[*(i for i in state.failed if i != failed), failed],
             ),
         )
-        self.write_update_result('rolled_back', failed, previous, f'Release {failed} failed to start {state.attempts} times.')
+        self.write_update_result(
+            'rolled_back',
+            failed,
+            previous,
+            f'Release {failed} failed to start {state.attempts} times.',
+        )
         return True
 
     def remove_old_releases(self) -> None:
