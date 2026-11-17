@@ -32,7 +32,10 @@ from .components.notifications_ui import (
 class TelegramComponent(BaseTelegramComponent):
     def __init__(self, properties: TelegramProperties):
         telegram_token = os.environ.get('TELEGRAM_TOKEN', properties.bot.token.value)
-        super().__init__(token=telegram_token)
+        super().__init__(
+            token=telegram_token,
+            proxy=properties.bot.proxy.value or None,
+        )
         self._properties = properties
         self.dispatcher.include_routers(
             commands_router,
