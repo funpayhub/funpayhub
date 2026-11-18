@@ -22,3 +22,8 @@ uv.lock
 *.tmp
 
 /plugins/
+
+/releases/
+/backups/
+/logs/
+launcher.py.old

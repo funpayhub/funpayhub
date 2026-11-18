@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import sys
 import html
 import random
 from typing import TYPE_CHECKING
 
 from hubplatform.i18n import I18nString
+from hubplatform.runtime import ExitCodes
 from hubplatform.telegram.ui import (
     Button,
     MenuSpec,
@@ -15,11 +17,13 @@ from hubplatform.telegram.ui import (
     KeyboardBlockSpec,
 )
 from hubplatform.app.components.telegram.menu_ids import MenuIDs as PlatformMenuIDs
+from hubplatform.app.components.telegram.ui.widgets import confirmable_button
 from hubplatform.app.components.telegram.ui.callbacks import OpenMenu
 from hubplatform.app.components.telegram.ui.finalizers import StripAndNavigationFinalizer
 from hubplatform.app.components.telegram.properties.builders import NodeMenuContext
 from hubplatform.app.components.telegram.expressions.builders import ExpressionsListMenuContext
 
+from .callbacks import StopApp
 from ..updates_ui import CheckForUpdates
 from ..components_ui import ComponentsUIMenuIDs
 from ..notifications_ui.ui import NotificationsMenuContext
@@ -78,6 +82,41 @@ async def _username(bot: Bot, user_id: int | None) -> str:
     return f'@{html.escape(chat.username)}' if chat.username else '—'
 
 
+def is_safe_mode() -> bool:
+    """Whether the launcher started the app in safe mode."""
+    return '--safe' in sys.argv
+
+
+def _power_buttons(ctx: MenuContext) -> list[Button]:
+    """Shutdown, restart and safe / normal restart buttons (with confirmations)."""
+    if is_safe_mode():
+        mode_id, mode_text, mode_code = (
+            'restart_normal',
+            '🔓 Норм. режим',
+            ExitCodes.RESTART_NORMAL,
+        )
+    else:
+        mode_id, mode_text, mode_code = 'restart_safe', '🛡 Безоп. режим', ExitCodes.RESTART_SAFE
+
+    buttons = [
+        ('shutdown', '🛑 Выкл.', ExitCodes.SHUTDOWN, 'danger'),
+        ('restart', '🔄 Перезапуск', ExitCodes.RESTART, None),
+        (mode_id, mode_text, mode_code, None),
+    ]
+    return [
+        button
+        for button_id, text, exit_code, style in buttons
+        for button in confirmable_button(
+            id=f'app:{button_id}',
+            ctx=ctx,
+            text=text,
+            callback_data=StopApp(exit_code=exit_code),
+            style=style,
+            cancel_button_text='❌',
+        )
+    ]
+
+
 registry = UIRegistry()
 
 
@@ -94,10 +133,12 @@ async def build_main_menu(
         text='🔄 Проверить обновления',
         callback_data=CheckForUpdates(),
     )
+    power_buttons = ' '.join(i.to_html(hash_service) for i in _power_buttons(ctx.context))
     menu.header_text = (
         '<table compact>'
         f'<tr><td align="center"><b>💠 {APP_NAME} {app.version}</b></td></tr>'
         f'<tr><td align="center">{check_for_updates_button.to_html(hash_service)}</td></tr>'
+        f'<tr><td align="center">{power_buttons}</td></tr>'
         '</table>'
     )
 

@@ -18,7 +18,10 @@ from .components.updates_ui import (
     router as updates_router,
     registry as updates_registry,
 )
-from .components.main_menu_ui import registry as main_menu_ui_registry
+from .components.main_menu_ui import (
+    router as main_menu_ui_router,
+    registry as main_menu_ui_registry,
+)
 from .components.components_ui import registry as components_ui_registry
 from .components.notifications_ui import (
     router as notifications_ui_router,
@@ -29,10 +32,14 @@ from .components.notifications_ui import (
 class TelegramComponent(BaseTelegramComponent):
     def __init__(self, properties: TelegramProperties):
         telegram_token = os.environ.get('TELEGRAM_TOKEN', properties.bot.token.value)
-        super().__init__(token=telegram_token)
+        super().__init__(
+            token=telegram_token,
+            proxy=properties.bot.proxy.value or None,
+        )
         self._properties = properties
         self.dispatcher.include_routers(
             commands_router,
+            main_menu_ui_router,
             notifications_ui_router,
             updates_router,
         )

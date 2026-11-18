@@ -111,7 +111,7 @@ async def command_filter(
 
     if event.message.from_me and not node.react_on_me.value:
         return False
-    if not event.message.from_me and not node.react_on_others:
+    if not event.message.from_me and not node.react_on_others.value:
         return False
     if not node.reply.value:
         return False

@@ -1,13 +1,13 @@
 [project]
 name = "dothub"
-version = "0.5.22"
+version = "0.6.1"
 description = "FunPay bot."
 requires-python = ">=3.15.2"
 
 dependencies = [
     "aiosqlite~=0.22.1",
     "eventry~=0.7.2",
-    "funpaybotengine==0.10.0rc5",
+    "funpaybotengine==0.10.0rc7",
     "hubplatform",
     "packaging~=25.0",
 ]
@@ -108,9 +108,15 @@ select = [
 fphlib = ["funpayhub.lib.*"]
 fphapp = ["funpayhub.app.*"]
 
+[tool.hubplatform.release]
+# Read by the launcher and the release installer (see hubplatform.updates.releases).
+entrypoint = "app.py"
+launcher-protocol = 1
+
+
 [tool.uv.sources.hubplatform]
 git = "https://github.com/funpayhub/platform"
-rev = "75ec04da0c9495b20c332e2091e7ef5c517db51b"
+rev = "0e11b3e3f61e5196202a5d06b1aaaa40e46a98ea"
 subdirectory = "packages/hubplatform"
 
 
