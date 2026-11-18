@@ -13,6 +13,7 @@ from hubplatform.telegram.ui import MenuContext, MenuEnvironment, MenuDeliveryRe
 from hubplatform.app.components.telegram import TelegramComponent as BaseTelegramComponent
 
 from .properties import TelegramProperties
+from .middlewares import AccessControlMiddleware
 from .components.commands import router as commands_router
 from .components.updates_ui import (
     router as updates_router,
@@ -37,6 +38,11 @@ class TelegramComponent(BaseTelegramComponent):
             proxy=properties.bot.proxy.value or None,
         )
         self._properties = properties
+
+        access_control_mdw = AccessControlMiddleware(properties)
+        self.dispatcher.message.outer_middleware._middlewares.insert(0, access_control_mdw)
+        self.dispatcher.callback_query.outer_middleware._middlewares.insert(0, access_control_mdw)
+
         self.dispatcher.include_routers(
             commands_router,
             main_menu_ui_router,
