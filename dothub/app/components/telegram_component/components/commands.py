@@ -19,4 +19,3 @@ async def send_properties_menu(m: Message, telegram_ui_manager: UIManager) -> No
         context=MenuContext(),
         environment=m,
     )
-    print(m.chat.id)
