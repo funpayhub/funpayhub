@@ -116,7 +116,7 @@ launcher-protocol = 1
 
 [tool.uv.sources.hubplatform]
 git = "https://github.com/funpayhub/platform"
-rev = "0e11b3e3f61e5196202a5d06b1aaaa40e46a98ea"
+rev = "a7723c064f72442776a40b6c0fcc72a6dba31d1b"
 subdirectory = "packages/hubplatform"
 
 

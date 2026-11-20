@@ -124,7 +124,7 @@ async def run_command(
     command_node: CommandNode,
     expressions_manager: ExpressionsManager,
 ):
-    result = await expressions_manager.format_string(
+    result = await expressions_manager.evaluate(
         string=command_node.response_text.value,
         context=FunPayMessageContext(
             initiator_id=str(event.message.sender_id),
@@ -140,8 +140,8 @@ async def run_command(
 
     try:
         event['app:funpay_component:auto_response:sent_response'] = await event.message.reply(
-            result.result_text,
-        )
+            result.text,
+        )  # todo: send by part
     except Exception as e:
         event['app:funpay_component:auto_response:error'] = e
         # todo: logging, notification
@@ -200,7 +200,7 @@ async def send_first_response(
         return
 
     try:
-        result = await expressions_manager.format_string(
+        result = await expressions_manager.evaluate(
             string=text,
             context=FunPayMessageContext(
                 initiator_id=str(message.sender_id),
@@ -210,7 +210,7 @@ async def send_first_response(
                 funpay_message_obj=message,
             ),
         )
-        sent = await message.reply(result.result_text)
+        sent = await message.reply(result.text)  # todo: send by part
     except Exception:
         logger.error('Failed to send first response to chat %s.', chat_id, exc_info=True)
         return

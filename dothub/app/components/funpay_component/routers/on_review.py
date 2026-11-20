@@ -142,13 +142,13 @@ async def reply_on_review_in_chat(
     future: Future = event['app:funpay_component:review_reply:in_chat:result']
     order_page = await event.get_order_page()
 
-    result_text = await expressions_manager.format_string(
+    result = await expressions_manager.evaluate(
         string=review_node.chat_reply_text.value,
-        context=gen_context(event, order_page),
-    )
+        context=gen_context(event, order_page)
+    )  # todo: send by part
 
-    await funpay_component.bot.send_message(event.message.chat_id, result_text.result_text)
-    future.set_result(ReviewReplyResult(review_text=result_text.result_text))
+    await funpay_component.bot.send_message(event.message.chat_id, result.text)
+    future.set_result(ReviewReplyResult(review_text=result.text))
 
 
 @router.on_new_review(
@@ -172,13 +172,13 @@ async def reply_in_review(
     future: Future = event['app:funpay_component:review_reply:in_review:result']
     order_page = await event.get_order_page()
 
-    result_text = await expressions_manager.format_string(
+    result_text = await expressions_manager.evaluate(
         string=review_node.review_reply_text.value,
         context=gen_context(event, order_page),
     )
 
-    await funpay_component.bot.review(order_page.order_id, result_text.result_text, 0)
-    future.set_result(ReviewReplyResult(review_text=result_text.result_text))
+    await funpay_component.bot.review(order_page.order_id, result_text.text, 0)
+    future.set_result(ReviewReplyResult(review_text=result_text.text))
 
 
 @router.on_new_review(as_task=True)
